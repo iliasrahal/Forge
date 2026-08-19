@@ -1,0 +1,246 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ClientType {
+  PARTICULIER
+  PROFESSIONNEL
+}
+
+enum InterventionStatus {
+  PLANIFIEE
+  EN_COURS
+  TERMINEE
+  ANNULEE
+}
+
+enum QuoteStatus {
+  BROUILLON
+  ENVOYE
+  ACCEPTE
+  REFUSE
+}
+
+enum InvoiceStatus {
+  BROUILLON
+  ENVOYEE
+  PAYEE
+  EN_RETARD
+  ANNULEE
+}
+
+enum UserJob {
+  PLOMBIER_CHAUFFAGISTE
+  ELECTRICIEN
+  PEINTRE_BATIMENT
+  MENUISIER
+  AUTRE
+}
+
+enum WorkMode {
+  SOLO
+  TEAM
+}
+
+model User {
+  id String @id @default(cuid())
+
+  firstName String
+
+  email String @unique
+
+  phone String @unique
+
+  passwordHash String
+
+  trialEndsAt DateTime?
+
+  subscriptionStatus String @default("TRIAL")
+
+  job UserJob?
+
+  workMode WorkMode?
+
+  birthDate DateTime?
+
+  onboardingCompleted Boolean @default(false)
+
+  clients Client[]
+
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id String @id @default(cuid())
+
+  token String @unique
+
+  expiresAt DateTime
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Client {
+  id String @id @default(cuid())
+
+  type ClientType @default(PARTICULIER)
+
+  firstName String?
+
+  lastName String?
+
+  companyName String?
+
+  phone String?
+
+  email String?
+
+  street String?
+
+  postalCode String?
+
+  city String?
+
+  notes String?
+
+// Client créé automatiquement par Forge lors d'une intervention
+// true = client temporaire
+// false = client enregistré normalement
+isTemporary Boolean @default(false)
+
+// Client masqué mais conservé pour l'historique
+// true = supprimé de l'affichage mais gardé en base
+archived Boolean @default(false)
+
+userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  interventions Intervention[]
+
+  quotes Quote[]
+
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Intervention {
+  id String @id @default(cuid())
+
+  title String
+
+  description String?
+
+  scheduledAt DateTime
+
+  status InterventionStatus @default(PLANIFIEE)
+
+  reportIntervention String?
+
+  reportDiagnostic String?
+
+  reportTravaux String?
+
+  reportRecommendation String?
+
+  clientId String
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([scheduledAt])
+}
+
+model Quote {
+  id String @id @default(cuid())
+
+  reference String @unique
+
+  title String
+
+  description String?
+
+  amountCents Int @default(0)
+
+  status QuoteStatus @default(BROUILLON)
+
+  clientId String
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  lines QuoteLine[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+model QuoteLine {
+  id String @id @default(cuid())
+
+  category String
+
+  label String?
+
+  amountCents Int @default(0)
+
+  quoteId String
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId])
+}
+
+model Invoice {
+  id String @id @default(cuid())
+
+  reference String @unique
+
+  title String
+
+  description String?
+
+  amountCents Int @default(0)
+
+  status InvoiceStatus @default(BROUILLON)
+
+  dueDate DateTime?
+
+  clientId String
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}

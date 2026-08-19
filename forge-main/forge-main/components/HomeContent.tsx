@@ -1,0 +1,686 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { LoaderCircle } from "lucide-react";
+
+import CurrentInterventionCard from "@/components/CurrentInterventionCard";
+import FixedForgeBar from "@/components/FixedForgeBar";
+import ForgeListenCard from "@/components/ForgeListenCard";
+import ForgeProcessingCard from "@/components/ForgeProcessingCard";
+import ForgeReplyCard from "@/components/ForgeReplyCard";
+import ForgeReportCard from "@/components/ForgeReportCard";
+
+type HomeState =
+  | "finished"
+  | "intervention"
+  | "inProgress"
+  | "reportInput"
+  | "processing"
+  | "review"
+  | "saved"
+  | "clientChoice"
+  | "quoteChoice";
+
+type Appointment = {
+  client: string;
+  address: string;
+  time: string;
+  intervention: string;
+};
+
+type InterventionReport = {
+  intervention: string;
+  diagnostic: string;
+  travaux: string;
+  recommandation: string;
+};
+
+type ReplyStatus =
+  | "idle"
+  | "processing"
+  | "ready"
+  | "notice"
+  | "error";
+
+type UserJob =
+  | "PLOMBIER_CHAUFFAGISTE"
+  | "ELECTRICIEN"
+  | "PEINTRE_BATIMENT"
+  | "MENUISIER"
+  | "AUTRE";
+
+type HomeContentProps = {
+  state: HomeState;
+  currentAppointment?: Appointment;
+  report?: InterventionReport | null;
+  error?: string;
+  savedClientName?: string;
+
+  onStartIntervention: () => void;
+  onFinishIntervention: () => void;
+  onKeepClient: () => void;
+  onDeleteTemporaryClient: () => void;
+
+  onStartProcessing: () => void;
+  onReportGenerated: (
+    report: InterventionReport,
+  ) => void;
+  onReportError: (message: string) => void;
+  onEditReport: () => void;
+  onValidateReport: () => void;
+  onInterventionCreated: (
+    interventionId: string,
+  ) => void;
+  onSkipQuote: () => void;
+  onCreateQuote: () => void;
+};
+
+export default function HomeContent({
+  state,
+  currentAppointment,
+  report,
+  error,
+  savedClientName,
+  onStartIntervention,
+  onFinishIntervention,
+  onKeepClient,
+  onDeleteTemporaryClient,
+  onStartProcessing,
+  onReportGenerated,
+  onReportError,
+  onEditReport,
+  onValidateReport,
+  onInterventionCreated,
+  onSkipQuote,
+  onCreateQuote,
+}: HomeContentProps) {
+  const [replyStatus, setReplyStatus] =
+    useState<ReplyStatus>("idle");
+
+  const [clientReply, setClientReply] =
+    useState("");
+
+  const [clientReplyError, setClientReplyError] =
+    useState("");
+
+  const [assistantNotice, setAssistantNotice] =
+    useState("");
+
+  const [
+    originalReplyMessage,
+    setOriginalReplyMessage,
+  ] = useState("");
+
+  const [replyDraft, setReplyDraft] =
+    useState("");
+
+  const [firstName, setFirstName] =
+    useState("");
+
+  const [job, setJob] =
+    useState<UserJob>("AUTRE");
+
+  const resetReply = () => {
+    setClientReply("");
+    setClientReplyError("");
+    setAssistantNotice("");
+    setOriginalReplyMessage("");
+    setReplyDraft("");
+    setReplyStatus("idle");
+  };
+
+  useEffect(() => {
+    const savedFirstName =
+      localStorage.getItem(
+        "forgeUserFirstName",
+      );
+
+    setFirstName(
+      savedFirstName?.trim() || "",
+    );
+
+    const savedProfile =
+      localStorage.getItem(
+        "forgeUserProfile",
+      );
+
+    if (!savedProfile) {
+      return;
+    }
+
+    try {
+      const parsedProfile = JSON.parse(
+        savedProfile,
+      ) as {
+        job?: UserJob;
+      };
+
+      setJob(
+        parsedProfile.job || "AUTRE",
+      );
+    } catch {
+      setJob("AUTRE");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (replyStatus !== "notice") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      resetReply();
+    }, 4000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [replyStatus]);
+
+  const getInterventionExample = () => {
+    switch (job) {
+      case "PLOMBIER_CHAUFFAGISTE":
+        return "demain à 10h chez Charles Xavier pour une fuite d’eau";
+
+      case "ELECTRICIEN":
+        return "demain à 10h chez Charles Xavier pour une panne électrique";
+
+      case "PEINTRE_BATIMENT":
+        return "demain à 10h chez Charles Xavier pour repeindre un salon";
+
+      case "MENUISIER":
+        return "demain à 10h chez Charles Xavier pour remplacer une porte";
+
+      default:
+        return "demain à 10h chez Charles Xavier pour une intervention";
+    }
+  };
+
+  const handleEditReply = () => {
+    setReplyDraft(originalReplyMessage);
+    setClientReply("");
+    setClientReplyError("");
+    setReplyStatus("idle");
+  };
+
+  const handleForgeError = (
+    message: string,
+  ) => {
+    if (!message) {
+      setClientReplyError("");
+      return;
+    }
+
+    setClientReply("");
+    setClientReplyError(message);
+    setReplyStatus("error");
+  };
+if (state === "inProgress") {
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center px-6">
+
+      <div className="w-full max-w-2xl rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+
+
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
+          <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+          Intervention en cours
+        </div>
+
+
+        <h2 className="text-center text-4xl font-bold text-blue-700">
+          {currentAppointment?.client}
+        </h2>
+
+
+        <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
+  {currentAppointment?.intervention}
+</p>
+
+
+        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+
+  <p>
+  Je garde cette intervention ouverte.
+</p>
+
+<p className="mt-1 font-medium text-slate-700">
+  Quand tu reviens, appuie ci-dessous ↓
+</p>
+
+        </div>
+
+
+        <button
+          type="button"
+          onClick={onFinishIntervention}
+          className="mt-5 w-full rounded-2xl border-2 border-red-500 bg-white px-6 py-4 text-xl font-semibold text-red-500 transition hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950"
+        >
+          Terminer l'intervention
+        </button>
+
+
+      </div>
+
+    </section>
+  );
+}
+if (state === "finished") {
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center px-6">
+
+      <div className="w-full rounded-3xl border border-green-200 bg-green-50 p-8 text-center shadow-sm">
+
+        <h2 className="text-3xl font-bold text-green-700">
+          Intervention terminée
+        </h2>
+
+
+        <p className="mt-4 text-slate-700">
+          Le compte rendu de l'intervention a bien été enregistré.
+        </p>
+
+
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-6 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+        >
+          Retour à l'accueil
+        </button>
+
+
+      </div>
+
+    </section>
+  );
+}
+
+  if (state === "reportInput") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <ForgeListenCard
+          clientName={
+            currentAppointment?.client ||
+            savedClientName ||
+            "le client"
+          }
+          onStartProcessing={onStartProcessing}
+          onReportGenerated={onReportGenerated}
+          onError={onReportError}
+        />
+      </section>
+    );
+  }
+
+  if (state === "processing") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <ForgeProcessingCard />
+      </section>
+    );
+  }
+
+  if (state === "saved") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-10 text-center shadow-lg">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700">
+            ✓
+          </div>
+
+          <h2 className="mt-5 text-2xl font-bold text-blue-700">
+            Compte rendu enregistré
+          </h2>
+
+          <p className="mt-3 text-slate-600">
+            L’intervention de{" "}
+            <span className="font-semibold text-blue-700">
+              {savedClientName || "ce client"}
+            </span>{" "}
+            a été ajoutée à son historique.
+          </p>
+        </div>
+      </section>
+    );
+  }
+if (state === "clientChoice") {
+  return (
+    <section className="flex flex-1 flex-col items-center justify-center px-4">
+
+      <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-8 text-center shadow-lg shadow-slate-200/60">
+
+        <h2 className="mt-5 text-2xl font-bold text-blue-700">
+          Compte rendu enregistré
+        </h2>
+
+
+        <p className="mt-3 text-slate-600">
+          J'ai créé une fiche client temporaire pour cette intervention.
+        </p>
+
+
+        <p className="mt-6 text-lg font-semibold text-slate-800">
+          Souhaites-tu conserver ce client ?
+        </p>
+
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+
+         <button
+  type="button"
+  onClick={onDeleteTemporaryClient}
+  className="flex-1 rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+>
+  Supprimer la fiche
+</button>
+
+<button
+  type="button"
+  onClick={onKeepClient}
+  className="flex-1 rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+>
+  Garder le client
+</button>
+
+        </div>
+
+      </div>
+
+    </section>
+  );
+}
+  if (state === "quoteChoice") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-8 text-center shadow-lg shadow-slate-200/60">
+
+          <h2 className="mt-5 text-2xl font-bold text-blue-700">
+            Compte rendu enregistré
+          </h2>
+
+          <p className="mt-3 text-slate-600">
+            L’intervention de{" "}
+            <span className="font-semibold text-blue-700">
+              {savedClientName || "ce client"}
+            </span>{" "}
+            est maintenant terminée.
+          </p>
+
+          <p className="mt-6 text-lg font-semibold text-slate-800">
+            Souhaites-tu créer un devis ?
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+   <button
+  type="button"
+  onClick={onSkipQuote}
+  className="flex-1 rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+>
+  Pas maintenant
+</button>
+
+            <button
+              type="button"
+              onClick={onCreateQuote}
+              className="flex-1 rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Créer un devis
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (state === "review") {
+    if (!report) {
+      return (
+        <section className="flex flex-1 flex-col items-center justify-center px-4">
+          <div className="w-full max-w-2xl rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-lg">
+            <p className="font-medium text-red-700">
+              {error ||
+                "Aucun compte rendu n’a été généré."}
+            </p>
+          </div>
+        </section>
+      );
+    }
+
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <ForgeReportCard
+          report={report}
+          onEdit={onEditReport}
+          onValidate={onValidateReport}
+        />
+      </section>
+    );
+  }
+
+  if (!currentAppointment) {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="w-full max-w-2xl">
+          {replyStatus === "idle" && (
+            <div className="py-12 text-center">
+             <h2 className="text-4xl font-bold text-blue-700 dark:text-blue-400">
+  Salut{firstName ? ` ${firstName}` : ""},
+</h2>
+
+            <p className="mt-5 text-xl leading-relaxed text-slate-500 dark:text-slate-400">
+  Décris-moi ta prochaine intervention.
+</p>
+
+<p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-slate-400 dark:text-slate-500">
+  Exemple : {getInterventionExample()}.
+</p>
+            </div>
+          )}
+
+          {replyStatus === "processing" && (
+            <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
+              <LoaderCircle
+                size={48}
+                strokeWidth={2}
+                className="animate-spin text-blue-600"
+              />
+
+              <h2 className="mt-5 text-2xl font-bold text-blue-700">
+                Forge s’occupe de ta demande...
+              </h2>
+
+              <p className="mt-2 text-slate-500">
+                Cela ne prendra que quelques secondes.
+              </p>
+            </div>
+          )}
+
+          {replyStatus === "notice" && (
+            <div className="w-full rounded-3xl border border-blue-200 bg-blue-50 p-8 text-center shadow-lg shadow-blue-100/50">
+              <h2 className="text-2xl font-bold text-blue-700">
+                C&apos;est fait !
+              </h2>
+
+              <p className="mt-3 text-blue-700">
+                {assistantNotice}
+              </p>
+            </div>
+          )}
+
+          {replyStatus === "error" && (
+            <div className="w-full rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-lg">
+              <p className="font-medium text-red-700">
+                {clientReplyError ||
+                  "Impossible de traiter la demande."}
+              </p>
+
+              <button
+                type="button"
+                onClick={resetReply}
+                className="mt-5 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+              >
+                Réessayer
+              </button>
+            </div>
+          )}
+        </div>
+
+        <FixedForgeBar
+          context="home"
+          initialMessage={replyDraft}
+          onInitialMessageUsed={() => {
+            setReplyDraft("");
+          }}
+          onStartReply={(originalMessage) => {
+            resetReply();
+            setOriginalReplyMessage(
+              originalMessage,
+            );
+            setClientReply("");
+            setClientReplyError("");
+            setReplyStatus("processing");
+          }}
+          onReplyGenerated={(generatedReply) => {
+            setClientReply(generatedReply);
+            setClientReplyError("");
+            setReplyStatus("ready");
+          }}
+          onInterventionCreated={(
+            interventionId,
+          ) => {
+            resetReply();
+
+            onInterventionCreated(
+              interventionId,
+            );
+          }}
+          onAssistantNotice={(message) => {
+            setAssistantNotice(message);
+            setClientReply("");
+            setClientReplyError("");
+            setReplyStatus("notice");
+          }}
+          onReplyError={handleForgeError}
+        />
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className={`flex flex-1 flex-col items-center px-4 ${
+        replyStatus === "ready"
+          ? "justify-start overflow-y-auto pb-8 pt-4"
+          : "justify-center"
+      }`}
+    >
+      <div className="w-full max-w-2xl">
+       {replyStatus === "idle" && (
+  <CurrentInterventionCard
+  appointment={currentAppointment}
+  isInProgress={state === "inProgress"}
+  onStart={onStartIntervention}
+/>
+)}
+
+        {replyStatus === "processing" && (
+          <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
+            <LoaderCircle
+              size={48}
+              strokeWidth={2}
+              className="animate-spin text-blue-600"
+            />
+
+            <h2 className="mt-5 text-2xl font-bold text-blue-700">
+              Je prépare ta réponse...
+            </h2>
+
+            <p className="mt-2 text-slate-500">
+              Cela ne prendra que quelques secondes.
+            </p>
+          </div>
+        )}
+
+        {replyStatus === "ready" &&
+          clientReply && (
+            <ForgeReplyCard
+              reply={clientReply}
+              onEdit={handleEditReply}
+              onCopied={resetReply}
+            />
+          )}
+
+        {replyStatus === "notice" && (
+          <div className="w-full rounded-3xl border border-blue-200 bg-blue-50 p-8 text-center shadow-lg shadow-blue-100/50">
+            <h2 className="text-2xl font-bold text-blue-700">
+              C&apos;est fait !
+            </h2>
+
+            <p className="mt-3 text-blue-700">
+              {assistantNotice}
+            </p>
+          </div>
+        )}
+
+        {replyStatus === "error" && (
+          <div className="w-full rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-lg">
+            <p className="font-medium text-red-700">
+              {clientReplyError ||
+                "Impossible de préparer la réponse."}
+            </p>
+
+            <button
+              type="button"
+              onClick={resetReply}
+              className="mt-5 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+      </div>
+
+      {state === "intervention" &&
+        replyStatus !== "ready" && (
+          <FixedForgeBar
+            context="home"
+            initialMessage={replyDraft}
+            onInitialMessageUsed={() => {
+              setReplyDraft("");
+            }}
+            onStartReply={(originalMessage) => {
+              resetReply();
+              setOriginalReplyMessage(
+                originalMessage,
+              );
+              setClientReply("");
+              setClientReplyError("");
+              setReplyStatus("processing");
+            }}
+            onReplyGenerated={(generatedReply) => {
+              setClientReply(generatedReply);
+              setClientReplyError("");
+              setReplyStatus("ready");
+            }}
+            onInterventionCreated={(
+              interventionId,
+            ) => {
+              resetReply();
+
+              onInterventionCreated(
+                interventionId,
+              );
+            }}
+            onAssistantNotice={(message) => {
+              setAssistantNotice(message);
+              setClientReply("");
+              setClientReplyError("");
+              setReplyStatus("notice");
+            }}
+            onReplyError={handleForgeError}
+          />
+        )}
+    </section>
+  );
+}

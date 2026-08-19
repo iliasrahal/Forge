@@ -1,0 +1,163 @@
+"use client";
+
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  FileText,
+  House,
+  UsersRound,
+} from "lucide-react";
+
+
+export default function BottomNavigation() {
+  const pathname = usePathname();
+
+
+
+  const isHomeActive =
+    pathname === "/app";
+
+
+
+  const isQuotesActive =
+    pathname.startsWith("/quotes") ||
+    pathname.includes("/quotes/");
+
+
+
+  const isClientsActive =
+    (
+      pathname.startsWith("/clients") ||
+      pathname.startsWith("/interventions") ||
+      pathname.startsWith("/intervention") ||
+      pathname.includes("/historique") ||
+      pathname.includes("/history")
+    )
+    &&
+    !isQuotesActive;
+
+
+
+
+  const getLinkClassName = (
+    isActive: boolean,
+  ) =>
+    `relative flex min-h-16 flex-col items-center justify-center rounded-2xl px-3 transition ${
+      isActive
+        ? "bg-blue-50 font-semibold text-blue-600 dark:bg-blue-950 dark:text-blue-400"
+        : "text-slate-500 hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+    }`;
+
+
+
+
+  return (
+    <nav className="grid grid-cols-3 gap-2 text-center">
+
+
+
+      {/* ACCUEIL */}
+
+
+      <Link
+        href="/app"
+        className={getLinkClassName(
+          isHomeActive,
+        )}
+      >
+
+        <House
+          size={25}
+          strokeWidth={
+            isHomeActive ? 2.3 : 2
+          }
+        />
+
+
+        <span className="mt-1 text-sm">
+          Accueil
+        </span>
+
+
+
+        {isHomeActive && (
+          <span className="absolute bottom-1 h-1 w-8 rounded-full bg-blue-600" />
+        )}
+
+
+      </Link>
+
+
+
+
+      {/* CLIENTS */}
+
+
+      <Link
+        href="/clients"
+        className={getLinkClassName(
+          isClientsActive,
+        )}
+      >
+
+        <UsersRound
+          size={25}
+          strokeWidth={
+            isClientsActive ? 2.3 : 2
+          }
+        />
+
+
+        <span className="mt-1 text-sm">
+          Clients
+        </span>
+
+
+
+        {isClientsActive && (
+          <span className="absolute bottom-1 h-1 w-8 rounded-full bg-blue-600" />
+        )}
+
+
+      </Link>
+
+
+
+
+      {/* DEVIS */}
+
+
+      <Link
+        href="/quotes"
+        className={getLinkClassName(
+          isQuotesActive,
+        )}
+      >
+
+        <FileText
+          size={25}
+          strokeWidth={
+            isQuotesActive ? 2.3 : 2
+          }
+        />
+
+
+        <span className="mt-1 text-sm">
+          Devis
+        </span>
+
+
+
+        {isQuotesActive && (
+          <span className="absolute bottom-1 h-1 w-8 rounded-full bg-blue-600" />
+        )}
+
+
+      </Link>
+
+
+
+    </nav>
+  );
+}
