@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 
 import { prisma } from "@/src/lib/prisma";
+import { requireCurrentUser } from "@/src/lib/auth";
 import { clientService } from "@/src/services/client.service";
 
 
@@ -19,9 +20,10 @@ export default async function NewInterventionPage({
 }: NewInterventionPageProps) {
 
   const { id } = await params;
+  const currentUser = await requireCurrentUser();
 
   const client =
-    await clientService.getById(id);
+    await clientService.getById(id, currentUser.id);
 
 
 

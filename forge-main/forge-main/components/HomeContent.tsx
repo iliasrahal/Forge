@@ -579,7 +579,7 @@ if (state === "clientChoice") {
        {replyStatus === "idle" && (
   <CurrentInterventionCard
   appointment={currentAppointment}
-  isInProgress={state === "inProgress"}
+  isInProgress={false}
   onStart={onStartIntervention}
 />
 )}

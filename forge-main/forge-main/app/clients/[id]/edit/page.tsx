@@ -143,11 +143,11 @@ export default async function EditClientPage({
             firstName: client.firstName,
             lastName: client.lastName,
             companyName: client.companyName,
-            phone: client.phone,
+            phone: client.phone ?? undefined,
             email: client.email,
-            street: client.street,
-            postalCode: client.postalCode,
-            city: client.city,
+            street: client.street ?? undefined,
+            postalCode: client.postalCode ?? undefined,
+            city: client.city ?? undefined,
           }}
         />
       </section>

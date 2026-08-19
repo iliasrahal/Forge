@@ -50,14 +50,10 @@ type SpeechRecognitionInstance = {
 type SpeechRecognitionConstructor = new () =>
   SpeechRecognitionInstance;
 
-declare global {
-  interface Window {
-    SpeechRecognition?:
-      SpeechRecognitionConstructor;
-    webkitSpeechRecognition?:
-      SpeechRecognitionConstructor;
-  }
-}
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
 
 type AssistantIntent =
   | "clientReply"
@@ -1233,9 +1229,12 @@ export default function ForgeBar({
       return;
     }
 
+    const browserWindow =
+      window as SpeechRecognitionWindow;
+
     const SpeechRecognitionConstructor =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
+      browserWindow.SpeechRecognition ||
+      browserWindow.webkitSpeechRecognition;
 
     if (!SpeechRecognitionConstructor) {
       onReplyError?.(

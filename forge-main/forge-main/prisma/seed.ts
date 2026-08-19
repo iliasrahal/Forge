@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import {
   ClientType,
   PrismaClient,
@@ -14,8 +14,8 @@ if (!databaseUrl) {
   );
 }
 
-const adapter = new PrismaBetterSqlite3({
-  url: databaseUrl,
+const adapter = new PrismaPg({
+  connectionString: databaseUrl,
 });
 
 const prisma = new PrismaClient({
@@ -23,6 +23,19 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
+  const demoUser = await prisma.user.upsert({
+    where: {
+      email: "demo@forge.local",
+    },
+    update: {},
+    create: {
+      firstName: "Forge",
+      email: "demo@forge.local",
+      phone: "0600000000",
+      passwordHash: "seed-user-password-hash",
+    },
+  });
+
   await prisma.client.upsert({
     where: {
       id: "client-jean-martin",
@@ -39,6 +52,7 @@ async function main() {
       postalCode: "75015",
       city: "Paris",
       notes: "Client régulier. Prévenir avant le passage.",
+      userId: demoUser.id,
     },
   });
 
@@ -57,6 +71,7 @@ async function main() {
       postalCode: "92100",
       city: "Boulogne-Billancourt",
       notes: "Entreprise partenaire.",
+      userId: demoUser.id,
     },
   });
 

@@ -141,7 +141,6 @@ return NextResponse.json({
     phone: user.phone,
     job: user.job,
     workMode: user.workMode,
-    age: user.age,
     onboardingCompleted:
       user.onboardingCompleted,
   },

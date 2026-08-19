@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 
 import { prisma } from "@/src/lib/prisma";
+import { QuoteStatus } from "@/src/generated/prisma/client";
 
 
 type EditQuotePageProps = {
@@ -95,6 +96,8 @@ export default async function EditQuotePage({
       throw new Error("Le statut du devis est invalide.");
     }
 
+    const quoteStatus = status as QuoteStatus;
+
 
 
     const amount = Number(amountValue);
@@ -119,7 +122,7 @@ export default async function EditQuotePage({
         title,
         description,
         amountCents,
-        status,
+        status: quoteStatus,
       },
     });
 
@@ -211,7 +214,7 @@ export default async function EditQuotePage({
             name="description"
             required
             rows={6}
-            defaultValue={quote.description}
+            defaultValue={quote.description ?? ""}
             className="w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
           />
 
