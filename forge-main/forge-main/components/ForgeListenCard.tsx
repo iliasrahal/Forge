@@ -146,14 +146,9 @@ export default function ForgeListenCard({
       new SpeechRecognition();
 
 
-    recognition.lang =
-      "fr-FR";
-
-    recognition.continuous =
-      false;
-
-    recognition.interimResults =
-      false;
+    recognition.lang = "fr-FR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
 
     recognition.onstart = () => {
@@ -252,11 +247,9 @@ export default function ForgeListenCard({
 
 
       <h2 className="mt-6 text-3xl font-bold leading-tight text-slate-950 dark:text-white">
-
         Dis-moi ce qui
         <br />
         a été fait.
-
       </h2>
 
 
@@ -267,7 +260,7 @@ export default function ForgeListenCard({
         onClick={startVoiceRecognition}
         aria-label="Commencer l’enregistrement vocal"
 
-        className={`mx-auto mt-10 flex h-40 w-40 items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:shadow-blue-900/40 ${
+        className={`mx-auto mt-10 flex h-40 w-40 items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:shadow-blue-900/30 dark:hover:bg-slate-800 ${
           isListening
             ? "bg-blue-50 dark:bg-blue-950 animate-pulse"
             : ""
