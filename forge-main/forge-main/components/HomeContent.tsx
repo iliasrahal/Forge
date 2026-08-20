@@ -269,7 +269,7 @@ if (state === "finished") {
   return (
     <section className="flex flex-1 flex-col items-center justify-center px-6">
 
-     <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
+     <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
 
         <h2 className="text-3xl font-bold text-green-700">
           Intervention terminée
@@ -398,7 +398,7 @@ if (state === "finished") {
                 className="animate-spin text-blue-600"
               />
 
-              <h2 className="mt-5 text-2xl font-bold text-blue-700">
+             <h2 className="mt-5 text-2xl font-bold text-blue-700 dark:text-blue-400">
                 Forge s’occupe de ta demande...
               </h2>
 
@@ -504,7 +504,7 @@ if (state === "finished") {
               className="animate-spin text-blue-600"
             />
 
-            <h2 className="mt-5 text-2xl font-bold text-blue-700">
+           <h2 className="mt-5 text-2xl font-bold text-blue-700 dark:text-blue-400">
               Je prépare ta réponse...
             </h2>
 
