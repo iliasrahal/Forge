@@ -324,113 +324,26 @@ if (state === "finished") {
   if (state === "saved") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-       <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700">
-            ✓
-          </div>
+  <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900">
 
-          <h2 className="mt-5 text-2xl font-bold text-blue-700">
-            Compte rendu enregistré
-          </h2>
+    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700 dark:bg-green-950 dark:text-green-400">
+      ✓
+    </div>
 
-          <p className="mt-3 text-slate-600">
-            L’intervention de{" "}
-            <span className="font-semibold text-blue-700">
-              {savedClientName || "ce client"}
-            </span>{" "}
-            a été ajoutée à son historique.
-          </p>
-        </div>
-      </section>
-    );
-  }
-if (state === "clientChoice") {
-  return (
-    <section className="flex flex-1 flex-col items-center justify-center px-4">
+    <h2 className="mt-5 text-2xl font-bold text-blue-700 dark:text-blue-400">
+      Compte rendu enregistré
+    </h2>
 
-      <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
-        <h2 className="mt-5 text-2xl font-bold text-blue-700">
-          Compte rendu enregistré
-        </h2>
+    <p className="mt-3 text-slate-600 dark:text-slate-300">
+      L’intervention de{" "}
+      <span className="font-semibold text-blue-700 dark:text-blue-400">
+        {savedClientName || "ce client"}
+      </span>{" "}
+      a été ajoutée à son historique.
+    </p>
 
-
-        <p className="mt-3 text-slate-600">
-          J'ai créé une fiche client temporaire pour cette intervention.
-        </p>
-
-
-        <p className="mt-6 text-lg font-semibold text-slate-800">
-          Souhaites-tu conserver ce client ?
-        </p>
-
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-
-         <button
-  type="button"
-  onClick={onDeleteTemporaryClient}
-  className="flex-1 rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
->
-  Supprimer la fiche
-</button>
-
-<button
-  type="button"
-  onClick={onKeepClient}
-  className="flex-1 rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
->
-  Garder le client
-</button>
-
-        </div>
-
-      </div>
-
-    </section>
-  );
-}
-  if (state === "quoteChoice") {
-    return (
-      <section className="flex flex-1 flex-col items-center justify-center px-4">
-       <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
-
-          <h2 className="mt-5 text-2xl font-bold text-blue-700">
-            Compte rendu enregistré
-          </h2>
-
-          <p className="mt-3 text-slate-600">
-            L’intervention de{" "}
-            <span className="font-semibold text-blue-700">
-              {savedClientName || "ce client"}
-            </span>{" "}
-            est maintenant terminée.
-          </p>
-
-          <p className="mt-6 text-lg font-semibold text-slate-800">
-            Souhaites-tu créer un devis ?
-          </p>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-   <button
-  type="button"
-  onClick={onSkipQuote}
-  className="flex-1 rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
->
-  Pas maintenant
-</button>
-
-            <button
-              type="button"
-              onClick={onCreateQuote}
-              className="flex-1 rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-            >
-              Créer un devis
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  </div>
+</section>
 
   if (state === "review") {
     if (!report) {
