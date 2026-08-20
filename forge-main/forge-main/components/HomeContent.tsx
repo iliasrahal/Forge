@@ -342,6 +342,8 @@ if (state === "finished") {
 
   </div>
 </section>
+    );
+  }
 
   if (state === "review") {
     if (!report) {

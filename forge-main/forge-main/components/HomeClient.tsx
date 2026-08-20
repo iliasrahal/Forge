@@ -684,10 +684,6 @@ const handleDeleteTemporaryClient = async () => {
 }
 
 
-// suppression réussie
-setState("quoteChoice");
-
-
     setHomeState("quoteChoice");
 
 
