@@ -117,13 +117,14 @@ export default async function InterventionPage({
   );
 
 
-  const quoteDescription = [
-    intervention.reportIntervention,
-    intervention.reportTravaux,
-    intervention.reportRecommendation,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+const quoteDescription = [
+  intervention.reportIntervention,
+  intervention.reportDiagnostic,
+  intervention.reportTravaux,
+  intervention.reportRecommendation,
+]
+.filter(Boolean)
+.join("\n\n");
 
 
   if (quoteDescription) {

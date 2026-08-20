@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState } from "react";
 
 
@@ -10,30 +9,33 @@ type QuoteLine = {
 };
 
 
-
-const defaultLines: QuoteLine[] = [
-  {
-    category: "Main d'œuvre",
-    amount: "",
-  },
-  {
-    category: "Matériel",
-    amount: "",
-  },
-  {
-    category: "Déplacement",
-    amount: "",
-  },
-];
+type QuoteLinesFormProps = {
+  initialTitle?: string;
+};
 
 
 
-
-export default function QuoteLinesForm() {
+export default function QuoteLinesForm({
+  initialTitle,
+}: QuoteLinesFormProps) {
 
 
   const [lines, setLines] =
-    useState<QuoteLine[]>(defaultLines);
+    useState<QuoteLine[]>([
+      {
+        category:
+          initialTitle || "Main d'œuvre",
+        amount: "",
+      },
+      {
+        category: "Matériel",
+        amount: "",
+      },
+      {
+        category: "Déplacement",
+        amount: "",
+      },
+    ]);
 
 
 
@@ -43,17 +45,15 @@ export default function QuoteLinesForm() {
     value: string,
   ) {
 
-
     const updatedLines =
       [...lines];
-
 
     updatedLines[index].amount =
       value;
 
-
     setLines(updatedLines);
   }
+
 
 
 
@@ -63,14 +63,11 @@ export default function QuoteLinesForm() {
     value: string,
   ) {
 
-
     const updatedLines =
       [...lines];
 
-
     updatedLines[index].category =
       value;
-
 
     setLines(updatedLines);
   }
@@ -78,8 +75,8 @@ export default function QuoteLinesForm() {
 
 
 
-  function addLine() {
 
+  function addLine() {
 
     setLines([
       ...lines,
@@ -89,8 +86,8 @@ export default function QuoteLinesForm() {
       },
     ]);
 
-
   }
+
 
 
 
@@ -99,7 +96,6 @@ export default function QuoteLinesForm() {
     index: number,
   ) {
 
-
     setLines(
       lines.filter(
         (_, lineIndex) =>
@@ -107,8 +103,8 @@ export default function QuoteLinesForm() {
       ),
     );
 
-
   }
+
 
 
 
@@ -128,9 +124,9 @@ export default function QuoteLinesForm() {
 
 
 
+
   return (
     <div className="space-y-5">
-
 
 
       <input
@@ -155,81 +151,77 @@ export default function QuoteLinesForm() {
       <div className="space-y-3">
 
 
-
         {lines.map(
           (line, index) => (
 
-
-          <div
-            key={index}
-            className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
-          >
-
-
-
-            <input
-              type="text"
-              value={line.category}
-              placeholder="Nouvelle prestation"
-              onChange={(event) =>
-                updateCategory(
-                  index,
-                  event.target.value,
-                )
-              }
-              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
-            />
-
-
-
-
-            <div className="relative w-32">
+            <div
+              key={index}
+              className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+            >
 
 
               <input
-                type="number"
-                value={line.amount}
+                type="text"
+                value={line.category}
+                placeholder="Nouvelle prestation"
                 onChange={(event) =>
-                  updateAmount(
+                  updateCategory(
                     index,
                     event.target.value,
                   )
                 }
-                placeholder="0"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:text-white dark:placeholder:text-slate-500"
               />
 
 
 
-              <span className="absolute right-3 top-2 text-slate-500 dark:text-slate-400">
-                €
-              </span>
+
+              <div className="relative w-32">
+
+
+                <input
+                  type="number"
+                  value={line.amount}
+                  onChange={(event) =>
+                    updateAmount(
+                      index,
+                      event.target.value,
+                    )
+                  }
+                  placeholder="0"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                />
+
+
+
+                <span className="absolute right-3 top-2 text-slate-500 dark:text-slate-400">
+                  €
+                </span>
+
+
+              </div>
+
+
+
+
+
+              <button
+                type="button"
+                onClick={() =>
+                  removeLine(index)
+                }
+                className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
+              >
+                Supprimer
+              </button>
+
 
 
 
             </div>
 
-
-
-
-
-            <button
-              type="button"
-              onClick={() =>
-                removeLine(index)
-              }
-              className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
-            >
-              Supprimer
-            </button>
-
-
-
-
-          </div>
-
-
-        ))}
+          ),
+        )}
 
 
 
