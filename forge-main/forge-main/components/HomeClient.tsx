@@ -668,7 +668,8 @@ const handleDeleteTemporaryClient = async () => {
     );
 
 
-   if (!response.ok) {
+  if (!response.ok) {
+
   const error = await response.json();
 
   console.error(
@@ -681,6 +682,10 @@ const handleDeleteTemporaryClient = async () => {
       "Impossible de supprimer la fiche client.",
   );
 }
+
+
+// suppression réussie
+setState("quoteChoice");
 
 
     setHomeState("quoteChoice");
