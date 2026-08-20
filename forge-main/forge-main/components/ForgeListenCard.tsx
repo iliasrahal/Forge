@@ -37,18 +37,14 @@ export default function ForgeListenCard({
   onReportGenerated,
   onError,
 }: ForgeListenCardProps) {
+
   const [message, setMessage] = useState("");
-
-  const [isLoading, setIsLoading] =
-    useState(false);
-
-  const [isListening, setIsListening] =
-    useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
 
-  async function handleSubmit(
-    text?: string,
-  ) {
+  async function handleSubmit(text?: string) {
+
     const intervention =
       (text ?? message).trim();
 
@@ -60,7 +56,9 @@ export default function ForgeListenCard({
     onError("");
     onStartProcessing();
 
+
     try {
+
       const response = await fetch(
         "/api/interventions/report",
         {
@@ -75,6 +73,7 @@ export default function ForgeListenCard({
         },
       );
 
+
       const data =
         await response.json();
 
@@ -82,12 +81,13 @@ export default function ForgeListenCard({
       if (!response.ok) {
         throw new Error(
           data.error ||
-            "Impossible de créer le compte rendu.",
+          "Impossible de créer le compte rendu.",
         );
       }
 
 
       onReportGenerated({
+
         intervention:
           data.intervention ||
           "Non précisé",
@@ -103,17 +103,17 @@ export default function ForgeListenCard({
         recommandation:
           data.recommandation ||
           "Aucune recommandation particulière.",
+
       });
 
 
     } catch (error) {
 
-      const errorMessage =
+      onError(
         error instanceof Error
           ? error.message
-          : "Une erreur est survenue.";
-
-      onError(errorMessage);
+          : "Une erreur est survenue.",
+      );
 
 
     } finally {
@@ -177,7 +177,7 @@ export default function ForgeListenCard({
 
 
     recognition.onresult = (
-      event: any,
+      event:any,
     ) => {
 
       let transcript = "";
@@ -202,16 +202,20 @@ export default function ForgeListenCard({
       if (transcript.trim()) {
 
         setTimeout(() => {
+
           void handleSubmit(
             transcript,
           );
-        }, 800);
+
+        },800);
 
       }
+
     };
 
 
     recognition.start();
+
   }
 
 
@@ -220,33 +224,41 @@ export default function ForgeListenCard({
     event: React.KeyboardEvent<HTMLInputElement>,
   ) {
 
-    if (event.key === "Enter") {
+    if(event.key === "Enter") {
 
       event.preventDefault();
 
       void handleSubmit();
 
     }
+
   }
 
 
 
   return (
+
     <section className="w-full text-center">
 
-      <p className="text-xl font-semibold text-blue-600">
+
+      <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
         Chez {clientName}
       </p>
+
 
 
       <div className="mx-auto mt-5 h-1 w-12 rounded-full bg-blue-600" />
 
 
-      <h2 className="mt-6 text-3xl font-bold leading-tight text-slate-950">
+
+      <h2 className="mt-6 text-3xl font-bold leading-tight text-slate-950 dark:text-white">
+
         Dis-moi ce qui
         <br />
         a été fait.
+
       </h2>
+
 
 
 
@@ -254,9 +266,10 @@ export default function ForgeListenCard({
         type="button"
         onClick={startVoiceRecognition}
         aria-label="Commencer l’enregistrement vocal"
-        className={`mx-auto mt-10 flex h-40 w-40 items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 ${
+
+        className={`mx-auto mt-10 flex h-40 w-40 items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:shadow-blue-900/40 ${
           isListening
-            ? "bg-blue-50 animate-pulse"
+            ? "bg-blue-50 dark:bg-blue-950 animate-pulse"
             : ""
         }`}
       >
@@ -270,42 +283,50 @@ export default function ForgeListenCard({
 
 
 
-      <p className="mt-4 text-base font-medium text-slate-600">
+
+      <p className="mt-4 text-base font-medium text-slate-600 dark:text-slate-300">
+
         {isListening
           ? "Je t'écoute..."
           : "Appuie pour parler"}
+
       </p>
 
 
 
-      <div className="mt-8 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-md shadow-slate-200/50">
+
+
+      <div className="mt-8 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-md shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
 
 
         <input
           type="text"
           value={message}
-          onChange={(event) =>
-            setMessage(
-              event.target.value,
-            )
+          onChange={(event)=>
+            setMessage(event.target.value)
           }
           onKeyDown={handleKeyDown}
           disabled={isLoading}
           placeholder="ou écris-le moi..."
-          className="min-w-0 flex-1 bg-transparent text-lg outline-none placeholder:text-slate-400 disabled:text-slate-400"
+
+          className="min-w-0 flex-1 bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400 disabled:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
         />
+
 
 
 
         <button
           type="button"
           aria-label="Ajouter une photo"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100"
+
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800"
         >
 
-          <Camera size={27} />
+          <Camera size={27}/>
 
         </button>
+
+
 
 
 
@@ -318,9 +339,12 @@ export default function ForgeListenCard({
             !message.trim() ||
             isLoading
           }
+
           aria-label="Envoyer"
+
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
+
 
           {isLoading ? (
 
@@ -331,15 +355,18 @@ export default function ForgeListenCard({
 
           ) : (
 
-            <Send size={22} />
+            <Send size={22}/>
 
           )}
+
 
         </button>
 
 
       </div>
 
+
     </section>
+
   );
 }
