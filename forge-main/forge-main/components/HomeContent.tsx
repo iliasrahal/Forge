@@ -324,7 +324,7 @@ if (state === "finished") {
   if (state === "saved") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-  <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900">
+ <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
 
     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700 dark:bg-green-950 dark:text-green-400">
       ✓
