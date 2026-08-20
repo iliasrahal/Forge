@@ -14,11 +14,16 @@ type NewQuotePageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    title?: string;
+    description?: string;
+  }>;
 };
 
 
 export default async function NewQuotePage({
   params,
+  searchParams,
 }: NewQuotePageProps) {
 
 
@@ -28,6 +33,11 @@ export default async function NewQuotePage({
 
 
   const { id } = await params;
+
+  const {
+    title,
+    description,
+  } = await searchParams;
 
 
 
@@ -290,6 +300,9 @@ export default async function NewQuotePage({
             name="title"
             type="text"
             required
+            defaultValue={
+              title ?? ""
+            }
             placeholder="Exemple : Remplacement chauffe-eau"
             className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
           />
@@ -321,6 +334,9 @@ export default async function NewQuotePage({
             name="description"
             required
             rows={6}
+            defaultValue={
+              description ?? ""
+            }
             placeholder="Décris simplement les travaux prévus..."
             className="w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
           />

@@ -269,7 +269,7 @@ if (state === "finished") {
   return (
     <section className="flex flex-1 flex-col items-center justify-center px-6">
 
-      <div className="w-full rounded-3xl border border-green-200 bg-green-50 p-8 text-center shadow-sm">
+     <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
 
         <h2 className="text-3xl font-bold text-green-700">
           Intervention terminée
@@ -324,7 +324,7 @@ if (state === "finished") {
   if (state === "saved") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-10 text-center shadow-lg">
+       <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700">
             ✓
           </div>
@@ -348,8 +348,7 @@ if (state === "clientChoice") {
   return (
     <section className="flex flex-1 flex-col items-center justify-center px-4">
 
-      <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-8 text-center shadow-lg shadow-slate-200/60">
-
+      <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
         <h2 className="mt-5 text-2xl font-bold text-blue-700">
           Compte rendu enregistré
         </h2>
@@ -393,7 +392,7 @@ if (state === "clientChoice") {
   if (state === "quoteChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-xl rounded-3xl border border-green-200 bg-white p-8 text-center shadow-lg shadow-slate-200/60">
+       <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm">
 
           <h2 className="mt-5 text-2xl font-bold text-blue-700">
             Compte rendu enregistré

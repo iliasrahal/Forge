@@ -23,25 +23,15 @@ export default function AboutPage() {
 
 
 
+<div className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
-        <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+  <div className="flex justify-center">
+    <ForgeLogo size={80} />
+  </div>
 
-
-
-
-
-          <ForgeLogo size={80} />
-
-
-
-
-
-
-          <h1 className="mt-6 text-3xl font-bold text-blue-700 dark:text-blue-400">
-            Forge
-          </h1>
-
-
+  <h1 className="mt-6 text-3xl font-bold text-blue-700 dark:text-blue-400">
+    Forge
+  </h1>
 
 
 

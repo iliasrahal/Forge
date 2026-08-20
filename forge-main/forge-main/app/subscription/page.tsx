@@ -1,35 +1,17 @@
 "use client";
 
-
 import Link from "next/link";
 import { useState } from "react";
 import ForgeLogo from "@/components/ForgeLogo";
 
-
-
-
 export default function SubscriptionPage() {
 
-
-
-
-  const [cancelRequested, setCancelRequested] =
-    useState(false);
-
-
-
-
+  const [cancelRequested, setCancelRequested] = useState(false);
 
   return (
-    <main className="min-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
-
-
-
+    <main className="min-h-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
 
       <section className="mx-auto max-w-xl">
-
-
-
 
         <Link
           href="/app"
@@ -39,32 +21,19 @@ export default function SubscriptionPage() {
         </Link>
 
 
-
-
-
-
-
         <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 
-
-
-
-          <ForgeLogo size={80} />
-
-
-
-
+          {/* Logo centré */}
+          <div className="flex justify-center">
+            <ForgeLogo size={80} />
+          </div>
 
 
 
           <h1 className="mt-8 text-3xl font-bold text-blue-700 dark:text-blue-400">
             Forge reste à tes côtés.
           </h1>
-
-
-
-
 
 
 
@@ -77,23 +46,12 @@ export default function SubscriptionPage() {
 
 
 
-
-
-
-
           <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-900 dark:bg-blue-950">
-
-
-
 
 
             <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
               Forge Pro
             </h2>
-
-
-
-
 
 
 
@@ -103,17 +61,9 @@ export default function SubscriptionPage() {
 
 
 
-
-
-
-
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">
               Ton copilote au quotidien.
             </p>
-
-
-
-
 
 
 
@@ -125,16 +75,7 @@ export default function SubscriptionPage() {
             </button>
 
 
-
-
-
-
           </div>
-
-
-
-
-
 
 
 
@@ -143,23 +84,13 @@ export default function SubscriptionPage() {
           <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950">
 
 
-
-
-
             <p className="text-center text-sm text-red-600 dark:text-red-300">
               Tu peux arrêter ton abonnement Forge à tout moment.
             </p>
 
 
 
-
-
-
-
             {!cancelRequested ? (
-
-
-
 
               <button
                 type="button"
@@ -172,25 +103,15 @@ export default function SubscriptionPage() {
               </button>
 
 
-
-
-
             ) : (
-
-
-
 
 
               <div className="mt-5 space-y-3">
 
 
-
-
                 <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                   Confirme-tu vouloir résilier ton abonnement Forge ?
                 </p>
-
-
 
 
 
@@ -200,8 +121,6 @@ export default function SubscriptionPage() {
                 >
                   Confirmer la résiliation
                 </button>
-
-
 
 
 
@@ -216,36 +135,20 @@ export default function SubscriptionPage() {
                 </button>
 
 
-
-
               </div>
 
 
-
-
             )}
-
-
-
 
 
           </div>
 
 
 
-
-
-
-
-
         </div>
 
 
-
-
       </section>
-
-
 
 
     </main>
