@@ -228,10 +228,9 @@ if (state === "inProgress") {
         </div>
 
 
-        <h2 className="text-center text-4xl font-bold text-blue-700">
-          {currentAppointment?.client}
-        </h2>
-
+       <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+  {currentAppointment?.client}
+</h2>
 
         <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
   {currentAppointment?.intervention}
@@ -244,7 +243,7 @@ if (state === "inProgress") {
   Je garde cette intervention ouverte.
 </p>
 
-<p className="mt-1 font-medium text-slate-700">
+<p className="mt-1 font-medium text-slate-700 dark:text-slate-300">
   Quand tu reviens, appuie ci-dessous ↓
 </p>
 
@@ -276,10 +275,9 @@ if (state === "finished") {
         </h2>
 
 
-        <p className="mt-4 text-slate-700">
-          Le compte rendu de l'intervention a bien été enregistré.
-        </p>
-
+      <p className="mt-4 text-slate-700 dark:text-slate-300">
+  Le compte rendu de l'intervention a bien été enregistré.
+</p>
 
         <button
           type="button"
