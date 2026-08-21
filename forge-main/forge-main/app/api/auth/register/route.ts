@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { sendWelcomeEmail } from "@/src/lib/email";
 
 
 type RegisterBody = {
@@ -377,6 +378,12 @@ export async function POST(
 
       },
     );
+
+    try {
+      await sendWelcomeEmail(user.email, user.firstName);
+    } catch (error) {
+      console.error("Erreur envoi e-mail de bienvenue :", error);
+    }
 
 
 
