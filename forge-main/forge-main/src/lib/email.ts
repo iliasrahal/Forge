@@ -37,6 +37,20 @@ export async function sendPasswordResetEmail(
   });
 }
 
+export async function sendActivationEmail(
+  recipient: string,
+  firstName: string,
+  activationUrl: string,
+) {
+  return getResendClient().emails.send({
+    from: sender,
+    to: recipient,
+    subject: "Active ton compte Forge",
+    text: `Bonjour ${firstName},\n\nBienvenue sur Forge. Active ton compte ici : ${activationUrl}\n\nCe lien expire dans 24 heures.`,
+    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>Bienvenue sur Forge.</p><p><a href="${escapeHtml(activationUrl)}">Activer mon compte</a></p><p>Ce lien expire dans 24 heures.</p>`,
+  });
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")

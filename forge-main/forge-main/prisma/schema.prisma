@@ -54,6 +54,8 @@ model User {
 
   email String @unique
 
+  emailVerifiedAt DateTime?
+
   phone String @unique
 
   passwordHash String
@@ -75,6 +77,8 @@ model User {
   sessions Session[]
 
   passwordResetTokens PasswordResetToken[]
+
+  accountActivationTokens AccountActivationToken[]
 
   createdAt DateTime @default(now())
 
@@ -98,6 +102,25 @@ model Session {
 }
 
 model PasswordResetToken {
+  id String @id @default(cuid())
+
+  tokenHash String @unique
+
+  expiresAt DateTime
+
+  usedAt DateTime?
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AccountActivationToken {
   id String @id @default(cuid())
 
   tokenHash String @unique

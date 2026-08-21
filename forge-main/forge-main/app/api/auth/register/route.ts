@@ -1,11 +1,10 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { hash } from "bcryptjs";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { sendWelcomeEmail } from "@/src/lib/email";
+import { sendActivationEmail } from "@/src/lib/email";
 
 
 type RegisterBody = {
@@ -269,26 +268,6 @@ export async function POST(
 
 
 
-    const sessionToken =
-      randomBytes(
-        32,
-      ).toString("hex");
-
-
-
-
-    const sessionExpiresAt =
-      new Date();
-
-
-    sessionExpiresAt.setDate(
-      sessionExpiresAt.getDate() + 30,
-    );
-
-
-
-
-
     const user =
       await prisma.user.create({
 
@@ -312,20 +291,6 @@ export async function POST(
   subscriptionStatus: "TRIAL",
 
 
-
-          sessions: {
-
-            create: {
-
-              token:
-                sessionToken,
-
-              expiresAt:
-                sessionExpiresAt,
-
-            },
-
-          },
 
         },
 
@@ -352,37 +317,35 @@ export async function POST(
 
 
 
-    const cookieStore =
-      await cookies();
-
-
-
-
-    cookieStore.set(
-      "forgeSession",
-      sessionToken,
-      {
-
-        httpOnly: true,
-
-        sameSite: "lax",
-
-        secure:
-          process.env.NODE_ENV ===
-          "production",
-
-        path: "/",
-
-        expires:
-          sessionExpiresAt,
-
-      },
+    const activationToken = randomBytes(32).toString("hex");
+    const activationTokenHash = createHash("sha256")
+      .update(activationToken)
+      .digest("hex");
+    const activationExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
     );
 
+    await prisma.accountActivationToken.deleteMany({
+      where: { userId: user.id },
+    });
+    await prisma.accountActivationToken.create({
+      data: {
+        tokenHash: activationTokenHash,
+        expiresAt: activationExpiresAt,
+        userId: user.id,
+      },
+    });
+
+    const appUrl = process.env.APP_URL || new URL(request.url).origin;
+
     try {
-      await sendWelcomeEmail(user.email, user.firstName);
+      await sendActivationEmail(
+        user.email,
+        user.firstName,
+        `${appUrl}/activate-account?token=${activationToken}`,
+      );
     } catch (error) {
-      console.error("Erreur envoi e-mail de bienvenue :", error);
+      console.error("Erreur envoi e-mail d’activation :", error);
     }
 
 
@@ -392,6 +355,7 @@ export async function POST(
     return NextResponse.json(
       {
         user,
+        activationRequired: true,
       },
       {
         status: 201,

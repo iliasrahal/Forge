@@ -70,6 +70,18 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!user.emailVerifiedAt) {
+      return NextResponse.json(
+        {
+          error:
+            "Active ton compte depuis l’e-mail reçu avant de te connecter.",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
+
     const passwordIsValid =
       await compare(
         password,

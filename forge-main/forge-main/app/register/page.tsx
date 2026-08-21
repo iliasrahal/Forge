@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type RegisterResponse = {
@@ -13,11 +12,10 @@ type RegisterResponse = {
     onboardingCompleted: boolean;
   };
   error?: string;
+  activationRequired?: boolean;
 };
 
 export default function RegisterPage() {
-  const router = useRouter();
-
   const [firstName, setFirstName] = useState("");
 
   const [email, setEmail] = useState("");
@@ -36,6 +34,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [activationSent, setActivationSent] = useState(false);
 
 
   function formatBirthDate(value: string) {
@@ -168,36 +168,8 @@ export default function RegisterPage() {
       }
 
 
-   localStorage.setItem(
-  "forgeUserFirstName",
-  cleanFirstName,
-);
-
-
-localStorage.setItem(
-  "forgeUserProfile",
-  JSON.stringify({
-    firstName: cleanFirstName,
-    lastName: "",
-    email: cleanEmail,
-    phone: cleanPhone,
-    companyName: "",
-    job: "",
-    workMode: "",
-  }),
-);
-
-
-localStorage.setItem(
-  "forgeShowInitialWelcome",
-  "true",
-);
-
-
-router.push("/onboarding");
-
-
-router.refresh();
+      setActivationSent(true);
+      setIsLoading(false);
 
 
     } catch (error) {
@@ -212,6 +184,22 @@ router.refresh();
       setIsLoading(false);
 
     }
+  }
+
+  if (activationSent) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-white px-6 py-10">
+        <section className="mx-auto w-full max-w-md text-center">
+          <h1 className="text-4xl font-bold text-blue-700">Vérifie ton e-mail.</h1>
+          <p className="mt-4 text-slate-500">
+            Un lien d’activation a été envoyé à ton adresse e-mail. Il est valable 24 heures.
+          </p>
+          <p className="mt-3 text-sm text-slate-500">
+            Pense à vérifier tes courriers indésirables.
+          </p>
+        </section>
+      </main>
+    );
   }
 
 
