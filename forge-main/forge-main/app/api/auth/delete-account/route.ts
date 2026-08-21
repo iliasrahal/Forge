@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { sendAccountDeletedEmail } from "@/src/lib/email";
 
 export async function DELETE() {
   try {
@@ -17,6 +18,7 @@ export async function DELETE() {
 
     const session = await prisma.session.findUnique({
       where: { token: sessionToken },
+      include: { user: true },
     });
 
     if (!session || session.expiresAt <= new Date()) {
@@ -55,6 +57,15 @@ export async function DELETE() {
         where: { id: session.userId },
       }),
     ]);
+
+    try {
+      await sendAccountDeletedEmail(
+        session.user.email,
+        session.user.firstName,
+      );
+    } catch (error) {
+      console.error("Erreur envoi confirmation suppression :", error);
+    }
 
     cookieStore.set("forgeSession", "", {
       httpOnly: true,

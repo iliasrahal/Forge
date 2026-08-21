@@ -88,7 +88,7 @@ export default function SecurityPage() {
 
             <Link
               href="/settings/security/delete"
-              className="mt-5 w-full rounded-2xl border border-red-300 px-5 py-4 font-semibold text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900"
+              className="mt-5 block w-full rounded-2xl border border-red-300 px-5 py-4 text-center font-semibold text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900"
             >
               Supprimer mon compte
             </Link>

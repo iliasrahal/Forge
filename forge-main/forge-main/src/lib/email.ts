@@ -51,6 +51,19 @@ export async function sendActivationEmail(
   });
 }
 
+export async function sendAccountDeletedEmail(
+  recipient: string,
+  firstName: string,
+) {
+  return getResendClient().emails.send({
+    from: sender,
+    to: recipient,
+    subject: "Ton compte Forge a été supprimé",
+    text: `Bonjour ${firstName},\n\nLa suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.\n\nÀ bientôt,\nL'équipe Forge`,
+    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>La suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.</p><p>À bientôt,<br>L'équipe Forge</p>`,
+  });
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
