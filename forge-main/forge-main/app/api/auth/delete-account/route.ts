@@ -26,9 +26,35 @@ export async function DELETE() {
       );
     }
 
-    await prisma.user.delete({
-      where: { id: session.userId },
-    });
+    await prisma.$transaction([
+      prisma.quoteLine.deleteMany({
+        where: { quote: { client: { userId: session.userId } } },
+      }),
+      prisma.intervention.deleteMany({
+        where: { client: { userId: session.userId } },
+      }),
+      prisma.quote.deleteMany({
+        where: { client: { userId: session.userId } },
+      }),
+      prisma.invoice.deleteMany({
+        where: { client: { userId: session.userId } },
+      }),
+      prisma.client.deleteMany({
+        where: { userId: session.userId },
+      }),
+      prisma.passwordResetToken.deleteMany({
+        where: { userId: session.userId },
+      }),
+      prisma.accountActivationToken.deleteMany({
+        where: { userId: session.userId },
+      }),
+      prisma.session.deleteMany({
+        where: { userId: session.userId },
+      }),
+      prisma.user.delete({
+        where: { id: session.userId },
+      }),
+    ]);
 
     cookieStore.set("forgeSession", "", {
       httpOnly: true,
