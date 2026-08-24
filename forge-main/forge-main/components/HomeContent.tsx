@@ -368,6 +368,74 @@ if (state === "finished") {
     );
   }
 
+  if (state === "clientChoice") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-blue-700">Que faire de la fiche client ?</h2>
+
+          <p className="mt-3 text-slate-600">
+            {savedClientName ? (
+              <span>
+                Fiche trouvée pour <span className="font-semibold text-blue-700">{savedClientName}</span>.
+              </span>
+            ) : (
+              "Forge n'a pas pu retrouver le client exact."
+            )}
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={onKeepClient}
+              className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+            >
+              Conserver la fiche client
+            </button>
+
+            <button
+              type="button"
+              onClick={onDeleteTemporaryClient}
+              className="rounded-2xl border border-slate-200 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Supprimer la fiche client
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (state === "quoteChoice") {
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center px-4">
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-blue-700">Créer un devis ?</h2>
+
+          <p className="mt-3 text-slate-600">Souhaitez‑vous créer un devis pour ce client maintenant ?</p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={onCreateQuote}
+              className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+            >
+              Créer le devis
+            </button>
+
+            <button
+              type="button"
+              onClick={onSkipQuote}
+              className="rounded-2xl border border-slate-200 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Passer
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (!currentAppointment) {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
