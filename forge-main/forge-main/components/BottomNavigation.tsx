@@ -7,11 +7,15 @@ import {
   FileText,
   House,
   UsersRound,
+  ReceiptText,
 } from "lucide-react";
 
 
+
 export default function BottomNavigation() {
+
   const pathname = usePathname();
+
 
 
 
@@ -20,9 +24,18 @@ export default function BottomNavigation() {
 
 
 
+
   const isQuotesActive =
     pathname.startsWith("/quotes") ||
     pathname.includes("/quotes/");
+
+
+
+
+  const isInvoicesActive =
+    pathname.startsWith("/invoices") ||
+    pathname.includes("/invoices/");
+
 
 
 
@@ -35,7 +48,9 @@ export default function BottomNavigation() {
       pathname.includes("/history")
     )
     &&
-    !isQuotesActive;
+    !isQuotesActive
+    &&
+    !isInvoicesActive;
 
 
 
@@ -52,8 +67,12 @@ export default function BottomNavigation() {
 
 
 
+
   return (
-    <nav className="grid grid-cols-3 gap-2 text-center">
+
+    <nav className="grid grid-cols-4 gap-2 text-center">
+
+
 
 
 
@@ -87,6 +106,9 @@ export default function BottomNavigation() {
 
 
       </Link>
+
+
+
 
 
 
@@ -125,6 +147,9 @@ export default function BottomNavigation() {
 
 
 
+
+
+
       {/* DEVIS */}
 
 
@@ -158,6 +183,47 @@ export default function BottomNavigation() {
 
 
 
+
+
+
+
+      {/* FACTURES */}
+
+
+      <Link
+        href="/invoices"
+        className={getLinkClassName(
+          isInvoicesActive,
+        )}
+      >
+
+        <ReceiptText
+          size={25}
+          strokeWidth={
+            isInvoicesActive ? 2.3 : 2
+          }
+        />
+
+
+        <span className="mt-1 text-sm">
+          Factures
+        </span>
+
+
+
+        {isInvoicesActive && (
+          <span className="absolute bottom-1 h-1 w-8 rounded-full bg-blue-600" />
+        )}
+
+
+      </Link>
+
+
+
+
+
     </nav>
+
   );
+
 }
