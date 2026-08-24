@@ -373,10 +373,10 @@ if (state === "finished") {
   if (state === "clientChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-3xl font-extrabold text-blue-700">Fiche client créée</h2>
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Fiche client créée</h2>
 
-          <p className="mt-4 text-slate-600">J'ai créé une fiche client temporaire pour cette intervention.</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-300">J'ai créé une fiche client temporaire pour cette intervention.</p>
 
           <p className="mt-6 text-lg font-bold">Souhaites‑tu conserver ce client ?</p>
 
@@ -384,7 +384,7 @@ if (state === "finished") {
             <button
               type="button"
               onClick={onDeleteTemporaryClient}
-              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50"
+              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Supprimer la fiche
             </button>
@@ -399,7 +399,7 @@ if (state === "finished") {
           </div>
           {/** Affiche une erreur si la suppression échoue */}
           {error && (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
               {error}
             </div>
           )}
@@ -411,12 +411,12 @@ if (state === "finished") {
   if (state === "quoteChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-3xl font-extrabold text-blue-700">Compte rendu enregistré</h2>
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Compte rendu enregistré</h2>
 
-          <p className="mt-4 text-slate-700">
+          <p className="mt-4 text-slate-700 dark:text-slate-300">
             L’intervention de{' '}
-            <span className="font-semibold text-blue-700">
+            <span className="font-semibold text-blue-700 dark:text-blue-400">
               {savedClientName || currentAppointment?.client || 'ce client'}
             </span>{' '}
             est maintenant terminée.
@@ -428,7 +428,7 @@ if (state === "finished") {
             <button
               type="button"
               onClick={onSkipQuote}
-              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50"
+              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Pas maintenant
             </button>
