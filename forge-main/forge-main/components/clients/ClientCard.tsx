@@ -42,14 +42,28 @@ export default function ClientCard({
         justify-between
         rounded-2xl
         border
-        border-slate-200
-        bg-white
-        px-6
-        py-5
-        shadow-sm
-        transition
-        hover:border-blue-300
-        hover:shadow-md
+            <p
+              className={
+                "mt-2 text-base " +
+                (client.phone
+                  ? "text-slate-700 dark:text-slate-300"
+                  : "font-semibold text-blue-700 dark:text-blue-400")
+              }
+            >
+              {client.phone || "Téléphone non renseigné"}
+            </p>
+
+
+            <p
+              className={
+                "text-base " +
+                (client.city
+                  ? "text-slate-500 dark:text-slate-400"
+                  : "font-semibold text-blue-700 dark:text-blue-400")
+              }
+            >
+              {client.city || "Ville non renseignée"}
+            </p>
         dark:border-slate-700
         dark:bg-slate-900
         dark:hover:border-blue-500
