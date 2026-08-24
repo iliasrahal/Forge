@@ -145,14 +145,14 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950">
+    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
       <section className="w-full max-w-md">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-blue-700">
             Bon retour.
           </h1>
 
-          <p className="mt-3 text-slate-500">
+          <p className="mt-3 text-slate-500 dark:text-slate-400">
             Connecte-toi pour retrouver ton espace.
           </p>
         </div>
@@ -171,7 +171,7 @@ export default function LoginPage() {
             }
             autoComplete="username"
             placeholder="E-mail ou téléphone"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
           <input
@@ -184,18 +184,18 @@ export default function LoginPage() {
             }
             autoComplete="current-password"
             placeholder="Mot de passe"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 <div className="text-center">
   <Link
     href="/forgot-password"
-    className="text-sm font-medium text-blue-700 transition hover:text-blue-800"
+    className="text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
   >
     Mot de passe oublié ?
   </Link>
 </div>
           {error && (
-            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700">
+            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </p>
           )}
@@ -203,7 +203,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
           >
             {isLoading
               ? "Connexion..."
@@ -212,13 +212,13 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-7 text-center">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Pas encore de compte ?
           </p>
 
           <Link
             href="/register"
-            className="mt-2 inline-block font-semibold text-blue-700 transition hover:text-blue-800"
+            className="mt-2 inline-block font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
           >
             Créer mon espace
           </Link>
