@@ -2,12 +2,15 @@
 
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 
 
 
 export default function DeleteAccountPage() {
+
+  const router = useRouter();
 
 
 
@@ -18,6 +21,46 @@ export default function DeleteAccountPage() {
 
   const [message, setMessage] =
     useState("");
+
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+  async function handleDelete() {
+    if (!confirmed || isLoading) {
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        "/api/auth/delete-account",
+        { method: "DELETE" },
+      );
+      const data = (await response.json()) as {
+        error?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Impossible de supprimer le compte.",
+        );
+      }
+
+      localStorage.clear();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue pendant la suppression.",
+      );
+      setIsLoading(false);
+    }
+  }
 
 
 
@@ -119,11 +162,7 @@ export default function DeleteAccountPage() {
           <button
             type="button"
             disabled={!confirmed}
-            onClick={() =>
-              setMessage(
-                "La suppression du compte sera disponible prochainement.",
-              )
-            }
+            onClick={handleDelete}
             className="
               mt-6
               w-full
@@ -139,7 +178,9 @@ export default function DeleteAccountPage() {
               disabled:bg-red-300
             "
           >
-            Supprimer définitivement
+            {isLoading
+              ? "Suppression..."
+              : "Supprimer définitivement"}
           </button>
 
 
