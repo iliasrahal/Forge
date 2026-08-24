@@ -38,7 +38,7 @@ export default function ClientCard({ client }: ClientCardProps) {
 
         <p className={phoneClass}>{client.phone || "Téléphone non renseigné"}</p>
 
-        <p className={cityClass}>{client.city || "Ville non renseignée"}</p>
+        <p className={cityClass}>{client.city || "Adresse non renseignée"}</p>
       </div>
 
       <ChevronRight size={24} className="shrink-0 text-slate-400 dark:text-slate-500" />
