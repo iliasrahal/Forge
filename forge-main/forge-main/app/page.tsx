@@ -37,9 +37,9 @@ export default function LandingPage() {
         </div>
 
         <h1 className="mt-8 text-4xl font-bold leading-tight text-blue-700 dark:text-blue-400">
-          <span className="block">Salut je suis</span>
+          <span className="block">Salut,</span>
           <span className="block">
-            F
+            je suis F
             <span
               className={
                 leavingDestination ? "landing-o-zoom" : ""
@@ -47,9 +47,9 @@ export default function LandingPage() {
             >
               o
             </span>
-            rge
+            rge,
           </span>
-          <span className="block">ton copilote</span>
+          <span className="block">ton copilote.</span>
         </h1>
 
         <button
