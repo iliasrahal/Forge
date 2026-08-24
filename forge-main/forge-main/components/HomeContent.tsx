@@ -373,34 +373,28 @@ if (state === "finished") {
   if (state === "clientChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-2xl font-bold text-blue-700">Que faire de la fiche client ?</h2>
+        <div className="w-full max-w-2xl rounded-3xl border border-green-100 bg-white p-8 text-center shadow-sm ring-1 ring-green-50">
+          <h2 className="text-3xl font-extrabold text-blue-700">Fiche client créée</h2>
 
-          <p className="mt-3 text-slate-600">
-            {savedClientName ? (
-              <span>
-                Fiche trouvée pour <span className="font-semibold text-blue-700">{savedClientName}</span>.
-              </span>
-            ) : (
-              "Forge n'a pas pu retrouver le client exact."
-            )}
-          </p>
+          <p className="mt-4 text-slate-600">J'ai créé une fiche client temporaire pour cette intervention.</p>
+
+          <p className="mt-6 text-lg font-medium">Souhaites‑tu conserver ce client ?</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
-              onClick={onKeepClient}
-              className="rounded-2xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700"
+              onClick={onDeleteTemporaryClient}
+              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50"
             >
-              Conserver la fiche client
+              Supprimer la fiche
             </button>
 
             <button
               type="button"
-              onClick={onDeleteTemporaryClient}
-              className="rounded-2xl border border-slate-200 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50"
+              onClick={onKeepClient}
+              className="w-full sm:w-auto rounded-full bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
             >
-              Supprimer la fiche client
+              Garder le client
             </button>
           </div>
         </div>
@@ -412,25 +406,33 @@ if (state === "finished") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
         <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-2xl font-bold text-blue-700">Créer un devis ?</h2>
+          <h2 className="text-3xl font-extrabold text-blue-700">Compte rendu enregistré</h2>
 
-          <p className="mt-3 text-slate-600">Souhaitez‑vous créer un devis pour ce client maintenant ?</p>
+          <p className="mt-4 text-slate-700">
+            L’intervention de{' '}
+            <span className="font-semibold text-blue-700">
+              {savedClientName || currentAppointment?.client || 'ce client'}
+            </span>{' '}
+            est maintenant terminée.
+          </p>
+
+          <p className="mt-6 text-lg font-bold">Souhaitez‑tu créer un devis ?</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
-              onClick={onCreateQuote}
-              className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+              onClick={onSkipQuote}
+              className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50"
             >
-              Créer le devis
+              Pas maintenant
             </button>
 
             <button
               type="button"
-              onClick={onSkipQuote}
-              className="rounded-2xl border border-slate-200 px-6 py-3 font-semibold text-slate-700 hover:bg-slate-50"
+              onClick={onCreateQuote}
+              className="w-full sm:w-auto rounded-full bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
             >
-              Passer
+              Créer un devis
             </button>
           </div>
         </div>
