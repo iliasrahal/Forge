@@ -690,6 +690,9 @@ const handleDeleteTemporaryClient = async () => {
   setSavedClientId(null);
   setQuoteDraft(null);
 
+  // keep the client name for the next step so UI shows it
+  setSavedClientName(currentAppointment.client);
+
   // clear any previous error and move to quote choice
   setReportError("");
 

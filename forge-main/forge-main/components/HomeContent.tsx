@@ -378,7 +378,7 @@ if (state === "finished") {
 
           <p className="mt-4 text-slate-600">J'ai créé une fiche client temporaire pour cette intervention.</p>
 
-          <p className="mt-6 text-lg font-medium">Souhaites‑tu conserver ce client ?</p>
+          <p className="mt-6 text-lg font-bold">Souhaites‑tu conserver ce client ?</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
