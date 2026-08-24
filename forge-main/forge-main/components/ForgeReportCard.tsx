@@ -12,9 +12,11 @@ type ForgeReportCardProps = {
   onEdit?: () => void;
   onValidate?: () => void;
 };
-
-
-
+export default function ForgeReportCard({
+  report,
+  onEdit,
+  onValidate,
+}: ForgeReportCardProps) {
   return (
     <div className="w-full max-w-3xl rounded-3xl bg-white p-6 sm:p-10 shadow-lg dark:bg-slate-900 dark:shadow-black/20">
 
@@ -91,7 +93,7 @@ type ForgeReportCardProps = {
       </div>
     </div>
   );
-
+}
 
       </div>
 
