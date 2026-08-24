@@ -329,20 +329,14 @@ export async function DELETE(request: Request) {
     }
 
 
- await prisma.client.update({
-  where: {
-    id: client.id,
-  },
-  data: {
-    archived: true,
-    isTemporary: false,
-  },
-});
-
+    const updated = await prisma.client.update({
+      where: { id: client.id },
+      data: { archived: true, isTemporary: false },
+    });
 
     return NextResponse.json({
-      message:
-        "La fiche client temporaire a été supprimée.",
+      message: "La fiche client temporaire a été supprimée.",
+      clientId: updated.id,
     });
 
 
