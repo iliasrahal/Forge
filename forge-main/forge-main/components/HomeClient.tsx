@@ -647,66 +647,44 @@ console.log("ID CLIENT ENVOYE :", savedClientId);
 
 
 const handleDeleteTemporaryClient = async () => {
-  if (!currentAppointment) {
+  // Use savedClientName as fallback when currentAppointment is not available
+  const clientNameToDelete =
+    currentAppointment?.client || savedClientName || "";
+
+  if (!clientNameToDelete) {
+    console.warn("No client name available to delete");
+    setReportError("Aucun client trouvé à supprimer.");
     return;
   }
 
-
   try {
-    const response = await fetch(
-      "/api/clients",
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          clientName:
-            currentAppointment.client,
-        }),
+    console.log("Deleting temporary client:", clientNameToDelete);
+
+    const response = await fetch("/api/clients", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ clientName: clientNameToDelete }),
+    });
 
+    const data = await response.json().catch(() => ({}));
 
-  if (!response.ok) {
+    if (!response.ok) {
+      console.error("Erreur API suppression client :", data);
+      setReportError(data.error ?? "Impossible de supprimer la fiche client.");
+      return;
+    }
 
-  const error = await response.json();
-
-  console.error(
-    "Erreur API suppression client :",
-    error,
-  );
-
-  throw new Error(
-    error.error ??
-      "Impossible de supprimer la fiche client.",
-  );
-}
-
-
-  // suppression réussie
-  // (ancien appel erroné à `setState` supprimé)
-  // Clear saved client/quote draft so creating a quote won't fail
-  setSavedClientId(null);
-  setQuoteDraft(null);
-
-  // keep the client name for the next step so UI shows it
-  setSavedClientName(currentAppointment.client);
-
-  // clear any previous error and move to quote choice
-  setReportError("");
-
-  setHomeState("quoteChoice");
-
-  // refresh data (appointments, clients)
-  router.refresh();
-
-
+    // suppression réussie — avancer à l'étape devis
+    setSavedClientId(null);
+    setQuoteDraft(null);
+    setSavedClientName(clientNameToDelete);
+    setReportError("");
+    setHomeState("quoteChoice");
+    router.refresh();
   } catch (error) {
-    console.error(
-      "Erreur suppression client temporaire :",
-      error,
-    );
+    console.error("Erreur suppression client temporaire :", error);
     setReportError(
       error instanceof Error ? error.message : "Erreur lors de la suppression.",
     );
