@@ -22,13 +22,9 @@ export default function ClientCard({ client }: ClientCardProps) {
       ? `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim()
       : client.companyName ?? "Client professionnel";
 
-  const phoneClass = client.phone
-    ? "mt-2 text-base text-slate-700 dark:text-slate-300"
-    : "mt-2 text-base font-semibold text-blue-700 dark:text-blue-400";
-
-  const cityClass = client.city
-    ? "text-base text-slate-500 dark:text-slate-400"
-    : "text-base font-semibold text-blue-700 dark:text-blue-400";
+  // Always display phone and city in gray (neutral) under the client name
+  const phoneClass = "mt-2 text-base text-slate-500 dark:text-slate-400";
+  const cityClass = "text-base text-slate-500 dark:text-slate-400";
 
   return (
     <Link
