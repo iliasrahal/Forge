@@ -17,6 +17,7 @@ export default function DownloadQuotePdf({
   pdfUrl,
   clientId,
   fileName,
+  quoteId,
 }: DownloadQuotePdfProps) {
 
 
