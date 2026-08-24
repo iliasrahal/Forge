@@ -31,6 +31,14 @@ export default function ClientCard({
       : client.companyName ??
         "Client professionnel";
 
+  const phoneClass = client.phone
+    ? "mt-2 text-base text-slate-700 dark:text-slate-300"
+    : "mt-2 text-base font-semibold text-blue-700 dark:text-blue-400";
+
+  const cityClass = client.city
+    ? "text-base text-slate-500 dark:text-slate-400"
+    : "text-base font-semibold text-blue-700 dark:text-blue-400";
+
 
 
   return (
@@ -42,28 +50,9 @@ export default function ClientCard({
         justify-between
         rounded-2xl
         border
-            <p
-              className={
-                "mt-2 text-base " +
-                (client.phone
-                  ? "text-slate-700 dark:text-slate-300"
-                  : "font-semibold text-blue-700 dark:text-blue-400")
-              }
-            >
-              {client.phone || "Téléphone non renseigné"}
-            </p>
+            <p className={phoneClass}>{client.phone || "Téléphone non renseigné"}</p>
 
-
-            <p
-              className={
-                "text-base " +
-                (client.city
-                  ? "text-slate-500 dark:text-slate-400"
-                  : "font-semibold text-blue-700 dark:text-blue-400")
-              }
-            >
-              {client.city || "Ville non renseignée"}
-            </p>
+            <p className={cityClass}>{client.city || "Ville non renseignée"}</p>
         dark:border-slate-700
         dark:bg-slate-900
         dark:hover:border-blue-500
