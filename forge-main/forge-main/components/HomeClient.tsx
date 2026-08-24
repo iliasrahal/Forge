@@ -934,11 +934,50 @@ const handleCreateQuote = () => {
   onSkipQuote={
     handleSkipQuote
   }
-  onCreateQuote={
-    handleCreateQuote
-  }
-/>
-</div>
-</main>
-);
-}
+      // Optimistic UI update: move to quoteChoice immediately
+      setSavedClientName(currentAppointment.client);
+      setSavedClientId(null);
+      setQuoteDraft(null);
+      setReportError("");
+      setHomeState("quoteChoice");
+      router.refresh();
+
+      try {
+        console.log("Deleting temporary client:", currentAppointment.client);
+
+        const response = await fetch(
+          "/api/clients",
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              clientName: currentAppointment.client,
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({}));
+          console.error("Erreur API suppression client :", error);
+
+          // Rollback UI to clientChoice and show error
+          setHomeState("clientChoice");
+          setReportError(
+            error?.error ?? "Impossible de supprimer la fiche client.",
+          );
+          return;
+        }
+
+        console.log("Temporary client deleted successfully");
+        // success: nothing else to do, UI already in quoteChoice
+      } catch (error) {
+        console.error("Erreur suppression client temporaire :", error);
+
+        // Rollback UI to clientChoice and show error
+        setHomeState("clientChoice");
+        setReportError(
+          error instanceof Error ? error.message : "Erreur lors de la suppression.",
+        );
+      }
