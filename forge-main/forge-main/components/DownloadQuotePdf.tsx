@@ -21,62 +21,32 @@ export default function DownloadQuotePdf({
 }: DownloadQuotePdfProps) {
 
 
-  const router = useRouter();
+      const blob = await response.blob();
 
+      const url = window.URL.createObjectURL(blob);
 
+      const link = document.createElement("a");
 
-  async function handleDownload() {
+      link.href = url;
+      link.download = fileName;
 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-    try {
-
-
-      const response =
-        await fetch(pdfUrl);
-
-
-
-      if (!response.ok) {
-
-
-        const errorText =
-          await response.text();
-
-
-
-        console.error(
-          "Erreur génération PDF :",
-          errorText,
-        );
-
-
-
-        return;
-      }
-
-
-
-
-      const blob =
-        await response.blob();
-
-
+      window.URL.revokeObjectURL(url);
 
       setTimeout(() => {
         // If we have a quoteId, redirect to the quote detail page
         // (works even if the client is archived). Otherwise go
         // back to the client page.
         if (typeof quoteId === "string" && quoteId) {
-          router.push(
-            `/clients/${clientId}/quotes/${quoteId}`,
-          );
+          router.push(`/clients/${clientId}/quotes/${quoteId}`);
           return;
         }
+
         router.push(`/clients/${clientId}`);
       }, 500);
-
-
-      const link =
         document.createElement("a");
 
 
