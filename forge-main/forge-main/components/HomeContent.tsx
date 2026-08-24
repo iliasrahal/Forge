@@ -373,7 +373,7 @@ if (state === "finished") {
   if (state === "clientChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-green-100 bg-white p-8 text-center shadow-sm ring-1 ring-green-50">
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <h2 className="text-3xl font-extrabold text-blue-700">Fiche client créée</h2>
 
           <p className="mt-4 text-slate-600">J'ai créé une fiche client temporaire pour cette intervention.</p>
