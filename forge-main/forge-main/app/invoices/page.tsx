@@ -23,29 +23,20 @@ function formatStatus(status: string) {
 }
 
 
-function getClientName(client: {
-  type: string;
-  firstName: string | null;
-  lastName: string | null;
-  companyName: string | null;
-}) {
-  if (client.type === "PROFESSIONNEL") {
-    return client.companyName ?? "Client professionnel";
-  }
-
-  return `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim()
-    || "Client sans nom";
-}
-
-
 
 export default async function InvoicesPage() {
+
 
   const currentUser =
     await requireCurrentUser();
 
 
-  console.log("AVANT RECHERCHE FACTURES", currentUser.id);
+
+  console.log(
+    "AVANT RECHERCHE FACTURES",
+    currentUser.id,
+  );
+
 
 
   const invoices =
@@ -57,10 +48,6 @@ export default async function InvoicesPage() {
         },
       },
 
-      include: {
-        client: true,
-      },
-
       orderBy: {
         createdAt: "desc",
       },
@@ -68,7 +55,11 @@ export default async function InvoicesPage() {
     });
 
 
-  console.log("FACTURES TROUVEES :", invoices.length);
+
+  console.log(
+    "FACTURES TROUVEES :",
+    invoices.length,
+  );
 
 
 
@@ -78,7 +69,6 @@ export default async function InvoicesPage() {
 
 
       <div className="mt-6 space-y-4">
-
 
 
         {invoices.length === 0 ? (
@@ -114,20 +104,24 @@ export default async function InvoicesPage() {
 
 
 
-              <p className="mt-2 text-slate-600 dark:text-slate-300">
-                {getClientName(invoice.client)}
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                Facture {invoice.reference}
               </p>
 
 
 
               <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
-                {formatAmount(invoice.amountCents)}
+                {formatAmount(
+                  invoice.amountCents,
+                )}
               </p>
 
 
 
               <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                {formatStatus(invoice.status)}
+                {formatStatus(
+                  invoice.status,
+                )}
               </span>
 
 
