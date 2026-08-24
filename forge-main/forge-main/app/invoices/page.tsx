@@ -45,6 +45,9 @@ export default async function InvoicesPage() {
     await requireCurrentUser();
 
 
+  console.log("AVANT RECHERCHE FACTURES", currentUser.id);
+
+
   const invoices =
     await prisma.invoice.findMany({
 
@@ -63,6 +66,9 @@ export default async function InvoicesPage() {
       },
 
     });
+
+
+  console.log("FACTURES TROUVEES :", invoices.length);
 
 
 
