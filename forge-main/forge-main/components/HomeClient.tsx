@@ -677,7 +677,8 @@ const handleDeleteTemporaryClient = async () => {
     }
 
     // suppression réussie — avancer à l'étape devis
-    setSavedClientId(null);
+    // Ne pas vider `savedClientId` : garder l'ID permet de créer le devis
+    // même après l'archivage temporaire du client.
     setQuoteDraft(null);
     setSavedClientName(clientNameToDelete);
     setReportError("");
