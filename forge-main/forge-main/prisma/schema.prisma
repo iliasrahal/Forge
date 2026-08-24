@@ -162,16 +162,16 @@ model Client {
 
   notes String?
 
-// Client créé automatiquement par Forge lors d'une intervention
-// true = client temporaire
-// false = client enregistré normalement
-isTemporary Boolean @default(false)
+  // Client créé automatiquement par Forge lors d'une intervention
+  // true = client temporaire
+  // false = client enregistré normalement
+  isTemporary Boolean @default(false)
 
-// Client masqué mais conservé pour l'historique
-// true = supprimé de l'affichage mais gardé en base
-archived Boolean @default(false)
+  // Client masqué mais conservé pour l'historique
+  // true = supprimé de l'affichage mais gardé en base
+  archived Boolean @default(false)
 
-userId String
+  userId String
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -238,6 +238,8 @@ model Quote {
 
   lines QuoteLine[]
 
+  invoices Invoice[]
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -278,6 +280,11 @@ model Invoice {
 
   dueDate DateTime?
 
+  // Facture créée depuis un devis
+  quoteId String?
+
+  quote Quote? @relation(fields: [quoteId], references: [id])
+
   clientId String
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -287,4 +294,5 @@ model Invoice {
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([quoteId])
 }

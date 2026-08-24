@@ -1,4 +1,5 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
+import CreateInvoiceButton from "@/components/CreateInvoiceButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -242,32 +243,38 @@ export default async function QuotePage({
 
 
 
-        <div className="mt-6 flex flex-col gap-3">
+<div className="mt-6 flex flex-col gap-3">
+
+
+  <Link
+    href={`/clients/${id}/quotes/${quoteId}/edit`}
+    className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+  >
+    Modifier le devis
+  </Link>
 
 
 
-          <Link
-            href={`/clients/${id}/quotes/${quoteId}/edit`}
-            className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
-          >
-            Modifier le devis
-          </Link>
+  <DownloadQuotePdf
+    pdfUrl={`/api/quotes/${quoteId}/pdf`}
+    clientId={id}
+    quoteId={quoteId}
+    fileName={`devis-${quote.reference}.pdf`}
+  />
 
 
 
+  {quote.status === "ACCEPTE" && (
 
+    <CreateInvoiceButton
+      quoteId={quote.id}
+    />
 
-          <DownloadQuotePdf
-            pdfUrl={`/api/quotes/${quoteId}/pdf`}
-            clientId={id}
-            quoteId={quoteId}
-            fileName={`devis-${quote.reference}.pdf`}
-          />
-
+  )}
 
 
 
-        </div>
+</div>
 
 
 

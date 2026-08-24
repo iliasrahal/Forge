@@ -71,12 +71,6 @@ export default async function InvoicesPage() {
     <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
 
 
-      <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">
-        Factures
-      </h1>
-
-
-
       <div className="mt-6 space-y-4">
 
 
