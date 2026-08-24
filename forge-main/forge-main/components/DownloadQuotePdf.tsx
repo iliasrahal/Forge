@@ -8,6 +8,7 @@ type DownloadQuotePdfProps = {
   pdfUrl: string;
   clientId: string;
   fileName: string;
+  quoteId?: string;
 };
 
 
@@ -60,11 +61,18 @@ export default function DownloadQuotePdf({
 
 
 
-
-      const url =
-        window.URL.createObjectURL(blob);
-
-
+      setTimeout(() => {
+        // If we have a quoteId, redirect to the quote detail page
+        // (works even if the client is archived). Otherwise go
+        // back to the client page.
+        if (typeof quoteId === "string" && quoteId) {
+          router.push(
+            `/clients/${clientId}/quotes/${quoteId}`,
+          );
+          return;
+        }
+        router.push(`/clients/${clientId}`);
+      }, 500);
 
 
       const link =

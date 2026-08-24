@@ -260,6 +260,7 @@ export default async function QuotePage({
           <DownloadQuotePdf
             pdfUrl={`/api/quotes/${quoteId}/pdf`}
             clientId={id}
+            quoteId={quoteId}
             fileName={`devis-${quote.reference}.pdf`}
           />
 
