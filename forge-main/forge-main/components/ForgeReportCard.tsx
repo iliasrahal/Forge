@@ -94,10 +94,3 @@ export default function ForgeReportCard({
     </div>
   );
 }
-
-      </div>
-
-
-    </div>
-  );
-}
