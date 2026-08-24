@@ -686,13 +686,26 @@ const handleDeleteTemporaryClient = async () => {
 
   // suppression réussie
   // (ancien appel erroné à `setState` supprimé)
+  // Clear saved client/quote draft so creating a quote won't fail
+  setSavedClientId(null);
+  setQuoteDraft(null);
+
+  // clear any previous error and move to quote choice
+  setReportError("");
+
   setHomeState("quoteChoice");
+
+  // refresh data (appointments, clients)
+  router.refresh();
 
 
   } catch (error) {
     console.error(
       "Erreur suppression client temporaire :",
       error,
+    );
+    setReportError(
+      error instanceof Error ? error.message : "Erreur lors de la suppression.",
     );
   }
 };
