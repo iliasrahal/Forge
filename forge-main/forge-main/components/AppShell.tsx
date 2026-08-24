@@ -25,7 +25,8 @@ export default function AppShell({
     pathname === "/" ||
     pathname.startsWith("/register") ||
     pathname.startsWith("/login") ||
-    pathname.startsWith("/onboarding");
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/activate-account");
 
 
 
