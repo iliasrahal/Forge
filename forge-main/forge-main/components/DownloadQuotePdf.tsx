@@ -112,6 +112,7 @@ export default function DownloadQuotePdf({
   return (
     <div className="space-y-3">
 
+
       <button
         type="button"
         onClick={handleSendQuote}
@@ -130,12 +131,13 @@ export default function DownloadQuotePdf({
       {message && (
 
         <div
-          className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-5 py-5 text-center text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
         >
 
-          <p>
+          <p className="font-medium">
             {message}
           </p>
+
 
 
           {missingEmail && (
@@ -147,7 +149,7 @@ export default function DownloadQuotePdf({
                   `/clients/${clientId}/edit`,
                 )
               }
-              className="mt-3 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="mt-4 rounded-xl bg-blue-600 px-7 py-3 text-base font-semibold text-white transition hover:bg-blue-700"
             >
               Ajouter un email
             </button>
