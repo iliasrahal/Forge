@@ -20,6 +20,7 @@ export type Appointment = {
   time: string;
   intervention: string;
   status: AppointmentStatus;
+  notes?: string;
   report?: InterventionReport;
 };
 

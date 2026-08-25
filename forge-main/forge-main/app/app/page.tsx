@@ -39,6 +39,14 @@ function mapIntervention(
   intervention: any,
 ): Appointment {
 
+  const notesMarker = "Notes de prolongation :";
+  const description = intervention.description ?? "";
+  const notesIndex = description.indexOf(notesMarker);
+  const notes =
+    notesIndex >= 0
+      ? description.slice(notesIndex + notesMarker.length).trim()
+      : undefined;
+
   const clientName =
     intervention.client.type ===
     "PROFESSIONNEL"
@@ -87,6 +95,8 @@ function mapIntervention(
     status: mapStatus(
       intervention.status,
     ),
+
+    notes,
 
     report:
       intervention.reportIntervention ||

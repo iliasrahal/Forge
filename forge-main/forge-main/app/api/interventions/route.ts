@@ -43,6 +43,7 @@ async function getCurrentUser() {
 type InterventionOperation =
   | "reschedule"
   | "extend"
+  | "updateNotes"
   | "cancel"
   | "start"
   | "complete";
@@ -336,6 +337,7 @@ export async function PATCH(request: Request) {
     const operation: InterventionOperation | null =
       body.operation === "reschedule" ||
       body.operation === "extend" ||
+      body.operation === "updateNotes" ||
       body.operation === "cancel" ||
       body.operation === "start" ||
       body.operation === "complete"
@@ -473,7 +475,7 @@ export async function PATCH(request: Request) {
       });
     }
 
-    if (operation === "extend") {
+    if (operation === "extend" || operation === "updateNotes") {
       if (!interventionId) {
         return NextResponse.json(
           { error: "L’identifiant de l’intervention est obligatoire." },
@@ -481,14 +483,16 @@ export async function PATCH(request: Request) {
         );
       }
 
+      const notes = cleanOptionalString(body.notes);
       const scheduledDate =
         typeof body.scheduledDate === "string"
           ? body.scheduledDate.trim()
           : "";
-      const notes = cleanOptionalString(body.notes);
-      const dateBounds = getDayBounds(scheduledDate);
+      const dateBounds = scheduledDate
+        ? getDayBounds(scheduledDate)
+        : null;
 
-      if (!dateBounds) {
+      if (operation === "extend" && !dateBounds) {
         return NextResponse.json(
           { error: "La date de prolongation est invalide." },
           { status: 400 },
@@ -510,20 +514,27 @@ export async function PATCH(request: Request) {
         );
       }
 
+      const notesMarker = "Notes de prolongation :";
+      const descriptionWithoutNotes =
+        existingIntervention.description
+          ?.split(notesMarker)[0]
+          .trim() || null;
       const description = notes
         ? [
-            existingIntervention.description,
-            `Notes de prolongation : ${notes}`,
+            descriptionWithoutNotes,
+            `${notesMarker} ${notes}`,
           ]
             .filter(Boolean)
             .join("\n\n")
-        : existingIntervention.description;
+        : descriptionWithoutNotes;
 
       const extendedIntervention =
         await prisma.intervention.update({
           where: { id: interventionId },
           data: {
-            endDate: dateBounds.end,
+            ...(dateBounds
+              ? { endDate: dateBounds.end }
+              : {}),
             description,
           },
           include: { client: true },
@@ -532,7 +543,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({
         intervention: extendedIntervention,
         operation,
-        message: "La prolongation et les notes ont été enregistrées.",
+        message:
+          operation === "extend"
+            ? "La prolongation et les notes ont été enregistrées."
+            : "Les notes ont été enregistrées.",
       });
     }
 

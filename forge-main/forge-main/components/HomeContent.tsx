@@ -22,6 +22,7 @@ type HomeState =
   | "quoteChoice";
 
 type Appointment = {
+  id: string;
   client: string;
   address: string;
   time: string;
@@ -32,6 +33,7 @@ type Appointment = {
     | "completed"
     | "postponed"
     | "cancelled";
+  notes?: string;
 };
 
 type InterventionReport = {
@@ -322,30 +324,20 @@ export default function HomeContent({
 
           </div>
 
-
-
-
           <button
             type="button"
             onClick={onExtendIntervention}
             className="mt-5 w-full rounded-2xl border-2 border-blue-500 bg-white px-6 py-4 text-xl font-semibold text-blue-600 transition hover:bg-blue-50 dark:bg-slate-900 dark:hover:bg-blue-950"
           >
-
             Prolonger l'intervention
-
           </button>
-
-
-
 
           <button
             type="button"
             onClick={onFinishIntervention}
             className="mt-3 w-full rounded-2xl border-2 border-red-500 bg-white px-6 py-4 text-xl font-semibold text-red-500 transition hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950"
           >
-
             Terminer l'intervention
-
           </button>
 
 
