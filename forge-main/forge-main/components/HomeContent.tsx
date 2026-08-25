@@ -58,6 +58,7 @@ type HomeContentProps = {
 
   onStartIntervention: () => void;
   onFinishIntervention: () => void;
+  onExtendIntervention: () => void;
   onKeepClient: () => void;
   onDeleteTemporaryClient: () => void;
 
@@ -83,6 +84,7 @@ export default function HomeContent({
   savedClientName,
   onStartIntervention,
   onFinishIntervention,
+  onExtendIntervention,
   onKeepClient,
   onDeleteTemporaryClient,
   onStartProcessing,
@@ -94,6 +96,7 @@ export default function HomeContent({
   onSkipQuote,
   onCreateQuote,
 }: HomeContentProps) {
+
   const [replyStatus, setReplyStatus] =
     useState<ReplyStatus>("idle");
 
@@ -120,6 +123,7 @@ export default function HomeContent({
   const [job, setJob] =
     useState<UserJob>("AUTRE");
 
+
   const resetReply = () => {
     setClientReply("");
     setClientReplyError("");
@@ -129,7 +133,9 @@ export default function HomeContent({
     setReplyStatus("idle");
   };
 
+
   useEffect(() => {
+
     const savedFirstName =
       localStorage.getItem(
         "forgeUserFirstName",
@@ -139,160 +145,261 @@ export default function HomeContent({
       savedFirstName?.trim() || "",
     );
 
+
     const savedProfile =
       localStorage.getItem(
         "forgeUserProfile",
       );
 
+
     if (!savedProfile) {
       return;
     }
 
+
     try {
+
       const parsedProfile = JSON.parse(
         savedProfile,
       ) as {
         job?: UserJob;
       };
 
+
       setJob(
         parsedProfile.job || "AUTRE",
       );
+
+
     } catch {
+
       setJob("AUTRE");
+
     }
+
   }, []);
 
+
+
   useEffect(() => {
+
     if (replyStatus !== "notice") {
       return;
     }
+
 
     const timer = window.setTimeout(() => {
       resetReply();
     }, 4000);
 
+
     return () => {
       window.clearTimeout(timer);
     };
+
+
   }, [replyStatus]);
 
+
+
   const getInterventionExample = () => {
+
     switch (job) {
+
       case "PLOMBIER_CHAUFFAGISTE":
         return "demain à 10h chez Charles Xavier pour une fuite d’eau";
+
 
       case "ELECTRICIEN":
         return "demain à 10h chez Charles Xavier pour une panne électrique";
 
+
       case "PEINTRE_BATIMENT":
         return "demain à 10h chez Charles Xavier pour repeindre un salon";
+
 
       case "MENUISIER":
         return "demain à 10h chez Charles Xavier pour remplacer une porte";
 
+
       default:
         return "demain à 10h chez Charles Xavier pour une intervention";
+
     }
+
   };
 
+
+
   const handleEditReply = () => {
+
     setReplyDraft(originalReplyMessage);
     setClientReply("");
     setClientReplyError("");
     setReplyStatus("idle");
+
   };
+
+
 
   const handleForgeError = (
     message: string,
   ) => {
+
     if (!message) {
+
       setClientReplyError("");
       return;
+
     }
+
 
     setClientReply("");
     setClientReplyError(message);
     setReplyStatus("error");
+
   };
-if (state === "inProgress") {
-  return (
-    <section className="flex flex-1 flex-col items-center justify-center px-6">
-
-      <div className="w-full max-w-2xl rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
 
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
-          <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
-          Intervention en cours
+
+  if (state === "inProgress") {
+
+    return (
+
+      <section className="flex flex-1 flex-col items-center justify-center px-6">
+
+
+        <div className="w-full max-w-2xl rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+
+
+
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
+
+            <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+
+            Intervention en cours
+
+          </div>
+
+
+
+          <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+
+            {currentAppointment?.client}
+
+          </h2>
+
+
+
+          <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
+
+            {currentAppointment?.intervention}
+
+          </p>
+
+
+
+          <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+
+
+            <p>
+              Je garde cette intervention ouverte.
+            </p>
+
+
+            <p className="mt-1 font-medium text-slate-700 dark:text-slate-300">
+
+              Quand tu reviens, appuie ci-dessous ↓
+
+            </p>
+
+
+          </div>
+
+
+
+
+          <button
+            type="button"
+            onClick={onExtendIntervention}
+            className="mt-5 w-full rounded-2xl border-2 border-blue-500 bg-white px-6 py-4 text-xl font-semibold text-blue-600 transition hover:bg-blue-50 dark:bg-slate-900 dark:hover:bg-blue-950"
+          >
+
+            Prolonger l'intervention
+
+          </button>
+
+
+
+
+          <button
+            type="button"
+            onClick={onFinishIntervention}
+            className="mt-3 w-full rounded-2xl border-2 border-red-500 bg-white px-6 py-4 text-xl font-semibold text-red-500 transition hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950"
+          >
+
+            Terminer l'intervention
+
+          </button>
+
+
+
         </div>
 
 
-       <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
-  {currentAppointment?.client}
-</h2>
+      </section>
 
-        <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
-  {currentAppointment?.intervention}
-</p>
+    );
+
+  }
 
 
-        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
 
-  <p>
-  Je garde cette intervention ouverte.
-</p>
+  if (state === "finished") {
 
-<p className="mt-1 font-medium text-slate-700 dark:text-slate-300">
-  Quand tu reviens, appuie ci-dessous ↓
-</p>
+    return (
+
+      <section className="flex flex-1 flex-col items-center justify-center px-6">
+
+
+        <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
+
+
+          <h2 className="text-3xl font-bold text-green-700">
+
+            Intervention terminée
+
+          </h2>
+
+
+
+          <p className="mt-4 text-slate-700 dark:text-slate-300">
+
+            Le compte rendu de l'intervention a bien été enregistré.
+
+          </p>
+
+
+
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+
+            Retour à l'accueil
+
+          </button>
+
 
         </div>
 
 
-        <button
-          type="button"
-          onClick={onFinishIntervention}
-          className="mt-5 w-full rounded-2xl border-2 border-red-500 bg-white px-6 py-4 text-xl font-semibold text-red-500 transition hover:bg-red-50 dark:bg-slate-900 dark:hover:bg-red-950"
-        >
-          Terminer l'intervention
-        </button>
+      </section>
 
+    );
 
-      </div>
-
-    </section>
-  );
-}
-if (state === "finished") {
-  return (
-    <section className="flex flex-1 flex-col items-center justify-center px-6">
-
-     <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
-
-        <h2 className="text-3xl font-bold text-green-700">
-          Intervention terminée
-        </h2>
-
-
-      <p className="mt-4 text-slate-700 dark:text-slate-300">
-  Le compte rendu de l'intervention a bien été enregistré.
-</p>
-
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="mt-6 rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-        >
-          Retour à l'accueil
-        </button>
-
-
-      </div>
-
-    </section>
-  );
-}
+  }
 
   if (state === "reportInput") {
     return (

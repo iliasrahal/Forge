@@ -55,7 +55,15 @@ export default function HomeClient({
     useRef<HTMLDivElement | null>(null);
 
   const [homeState, setHomeState] =
-    useState<HomeState>("intervention");
+  useState<HomeState>("intervention");
+
+
+const [showExtendModal, setShowExtendModal] =
+  useState(false);
+
+
+const [extendDate, setExtendDate] =
+  useState("");
 
 const [appointmentsList, setAppointmentsList] =
   useState<Appointment[]>(todayAppointments ?? []);
@@ -438,12 +446,24 @@ const [showUpcoming, setShowUpcoming] =
 
   }
 };
+const handleFinishIntervention = () => {
 
-  const handleFinishIntervention = () => {
-    setReport(null);
-    setReportError("");
-    setHomeState("reportInput");
-  };
+  setReport(null);
+
+  setReportError("");
+
+  setHomeState("reportInput");
+
+};
+
+
+const handleExtendIntervention = () => {
+
+  setExtendDate("");
+
+  setShowExtendModal(true);
+
+};
 
   const handleSelectAppointment = (
     appointmentId: string,
@@ -753,176 +773,305 @@ const handleCreateQuote = () => {
       }`}
     >
       <div className="mx-auto flex h-full w-full max-w-xl flex-col">
-        <div className="mb-4 flex justify-end">
-          <UserMenu />
+
+  <div className="mb-4 flex justify-end">
+    <UserMenu />
+  </div>
+
+
+  {homeState === "intervention" &&
+    appointmentsList.length > 0 && (
+
+      <section className="mb-4 min-w-0 shrink-0">
+
+        <div
+          ref={appointmentsContainerRef}
+          className="flex w-full gap-3 overflow-x-auto pb-2"
+        >
+
+          {appointmentsList.map((appointment) => {
+
+            const isSelected =
+              appointment.id === selectedAppointmentId;
+
+            return (
+
+              <button
+                id={`appointment-${appointment.id}`}
+                key={appointment.id}
+                type="button"
+                onClick={() =>
+                  handleSelectAppointment(
+                    appointment.id,
+                  )
+                }
+                className={`min-w-32 shrink-0 rounded-2xl border px-4 py-3 text-left transition ${
+                  isSelected
+                    ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                    : "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+                }`}
+              >
+
+                <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
+                  {getAppointmentDateLabel(
+                    appointment.date,
+                  )}
+                </span>
+
+                <span className="mt-1 block text-sm font-semibold">
+                  {appointment.time}
+                </span>
+
+                <span className="mt-1 block truncate text-sm font-medium">
+                  {appointment.client}
+                </span>
+
+                <span
+                  className={`mt-3 inline-flex rounded-full px-2 py-1 text-xs font-medium ${getAppointmentStatusClasses(
+                    appointment.status,
+                    isSelected,
+                  )}`}
+                >
+                  {getAppointmentStatusLabel(
+                    appointment.status,
+                  )}
+                </span>
+
+              </button>
+
+            );
+          })}
+
         </div>
 
-        {homeState === "intervention" &&
-          appointmentsList.length > 0 && (
-            <section className="mb-4 min-w-0 shrink-0">
-              <div
-                ref={appointmentsContainerRef}
-                className="flex w-full gap-3 overflow-x-auto pb-2"
-              >
-                {appointmentsList.map(
-                  (appointment) => {
-                    const isSelected =
-                      appointment.id ===
-                      selectedAppointmentId;
+      </section>
 
-                    return (
-                      <button
-                        id={`appointment-${appointment.id}`}
-                        key={appointment.id}
-                        type="button"
-                        onClick={() =>
-                          handleSelectAppointment(
-                            appointment.id,
-                          )
-                        }
-                        className={`min-w-32 shrink-0 rounded-2xl border px-4 py-3 text-left transition ${
-                          isSelected
-                           ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-: "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
-                        }`}
-                      >
-                        <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
-  {getAppointmentDateLabel(
-    appointment.date,
-  )}
-</span>
+    )}
 
-                        <span className="mt-1 block text-sm font-semibold">
-                          {appointment.time}
-                        </span>
 
-                        <span className="mt-1 block truncate text-sm font-medium">
-                          {appointment.client}
-                        </span>
 
-                        <span
-                          className={`mt-3 inline-flex rounded-full px-2 py-1 text-xs font-medium ${getAppointmentStatusClasses(
-                            appointment.status,
-                            isSelected,
-                          )}`}
-                        >
-                          {getAppointmentStatusLabel(
-                            appointment.status,
-                          )}
-                        </span>
-                      </button>
-                    );
-                  },
-                )}
-              </div>
-            </section>
-          )}
-{homeState === "intervention" &&
-  upcomingAppointments.length > 0 && (
-    <section className="mb-4 shrink-0">
-   <button
-  type="button"
-  onClick={() =>
-    setShowUpcoming((previous) => !previous)
-  }
-  className="mb-3 flex w-full items-center justify-center text-lg font-semibold text-blue-700"
->
-  <span>
-    Prochainement ({upcomingAppointments.length})
-  </span>
+  {homeState === "intervention" &&
+    upcomingAppointments.length > 0 && (
 
-  <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
-    {showUpcoming ? "▲" : "▼"}
-  </span>
-</button>
+      <section className="mb-4 shrink-0">
 
-{showUpcoming && (
-  <div className="flex gap-3 overflow-x-auto pb-2">
-    {upcomingAppointments.map(
-      (appointment) => (
         <button
-          key={appointment.id}
           type="button"
           onClick={() =>
-            handleSelectAppointment(
-              appointment.id,
+            setShowUpcoming(
+              (previous) => !previous,
             )
           }
-          className="min-w-40 shrink-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+          className="mb-3 flex w-full items-center justify-center text-lg font-semibold text-blue-700"
         >
-         <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
-  {getAppointmentDateLabel(
-    appointment.date,
-  )}
-</span>
 
-          <span className="mt-1 block text-sm font-semibold">
-            {appointment.time}
+          <span>
+            Prochainement ({upcomingAppointments.length})
           </span>
 
-          <span className="mt-1 block truncate text-sm font-medium">
-            {appointment.client}
+          <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
+            {showUpcoming ? "▲" : "▼"}
           </span>
 
-          <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            À venir
-          </span>
         </button>
-      ),
-    )}
-  </div>
-)}
 
-    </section>
-  )}
+
+        {showUpcoming && (
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+
+            {upcomingAppointments.map(
+              (appointment) => (
+
+                <button
+                  key={appointment.id}
+                  type="button"
+                  onClick={() =>
+                    handleSelectAppointment(
+                      appointment.id,
+                    )
+                  }
+                  className="min-w-40 shrink-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+                >
+
+                  <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
+                    {getAppointmentDateLabel(
+                      appointment.date,
+                    )}
+                  </span>
+
+                  <span className="mt-1 block text-sm font-semibold">
+                    {appointment.time}
+                  </span>
+
+                  <span className="mt-1 block truncate text-sm font-medium">
+                    {appointment.client}
+                  </span>
+
+                  <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    À venir
+                  </span>
+
+                </button>
+
+              ),
+            )}
+
+          </div>
+
+        )}
+
+      </section>
+
+    )}
+
+
+
   <HomeContent
-  state={homeState}
-  currentAppointment={
-    currentAppointment
-  }
-  report={report}
-  error={reportError}
-  savedClientName={
-    savedClientName
-  }
-  onStartIntervention={
-    handleStartIntervention
-  }
-  onFinishIntervention={
-    handleFinishIntervention
-  }
-  onStartProcessing={
-    handleStartProcessing
-  }
-  onReportGenerated={
-    handleReportGenerated
-  }
-  onReportError={
-    handleReportError
-  }
-  onEditReport={
-    handleEditReport
-  }
-  onValidateReport={
-    handleValidateReport
-  }
-  onInterventionCreated={
-    handleInterventionCreated
-  }
-  onKeepClient={
-    handleKeepClient
-  }
-  onDeleteTemporaryClient={
-    handleDeleteTemporaryClient
-  }
-  onSkipQuote={
-    handleSkipQuote
-  }
-  onCreateQuote={
-    handleCreateQuote
-  }
-/>
-</div>
-</main>
-);
+
+    state={homeState}
+
+    currentAppointment={
+      currentAppointment
+    }
+
+    report={report}
+
+    error={reportError}
+
+    savedClientName={
+      savedClientName
+    }
+
+
+    onStartIntervention={
+      handleStartIntervention
+    }
+
+
+    onFinishIntervention={
+      handleFinishIntervention
+    }
+
+
+    onExtendIntervention={
+      handleExtendIntervention
+    }
+
+
+    onStartProcessing={
+      handleStartProcessing
+    }
+
+
+    onReportGenerated={
+      handleReportGenerated
+    }
+
+
+    onReportError={
+      handleReportError
+    }
+
+
+    onEditReport={
+      handleEditReport
+    }
+
+
+    onValidateReport={
+      handleValidateReport
+    }
+
+
+    onInterventionCreated={
+      handleInterventionCreated
+    }
+
+
+    onKeepClient={
+      handleKeepClient
+    }
+
+
+    onDeleteTemporaryClient={
+      handleDeleteTemporaryClient
+    }
+
+
+    onSkipQuote={
+      handleSkipQuote
+    }
+
+
+       onCreateQuote={
+      handleCreateQuote
+    }
+
+  />
+
+  {showExtendModal && (
+
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+
+      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl dark:bg-slate-900">
+
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Prolonger l'intervention
+        </h2>
+
+        <p className="mt-3 text-slate-600 dark:text-slate-300">
+          Choisis la nouvelle date de fin de l'intervention.
+        </p>
+
+        <input
+          type="date"
+          value={extendDate}
+          onChange={(e) =>
+            setExtendDate(e.target.value)
+          }
+          className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        />
+
+        <div className="mt-6 flex gap-3">
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowExtendModal(false);
+              setExtendDate("");
+            }}
+            className="flex-1 rounded-xl border border-slate-300 px-4 py-3 font-semibold dark:border-slate-700"
+          >
+            Annuler
+          </button>
+
+
+          <button
+            type="button"
+            onClick={() => {
+              console.log(
+                "Nouvelle date de fin :",
+                extendDate,
+              );
+
+              setShowExtendModal(false);
+            }}
+            className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white"
+          >
+            Prolonger
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  )}
+
+      </div>
+
+    </main>
+  );
 }

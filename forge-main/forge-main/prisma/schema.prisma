@@ -187,7 +187,6 @@ model Client {
 
   @@index([userId])
 }
-
 model Intervention {
   id String @id @default(cuid())
 
@@ -195,7 +194,17 @@ model Intervention {
 
   description String?
 
+  // Date et heure de début prévue
   scheduledAt DateTime
+
+  // Date de fin prévue (utile pour les chantiers longs)
+  endDate DateTime?
+
+  // Date réelle de début
+  startedAt DateTime?
+
+  // Date réelle de fin
+  finishedAt DateTime?
 
   status InterventionStatus @default(PLANIFIEE)
 
@@ -217,6 +226,7 @@ model Intervention {
 
   @@index([clientId])
   @@index([scheduledAt])
+  @@index([endDate])
 }
 
 model Quote {
