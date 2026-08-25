@@ -118,6 +118,56 @@ ${escapeHtml(artisanName)}
 }
 
 
+export async function sendInvoiceEmail(
+  recipient: string,
+  clientName: string,
+  artisanName: string,
+  pdfBuffer: Buffer,
+  fileName: string,
+) {
+  return getResendClient().emails.send({
+
+    from: sender,
+
+    to: recipient,
+
+    subject: "Votre facture Forge",
+
+    text:
+`Bonjour ${clientName},
+
+Veuillez trouver votre facture Forge en pièce jointe.
+
+Cordialement,
+
+${artisanName}
+`,
+
+    html:
+`
+<p>Bonjour ${escapeHtml(clientName)},</p>
+
+<p>
+Veuillez trouver votre facture Forge en pièce jointe.
+</p>
+
+<p>
+Cordialement,<br/>
+${escapeHtml(artisanName)}
+</p>
+`,
+
+    attachments: [
+      {
+        filename: fileName,
+        content: pdfBuffer,
+      },
+    ],
+
+  });
+}
+
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")

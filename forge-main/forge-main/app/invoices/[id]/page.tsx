@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import SendInvoiceButton from "@/components/SendInvoiceButton";
+
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 
@@ -211,7 +213,7 @@ export default async function InvoicePage({
           </p>
 
 
-          <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-700">
+          <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
 
             {formatStatus(
               invoice.status
@@ -250,9 +252,14 @@ export default async function InvoicePage({
 
 
 
+        <div className="mt-6 space-y-4 border-t pt-5">
 
 
-        <div className="mt-6 border-t pt-5">
+          <SendInvoiceButton
+            invoiceId={invoice.id}
+            clientId={invoice.clientId}
+          />
+
 
 
           <p className="text-sm text-slate-500">
