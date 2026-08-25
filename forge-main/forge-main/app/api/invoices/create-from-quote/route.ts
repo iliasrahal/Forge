@@ -14,10 +14,13 @@ export async function POST(
 
   try {
 
-    const currentUser = await requireCurrentUser();
+    const currentUser =
+      await requireCurrentUser();
 
 
-    const body = await request.json();
+    const body =
+      await request.json();
+
 
     const {
       quoteId,
@@ -44,14 +47,24 @@ export async function POST(
       await prisma.quote.findFirst({
 
         where: {
+
           id: quoteId,
+
 
           client: {
             userId: currentUser.id,
           },
 
-          status: "ACCEPTE",
+
+          status: {
+            in: [
+              "ENVOYE",
+              "ACCEPTE",
+            ],
+          },
+
         },
+
 
         include: {
           client: true,
@@ -66,7 +79,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            "Ce devis n'existe pas ou n'est pas accepté",
+            "Ce devis n'existe pas ou n'est pas envoyé",
         },
         {
           status: 404,
@@ -152,6 +165,7 @@ export async function POST(
 
 
   } catch (error) {
+
 
     console.error(
       "CREATE INVOICE ERROR",
