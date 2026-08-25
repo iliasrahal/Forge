@@ -71,7 +71,7 @@ export default function CurrentInterventionCard({
         className="mt-5 w-full rounded-2xl bg-blue-600 px-6 py-4 text-xl font-semibold text-white transition hover:bg-blue-700"
       >
         {isInProgress
-          ? "Reprendre l'intervention"
+          ? "Continuer l'intervention"
           : "Commencer l'intervention"}
       </button>
 

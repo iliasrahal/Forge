@@ -83,7 +83,7 @@ useState(false);
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/interventions"
@@ -93,7 +93,7 @@ useState(false);
           <span>Retour</span>
         </Link>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-8">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-blue-600 sm:text-3xl">
               Raconte-moi ton intervention
@@ -112,14 +112,14 @@ useState(false);
             rows={8}
             aria-label="Raconte ton intervention"
             disabled={isLoading}
-            className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
+            className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950 dark:disabled:bg-slate-700"
           />
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
               disabled
-              className="rounded-xl border border-blue-600 px-5 py-3 font-semibold text-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+              className="rounded-xl border border-blue-600 px-5 py-3 font-semibold text-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 dark:disabled:border-slate-700 dark:disabled:text-slate-500"
             >
               Parler à Forge
             </button>
@@ -140,19 +140,19 @@ useState(false);
           </div>
 
           {error && (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
               {error}
             </div>
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-8">
           <h2 className="text-lg font-bold text-blue-600">
             Compte rendu généré
           </h2>
 
           {!report ? (
-            <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-slate-500">
+            <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               {isLoading
                 ? "Forge prépare ton compte rendu..."
                 : "Le résultat apparaîtra ici après la création."}

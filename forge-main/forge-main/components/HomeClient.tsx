@@ -72,6 +72,10 @@ const [
   selectedAppointmentId,
   setSelectedAppointmentId,
 ] = useState<string | null>(
+  todayAppointments?.find(
+    (appointment) =>
+      appointment.status === "inProgress",
+  )?.id ??
   todayAppointments?.[0]?.id ??
   upcomingAppointments?.[0]?.id ??
   null
@@ -132,7 +136,14 @@ const [showUpcoming, setShowUpcoming] =
         return currentId;
       }
 
-      return todayAppointments[0]?.id ?? null;
+      return (
+        todayAppointments.find(
+          (appointment) =>
+            appointment.status === "inProgress",
+        )?.id ??
+        todayAppointments[0]?.id ??
+        null
+      );
     });
   }, [
     todayAppointments,
@@ -391,7 +402,7 @@ const [showUpcoming, setShowUpcoming] =
   setReport(null);
   setReportError("");
 
-  setHomeState("reportInput");
+  setHomeState("inProgress");
 
   return;
 }

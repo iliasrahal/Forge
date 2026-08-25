@@ -26,6 +26,12 @@ type Appointment = {
   address: string;
   time: string;
   intervention: string;
+  status:
+    | "scheduled"
+    | "inProgress"
+    | "completed"
+    | "postponed"
+    | "cancelled";
 };
 
 type InterventionReport = {
@@ -674,7 +680,7 @@ export default function HomeContent({
        {replyStatus === "idle" && (
   <CurrentInterventionCard
   appointment={currentAppointment}
-  isInProgress={false}
+  isInProgress={currentAppointment.status === "inProgress"}
   onStart={onStartIntervention}
 />
 )}
