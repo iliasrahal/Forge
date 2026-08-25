@@ -71,12 +71,15 @@ export async function POST(
 
 
 
+    // Vérification email client
     if (!quote.client.email) {
 
       return NextResponse.json(
         {
-          error:
-            "Le client n'a pas d'adresse email",
+          error: "email_missing",
+          message:
+            "Ce client n'a pas encore d'adresse email.",
+          clientId: quote.client.id,
         },
         {
           status: 400,

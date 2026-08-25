@@ -111,7 +111,7 @@ export default function DownloadQuotePdf({
 
       {success && (
         <p className="text-center text-sm font-medium text-green-600">
-          ✅ Devis envoyé
+          Devis envoyé
         </p>
       )}
 
