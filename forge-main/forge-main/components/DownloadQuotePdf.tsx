@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type DownloadQuotePdfProps = {
   pdfUrl: string;
@@ -10,65 +11,79 @@ type DownloadQuotePdfProps = {
 };
 
 export default function DownloadQuotePdf({
-  pdfUrl,
   clientId,
-  fileName,
   quoteId,
 }: DownloadQuotePdfProps) {
 
+  const router = useRouter();
+
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
+  const [message, setMessage] = useState("");
+  const [missingEmail, setMissingEmail] = useState(false);
 
 
-  async function handleDownload() {
+  async function handleSendQuote() {
 
     try {
 
       setLoading(true);
-      setSuccess(false);
-      setError(false);
+      setMessage("");
+      setMissingEmail(false);
 
 
-      const response = await fetch(
-        "/api/quotes/send",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const response =
+        await fetch(
+          "/api/quotes/send",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              quoteId,
+            }),
           },
-
-          body: JSON.stringify({
-            quoteId,
-          }),
-        },
-      );
+        );
 
 
       const data =
         await response.json();
 
 
-      console.log(
-        "REPONSE ENVOI DEVIS :",
-        data,
-      );
-
 
       if (!response.ok) {
-        throw new Error(
+
+
+        if (
+          data.error === "email_missing"
+        ) {
+
+          setMessage(
+            "⚠️ Ce client n'a pas encore d'adresse email.",
+          );
+
+          setMissingEmail(true);
+
+          return;
+
+        }
+
+
+        setMessage(
           data.error ??
-          "Erreur lors de l'envoi du devis",
+          "Erreur lors de l'envoi du devis.",
         );
+
+        return;
+
       }
 
 
-      setSuccess(true);
 
-
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
+      setMessage(
+        "✅ Devis envoyé avec succès.",
+      );
 
 
     } catch (error) {
@@ -78,12 +93,10 @@ export default function DownloadQuotePdf({
         error,
       );
 
-      setError(true);
 
-
-      setTimeout(() => {
-        setError(false);
-      }, 3000);
+      setMessage(
+        "❌ Une erreur est survenue.",
+      );
 
 
     } finally {
@@ -91,7 +104,9 @@ export default function DownloadQuotePdf({
       setLoading(false);
 
     }
+
   }
+
 
 
   return (
@@ -99,27 +114,48 @@ export default function DownloadQuotePdf({
 
       <button
         type="button"
-        onClick={handleDownload}
+        onClick={handleSendQuote}
         disabled={loading}
         className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
       >
+
         {loading
           ? "Envoi en cours..."
           : "Envoyer le devis"}
+
       </button>
 
 
-      {success && (
-        <p className="text-center text-sm font-medium text-green-600">
-          Devis envoyé
-        </p>
-      )}
+
+      {message && (
+
+        <div
+          className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+
+          <p>
+            {message}
+          </p>
 
 
-      {error && (
-        <p className="text-center text-sm font-medium text-red-600">
-          ❌ Erreur lors de l'envoi
-        </p>
+          {missingEmail && (
+
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/clients/${clientId}/edit`,
+                )
+              }
+              className="mt-3 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Ajouter un email
+            </button>
+
+          )}
+
+        </div>
+
       )}
 
     </div>
