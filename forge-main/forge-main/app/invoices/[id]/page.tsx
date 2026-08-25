@@ -238,7 +238,7 @@ export default async function InvoicePage({
             </p>
 
 
-            <div className="mt-2 rounded-2xl border p-4">
+            <div className="mt-2 rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
 
               {invoice.description}
 
@@ -252,7 +252,7 @@ export default async function InvoicePage({
 
 
 
-        <div className="mt-6 space-y-4 border-t pt-5">
+        <div className="mt-6 space-y-4 pt-5">
 
 
           <SendInvoiceButton

@@ -247,12 +247,12 @@ export default async function EditQuotePage({
               step="0.01"
               inputMode="decimal"
               defaultValue={(quote.amountCents / 100).toFixed(2)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 pr-12 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 pr-20 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
             />
 
 
 
-            <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center font-semibold text-slate-500 dark:text-slate-400">
+            <span className="pointer-events-none absolute inset-y-0 right-10 flex items-center font-semibold text-slate-500 dark:text-slate-400">
               €
             </span>
 

@@ -189,12 +189,12 @@ export default function QuoteLinesForm({
                     )
                   }
                   placeholder="0"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-8 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-16 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
                 />
 
 
 
-                <span className="absolute right-3 top-2 text-slate-500 dark:text-slate-400">
+                <span className="pointer-events-none absolute right-9 top-2 text-slate-500 dark:text-slate-400">
                   €
                 </span>
 
