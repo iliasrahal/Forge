@@ -324,6 +324,18 @@ export default function HomeContent({
 
           </div>
 
+          {currentAppointment?.notes && (
+            <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-left dark:border-blue-900 dark:bg-blue-950">
+              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                Notes enregistrées
+              </p>
+
+              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-blue-900 dark:text-blue-100">
+                {currentAppointment.notes}
+              </p>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={onExtendIntervention}
@@ -507,6 +519,7 @@ export default function HomeContent({
             <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
               {error}
             </div>
+
           )}
         </div>
       </section>
