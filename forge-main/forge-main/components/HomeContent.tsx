@@ -67,6 +67,7 @@ type HomeContentProps = {
   onStartIntervention: () => void;
   onFinishIntervention: () => void;
   onExtendIntervention: () => void;
+  onSaveNotes: (notes: string) => Promise<void>;
   onKeepClient: () => void;
   onDeleteTemporaryClient: () => void;
 
@@ -93,6 +94,7 @@ export default function HomeContent({
   onStartIntervention,
   onFinishIntervention,
   onExtendIntervention,
+  onSaveNotes,
   onKeepClient,
   onDeleteTemporaryClient,
   onStartProcessing,
@@ -124,6 +126,46 @@ export default function HomeContent({
 
   const [replyDraft, setReplyDraft] =
     useState("");
+
+  const [isEditingNotes, setIsEditingNotes] =
+    useState(false);
+
+  const [notesDraft, setNotesDraft] =
+    useState("");
+
+  const [isSavingNotes, setIsSavingNotes] =
+    useState(false);
+
+  const [notesError, setNotesError] =
+    useState("");
+
+  useEffect(() => {
+    setNotesDraft(currentAppointment?.notes ?? "");
+    setIsEditingNotes(false);
+    setNotesError("");
+  }, [currentAppointment?.id, currentAppointment?.notes]);
+
+  const handleSaveNotes = async () => {
+    if (isSavingNotes) {
+      return;
+    }
+
+    setIsSavingNotes(true);
+    setNotesError("");
+
+    try {
+      await onSaveNotes(notesDraft);
+      setIsEditingNotes(false);
+    } catch (error) {
+      setNotesError(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’enregistrer les notes.",
+      );
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
   const [firstName, setFirstName] =
     useState("");
@@ -330,9 +372,49 @@ export default function HomeContent({
                 Notes enregistrées
               </p>
 
-              <p className="mt-2 whitespace-pre-line text-sm leading-6 text-blue-900 dark:text-blue-100">
-                {currentAppointment.notes}
-              </p>
+              {isEditingNotes ? (
+                <>
+                  <textarea
+                    value={notesDraft}
+                    onChange={(event) =>
+                      setNotesDraft(event.target.value)
+                    }
+                    rows={4}
+                    className="mt-2 w-full resize-none rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-white"
+                  />
+
+                  {notesError && (
+                    <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300">
+                      {notesError}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveNotes()}
+                    disabled={isSavingNotes}
+                    className="mt-3 w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isSavingNotes
+                      ? "Enregistrement..."
+                      : "Enregistrer"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-blue-900 dark:text-blue-100">
+                    {currentAppointment.notes}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingNotes(true)}
+                    className="mt-3 text-sm font-semibold text-blue-700 underline underline-offset-2 dark:text-blue-300"
+                  >
+                    Modifier la note
+                  </button>
+                </>
+              )}
             </div>
           )}
 

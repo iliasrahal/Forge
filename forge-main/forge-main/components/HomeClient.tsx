@@ -536,6 +536,32 @@ const handleSaveExtension = async () => {
   }
 };
 
+const handleSaveNotes = async (notes: string) => {
+  if (!currentAppointment) {
+    throw new Error("Impossible de retrouver l’intervention.");
+  }
+
+  const response = await fetch("/api/interventions", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      operation: "updateNotes",
+      interventionId: currentAppointment.id,
+      notes,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || "Impossible d’enregistrer les notes.",
+    );
+  }
+
+  router.refresh();
+};
+
   const handleSelectAppointment = (
     appointmentId: string,
   ) => {
@@ -1028,6 +1054,8 @@ const handleCreateQuote = () => {
     onExtendIntervention={
       handleExtendIntervention
     }
+
+    onSaveNotes={handleSaveNotes}
 
 
     onStartProcessing={
