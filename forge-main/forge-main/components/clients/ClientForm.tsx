@@ -277,7 +277,7 @@ export default function ClientForm({
 
         <label
           htmlFor="street"
-          className="mb-2 block font-medium text-slate-700"
+          className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
         >
           Adresse
         </label>
