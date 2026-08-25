@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type DownloadQuotePdfProps = {
@@ -17,52 +18,60 @@ export default function DownloadQuotePdf({
 }: DownloadQuotePdfProps) {
   const router = useRouter();
 
+  const [loading, setLoading] = useState(false);
+
   async function handleDownload() {
     try {
-      const response = await fetch(pdfUrl);
+      setLoading(true);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Erreur génération PDF :", errorText);
-        return;
-      }
+      const response = await fetch(
+        "/api/quotes/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            quoteId,
+          }),
+        },
+      );
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
+      const data = await response.json();
 
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
 
-      window.URL.revokeObjectURL(url);
+      console.log(
+        "REPONSE ENVOI DEVIS :",
+        data,
+      );
 
-      setTimeout(() => {
-        // If we have a quoteId, redirect to the quote detail page
-        // (works even if the client is archived). Otherwise go
-        // back to the client page.
-        if (typeof quoteId === "string" && quoteId) {
-          router.push(`/clients/${clientId}/quotes/${quoteId}`);
-          return;
-        }
 
-        router.push(`/clients/${clientId}`);
-      }, 500);
     } catch (error) {
-      console.error("Erreur téléchargement PDF :", error);
+
+      console.error(
+        "Erreur envoi devis :",
+        error,
+      );
+
+    } finally {
+
+      setLoading(false);
+
     }
   }
+
 
   return (
     <button
       type="button"
       onClick={handleDownload}
-      className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+      disabled={loading}
+      className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
     >
-      Télécharger le PDF
+      {loading
+        ? "Envoi en cours..."
+        : "Envoyer le devis"}
     </button>
   );
 }

@@ -81,7 +81,7 @@ export default function CreateInvoiceButton({
       type="button"
       onClick={handleCreateInvoice}
       disabled={loading}
-      className="w-full rounded-2xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
+      className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
     >
 
       {loading
