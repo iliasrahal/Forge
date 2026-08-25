@@ -55,7 +55,7 @@ export default function CurrentInterventionCard({
 
 
           <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">
-            Tu peux reprendre ton intervention ici ↓
+            Tu peux reprendre ici ↓
           </p>
 
 
