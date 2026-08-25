@@ -409,7 +409,7 @@ export default function HomeContent({
                   <button
                     type="button"
                     onClick={() => setIsEditingNotes(true)}
-                    className="mt-3 text-sm font-semibold text-blue-700 underline underline-offset-2 dark:text-blue-300"
+                    className="mx-auto mt-3 block text-center text-sm font-semibold text-blue-700 dark:text-blue-300"
                   >
                     Modifier la note
                   </button>
