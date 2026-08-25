@@ -65,6 +65,15 @@ const [showExtendModal, setShowExtendModal] =
 const [extendDate, setExtendDate] =
   useState("");
 
+const [extendNotes, setExtendNotes] =
+  useState("");
+
+const [extendError, setExtendError] =
+  useState("");
+
+const [isExtending, setIsExtending] =
+  useState(false);
+
 const [appointmentsList, setAppointmentsList] =
   useState<Appointment[]>(todayAppointments ?? []);
 
@@ -471,9 +480,60 @@ const handleFinishIntervention = () => {
 const handleExtendIntervention = () => {
 
   setExtendDate("");
+  setExtendNotes("");
+  setExtendError("");
 
   setShowExtendModal(true);
 
+};
+
+const handleSaveExtension = async () => {
+  if (!currentAppointment || !extendDate || isExtending) {
+    setExtendError(
+      extendDate
+        ? "Impossible de retrouver l’intervention."
+        : "Choisis une date de fin.",
+    );
+    return;
+  }
+
+  setIsExtending(true);
+  setExtendError("");
+
+  try {
+    const response = await fetch("/api/interventions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        operation: "extend",
+        interventionId: currentAppointment.id,
+        scheduledDate: extendDate,
+        notes: extendNotes,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Impossible d’enregistrer la prolongation.",
+      );
+    }
+
+    setShowExtendModal(false);
+    setExtendDate("");
+    setExtendNotes("");
+    setReportError("");
+    router.refresh();
+  } catch (error) {
+    setExtendError(
+      error instanceof Error
+        ? error.message
+        : "Une erreur est survenue.",
+    );
+  } finally {
+    setIsExtending(false);
+  }
 };
 
   const handleSelectAppointment = (
@@ -1044,6 +1104,28 @@ const handleCreateQuote = () => {
           className="mt-5 w-full rounded-xl border border-slate-300 px-4 py-3 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
         />
 
+        <label
+          htmlFor="extend-notes"
+          className="mt-5 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+        >
+          Notes
+        </label>
+
+        <textarea
+          id="extend-notes"
+          value={extendNotes}
+          onChange={(event) => setExtendNotes(event.target.value)}
+          placeholder="Ce que tu as fait ou ce qu'il reste à faire..."
+          rows={4}
+          className="mt-2 w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+        />
+
+        {extendError && (
+          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            {extendError}
+          </p>
+        )}
+
         <div className="mt-6 flex gap-3">
 
           <button
@@ -1061,16 +1143,12 @@ const handleCreateQuote = () => {
           <button
             type="button"
             onClick={() => {
-              console.log(
-                "Nouvelle date de fin :",
-                extendDate,
-              );
-
-              setShowExtendModal(false);
+              void handleSaveExtension();
             }}
-            className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white"
+            disabled={isExtending}
+            className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Prolonger
+            {isExtending ? "Enregistrement..." : "Prolonger"}
           </button>
 
         </div>

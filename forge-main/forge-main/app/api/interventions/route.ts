@@ -42,6 +42,7 @@ async function getCurrentUser() {
 
 type InterventionOperation =
   | "reschedule"
+  | "extend"
   | "cancel"
   | "start"
   | "complete";
@@ -334,6 +335,7 @@ export async function PATCH(request: Request) {
 
     const operation: InterventionOperation | null =
       body.operation === "reschedule" ||
+      body.operation === "extend" ||
       body.operation === "cancel" ||
       body.operation === "start" ||
       body.operation === "complete"
@@ -468,6 +470,69 @@ export async function PATCH(request: Request) {
         },
         message:
           "Le compte rendu a été enregistré et l’intervention est terminée.",
+      });
+    }
+
+    if (operation === "extend") {
+      if (!interventionId) {
+        return NextResponse.json(
+          { error: "L’identifiant de l’intervention est obligatoire." },
+          { status: 400 },
+        );
+      }
+
+      const scheduledDate =
+        typeof body.scheduledDate === "string"
+          ? body.scheduledDate.trim()
+          : "";
+      const notes = cleanOptionalString(body.notes);
+      const dateBounds = getDayBounds(scheduledDate);
+
+      if (!dateBounds) {
+        return NextResponse.json(
+          { error: "La date de prolongation est invalide." },
+          { status: 400 },
+        );
+      }
+
+      const existingIntervention =
+        await prisma.intervention.findFirst({
+          where: {
+            id: interventionId,
+            client: { userId: currentUser.id },
+          },
+        });
+
+      if (!existingIntervention) {
+        return NextResponse.json(
+          { error: "Cette intervention est introuvable." },
+          { status: 404 },
+        );
+      }
+
+      const description = notes
+        ? [
+            existingIntervention.description,
+            `Notes de prolongation : ${notes}`,
+          ]
+            .filter(Boolean)
+            .join("\n\n")
+        : existingIntervention.description;
+
+      const extendedIntervention =
+        await prisma.intervention.update({
+          where: { id: interventionId },
+          data: {
+            endDate: dateBounds.end,
+            description,
+          },
+          include: { client: true },
+        });
+
+      return NextResponse.json({
+        intervention: extendedIntervention,
+        operation,
+        message: "La prolongation et les notes ont été enregistrées.",
       });
     }
 
