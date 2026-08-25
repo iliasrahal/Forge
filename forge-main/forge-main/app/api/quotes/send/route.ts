@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
+
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { sendQuoteEmail } from "@/src/lib/email";
 
 
 export async function POST(
   request: Request,
 ) {
-
   try {
 
     const currentUser =
@@ -54,6 +55,7 @@ export async function POST(
       });
 
 
+
     if (!quote) {
 
       return NextResponse.json(
@@ -68,11 +70,13 @@ export async function POST(
     }
 
 
+
     if (!quote.client.email) {
 
       return NextResponse.json(
         {
-          error: "Le client n'a pas d'adresse email",
+          error:
+            "Le client n'a pas d'adresse email",
         },
         {
           status: 400,
@@ -82,13 +86,82 @@ export async function POST(
     }
 
 
-    return NextResponse.json({
-      success: true,
-      quote,
+
+    /*
+      Génération du PDF
+    */
+
+    const pdfResponse =
+      await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/quotes/${quote.id}/pdf`,
+      );
+
+
+    if (!pdfResponse.ok) {
+
+      throw new Error(
+        "Impossible de générer le PDF",
+      );
+
+    }
+
+
+
+    const pdfBuffer =
+      Buffer.from(
+        await pdfResponse.arrayBuffer(),
+      );
+
+
+
+    const clientName =
+      quote.client.type === "PARTICULIER"
+
+        ? `${quote.client.firstName ?? ""} ${
+            quote.client.lastName ?? ""
+          }`.trim() || "Client"
+
+        : quote.client.companyName ?? "Client";
+
+
+
+    await sendQuoteEmail(
+      quote.client.email,
+      clientName,
+      currentUser.firstName,
+      pdfBuffer,
+      `devis-${quote.reference}.pdf`,
+    );
+
+
+
+    await prisma.quote.update({
+
+      where: {
+        id: quote.id,
+      },
+
+      data: {
+        status: "ENVOYE",
+      },
+
     });
 
 
+
+    return NextResponse.json({
+
+      success: true,
+
+      message:
+        "Devis envoyé avec succès",
+
+    });
+
+
+
   } catch (error) {
+
 
     console.error(
       "SEND QUOTE ERROR",
@@ -98,7 +171,10 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error: "Erreur envoi devis",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur envoi devis",
       },
       {
         status: 500,
@@ -106,5 +182,4 @@ export async function POST(
     );
 
   }
-
 }

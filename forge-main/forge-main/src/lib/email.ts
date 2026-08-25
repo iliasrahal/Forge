@@ -19,9 +19,10 @@ export async function sendWelcomeEmail(
     to: recipient,
     subject: "Bienvenue sur Forge",
     text: `Bonjour ${firstName},\n\nBienvenue sur Forge. Ton espace est prêt.\n\nÀ bientôt,\nL'équipe Forge`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>Bienvenue sur Forge. Ton espace est prêt.</p><p>À bientôt,<br>L'équipe Forge</p>`,
+    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>Bienvenue sur Forge. Ton espace est prêt.</p><p>À bientôt,<br/>L'équipe Forge</p>`,
   });
 }
+
 
 export async function sendPasswordResetEmail(
   recipient: string,
@@ -37,6 +38,7 @@ export async function sendPasswordResetEmail(
   });
 }
 
+
 export async function sendActivationEmail(
   recipient: string,
   firstName: string,
@@ -51,6 +53,7 @@ export async function sendActivationEmail(
   });
 }
 
+
 export async function sendAccountDeletedEmail(
   recipient: string,
   firstName: string,
@@ -60,9 +63,60 @@ export async function sendAccountDeletedEmail(
     to: recipient,
     subject: "Ton compte Forge a été supprimé",
     text: `Bonjour ${firstName},\n\nLa suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.\n\nÀ bientôt,\nL'équipe Forge`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>La suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.</p><p>À bientôt,<br>L'équipe Forge</p>`,
+    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>La suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.</p><p>À bientôt,<br/>L'équipe Forge</p>`,
   });
 }
+
+
+export async function sendQuoteEmail(
+  recipient: string,
+  clientName: string,
+  artisanName: string,
+  pdfBuffer: Buffer,
+  fileName: string,
+) {
+  return getResendClient().emails.send({
+
+    from: sender,
+
+    to: recipient,
+
+    subject: "Votre devis Forge",
+
+    text:
+`Bonjour ${clientName},
+
+Veuillez trouver votre devis Forge en pièce jointe.
+
+Cordialement,
+
+${artisanName}
+`,
+
+    html:
+`
+<p>Bonjour ${escapeHtml(clientName)},</p>
+
+<p>
+Veuillez trouver votre devis Forge en pièce jointe.
+</p>
+
+<p>
+Cordialement,<br/>
+${escapeHtml(artisanName)}
+</p>
+`,
+
+    attachments: [
+      {
+        filename: fileName,
+        content: pdfBuffer,
+      },
+    ],
+
+  });
+}
+
 
 function escapeHtml(value: string) {
   return value
