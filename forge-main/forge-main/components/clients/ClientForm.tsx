@@ -24,7 +24,7 @@ type ClientFormProps = {
 };
 
 const inputClassName =
-  "w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500";
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white";
 
 
 export default function ClientForm({
@@ -79,7 +79,7 @@ export default function ClientForm({
 
       <div>
 
-        <p className="mb-3 font-medium text-slate-700">
+        <p className="mb-3 font-medium text-slate-700 dark:text-slate-300">
           Type de client
         </p>
 
@@ -94,8 +94,8 @@ export default function ClientForm({
             }
             className={`rounded-2xl border px-4 py-4 font-semibold transition ${
               isParticulier
-                ? "border-blue-600 bg-blue-50 text-blue-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-blue-300"
+                ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
             Particulier
@@ -110,8 +110,8 @@ export default function ClientForm({
             }
             className={`rounded-2xl border px-4 py-4 font-semibold transition ${
               !isParticulier
-                ? "border-blue-600 bg-blue-50 text-blue-700"
-                : "border-slate-200 bg-white text-slate-600 hover:border-blue-300"
+                ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
             Professionnel
@@ -135,7 +135,7 @@ export default function ClientForm({
 
             <label
               htmlFor="firstName"
-              className="mb-2 block font-medium text-slate-700"
+              className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
             >
               Prénom
             </label>
@@ -159,7 +159,7 @@ export default function ClientForm({
 
             <label
               htmlFor="lastName"
-              className="mb-2 block font-medium text-slate-700"
+              className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
             >
               Nom
             </label>
@@ -188,7 +188,7 @@ export default function ClientForm({
 
           <label
             htmlFor="companyName"
-            className="mb-2 block font-medium text-slate-700"
+            className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
           >
             Nom de l’entreprise
           </label>
@@ -220,7 +220,7 @@ export default function ClientForm({
 
         <label
           htmlFor="phone"
-          className="mb-2 block font-medium text-slate-700"
+          className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
         >
           Téléphone
         </label>
@@ -249,7 +249,7 @@ export default function ClientForm({
 
         <label
           htmlFor="email"
-          className="mb-2 block font-medium text-slate-700"
+          className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
         >
           E-mail
         </label>
@@ -308,7 +308,7 @@ export default function ClientForm({
 
           <label
             htmlFor="postalCode"
-            className="mb-2 block font-medium text-slate-700"
+            className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
           >
             Code postal
           </label>
@@ -334,7 +334,7 @@ export default function ClientForm({
 
           <label
             htmlFor="city"
-            className="mb-2 block font-medium text-slate-700"
+            className="mb-2 block font-medium text-slate-700 dark:text-slate-300"
           >
             Ville
           </label>
