@@ -57,10 +57,7 @@ export async function POST(
 
 
           status: {
-            in: [
-              "ENVOYE",
-              "ACCEPTE",
-            ],
+            not: "REFUSE",
           },
 
         },

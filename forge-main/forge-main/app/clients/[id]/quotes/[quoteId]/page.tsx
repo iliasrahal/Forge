@@ -264,8 +264,7 @@ export default async function QuotePage({
 
 
 
-{(quote.status === "ENVOYE" ||
-  quote.status === "ACCEPTE") && (
+{quote.status !== "REFUSE" && (
 
   <CreateInvoiceButton
     quoteId={quote.id}
