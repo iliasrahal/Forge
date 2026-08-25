@@ -69,11 +69,10 @@ export default async function EditClientPage({
       formData.get("city") ?? "",
     ).trim();
 
-    if (!phone || !street || !postalCode || !city) {
-      throw new Error(
-        "Veuillez remplir tous les champs obligatoires.",
-      );
-    }
+
+    // Les coordonnées sont optionnelles.
+    // Forge accepte un client même sans téléphone ou adresse.
+
 
     if (
       rawType === "PARTICULIER" &&
@@ -108,11 +107,12 @@ export default async function EditClientPage({
             ? companyName
             : null,
 
-        phone,
+        phone: phone || null,
         email: email || null,
-        street,
-        postalCode,
-        city,
+
+        street: street || null,
+        postalCode: postalCode || null,
+        city: city || null,
       },
     });
 
@@ -122,17 +122,18 @@ export default async function EditClientPage({
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center gap-3">
-  <Link
-  href={`/clients/${id}`}
-  className="flex items-center gap-2 text-base font-medium text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
->
-  ← Retour
-</Link>
 
-          <div>
-          
-          </div>
+        <div className="flex items-center gap-3">
+
+          <Link
+            href={`/clients/${id}`}
+            className="flex items-center gap-2 text-base font-medium text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
+          >
+            ← Retour
+          </Link>
+
+          <div />
+
         </div>
 
         <ClientForm
@@ -143,13 +144,16 @@ export default async function EditClientPage({
             firstName: client.firstName,
             lastName: client.lastName,
             companyName: client.companyName,
+
             phone: client.phone ?? undefined,
             email: client.email,
+
             street: client.street ?? undefined,
             postalCode: client.postalCode ?? undefined,
             city: client.city ?? undefined,
           }}
         />
+
       </section>
     </main>
   );
