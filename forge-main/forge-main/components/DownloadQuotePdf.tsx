@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 type DownloadQuotePdfProps = {
   pdfUrl: string;
@@ -16,13 +15,20 @@ export default function DownloadQuotePdf({
   fileName,
   quoteId,
 }: DownloadQuotePdfProps) {
-  const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
 
   async function handleDownload() {
+
     try {
+
       setLoading(true);
+      setSuccess(false);
+      setError(false);
+
 
       const response = await fetch(
         "/api/quotes/send",
@@ -31,6 +37,7 @@ export default function DownloadQuotePdf({
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             quoteId,
           }),
@@ -38,7 +45,8 @@ export default function DownloadQuotePdf({
       );
 
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
 
       console.log(
@@ -47,12 +55,36 @@ export default function DownloadQuotePdf({
       );
 
 
+      if (!response.ok) {
+        throw new Error(
+          data.error ??
+          "Erreur lors de l'envoi du devis",
+        );
+      }
+
+
+      setSuccess(true);
+
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+
+
     } catch (error) {
 
       console.error(
         "Erreur envoi devis :",
         error,
       );
+
+      setError(true);
+
+
+      setTimeout(() => {
+        setError(false);
+      }, 3000);
+
 
     } finally {
 
@@ -63,15 +95,33 @@ export default function DownloadQuotePdf({
 
 
   return (
-    <button
-      type="button"
-      onClick={handleDownload}
-      disabled={loading}
-      className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
-    >
-      {loading
-        ? "Envoi en cours..."
-        : "Envoyer le devis"}
-    </button>
+    <div className="space-y-3">
+
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={loading}
+        className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
+      >
+        {loading
+          ? "Envoi en cours..."
+          : "Envoyer le devis"}
+      </button>
+
+
+      {success && (
+        <p className="text-center text-sm font-medium text-green-600">
+          ✅ Devis envoyé
+        </p>
+      )}
+
+
+      {error && (
+        <p className="text-center text-sm font-medium text-red-600">
+          ❌ Erreur lors de l'envoi
+        </p>
+      )}
+
+    </div>
   );
 }
