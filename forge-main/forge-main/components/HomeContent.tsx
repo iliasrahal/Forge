@@ -309,7 +309,7 @@ export default function HomeContent({
 
             <p className="mt-1 font-medium text-slate-700 dark:text-slate-300">
 
-              Quand tu reviens, appuie ci-dessous ↓
+              Quand tu reviens, appuie sur l'un des deux boutons ci-dessous. ↓
 
             </p>
 
