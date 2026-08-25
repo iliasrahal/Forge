@@ -68,6 +68,20 @@ export async function POST(
     }
 
 
+    if (!quote.client.email) {
+
+      return NextResponse.json(
+        {
+          error: "Le client n'a pas d'adresse email",
+        },
+        {
+          status: 400,
+        },
+      );
+
+    }
+
+
     return NextResponse.json({
       success: true,
       quote,
