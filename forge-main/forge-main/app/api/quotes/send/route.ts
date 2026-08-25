@@ -91,9 +91,13 @@ export async function POST(
       Génération du PDF
     */
 
+    const origin =
+      new URL(request.url).origin;
+
+
     const pdfResponse =
       await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/quotes/${quote.id}/pdf`,
+        `${origin}/api/quotes/${quote.id}/pdf`,
       );
 
 
