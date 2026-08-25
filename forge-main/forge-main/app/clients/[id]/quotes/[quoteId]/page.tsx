@@ -264,14 +264,14 @@ export default async function QuotePage({
 
 
 
-  {quote.status === "ACCEPTE" && (
+{(quote.status === "ENVOYE" ||
+  quote.status === "ACCEPTE") && (
 
-    <CreateInvoiceButton
-      quoteId={quote.id}
-    />
+  <CreateInvoiceButton
+    quoteId={quote.id}
+  />
 
-  )}
-
+)}
 
 
 </div>
