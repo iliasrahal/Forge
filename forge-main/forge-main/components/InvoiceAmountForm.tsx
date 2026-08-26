@@ -69,6 +69,11 @@ export default function InvoiceAmountForm({
               step="0.01"
               inputMode="decimal"
               value={amount}
+              onFocus={() => {
+                if (Number(amount) === 0) {
+                  setAmount("");
+                }
+              }}
               onChange={(event) => setAmount(event.target.value)}
               onBlur={() => void handleSave()}
               className="min-w-0 flex-1 rounded-xl border border-blue-300 bg-white px-3 py-2 text-2xl font-bold text-blue-700 outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300"
