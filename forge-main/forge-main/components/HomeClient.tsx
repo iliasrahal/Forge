@@ -88,10 +88,10 @@ const [
   null
 );
 
-  const [
-    pendingInterventionId,
-    setPendingInterventionId,
-  ] = useState<string | null>(null);
+const [
+  newInterventionId,
+  setNewInterventionId,
+] = useState<string | null>(null);
 
   const [showGreeting, setShowGreeting] =
     useState(false);
@@ -178,7 +178,7 @@ useEffect(() => {
 ]);
 
   useEffect(() => {
-    if (!pendingInterventionId) {
+  if (!newInterventionId) {
       return;
     }
 
@@ -188,7 +188,7 @@ const newInterventionExists =
     ...(upcomingAppointments ?? []),
   ].some(
     (appointment) =>
-      appointment.id === pendingInterventionId,
+      appointment.id === newInterventionId
   );
 
     if (!newInterventionExists) {
@@ -196,7 +196,7 @@ const newInterventionExists =
     }
 
     setSelectedAppointmentId(
-      pendingInterventionId,
+      newInterventionId
     );
 
     setReport(null);
@@ -204,7 +204,7 @@ const newInterventionExists =
     setHomeState("intervention");
 
     const interventionId =
-      pendingInterventionId;
+      newInterventionId
 
     const timer = window.setTimeout(() => {
       const interventionButton =
@@ -218,13 +218,13 @@ const newInterventionExists =
         inline: "center",
       });
 
-      setPendingInterventionId(null);
+     setNewInterventionId(null);
     }, 100);
 
     return () => window.clearTimeout(timer);
   }, [
     todayAppointments,
-    pendingInterventionId,
+    newInterventionId
   ]);
 
   useEffect(() => {
@@ -597,7 +597,7 @@ const handleSaveNotes = async (notes: string) => {
     interventionId: string,
   ) => {
     setIsInitialWelcomeActive(false);
-    setPendingInterventionId(
+    setNewInterventionId(
       interventionId,
     );
   };

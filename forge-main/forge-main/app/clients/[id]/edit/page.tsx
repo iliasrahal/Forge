@@ -116,7 +116,7 @@ export default async function EditClientPage({
       },
     });
 
-    redirect(`/?newIntervention=${intervention.id}`);
+    redirect(`/clients/${id}`);
   }
 
   return (

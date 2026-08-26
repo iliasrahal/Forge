@@ -147,8 +147,8 @@ const intervention =
   });
 
 
-    // Retour accueil Forge après création
-    redirect("/");
+// Retour accueil Forge avec la nouvelle intervention
+redirect(`/?newIntervention=${intervention.id}`);
 
   }
 
