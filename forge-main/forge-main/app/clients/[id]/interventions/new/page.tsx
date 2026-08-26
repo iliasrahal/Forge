@@ -39,17 +39,13 @@ export default async function NewInterventionPage({
   }
 
 
-
   const name =
     client.type === "PARTICULIER"
-
       ? `${client.firstName ?? ""} ${
           client.lastName ?? ""
         }`.trim()
-
       : client.companyName ??
         "Client professionnel";
-
 
 
 
@@ -58,7 +54,6 @@ export default async function NewInterventionPage({
   ) {
 
     "use server";
-
 
 
     const date =
@@ -81,11 +76,9 @@ export default async function NewInterventionPage({
       typeof formTitle !== "string" ||
       typeof formDescription !== "string"
     ) {
-
       throw new Error(
         "Les informations du formulaire sont invalides.",
       );
-
     }
 
 
@@ -105,18 +98,45 @@ export default async function NewInterventionPage({
       !cleanTitle ||
       !cleanDescription
     ) {
-
       throw new Error(
         "Tous les champs doivent être remplis.",
       );
-
     }
+
+
+
+    // Normalisation de l'heure
+    let cleanTime =
+      time.trim();
+
+
+    // Exemple : 9 => 09:00
+    if (/^\d{1,2}$/.test(cleanTime)) {
+      cleanTime =
+        `${cleanTime.padStart(2, "0")}:00`;
+    }
+
+
+    // Exemple : 930 => 09:30
+    if (/^\d{3,4}$/.test(cleanTime)) {
+
+      const formatted =
+        cleanTime.padStart(4, "0");
+
+      cleanTime =
+        `${formatted.slice(0, 2)}:${formatted.slice(2)}`;
+    }
+
+
+    // Exemple : 14h30 => 14:30
+    cleanTime =
+      cleanTime.replace("h", ":");
 
 
 
     const scheduledAt =
       new Date(
-        `${date}T${time}:00`,
+        `${date}T${cleanTime}:00`,
       );
 
 
@@ -126,32 +146,30 @@ export default async function NewInterventionPage({
         scheduledAt.getTime(),
       )
     ) {
-
       throw new Error(
         "La date ou l’heure est invalide.",
       );
-
     }
 
 
 
+    const intervention =
+      await prisma.intervention.create({
+        data: {
+          title: cleanTitle,
+          description: cleanDescription,
+          scheduledAt,
+          clientId: id,
+        },
+      });
 
-const intervention =
-  await prisma.intervention.create({
-    data: {
-      title: cleanTitle,
-      description: cleanDescription,
-      scheduledAt,
-      clientId: id,
-    },
-  });
 
 
-// Retour accueil Forge avec la nouvelle intervention
-redirect(`/?newIntervention=${intervention.id}`);
+    redirect(
+      `/?newIntervention=${intervention.id}`,
+    );
 
   }
-
 
 
 
@@ -180,11 +198,9 @@ redirect(`/?newIntervention=${intervention.id}`);
 
 
 
-
         <p className="mt-4 text-xl font-bold text-blue-700 dark:text-blue-400">
           {name}
         </p>
-
 
 
 
@@ -193,6 +209,7 @@ redirect(`/?newIntervention=${intervention.id}`);
           action={createIntervention}
           className="mt-6 space-y-5"
         >
+
 
 
           <div>
@@ -230,8 +247,10 @@ redirect(`/?newIntervention=${intervention.id}`);
             <input
               id="time"
               name="time"
-              type="time"
+              type="text"
               required
+              defaultValue="09:00"
+              placeholder="Exemple : 14:30"
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
 
