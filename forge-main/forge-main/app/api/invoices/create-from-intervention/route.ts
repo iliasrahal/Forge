@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingInvoice = await prisma.invoice.findUnique({
+    const existingInvoice = await prisma.invoice.findFirst({
       where: { interventionId },
     });
 

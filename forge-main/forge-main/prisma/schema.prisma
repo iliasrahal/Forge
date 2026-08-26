@@ -216,7 +216,7 @@ model Intervention {
 
   reportRecommendation String?
 
-  invoice Invoice?
+  invoices Invoice[]
 
   clientId String
 
@@ -298,7 +298,7 @@ model Invoice {
   quote Quote? @relation(fields: [quoteId], references: [id])
 
   // Facture créée depuis une intervention terminée
-  interventionId String? @unique
+  interventionId String?
 
   intervention Intervention? @relation(fields: [interventionId], references: [id])
 
