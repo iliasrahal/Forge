@@ -19,14 +19,11 @@ function mapStatus(
     case "EN_COURS":
       return "inProgress";
 
-
     case "TERMINEE":
       return "completed";
 
-
     case "ANNULEE":
       return "cancelled";
-
 
     default:
       return "scheduled";
@@ -42,14 +39,17 @@ function mapIntervention(
   const notesMarker = "Notes de prolongation :";
   const description = intervention.description ?? "";
   const notesIndex = description.indexOf(notesMarker);
+
   const notes =
     notesIndex >= 0
-      ? description.slice(notesIndex + notesMarker.length).trim()
+      ? description
+          .slice(notesIndex + notesMarker.length)
+          .trim()
       : undefined;
 
+
   const clientName =
-    intervention.client.type ===
-    "PROFESSIONNEL"
+    intervention.client.type === "PROFESSIONNEL"
 
       ? intervention.client.companyName ??
         "Client professionnel"
@@ -79,22 +79,25 @@ function mapIntervention(
 
     address,
 
-    date: intervention.scheduledAt
-      .toISOString()
-      .slice(0, 10),
+    date:
+      intervention.scheduledAt
+        .toISOString()
+        .slice(0, 10),
 
-    time: intervention.scheduledAt
-      .toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+    time:
+      intervention.scheduledAt
+        .toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
 
     intervention:
       intervention.title,
 
-    status: mapStatus(
-      intervention.status,
-    ),
+    status:
+      mapStatus(
+        intervention.status,
+      ),
 
     notes,
 
@@ -138,11 +141,13 @@ export default async function HomePage() {
 
 
 
-  const today = new Date();
+  const today =
+    new Date();
 
 
   const todayKey =
-    today.toISOString().slice(0, 10);
+    today.toISOString()
+      .slice(0, 10);
 
 
 
@@ -154,7 +159,6 @@ export default async function HomePage() {
         client: {
           userId: currentUser.id,
         },
-
 
         status: {
           in: [
@@ -179,11 +183,11 @@ export default async function HomePage() {
 
 
 
+  // Seulement les interventions prévues aujourd'hui
   const todayAppointments: Appointment[] =
     interventions
       .filter(
         (intervention) =>
-          intervention.status === "EN_COURS" ||
           intervention.scheduledAt
             .toISOString()
             .slice(0, 10) === todayKey,
@@ -192,6 +196,7 @@ export default async function HomePage() {
 
 
 
+  // Toutes les interventions futures
   const upcomingAppointments: Appointment[] =
     interventions
       .filter(
