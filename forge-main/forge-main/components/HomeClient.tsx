@@ -111,6 +111,9 @@ const [showUpcoming, setShowUpcoming] =
   const [savedClientId, setSavedClientId] =
     useState<string | null>(null);
 
+  const [completedInterventionId, setCompletedInterventionId] =
+    useState<string | null>(null);
+
   const [nextAppointmentId, setNextAppointmentId] =
     useState<string | null>(null);
 
@@ -671,6 +674,10 @@ const handleSaveNotes = async (notes: string) => {
           data.clientId ?? null,
         );
 
+        setCompletedInterventionId(
+          currentAppointment.id,
+        );
+
         setNextAppointmentId(
           nextAppointment?.id ?? null,
         );
@@ -794,6 +801,7 @@ const handleDeleteTemporaryClient = async () => {
 
 const handleSkipInvoice = () => {
   setSavedClientId(null);
+  setCompletedInterventionId(null);
 
   setHomeState("intervention");
 
@@ -803,7 +811,10 @@ const handleSkipInvoice = () => {
 
 
 const handleCreateInvoice = async () => {
-  if (!currentAppointment) {
+  const interventionId =
+    completedInterventionId ?? currentAppointment?.id;
+
+  if (!interventionId) {
     setReportError("Forge ne retrouve pas l’intervention concernée.");
     return;
   }
@@ -817,7 +828,7 @@ const handleCreateInvoice = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          interventionId: currentAppointment.id,
+          interventionId,
         }),
       },
     );
