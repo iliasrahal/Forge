@@ -218,17 +218,6 @@ export default async function ClientPage({
 
 
 
-            {client.email && (
-              <a
-                href={`mailto:${client.email}`}
-                className="mt-2 block text-sm text-slate-600 transition hover:text-blue-700 dark:text-slate-300 dark:hover:text-blue-400"
-              >
-                {client.email}
-              </a>
-            )}
-
-
-
             <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
 
 
