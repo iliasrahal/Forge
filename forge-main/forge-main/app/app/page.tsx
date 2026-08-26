@@ -1,223 +1,325 @@
-import HomeClient from "@/components/HomeClient";
-import type {
-  Appointment,
-  AppointmentStatus,
-} from "@/data/appointments";
-import { requireCurrentUser } from "@/src/lib/auth";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+
 import { prisma } from "@/src/lib/prisma";
+import { requireCurrentUser } from "@/src/lib/auth";
+import { clientService } from "@/src/services/client.service";
 
+type NewInterventionPageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{
+    title?: string;
+    description?: string;
+  }>;
+};
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export default async function NewInterventionPage({
+  params,
+  searchParams,
+}: NewInterventionPageProps) {
 
+  const { id } = await params;
 
-
-function mapStatus(
-  status: string,
-): AppointmentStatus {
-  switch (status) {
-    case "EN_COURS":
-      return "inProgress";
-
-    case "TERMINEE":
-      return "completed";
-
-    case "ANNULEE":
-      return "cancelled";
-
-    default:
-      return "scheduled";
-  }
-}
-
-
-
-function mapIntervention(
-  intervention: any,
-): Appointment {
-
-  const notesMarker = "Notes de prolongation :";
-  const description = intervention.description ?? "";
-  const notesIndex = description.indexOf(notesMarker);
-
-  const notes =
-    notesIndex >= 0
-      ? description
-          .slice(notesIndex + notesMarker.length)
-          .trim()
-      : undefined;
-
-
-  const clientName =
-    intervention.client.type === "PROFESSIONNEL"
-
-      ? intervention.client.companyName ??
-        "Client professionnel"
-
-      : `${intervention.client.firstName ?? ""} ${
-          intervention.client.lastName ?? ""
-        }`.trim();
-
-
-
-  const address = [
-    intervention.client.street,
-    intervention.client.postalCode,
-    intervention.client.city,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-
-
-  return {
-
-    id: intervention.id,
-
-    client:
-      clientName || "Client sans nom",
-
-    address,
-
-    date:
-      intervention.scheduledAt
-        .toISOString()
-        .slice(0, 10),
-
-    time:
-      intervention.scheduledAt
-        .toLocaleTimeString("fr-FR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-
-    intervention:
-      intervention.title,
-
-    status:
-      mapStatus(
-        intervention.status,
-      ),
-
-    notes,
-
-    report:
-      intervention.reportIntervention ||
-      intervention.reportDiagnostic ||
-      intervention.reportTravaux ||
-      intervention.reportRecommendation
-
-        ? {
-
-            intervention:
-              intervention.reportIntervention ??
-              "",
-
-            diagnostic:
-              intervention.reportDiagnostic ??
-              "",
-
-            travaux:
-              intervention.reportTravaux ??
-              "",
-
-            recommandation:
-              intervention.reportRecommendation ??
-              "",
-
-          }
-
-        : undefined,
-
-  };
-}
-
-
-
-export default async function HomePage() {
+  const { title, description } =
+    await searchParams;
 
   const currentUser =
     await requireCurrentUser();
 
 
-
-  const today =
-    new Date();
-
-
-  const todayKey =
-    today.toISOString()
-      .slice(0, 10);
+  const client =
+    await clientService.getById(
+      id,
+      currentUser.id,
+    );
 
 
-
-  const interventions =
-    await prisma.intervention.findMany({
-
-      where: {
-
-        client: {
-          userId: currentUser.id,
-        },
-
-        status: {
-          in: [
-            "PLANIFIEE",
-            "EN_COURS",
-          ],
-        },
-
-      },
+  if (!client) {
+    notFound();
+  }
 
 
-      include: {
-        client: true,
-      },
-
-
-      orderBy: {
-        scheduledAt: "asc",
-      },
-
-    });
+  const name =
+    client.type === "PARTICULIER"
+      ? `${client.firstName ?? ""} ${
+          client.lastName ?? ""
+        }`.trim()
+      : client.companyName ??
+        "Client professionnel";
 
 
 
-  // Seulement les interventions prévues aujourd'hui
-  const todayAppointments: Appointment[] =
-    interventions
-      .filter(
-        (intervention) =>
-          intervention.scheduledAt
-            .toISOString()
-            .slice(0, 10) === todayKey,
+  async function createIntervention(
+    formData: FormData,
+  ) {
+
+    "use server";
+
+
+    const date =
+      formData.get("date");
+
+    const time =
+      formData.get("time");
+
+    const formTitle =
+      formData.get("title");
+
+    const formDescription =
+      formData.get("description");
+
+
+
+    if (
+      typeof date !== "string" ||
+      typeof time !== "string" ||
+      typeof formTitle !== "string" ||
+      typeof formDescription !== "string"
+    ) {
+      throw new Error(
+        "Les informations du formulaire sont invalides.",
+      );
+    }
+
+
+
+    const cleanTitle =
+      formTitle.trim();
+
+
+    const cleanDescription =
+      formDescription.trim();
+
+
+
+    if (
+      !date ||
+      !time ||
+      !cleanTitle ||
+      !cleanDescription
+    ) {
+      throw new Error(
+        "Tous les champs doivent être remplis.",
+      );
+    }
+
+
+
+    let cleanTime =
+      time.trim();
+
+
+
+    if (/^\d{1,2}$/.test(cleanTime)) {
+      cleanTime =
+        `${cleanTime.padStart(2, "0")}:00`;
+    }
+
+
+
+    if (/^\d{3,4}$/.test(cleanTime)) {
+
+      const formatted =
+        cleanTime.padStart(4, "0");
+
+      cleanTime =
+        `${formatted.slice(0, 2)}:${formatted.slice(2)}`;
+    }
+
+
+
+    cleanTime =
+      cleanTime.replace("h", ":");
+
+
+
+    const scheduledAt =
+      new Date(
+        `${date}T${cleanTime}:00`,
+      );
+
+
+
+    if (
+      Number.isNaN(
+        scheduledAt.getTime(),
       )
-      .map(mapIntervention);
+    ) {
+      throw new Error(
+        "La date ou l’heure est invalide.",
+      );
+    }
 
 
 
-  // Toutes les interventions futures
-  const upcomingAppointments: Appointment[] =
-    interventions
-      .filter(
-        (intervention) =>
-          intervention.status === "PLANIFIEE" &&
-          intervention.scheduledAt
-            .toISOString()
-            .slice(0, 10) > todayKey,
-      )
-      .map(mapIntervention);
+    const intervention =
+      await prisma.intervention.create({
+        data: {
+          title: cleanTitle,
+          description: cleanDescription,
+          scheduledAt,
+          clientId: id,
+        },
+      });
+
+
+
+    // Retour accueil Forge avec la nouvelle intervention
+    redirect(
+      `/?newIntervention=${intervention.id}`,
+    );
+
+  }
 
 
 
   return (
-    <HomeClient
-      todayAppointments={
-        todayAppointments
-      }
-      upcomingAppointments={
-        upcomingAppointments
-      }
-    />
+
+    <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+
+
+        <Link
+          href={`/clients/${client.id}`}
+          aria-label="Retour au dossier client"
+          className="inline-flex items-center gap-2 text-base font-medium text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
+        >
+
+          <span className="text-xl">
+            ←
+          </span>
+
+          <span>
+            Retour
+          </span>
+
+        </Link>
+
+
+
+        <p className="mt-4 text-xl font-bold text-blue-700 dark:text-blue-400">
+          {name}
+        </p>
+
+
+
+
+        <form
+          action={createIntervention}
+          className="mt-6 space-y-5"
+        >
+
+
+          <div>
+            <label
+              htmlFor="date"
+              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
+            >
+              Date
+            </label>
+
+            <input
+              id="date"
+              name="date"
+              type="date"
+              required
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </div>
+
+
+
+
+          <div>
+
+            <label
+              htmlFor="time"
+              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
+            >
+              Heure
+            </label>
+
+
+            <input
+              id="time"
+              name="time"
+              type="text"
+              required
+              defaultValue="09:00"
+              placeholder="Exemple : 14:30"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+
+          </div>
+
+
+
+
+          <div>
+
+            <label
+              htmlFor="title"
+              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
+            >
+              Titre de l’intervention
+            </label>
+
+
+            <input
+              id="title"
+              name="title"
+              type="text"
+              required
+              defaultValue={title ?? ""}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+
+          </div>
+
+
+
+
+          <div>
+
+            <label
+              htmlFor="description"
+              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
+            >
+              Intervention prévue
+            </label>
+
+
+            <textarea
+              id="description"
+              name="description"
+              rows={4}
+              required
+              defaultValue={description ?? ""}
+              placeholder="Exemple : remplacer le robinet de la cuisine"
+              className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
+            />
+
+          </div>
+
+
+
+
+          <button
+            type="submit"
+            className="w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+          >
+            Créer l’intervention
+          </button>
+
+
+        </form>
+
+
+      </section>
+
+
+    </main>
+
   );
 }
