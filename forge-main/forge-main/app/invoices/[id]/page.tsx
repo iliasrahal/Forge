@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import SendInvoiceButton from "@/components/SendInvoiceButton";
+import InvoiceAmountForm from "@/components/InvoiceAmountForm";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
@@ -13,20 +14,6 @@ type InvoicePageProps = {
     id: string;
   }>;
 };
-
-
-
-function formatAmount(amountCents: number) {
-
-  return new Intl.NumberFormat(
-    "fr-FR",
-    {
-      style: "currency",
-      currency: "EUR",
-    }
-  ).format(amountCents / 100);
-
-}
 
 
 
@@ -184,22 +171,10 @@ export default async function InvoicePage({
 
 
 
-        <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
-
-
-          <p className="text-sm text-blue-700">
-            Montant
-          </p>
-
-
-          <p className="mt-1 text-3xl font-bold text-blue-700">
-            {formatAmount(
-              invoice.amountCents
-            )}
-          </p>
-
-
-        </div>
+        <InvoiceAmountForm
+          invoiceId={invoice.id}
+          amountCents={invoice.amountCents}
+        />
 
 
 

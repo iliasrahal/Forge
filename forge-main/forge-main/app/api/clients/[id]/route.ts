@@ -34,6 +34,9 @@ export async function PATCH(
         data: {
           isTemporary:
             body.isTemporary ?? false,
+          ...(typeof body.email === "string"
+            ? { email: body.email.trim() || null }
+            : {}),
         },
 
       });
