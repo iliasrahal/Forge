@@ -183,6 +183,7 @@ export default async function HomePage() {
     interventions
       .filter(
         (intervention) =>
+          intervention.status === "EN_COURS" ||
           intervention.scheduledAt
             .toISOString()
             .slice(0, 10) === todayKey,
@@ -195,6 +196,7 @@ export default async function HomePage() {
     interventions
       .filter(
         (intervention) =>
+          intervention.status === "PLANIFIEE" &&
           intervention.scheduledAt
             .toISOString()
             .slice(0, 10) > todayKey,
