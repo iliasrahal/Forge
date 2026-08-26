@@ -70,25 +70,23 @@ export default function InvoiceAmountForm({
               inputMode="decimal"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
+              onBlur={() => void handleSave()}
               className="min-w-0 flex-1 rounded-xl border border-blue-300 bg-white px-3 py-2 text-2xl font-bold text-blue-700 outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300"
             />
             <span className="font-semibold text-blue-700 dark:text-blue-300">€</span>
           </div>
+
+          {isSaving && (
+            <p className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+              Enregistrement...
+            </p>
+          )}
 
           {error && (
             <p className="mt-2 text-sm font-medium text-red-700 dark:text-red-300">
               {error}
             </p>
           )}
-
-          <button
-            type="button"
-            onClick={() => void handleSave()}
-            disabled={isSaving}
-            className="mt-3 w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSaving ? "Enregistrement..." : "Enregistrer le montant"}
-          </button>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
