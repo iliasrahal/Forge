@@ -136,25 +136,15 @@ export default async function NewInterventionPage({
 
 
 
-    await prisma.intervention.create({
-
-      data: {
-
-        title:
-          cleanTitle,
-
-        description:
-          cleanDescription,
-
-        scheduledAt,
-
-        clientId:
-          id,
-
-      },
-
-    });
-
+const intervention =
+  await prisma.intervention.create({
+    data: {
+      title: cleanTitle,
+      description: cleanDescription,
+      scheduledAt,
+      clientId: id,
+    },
+  });
 
 
     // Retour accueil Forge après création
