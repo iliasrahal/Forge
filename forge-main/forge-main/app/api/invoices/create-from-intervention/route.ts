@@ -73,7 +73,12 @@ export async function POST(request: Request) {
     console.error("CREATE INVOICE FROM INTERVENTION ERROR", error);
 
     return NextResponse.json(
-      { error: "Erreur lors de la création de la facture." },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur lors de la création de la facture.",
+      },
       { status: 500 },
     );
   }
