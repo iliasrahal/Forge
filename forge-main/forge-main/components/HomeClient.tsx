@@ -70,7 +70,10 @@ const [isExtending, setIsExtending] =
   useState(false);
 
 const [appointmentsList, setAppointmentsList] =
-  useState<Appointment[]>(todayAppointments ?? []);
+  useState<Appointment[]>([
+    ...(todayAppointments ?? []),
+    ...(upcomingAppointments ?? []),
+  ]);
 
 const [
   selectedAppointmentId,
@@ -116,54 +119,77 @@ const [showUpcoming, setShowUpcoming] =
 
   const [nextAppointmentId, setNextAppointmentId] =
     useState<string | null>(null);
+const currentAppointment = appointmentsList.find(
+  (appointment) =>
+    appointment.id === selectedAppointmentId,
+);
 
-  const currentAppointment = appointmentsList.find(
-    (appointment) =>
-      appointment.id === selectedAppointmentId,
-  );
 
-  useEffect(() => {
-   setAppointmentsList(todayAppointments);
+useEffect(() => {
 
-    setSelectedAppointmentId((currentId) => {
-      if (isInitialWelcomeActive) {
-        return null;
-      }
-
-      const currentAppointmentStillExists =
-        todayAppointments.some(
-          (appointment) =>
-            appointment.id === currentId,
-        );
-
-      if (currentAppointmentStillExists) {
-        return currentId;
-      }
-
-      return (
-        todayAppointments.find(
-          (appointment) =>
-            appointment.status === "inProgress",
-        )?.id ??
-        todayAppointments[0]?.id ??
-        null
-      );
-    });
-  }, [
-    todayAppointments,
-    isInitialWelcomeActive,
+  setAppointmentsList([
+    ...(todayAppointments ?? []),
+    ...(upcomingAppointments ?? []),
   ]);
+
+
+  setSelectedAppointmentId((currentId) => {
+
+    if (isInitialWelcomeActive) {
+      return null;
+    }
+
+
+    const currentAppointmentStillExists =
+      [
+        ...(todayAppointments ?? []),
+        ...(upcomingAppointments ?? []),
+      ].some(
+        (appointment) =>
+          appointment.id === currentId,
+      );
+
+
+    if (currentAppointmentStillExists) {
+      return currentId;
+    }
+
+
+    return (
+      todayAppointments.find(
+        (appointment) =>
+          appointment.status === "inProgress",
+      )?.id ??
+
+      todayAppointments[0]?.id ??
+
+      upcomingAppointments[0]?.id ??
+
+      null
+    );
+
+  });
+
+
+}, [
+  todayAppointments,
+  upcomingAppointments,
+  isInitialWelcomeActive,
+]);
 
   useEffect(() => {
     if (!pendingInterventionId) {
       return;
     }
 
-    const newInterventionExists =
-      todayAppointments.some(
-        (appointment) =>
-          appointment.id === pendingInterventionId,
-      );
+const newInterventionExists =
+  [
+    ...(todayAppointments ?? []),
+    ...(upcomingAppointments ?? []),
+  ].some(
+    (appointment) =>
+      appointment.id === pendingInterventionId,
+  );
 
     if (!newInterventionExists) {
       return;
