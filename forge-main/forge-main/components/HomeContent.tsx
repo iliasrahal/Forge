@@ -641,6 +641,12 @@ export default function HomeContent({
               Créer la facture
             </button>
           </div>
+
+          {error && (
+            <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+              {error}
+            </p>
+          )}
         </div>
       </section>
     );

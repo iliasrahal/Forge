@@ -808,27 +808,36 @@ const handleCreateInvoice = async () => {
     return;
   }
 
-  const response = await fetch(
-    "/api/invoices/create-from-intervention",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        interventionId: currentAppointment.id,
-      }),
-    },
-  );
+  setReportError("");
 
-  const data = await response.json();
-
-  if (!response.ok || !data.invoice?.id) {
-    setReportError(
-      data.error || "Impossible de créer la facture.",
+  try {
+    const response = await fetch(
+      "/api/invoices/create-from-intervention",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          interventionId: currentAppointment.id,
+        }),
+      },
     );
-    return;
-  };
 
-  router.push(`/invoices/${data.invoice.id}`);
+    const data = await response.json();
+
+    if (!response.ok || !data.invoice?.id) {
+      throw new Error(
+        data.error || "Impossible de créer la facture.",
+      );
+    }
+
+    router.push(`/invoices/${data.invoice.id}`);
+  } catch (error) {
+    setReportError(
+      error instanceof Error
+        ? error.message
+        : "Impossible de créer la facture.",
+    );
+  }
 };
 
   return (
