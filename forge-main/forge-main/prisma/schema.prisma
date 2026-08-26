@@ -216,6 +216,8 @@ model Intervention {
 
   reportRecommendation String?
 
+  invoice Invoice?
+
   clientId String
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -295,6 +297,11 @@ model Invoice {
 
   quote Quote? @relation(fields: [quoteId], references: [id])
 
+  // Facture créée depuis une intervention terminée
+  interventionId String? @unique
+
+  intervention Intervention? @relation(fields: [interventionId], references: [id])
+
   clientId String
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -305,4 +312,5 @@ model Invoice {
 
   @@index([clientId])
   @@index([quoteId])
+  @@index([interventionId])
 }

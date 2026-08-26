@@ -108,33 +108,6 @@ export default async function InterventionPage({
     .join(", ");
 
 
-  const quoteParams = new URLSearchParams();
-
-
-  quoteParams.set(
-    "title",
-    intervention.title,
-  );
-
-
-const quoteDescription = [
-  intervention.reportIntervention,
-  intervention.reportDiagnostic,
-  intervention.reportTravaux,
-  intervention.reportRecommendation,
-]
-.filter(Boolean)
-.join("\n\n");
-
-
-  if (quoteDescription) {
-    quoteParams.set(
-      "description",
-      quoteDescription,
-    );
-  }
-
-
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6 pb-36 dark:bg-slate-950">
 
@@ -344,21 +317,6 @@ const quoteDescription = [
         </div>
 
 
-
-
-
-        <div className="mt-8 flex justify-center">
-
-
-          <Link
-            href={`/clients/${intervention.clientId}/quotes/new?${quoteParams.toString()}`}
-            className="w-full max-w-md rounded-2xl bg-blue-600 px-5 py-4 text-center font-semibold text-white transition hover:bg-blue-700"
-          >
-            Créer un devis
-          </Link>
-
-
-        </div>
 
 
 

@@ -19,7 +19,7 @@ type HomeState =
   | "review"
   | "saved"
   | "clientChoice"
-  | "quoteChoice";
+  | "invoiceChoice";
 
 type InterventionReport = {
   intervention: string;
@@ -28,15 +28,10 @@ type InterventionReport = {
   recommandation: string;
 };
 
-type QuoteDraft = {
-  title: string;
-  description: string;
-};
-
 type CompleteInterventionResponse = {
   clientId?: string;
   clientName?: string;
-  quoteDraft?: QuoteDraft;
+  interventionId?: string;
   error?: string;
 };
 
@@ -115,9 +110,6 @@ const [showUpcoming, setShowUpcoming] =
 
   const [savedClientId, setSavedClientId] =
     useState<string | null>(null);
-
-  const [quoteDraft, setQuoteDraft] =
-    useState<QuoteDraft | null>(null);
 
   const [nextAppointmentId, setNextAppointmentId] =
     useState<string | null>(null);
@@ -679,20 +671,6 @@ const handleSaveNotes = async (notes: string) => {
           data.clientId ?? null,
         );
 
-        setQuoteDraft(
-          data.quoteDraft ?? {
-            title:
-              currentAppointment.intervention,
-            description: [
-              report.intervention,
-              report.travaux,
-              report.recommandation,
-            ]
-              .filter(Boolean)
-              .join("\n\n"),
-          },
-        );
-
         setNextAppointmentId(
           nextAppointment?.id ?? null,
         );
@@ -748,7 +726,7 @@ console.log("ID CLIENT ENVOYE :", savedClientId);
     }
 
 
-    setHomeState("quoteChoice");
+    setHomeState("invoiceChoice");
 
 
   } catch (error) {
@@ -796,15 +774,13 @@ const handleDeleteTemporaryClient = async () => {
     // suppression réussie — avancer à l'étape devis
     // Conserver l'ID renvoyé par l'API si fourni afin de permettre
     // la création du devis même après archivage. Ne pas vider
-    // `quoteDraft` : on veut préremplir le formulaire de devis
-    // avec les informations du compte-rendu.
     if (data && data.clientId) {
       setSavedClientId(data.clientId);
     }
 
     setSavedClientName(clientNameToDelete);
     setReportError("");
-    setHomeState("quoteChoice");
+    setHomeState("invoiceChoice");
     router.refresh();
   } catch (error) {
     console.error("Erreur suppression client temporaire :", error);
@@ -816,8 +792,7 @@ const handleDeleteTemporaryClient = async () => {
 
 
 
-const handleSkipQuote = () => {
-  setQuoteDraft(null);
+const handleSkipInvoice = () => {
   setSavedClientId(null);
 
   setHomeState("intervention");
@@ -827,41 +802,34 @@ const handleSkipQuote = () => {
 
 
 
-const handleCreateQuote = () => {
-  if (!savedClientId) {
-    setReportError(
-      "Forge ne retrouve pas le client concerné.",
-    );
+const handleCreateInvoice = async () => {
+  if (!currentAppointment) {
+    setReportError("Forge ne retrouve pas l’intervention concernée.");
     return;
   }
 
+  const response = await fetch(
+    "/api/invoices/create-from-intervention",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        interventionId: currentAppointment.id,
+      }),
+    },
+  );
 
-  const params = new URLSearchParams();
+  const data = await response.json();
 
-
-  if (quoteDraft?.title) {
-    params.set(
-      "title",
-      quoteDraft.title,
+  if (!response.ok || !data.invoice?.id) {
+    setReportError(
+      data.error || "Impossible de créer la facture.",
     );
-  }
-
-
-  if (quoteDraft?.description) {
-    params.set(
-      "description",
-      quoteDraft.description,
-    );
-  }
-
-    const queryString = params.toString();
-
-    router.push(
-      queryString
-        ? `/clients/${savedClientId}/quotes/new?${queryString}`
-        : `/clients/${savedClientId}/quotes/new`,
-    );
+    return;
   };
+
+  router.push(`/invoices/${data.invoice.id}`);
+};
 
   return (
     <main
@@ -1098,13 +1066,13 @@ const handleCreateQuote = () => {
     }
 
 
-    onSkipQuote={
-      handleSkipQuote
+    onSkipInvoice={
+      handleSkipInvoice
     }
 
 
-       onCreateQuote={
-      handleCreateQuote
+      onCreateInvoice={
+          handleCreateInvoice
     }
 
   />

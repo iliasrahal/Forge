@@ -1,5 +1,4 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
-import CreateInvoiceButton from "@/components/CreateInvoiceButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -229,13 +228,8 @@ export default async function QuotePage({
 
 
           <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
-            {formatAmount(
-              quote.amountCents,
-            )}
+            {formatAmount(quote.amountCents)}
           </p>
-
-
-
         </div>
 
 
@@ -264,13 +258,12 @@ export default async function QuotePage({
 
 
 
-{quote.status !== "REFUSE" && (
-
-  <CreateInvoiceButton
-    quoteId={quote.id}
-  />
-
-)}
+  <Link
+    href={`/clients/${id}/interventions/new?title=${encodeURIComponent(quote.title)}&description=${encodeURIComponent(quote.description ?? "")}`}
+    className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+  >
+    Créer une intervention
+  </Link>
 
 
 </div>

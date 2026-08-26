@@ -19,7 +19,7 @@ type HomeState =
   | "review"
   | "saved"
   | "clientChoice"
-  | "quoteChoice";
+  | "invoiceChoice";
 
 type Appointment = {
   id: string;
@@ -81,8 +81,8 @@ type HomeContentProps = {
   onInterventionCreated: (
     interventionId: string,
   ) => void;
-  onSkipQuote: () => void;
-  onCreateQuote: () => void;
+  onSkipInvoice: () => void;
+  onCreateInvoice: () => void;
 };
 
 export default function HomeContent({
@@ -103,8 +103,8 @@ export default function HomeContent({
   onEditReport,
   onValidateReport,
   onInterventionCreated,
-  onSkipQuote,
-  onCreateQuote,
+  onSkipInvoice,
+  onCreateInvoice,
 }: HomeContentProps) {
 
   const [replyStatus, setReplyStatus] =
@@ -608,7 +608,7 @@ export default function HomeContent({
     );
   }
 
-  if (state === "quoteChoice") {
+  if (state === "invoiceChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
         <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
@@ -622,12 +622,12 @@ export default function HomeContent({
             est maintenant terminée.
           </p>
 
-          <p className="mt-6 text-lg font-bold">Souhaitez‑tu créer un devis ?</p>
+          <p className="mt-6 text-lg font-bold">Souhaitez-vous créer la facture ?</p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <button
               type="button"
-              onClick={onSkipQuote}
+              onClick={onSkipInvoice}
               className="w-full sm:w-auto rounded-full border border-slate-200 px-6 py-3 font-semibold text-slate-700 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               Pas maintenant
@@ -635,10 +635,10 @@ export default function HomeContent({
 
             <button
               type="button"
-              onClick={onCreateQuote}
+              onClick={onCreateInvoice}
               className="w-full sm:w-auto rounded-full bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
             >
-              Créer un devis
+              Créer la facture
             </button>
           </div>
         </div>

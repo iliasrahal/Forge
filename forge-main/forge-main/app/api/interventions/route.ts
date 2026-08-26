@@ -460,16 +460,6 @@ export async function PATCH(request: Request) {
         clientName: getClientDisplayName(
           completedIntervention.client,
         ),
-        quoteDraft: {
-          title: completedIntervention.title,
-          description: [
-            reportIntervention,
-            reportTravaux,
-            reportRecommendation,
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-        },
         message:
           "Le compte rendu a été enregistré et l’intervention est terminée.",
       });
