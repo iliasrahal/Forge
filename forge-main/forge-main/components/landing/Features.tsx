@@ -4,10 +4,10 @@ import {
   CalendarDays,
   Camera,
   Check,
+  Euro,
   FileText,
   Keyboard,
   Mic,
-  Receipt,
   Send,
   Sparkles,
 } from "lucide-react";
@@ -35,7 +35,7 @@ const features = [
   {
     title: "Factures",
     description:
-      "Générer et envoyer des factures facilement.",
+      "Après chaque intervention, Forge génère automatiquement votre facture professionnelle.",
     eyebrow: "Jusqu’au règlement",
   },
   {
@@ -110,7 +110,7 @@ function FeatureIllustration({
         <div className="absolute h-64 w-64 rounded-full border border-blue-200 dark:border-blue-900" />
         <div className="absolute h-48 w-48 rounded-full border border-blue-300/70 dark:border-blue-800" />
         <div className="relative z-10 rounded-[2rem] border border-slate-200 bg-white p-7 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white"><Receipt size={25} /></span>
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white"><Euro size={25} /></span>
           <p className="mt-5 text-sm font-semibold text-slate-500 dark:text-slate-400">Facture prête</p>
           <p className="mt-1 text-3xl font-bold">840 €</p>
           <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
@@ -235,6 +235,30 @@ export default function Features() {
                       </div>
                     ))}
                   </div>
+                )}
+                {index === 2 && (
+                  <>
+                    <p className="mt-3 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+                      Vous pouvez ensuite l’envoyer directement par mail à votre client en quelques secondes.
+                    </p>
+                    <div className="mt-8 grid max-w-xl gap-3">
+                      {[
+                        "Facture générée automatiquement après l’intervention",
+                        "Création professionnelle à partir du compte rendu",
+                        "Envoi rapide par mail au client",
+                      ].map((benefit) => (
+                        <div
+                          key={benefit}
+                          className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                        >
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                            <Check size={15} />
+                          </span>
+                          {benefit}
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
                 {index === 3 && (
                   <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
