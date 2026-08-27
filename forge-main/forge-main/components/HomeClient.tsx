@@ -100,7 +100,7 @@ const [
 const [showUpcoming, setShowUpcoming] =
   useState(false);
 const [actionMode, setActionMode] =
-  useState<"edit" | "reschedule" | null>(null);
+  useState<"edit" | null>(null);
 const [actionClientName, setActionClientName] = useState("");
 const [actionTitle, setActionTitle] = useState("");
 const [actionDate, setActionDate] = useState("");
@@ -604,14 +604,12 @@ const handleSaveNotes = async (notes: string) => {
     setHomeState("intervention");
   };
 
-  const openInterventionAction = (
-    mode: "edit" | "reschedule",
-  ) => {
+  const openInterventionAction = () => {
     if (!currentAppointment) {
       return;
     }
 
-    setActionMode(mode);
+    setActionMode("edit");
     setActionClientName(currentAppointment.client);
     setActionTitle(currentAppointment.intervention);
     setActionDate(currentAppointment.date);
@@ -632,8 +630,7 @@ const handleSaveNotes = async (notes: string) => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          operation:
-            actionMode === "edit" ? "edit" : "rescheduleById",
+          operation: "edit",
           interventionId: currentAppointment.id,
           clientName: actionClientName,
           title: actionTitle,
@@ -1149,7 +1146,7 @@ const handleCreateInvoice = async () => {
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
       <section className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-          {actionMode === "edit" ? "Modifier l’intervention" : "Décaler l’intervention"}
+          Modifier l’intervention
         </h2>
 
         <div className="mt-5 space-y-4">
@@ -1246,9 +1243,7 @@ const handleCreateInvoice = async () => {
       handleStartIntervention
     }
 
-    onEditIntervention={() => openInterventionAction("edit")}
-
-    onRescheduleIntervention={() => openInterventionAction("reschedule")}
+    onEditIntervention={openInterventionAction}
 
     onDeleteIntervention={handleDeleteIntervention}
 

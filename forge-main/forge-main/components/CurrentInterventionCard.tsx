@@ -12,7 +12,6 @@ type CurrentInterventionCardProps = {
   isInProgress: boolean;
   onStart: () => void;
   onEdit: () => void;
-  onReschedule: () => void;
   onDelete: () => void;
 };
 
@@ -23,7 +22,6 @@ export default function CurrentInterventionCard({
   isInProgress,
   onStart,
   onEdit,
-  onReschedule,
   onDelete,
 }: CurrentInterventionCardProps) {
   return (
@@ -81,20 +79,13 @@ export default function CurrentInterventionCard({
           : "Commencer l'intervention"}
       </button>
 
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onEdit}
           className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
         >
           Modifier
-        </button>
-        <button
-          type="button"
-          onClick={onReschedule}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
-        >
-          Décaler
         </button>
         <button
           type="button"

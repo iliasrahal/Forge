@@ -42,7 +42,6 @@ async function getCurrentUser() {
 
 type InterventionOperation =
   | "reschedule"
-  | "rescheduleById"
   | "edit"
   | "extend"
   | "updateNotes"
@@ -338,7 +337,6 @@ export async function PATCH(request: Request) {
 
     const operation: InterventionOperation | null =
       body.operation === "reschedule" ||
-      body.operation === "rescheduleById" ||
       body.operation === "edit" ||
       body.operation === "extend" ||
       body.operation === "updateNotes" ||
@@ -360,7 +358,7 @@ export async function PATCH(request: Request) {
         ? body.interventionId.trim()
         : "";
 
-    if (operation === "edit" || operation === "rescheduleById") {
+    if (operation === "edit") {
       if (!interventionId) {
         return NextResponse.json(
           { error: "L’identifiant de l’intervention est obligatoire." },
@@ -402,22 +400,6 @@ export async function PATCH(request: Request) {
           { error: "La date ou l’heure est invalide." },
           { status: 400 },
         );
-      }
-
-      if (operation === "rescheduleById") {
-        const updatedIntervention =
-          await prisma.intervention.update({
-            where: { id: interventionId },
-            data: {
-              scheduledAt,
-              status: "PLANIFIEE",
-            },
-          });
-
-        return NextResponse.json({
-          intervention: updatedIntervention,
-          operation,
-        });
       }
 
       const clientName =
