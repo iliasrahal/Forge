@@ -242,99 +242,138 @@ localStorage.setItem(
 
   return (
 
-    <main className="flex min-h-screen items-center justify-center bg-white px-6 py-10 text-slate-950 dark:bg-slate-950 dark:text-white">
+  <main
+  className="
+    relative
+    isolate
+    flex
+    min-h-screen
+    items-center
+    justify-center
+    overflow-hidden
+    bg-slate-50
+    px-6
+    py-10
+    text-slate-950
+    dark:bg-slate-950
+    dark:text-white
+  "
+>
+
+  <div
+    aria-hidden="true"
+    className="
+      pointer-events-none
+      absolute
+      inset-0
+      -z-20
+      bg-[radial-gradient(circle_at_50%_15%,rgba(37,99,235,0.12),transparent_35%),radial-gradient(circle_at_20%_90%,rgba(14,165,233,0.08),transparent_30%)]
+      dark:bg-[radial-gradient(circle_at_50%_15%,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_80%_90%,rgba(14,165,233,0.08),transparent_30%)]
+    "
+  />
+
+  <div
+    aria-hidden="true"
+    className="
+      pointer-events-none
+      absolute
+      inset-0
+      -z-10
+      opacity-40
+      [background-image:linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)]
+      [background-size:56px_56px]
+      [mask-image:linear-gradient(to_bottom,black,transparent_75%)]
+      dark:opacity-20
+    "
+  />
 
 
-      <section className="w-full max-w-md">
+  <section className="w-full max-w-md">
 
 
-        {step === "job" && (
+    {step === "job" && (
 
-          <div>
-
-
-            <h1 className="text-center text-4xl font-bold text-blue-700">
-              Quel est ton métier ?
-            </h1>
+      <div>
 
 
-
-            <div className="mt-8 space-y-3">
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  selectJob(
-                    "PLOMBIER_CHAUFFAGISTE",
-                  )
-                }
-                className={jobButtonClassName}
-              >
-                Plombier / Plombière -
-                Chauffagiste
-              </button>
+        <h1 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+          Quel est ton métier ?
+        </h1>
 
 
-
-              <button
-                type="button"
-                onClick={() =>
-                  selectJob(
-                    "ELECTRICIEN",
-                  )
-                }
-                className={jobButtonClassName}
-              >
-                Électricien / Électricienne
-              </button>
+        <div className="mt-8 space-y-3">
 
 
-
-              <button
-                type="button"
-                onClick={() =>
-                  selectJob(
-                    "PEINTRE_BATIMENT",
-                  )
-                }
-                className={jobButtonClassName}
-              >
-                Peintre en bâtiment
-              </button>
-
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  selectJob(
-                    "MENUISIER",
-                  )
-                }
-                className={jobButtonClassName}
-              >
-                Menuisier / Menuisière
-              </button>
+          <button
+            type="button"
+            onClick={() =>
+              selectJob(
+                "PLOMBIER_CHAUFFAGISTE",
+              )
+            }
+            className={jobButtonClassName}
+          >
+            Plombier / Plombière -
+            Chauffagiste
+          </button>
 
 
+          <button
+            type="button"
+            onClick={() =>
+              selectJob(
+                "ELECTRICIEN",
+              )
+            }
+            className={jobButtonClassName}
+          >
+            Électricien / Électricienne
+          </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  selectJob("AUTRE")
-                }
-                className={jobButtonClassName}
-              >
-                Autre métier
-              </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              selectJob(
+                "PEINTRE_BATIMENT",
+              )
+            }
+            className={jobButtonClassName}
+          >
+            Peintre en bâtiment
+          </button>
 
 
-            </div>
+          <button
+            type="button"
+            onClick={() =>
+              selectJob(
+                "MENUISIER",
+              )
+            }
+            className={jobButtonClassName}
+          >
+            Menuisier / Menuisière
+          </button>
 
-          </div>
 
-        )}
+          <button
+            type="button"
+            onClick={() =>
+              selectJob("AUTRE")
+            }
+            className={jobButtonClassName}
+          >
+            Autre métier
+          </button>
+
+
+        </div>
+
+      </div>
+
+    )}
+
 
 
 
