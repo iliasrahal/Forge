@@ -630,7 +630,6 @@ export default function ForgeBar({
     });
 
     setAssistantMessage(notice);
-    setMessage("");
   }
 
   async function createIntervention(
@@ -1308,6 +1307,11 @@ export default function ForgeBar({
           ? error.message
           : "Une erreur est survenue.";
 
+      setMessage((currentMessage) =>
+        currentMessage.trim()
+          ? currentMessage
+          : cleanMessage,
+      );
       onReplyError?.(errorMessage);
     } finally {
       setIsLoading(false);
