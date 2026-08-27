@@ -160,6 +160,24 @@ function cleanInterventionOperation(
   return null;
 }
 
+function containsRdvAlias(
+  message: string,
+  intent: AssistantIntent,
+  action: AssistantAction,
+) {
+  if (
+    intent === "clientReply" ||
+    intent === "quote" ||
+    intent === "client" ||
+    action !== "unknown" &&
+      action !== "create"
+  ) {
+    return false;
+  }
+
+  return /\brdv\b/i.test(message);
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -216,6 +234,8 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - start : démarrer une intervention.
 - finish : terminer une intervention.
 - unknown : l’action n’est pas suffisamment claire.
+
+- « rdv » est un alias de rendez-vous : « j’ai rdv aujourd’hui à 19h » correspond à intent = "intervention", action = "create", scheduledDate = la date d’aujourd’hui et scheduledTime = "19:00".
 
 3. entity :
 - Contient uniquement le nom du client, le nom de société ou la référence précise concernée.
@@ -623,6 +643,23 @@ if (
         ? parsed.action
         : "unknown";
 
+    const hasRdvAlias =
+      containsRdvAlias(
+        message,
+        intent,
+        action,
+      );
+
+    const resolvedIntent: AssistantIntent =
+      hasRdvAlias
+        ? "intervention"
+        : intent;
+
+    const resolvedAction: AssistantAction =
+      hasRdvAlias
+        ? "create"
+        : action;
+
     const entity = cleanOptionalString(
       parsed.entity,
     );
@@ -678,8 +715,8 @@ if (
     );
 
     return NextResponse.json({
-      intent,
-      action,
+      intent: resolvedIntent,
+      action: resolvedAction,
       entity,
       title,
       description,
