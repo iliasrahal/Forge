@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   Clock3,
-  MapPin,
 } from "lucide-react";
 
 import {
@@ -33,25 +32,37 @@ export default function CurrentInterventionCard({
     getAppointmentDisplayTitle(
       appointment,
     );
+  const description =
+    appointment.description?.trim();
 
   return (
     <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
-      <div className="p-6 text-center sm:p-9">
+      <div className="px-5 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
 
 
-      {isInProgress && (
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-emerald-700 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300">
+      <div
+        className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.08em] shadow-sm ${
+          isInProgress
+            ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300"
+            : "border-blue-200/80 bg-blue-50/80 text-blue-700 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300"
+        }`}
+      >
+        {isInProgress ? (
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-50 motion-reduce:animate-none" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
           </span>
-          Intervention en cours
-        </div>
-      )}
+        ) : (
+          <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+        )}
+        {isInProgress
+          ? "Intervention en cours"
+          : "Intervention planifiée"}
+      </div>
 
 
 
-      <h2 className="text-balance text-center text-3xl font-bold tracking-[-0.045em] text-slate-950 dark:text-white sm:text-[2.65rem] sm:leading-tight">
+      <h2 className="text-balance text-center text-2xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-3xl">
         {appointment.client ||
           displayTitle}
       </h2>
@@ -59,14 +70,21 @@ export default function CurrentInterventionCard({
 
 
       {appointment.client && (
-        <p className="mx-auto mt-3 max-w-xl text-center text-base font-semibold leading-7 text-blue-700 dark:text-blue-400 sm:text-lg">
+        <p className="mx-auto mt-2 max-w-xl text-center text-base font-semibold leading-6 text-blue-700 dark:text-blue-400 sm:text-lg">
           {displayTitle}
         </p>
       )}
 
-      <div className="mx-auto mt-7 flex max-w-xl flex-wrap items-center justify-center gap-2.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+      {description &&
+        description !== displayTitle && (
+          <p className="mx-auto mt-1.5 line-clamp-2 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+            {description}
+          </p>
+        )}
+
+      <div className="mx-auto mt-4 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
         {appointment.date && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/65 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
             <CalendarDays size={16} className="text-blue-600 dark:text-blue-400" />
             <span className="capitalize">
               {getAppointmentDateLabel(appointment.date)}
@@ -75,64 +93,36 @@ export default function CurrentInterventionCard({
         )}
 
         {appointment.time && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/65 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
             <Clock3 size={16} className="text-blue-600 dark:text-blue-400" />
             {appointment.time}
           </span>
         )}
 
-        {appointment.address && (
-          <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
-            <MapPin size={16} className="shrink-0 text-blue-600 dark:text-blue-400" />
-            <span className="truncate">{appointment.address}</span>
-          </span>
-        )}
       </div>
-
-
-
-      {isInProgress && (
-        <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-slate-200/70 bg-slate-50/60 px-5 py-4 text-sm leading-6 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
-
-
-          <p className="dark:text-slate-300">
-            Cette intervention est actuellement ouverte.
-          </p>
-
-
-          <p className="mt-1 font-medium text-slate-700 dark:text-slate-200">
-            Tu peux reprendre ici ↓
-          </p>
-
-
-        </div>
-      )}
-
-
-
 
       <button
         type="button"
         onClick={onStart}
-        className="mt-7 inline-flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:text-base"
       >
         {isInProgress
           ? "Continuer l'intervention"
           : "Commencer l'intervention"}
       </button>
 
-      <div className="mx-auto mt-3 grid max-w-sm grid-cols-2 gap-2">
+      <div className="mx-auto mt-2.5 grid max-w-xs grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onEdit}
-          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
+          className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200 sm:text-sm"
         >
           Modifier
         </button>
         <button
           type="button"
           onClick={onDelete}
-          className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+          className="rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950 sm:text-sm"
         >
           Supprimer
         </button>
@@ -140,7 +130,7 @@ export default function CurrentInterventionCard({
       </div>
 
       {forgeBar && (
-        <div className="border-t border-slate-200/70 bg-slate-50/45 px-5 py-3 dark:border-slate-700/80 dark:bg-slate-950/25 sm:px-7">
+        <div className="border-t border-slate-200/60 bg-transparent px-4 py-1 dark:border-slate-700/70 sm:px-6 sm:py-1.5">
           {forgeBar}
         </div>
       )}

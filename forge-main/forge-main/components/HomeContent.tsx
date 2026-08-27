@@ -785,7 +785,7 @@ export default function HomeContent({
 
   return (
     <section
-      className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 pb-12 pt-4"
+      className="flex min-h-0 flex-1 flex-col items-center px-4 pb-4 pt-2"
     >
       <div className="w-full max-w-2xl">
        {replyStatus === "idle" && (

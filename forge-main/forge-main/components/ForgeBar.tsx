@@ -1700,7 +1700,7 @@ export default function ForgeBar({
        className={`flex h-20 w-full items-center gap-3 px-1 sm:px-2 ${
          variant === "floating"
            ? "rounded-3xl border border-white/80 bg-white/80 px-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/50"
-           : "bg-transparent"
+           : "h-16 gap-2 bg-transparent [&_button]:!h-10 [&_button]:!w-10 [&_button_svg]:!h-5 [&_button_svg]:!w-5 sm:h-20 sm:gap-3 sm:[&_button]:!h-12 sm:[&_button]:!w-12 sm:[&_button_svg]:!h-auto sm:[&_button_svg]:!w-auto"
        }`}
      >
     <input
