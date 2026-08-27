@@ -80,10 +80,10 @@ export default function Hero() {
           De la première demande client jusqu&apos;à la facture finale, Forge simplifie votre quotidien.
         </p>
 
-        <div className="forge-hero-reveal forge-hero-delay-3 mt-10 flex w-full max-w-xl flex-col justify-center gap-3 sm:flex-row">
+        <div className="forge-hero-reveal forge-hero-delay-3 mt-10 flex w-full max-w-sm justify-center">
           <Link
             href="/register"
-            className="group inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-7 py-4 font-semibold text-white shadow-xl shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/35"
+            className="group inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-7 py-4 font-semibold text-white shadow-xl shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/35"
           >
             Créer mon espace gratuitement
             <ArrowRight
@@ -91,11 +91,6 @@ export default function Hero() {
               className="transition group-hover:translate-x-1"
             />
           </Link>
-          <LandingLoginLink
-            className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-slate-300 bg-white/80 px-7 py-4 font-semibold text-slate-800 backdrop-blur transition hover:-translate-y-0.5 hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:hover:border-blue-600 dark:hover:text-blue-300"
-          >
-            Se connecter
-          </LandingLoginLink>
         </div>
 
         <div className="forge-hero-reveal forge-hero-delay-3 relative mt-20 w-full max-w-4xl sm:mt-24">
