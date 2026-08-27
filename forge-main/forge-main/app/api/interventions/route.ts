@@ -428,8 +428,6 @@ export async function PATCH(request: Request) {
         typeof body.title === "string"
           ? body.title.trim()
           : "";
-      const description = cleanOptionalString(body.description);
-
       if (!clientName || !title) {
         return NextResponse.json(
           { error: "Le client et le titre sont obligatoires." },
@@ -452,7 +450,6 @@ export async function PATCH(request: Request) {
             where: { id: interventionId },
             data: {
               title,
-              description,
               scheduledAt,
             },
           }),

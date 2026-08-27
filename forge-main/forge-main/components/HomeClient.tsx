@@ -103,7 +103,6 @@ const [actionMode, setActionMode] =
   useState<"edit" | "reschedule" | null>(null);
 const [actionClientName, setActionClientName] = useState("");
 const [actionTitle, setActionTitle] = useState("");
-const [actionDescription, setActionDescription] = useState("");
 const [actionDate, setActionDate] = useState("");
 const [actionTime, setActionTime] = useState("");
 const [actionError, setActionError] = useState("");
@@ -615,7 +614,6 @@ const handleSaveNotes = async (notes: string) => {
     setActionMode(mode);
     setActionClientName(currentAppointment.client);
     setActionTitle(currentAppointment.intervention);
-    setActionDescription(currentAppointment.description ?? "");
     setActionDate(currentAppointment.date);
     setActionTime(currentAppointment.time);
     setActionError("");
@@ -639,9 +637,7 @@ const handleSaveNotes = async (notes: string) => {
           interventionId: currentAppointment.id,
           clientName: actionClientName,
           title: actionTitle,
-          description: actionDescription,
-          scheduledDate:
-            actionMode === "edit" ? currentAppointment.date : actionDate,
+          scheduledDate: actionDate,
           scheduledTime: actionTime,
         }),
       });
@@ -1175,29 +1171,18 @@ const handleCreateInvoice = async () => {
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
                 />
               </label>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Description / cause
-                <textarea
-                  rows={3}
-                  value={actionDescription}
-                  onChange={(event) => setActionDescription(event.target.value)}
-                  className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-                />
-              </label>
             </>
           )}
 
-          {actionMode === "reschedule" && (
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Date
-              <input
-                type="date"
-                value={actionDate}
-                onChange={(event) => setActionDate(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-              />
-            </label>
-          )}
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Date
+            <input
+              type="date"
+              value={actionDate}
+              onChange={(event) => setActionDate(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
 
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Heure
