@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ForgeLogo from "@/components/ForgeLogo";
 
@@ -472,13 +473,23 @@ localStorage.setItem(
 
   <p className="text-sm text-slate-600 dark:text-slate-300">
     J&apos;accepte les{" "}
-    <span className="font-semibold text-blue-700">
+    <Link
+      href="/conditions-generales-utilisation"
+      target="_blank"
+      rel="noreferrer"
+      className="font-semibold text-blue-700 underline decoration-blue-200 underline-offset-4 transition hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-800 dark:hover:text-blue-300"
+    >
       Conditions Générales d&apos;Utilisation
-    </span>{" "}
+    </Link>{" "}
     et la{" "}
-    <span className="font-semibold text-blue-700">
+    <Link
+      href="/politique-confidentialite"
+      target="_blank"
+      rel="noreferrer"
+      className="font-semibold text-blue-700 underline decoration-blue-200 underline-offset-4 transition hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-800 dark:hover:text-blue-300"
+    >
       Politique de confidentialité
-    </span>
+    </Link>
     .
   </p>
 

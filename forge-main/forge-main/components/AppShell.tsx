@@ -28,7 +28,9 @@ export default function AppShell({
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/onboarding") ||
-    pathname.startsWith("/activate-account");
+    pathname.startsWith("/activate-account") ||
+    pathname.startsWith("/conditions-generales-utilisation") ||
+    pathname.startsWith("/politique-confidentialite");
 
 
 
