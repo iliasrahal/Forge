@@ -72,10 +72,7 @@ const [isExtending, setIsExtending] =
   useState(false);
 
 const [appointmentsList, setAppointmentsList] =
-  useState<Appointment[]>([
-    ...(todayAppointments ?? []),
-    ...(upcomingAppointments ?? []),
-  ]);
+  useState<Appointment[]>(todayAppointments ?? []);
 
 const [
   selectedAppointmentId,
@@ -121,7 +118,10 @@ const [showUpcoming, setShowUpcoming] =
 
   const [nextAppointmentId, setNextAppointmentId] =
     useState<string | null>(null);
-const currentAppointment = appointmentsList.find(
+const currentAppointment = [
+  ...(todayAppointments ?? []),
+  ...(upcomingAppointments ?? []),
+].find(
   (appointment) =>
     appointment.id === selectedAppointmentId,
 );
@@ -129,10 +129,7 @@ const currentAppointment = appointmentsList.find(
 
 useEffect(() => {
 
-  setAppointmentsList([
-    ...(todayAppointments ?? []),
-    ...(upcomingAppointments ?? []),
-  ]);
+  setAppointmentsList(todayAppointments ?? []);
 
 
   setSelectedAppointmentId((currentId) => {
