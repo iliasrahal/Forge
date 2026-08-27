@@ -55,6 +55,7 @@ export async function POST(
 
         include: {
           client: true,
+          intervention: true,
         },
 
       });
@@ -102,6 +103,12 @@ export async function POST(
     const pdfResponse =
       await fetch(
         `${origin}/api/invoices/${invoice.id}/pdf`,
+        {
+          headers: {
+            cookie:
+              request.headers.get("cookie") ?? "",
+          },
+        },
       );
 
 
@@ -125,19 +132,31 @@ export async function POST(
 
     const clientName =
       invoice.client.type === "PARTICULIER"
-
-        ? `${invoice.client.firstName ?? ""} ${
+        ? invoice.client.firstName?.trim() ||
+          `${invoice.client.firstName ?? ""} ${
             invoice.client.lastName ?? ""
-          }`.trim() || "Client"
+          }`.trim() ||
+          "Madame, Monsieur"
+        : invoice.client.companyName?.trim() ||
+          "Madame, Monsieur";
 
-        : invoice.client.companyName ?? "Client";
+    const artisanName =
+      currentUser.firstName?.trim() ||
+      "L'équipe Forge";
+
+    const interventionDescription =
+      invoice.intervention?.description?.trim() ||
+      invoice.description?.trim() ||
+      invoice.title.trim();
 
 
 
     await sendInvoiceEmail(
       invoice.client.email,
       clientName,
-      currentUser.firstName,
+      artisanName,
+      invoice.reference,
+      interventionDescription,
       pdfBuffer,
       `facture-${invoice.reference}.pdf`,
     );

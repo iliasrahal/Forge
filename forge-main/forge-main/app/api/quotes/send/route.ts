@@ -123,19 +123,30 @@ export async function POST(
 
     const clientName =
       quote.client.type === "PARTICULIER"
-
-        ? `${quote.client.firstName ?? ""} ${
+        ? quote.client.firstName?.trim() ||
+          `${quote.client.firstName ?? ""} ${
             quote.client.lastName ?? ""
-          }`.trim() || "Client"
+          }`.trim() ||
+          "Madame, Monsieur"
+        : quote.client.companyName?.trim() ||
+          "Madame, Monsieur";
 
-        : quote.client.companyName ?? "Client";
+    const artisanName =
+      currentUser.firstName?.trim() ||
+      "L'équipe Forge";
+
+    const quoteDescription =
+      quote.description?.trim() ||
+      quote.title.trim();
 
 
 
     await sendQuoteEmail(
       quote.client.email,
       clientName,
-      currentUser.firstName,
+      artisanName,
+      quote.title,
+      quoteDescription,
       pdfBuffer,
       `devis-${quote.reference}.pdf`,
     );

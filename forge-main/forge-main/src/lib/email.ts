@@ -72,6 +72,8 @@ export async function sendQuoteEmail(
   recipient: string,
   clientName: string,
   artisanName: string,
+  quoteTitle: string,
+  quoteDescription: string,
   pdfBuffer: Buffer,
   fileName: string,
 ) {
@@ -81,12 +83,17 @@ export async function sendQuoteEmail(
 
     to: recipient,
 
-    subject: "Votre devis Forge",
+    subject: `Votre devis Forge - ${quoteTitle}`,
 
     text:
 `Bonjour ${clientName},
 
-Veuillez trouver votre devis Forge en pièce jointe.
+Veuillez trouver ci-joint votre devis concernant :
+${quoteDescription}
+
+Je reste à votre disposition pour toute question ou précision concernant cette proposition.
+
+Merci pour votre confiance.
 
 Cordialement,
 
@@ -95,16 +102,21 @@ ${artisanName}
 
     html:
 `
+<div style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.6;max-width:640px">
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
-<p>
-Veuillez trouver votre devis Forge en pièce jointe.
-</p>
+<p>Veuillez trouver ci-joint votre devis concernant :</p>
+<p style="font-weight:600;color:#1d4ed8">${escapeHtml(quoteDescription)}</p>
+
+<p>Je reste à votre disposition pour toute question ou précision concernant cette proposition.</p>
+
+<p>Merci pour votre confiance.</p>
 
 <p>
 Cordialement,<br/>
 ${escapeHtml(artisanName)}
 </p>
+</div>
 `,
 
     attachments: [
@@ -122,6 +134,8 @@ export async function sendInvoiceEmail(
   recipient: string,
   clientName: string,
   artisanName: string,
+  invoiceReference: string,
+  interventionDescription: string,
   pdfBuffer: Buffer,
   fileName: string,
 ) {
@@ -131,12 +145,17 @@ export async function sendInvoiceEmail(
 
     to: recipient,
 
-    subject: "Votre facture Forge",
+    subject: `Votre facture Forge - ${invoiceReference}`,
 
     text:
 `Bonjour ${clientName},
 
-Veuillez trouver votre facture Forge en pièce jointe.
+Veuillez trouver ci-joint votre facture concernant :
+${interventionDescription}
+
+Je reste disponible si vous avez besoin d'informations complémentaires.
+
+Merci pour votre confiance.
 
 Cordialement,
 
@@ -145,16 +164,21 @@ ${artisanName}
 
     html:
 `
+<div style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.6;max-width:640px">
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
-<p>
-Veuillez trouver votre facture Forge en pièce jointe.
-</p>
+<p>Veuillez trouver ci-joint votre facture concernant :</p>
+<p style="font-weight:600;color:#1d4ed8">${escapeHtml(interventionDescription)}</p>
+
+<p>Je reste disponible si vous avez besoin d'informations complémentaires.</p>
+
+<p>Merci pour votre confiance.</p>
 
 <p>
 Cordialement,<br/>
 ${escapeHtml(artisanName)}
 </p>
+</div>
 `,
 
     attachments: [
