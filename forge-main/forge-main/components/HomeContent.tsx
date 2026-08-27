@@ -163,11 +163,9 @@ export default function HomeContent({
     try {
       await onSaveNotes(notesDraft);
       setIsEditingNotes(false);
-    } catch (error) {
+    } catch {
       setNotesError(
-        error instanceof Error
-          ? error.message
-          : "Impossible d’enregistrer les notes.",
+        "Impossible d’enregistrer les notes. Vérifiez leur contenu puis réessayez.",
       );
     } finally {
       setIsSavingNotes(false);

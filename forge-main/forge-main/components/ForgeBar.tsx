@@ -184,6 +184,28 @@ const placeholders = {
   ],
 };
 
+const technicalErrorPattern =
+  /prisma|database|base de données|api|stack|fetch|network|json|sql|server|serveur|internal|timeout|ECONN|P\d{4}/i;
+
+function getUserFacingErrorMessage(
+  error: unknown,
+) {
+  const message =
+    error instanceof Error
+      ? error.message.trim()
+      : "";
+
+  if (
+    message &&
+    message.length <= 240 &&
+    !technicalErrorPattern.test(message)
+  ) {
+    return message;
+  }
+
+  return "Impossible de traiter votre demande pour le moment. Vérifiez votre connexion, puis corrigez votre message si nécessaire et réessayez.";
+}
+
 export default function ForgeBar({
   context = "home",
   clientId,
@@ -326,8 +348,7 @@ export default function ForgeBar({
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Forge n’a pas compris la demande.",
+        "Je n’ai pas réussi à comprendre votre demande. Essayez par exemple : « J’ai une intervention demain à 10 h. »",
       );
     }
 
@@ -444,8 +465,7 @@ export default function ForgeBar({
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Impossible de préparer la réponse.",
+        "Impossible de préparer cette réponse. Vérifiez le message du client puis réessayez.",
       );
     }
 
@@ -619,9 +639,9 @@ export default function ForgeBar({
         ),
       );
 
-    const notice = `Il me manque ${joinMissingInformation(
+    const notice = `Il manque ${joinMissingInformation(
       missingLabels,
-    )} pour créer ${requestLabel}.`;
+    )} pour créer ${requestLabel}. Complétez votre message, puis renvoyez-le.`;
 
     setPendingRequest({
       kind,
@@ -689,8 +709,7 @@ export default function ForgeBar({
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Impossible de créer l’intervention.",
+        "Impossible d’enregistrer cette intervention. Vérifiez les informations indiquées puis réessayez.",
       );
     }
 
@@ -832,8 +851,7 @@ export default function ForgeBar({
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Impossible de modifier l’intervention.",
+        "Impossible de modifier cette intervention. Vérifiez le client, la date et l’heure puis réessayez.",
       );
     }
 
@@ -893,8 +911,7 @@ export default function ForgeBar({
 
       if (!response.ok) {
         throw new Error(
-          data.error ||
-            "Impossible de supprimer les interventions.",
+          "Impossible de supprimer les interventions prévues. Vérifiez la journée demandée puis réessayez.",
         );
       }
 
@@ -1002,8 +1019,7 @@ export default function ForgeBar({
 
   if (!response.ok) {
     throw new Error(
-      data.error ||
-        "Impossible de modifier la fiche client.",
+      "Impossible de modifier cette fiche client. Vérifiez les informations indiquées puis réessayez.",
     );
   }
 
@@ -1074,8 +1090,7 @@ export default function ForgeBar({
 
         if (!photoResponse.ok) {
           throw new Error(
-            photoData.error ||
-              "Impossible d’analyser les photos.",
+            "Impossible d’analyser ces photos. Vérifiez qu’elles sont lisibles puis réessayez.",
           );
         }
 
@@ -1298,14 +1313,12 @@ export default function ForgeBar({
 
         default:
           throw new Error(
-            "Je n’ai pas encore compris précisément ce que tu souhaites faire. Reformule ta demande.",
+            "Je n’ai pas réussi à comprendre votre demande. Essayez par exemple : « J’ai une intervention demain à 10 h. »",
           );
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Une erreur est survenue.";
+        getUserFacingErrorMessage(error);
 
       setMessage((currentMessage) =>
         currentMessage.trim()
@@ -1332,7 +1345,7 @@ export default function ForgeBar({
 
     if (!SpeechRecognitionConstructor) {
       onReplyError?.(
-        "La reconnaissance vocale n’est pas disponible dans ce navigateur.",
+        "La saisie vocale n’est pas disponible dans ce navigateur. Écrivez votre demande dans le champ, ou réessayez avec un navigateur compatible.",
       );
       return;
     }
@@ -1382,7 +1395,7 @@ export default function ForgeBar({
     ) => {
       if (event.error !== "aborted") {
         onReplyError?.(
-          "Forge n’a pas réussi à comprendre ta voix. Réessaie.",
+          "Je n’ai pas réussi à comprendre votre voix. Vérifiez votre micro, puis réessayez ou corrigez le texte affiché.",
         );
       }
     };
