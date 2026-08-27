@@ -7,6 +7,10 @@ import {
 } from "pdf-lib";
 
 import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  buildInvoiceDescriptionParts,
+  cleanInvoiceDescriptionValue,
+} from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 
 type PdfRouteProps = {
@@ -120,23 +124,15 @@ export async function GET(
         .join(" "),
     ].filter((value): value is string => Boolean(value?.trim()));
 
-    const serviceDetails = invoice.intervention
-      ? [
-          invoice.intervention.description,
-          invoice.intervention.reportIntervention,
-          invoice.intervention.reportDiagnostic,
-          invoice.intervention.reportTravaux,
-          invoice.intervention.reportRecommendation,
-        ]
-      : [invoice.description];
-
-    const usefulServiceDetails = serviceDetails
-      .map((value) => value?.trim() ?? "")
-      .filter(Boolean)
-      .filter(
-        (value, index, values) =>
-          values.indexOf(value) === index,
-      );
+    const usefulServiceDetails = invoice.intervention
+      ? buildInvoiceDescriptionParts(
+          invoice.intervention,
+        )
+      : [
+          cleanInvoiceDescriptionValue(
+            invoice.description,
+          ),
+        ].filter(Boolean);
 
     const pdfDocument = await PDFDocument.create();
     const regularFont = await pdfDocument.embedFont(

@@ -29,7 +29,7 @@ const features = [
   {
     title: "Devis",
     description:
-      "Créer des devis professionnels rapidement.",
+      "Créez automatiquement des devis professionnels et envoyez-les facilement à vos clients.",
     eyebrow: "Une proposition claire",
   },
   {
@@ -87,7 +87,7 @@ function FeatureIllustration({
       <div className="relative mx-auto max-w-sm rotate-[-2deg] rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/10 transition duration-700 hover:rotate-0 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-600 text-white"><FileText size={20} /></span>
-          <span className="text-xs font-bold tracking-[0.16em] text-slate-400">DEVIS</span>
+          <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold tracking-[0.12em] text-blue-700 dark:bg-blue-950 dark:text-blue-300">DEVIS PRÊT</span>
         </div>
         <div className="mt-8 h-3 w-2/3 rounded-full bg-slate-200 dark:bg-slate-700" />
         <div className="mt-3 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800" />
@@ -95,6 +95,10 @@ function FeatureIllustration({
         <div className="mt-8 flex items-end justify-between border-t border-slate-200 pt-5 dark:border-slate-700">
           <span className="text-sm text-slate-500 dark:text-slate-400">Total TTC</span>
           <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">1 240 €</span>
+        </div>
+        <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+          <Check size={16} />
+          Envoyé au client
         </div>
       </div>
     );
@@ -213,6 +217,25 @@ export default function Features() {
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">0{index + 1} · {feature.eyebrow}</p>
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
+                {index === 1 && (
+                  <div className="mt-8 grid max-w-xl gap-3">
+                    {[
+                      "Génération automatique depuis une demande simple",
+                      "Prestations structurées de manière professionnelle",
+                      "Envoi facile et rapide au client",
+                    ].map((benefit) => (
+                      <div
+                        key={benefit}
+                        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                      >
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                          <Check size={15} />
+                        </span>
+                        {benefit}
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {index === 3 && (
                   <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">

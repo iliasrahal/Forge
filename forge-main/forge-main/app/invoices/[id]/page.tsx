@@ -5,6 +5,7 @@ import SendInvoiceButton from "@/components/SendInvoiceButton";
 import InvoiceAmountForm from "@/components/InvoiceAmountForm";
 
 import { requireCurrentUser } from "@/src/lib/auth";
+import { cleanInvoiceDescriptionValue } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 
 
@@ -112,6 +113,11 @@ export default async function InvoicePage({
       : invoice.client.companyName ??
         "Client professionnel";
 
+  const invoiceDescription =
+    cleanInvoiceDescriptionValue(
+      invoice.description,
+    );
+
 
 
 
@@ -206,7 +212,7 @@ export default async function InvoicePage({
 
 
 
-        {invoice.description && (
+        {invoiceDescription && (
 
           <div className="mt-6">
 
@@ -218,7 +224,7 @@ export default async function InvoicePage({
 
             <div className="mt-2 rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
 
-              {invoice.description}
+              {invoiceDescription}
 
             </div>
 

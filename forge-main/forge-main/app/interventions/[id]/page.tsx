@@ -131,20 +131,20 @@ export default async function InterventionPage({
 
 
 
-        <div className="mt-6">
+        <div className="mx-auto mt-8 max-w-2xl text-center">
 
-          <h1 className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-400">
+          <h1 className="text-balance text-3xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl">
             {intervention.title}
           </h1>
 
 
-          <p className="mt-2 text-lg font-semibold text-blue-700 dark:text-blue-400">
+          <p className="mt-3 text-lg font-semibold text-blue-700 dark:text-blue-400">
             {clientName}
           </p>
 
 
           {clientAddress && (
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500 dark:text-slate-400">
               {clientAddress}
             </p>
           )}
@@ -154,10 +154,10 @@ export default async function InterventionPage({
 
 
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="mx-auto mt-7 flex max-w-lg flex-wrap items-stretch justify-center gap-3">
 
 
-          <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+          <div className="min-w-44 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-3.5 text-center shadow-[0_16px_40px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-800/55 dark:shadow-black/30">
 
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Date
@@ -175,7 +175,7 @@ export default async function InterventionPage({
 
 
 
-          <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+          <div className="min-w-44 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-3.5 text-center shadow-[0_16px_40px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-800/55 dark:shadow-black/30">
 
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Statut
@@ -203,7 +203,7 @@ export default async function InterventionPage({
 
         {intervention.description && (
 
-          <div className="mt-6 rounded-2xl border border-slate-100 p-4 dark:border-slate-700">
+          <div className="mx-auto mt-7 max-w-2xl rounded-2xl border border-slate-200/70 bg-white/55 p-5 text-center dark:border-slate-700 dark:bg-slate-800/35">
 
             <h2 className="font-semibold text-blue-700 dark:text-blue-400">
               Description initiale
@@ -224,10 +224,10 @@ export default async function InterventionPage({
 
 
 
-        <div className="mt-8">
+        <div className="mx-auto mt-10 max-w-2xl text-center">
 
 
-          <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+          <h2 className="text-2xl font-bold tracking-[-0.03em] text-blue-700 dark:text-blue-400">
             Compte rendu
           </h2>
 
@@ -239,16 +239,16 @@ export default async function InterventionPage({
           intervention.reportTravaux ||
           intervention.reportRecommendation ? (
 
-            <div className="mt-4 space-y-5">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
 
 
-              <div>
+              <div className="rounded-2xl border border-slate-200/70 bg-white/60 p-5 text-center shadow-[0_16px_40px_-34px_rgba(15,23,42,0.4)] dark:border-slate-700 dark:bg-slate-800/40">
                 <h3 className="font-semibold text-blue-700 dark:text-blue-400">
                   Intervention réalisée
                 </h3>
 
 
-                <p className="mt-1 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                <p className="mt-2 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-300">
                   {intervention.reportIntervention ||
                     "Non précisé"}
                 </p>
@@ -256,13 +256,13 @@ export default async function InterventionPage({
 
 
 
-              <div>
+              <div className="rounded-2xl border border-slate-200/70 bg-white/60 p-5 text-center shadow-[0_16px_40px_-34px_rgba(15,23,42,0.4)] dark:border-slate-700 dark:bg-slate-800/40">
                 <h3 className="font-semibold text-blue-700 dark:text-blue-400">
                   Diagnostic
                 </h3>
 
 
-                <p className="mt-1 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                <p className="mt-2 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-300">
                   {intervention.reportDiagnostic ||
                     "Non précisé"}
                 </p>
@@ -270,13 +270,13 @@ export default async function InterventionPage({
 
 
 
-              <div>
+              <div className="rounded-2xl border border-slate-200/70 bg-white/60 p-5 text-center shadow-[0_16px_40px_-34px_rgba(15,23,42,0.4)] dark:border-slate-700 dark:bg-slate-800/40">
                 <h3 className="font-semibold text-blue-700 dark:text-blue-400">
                   Travaux effectués
                 </h3>
 
 
-                <p className="mt-1 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                <p className="mt-2 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-300">
                   {intervention.reportTravaux ||
                     "Non précisé"}
                 </p>
@@ -284,13 +284,13 @@ export default async function InterventionPage({
 
 
 
-              <div>
+              <div className="rounded-2xl border border-slate-200/70 bg-white/60 p-5 text-center shadow-[0_16px_40px_-34px_rgba(15,23,42,0.4)] dark:border-slate-700 dark:bg-slate-800/40">
                 <h3 className="font-semibold text-blue-700 dark:text-blue-400">
                   Recommandation
                 </h3>
 
 
-                <p className="mt-1 whitespace-pre-line text-slate-600 dark:text-slate-300">
+                <p className="mt-2 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-300">
                   {intervention.reportRecommendation ||
                     "Aucune recommandation particulière."}
                 </p>

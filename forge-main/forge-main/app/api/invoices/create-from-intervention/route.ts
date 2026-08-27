@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireCurrentUser } from "@/src/lib/auth";
+import { buildInvoiceDescription } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 
 function generateInvoiceReference() {
@@ -56,15 +57,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ invoice: existingInvoice });
     }
 
-    const description = [
-      intervention.description,
-      intervention.reportIntervention,
-      intervention.reportDiagnostic,
-      intervention.reportTravaux,
-      intervention.reportRecommendation,
-    ]
-      .filter(Boolean)
-      .join("\n\n");
+    const description = buildInvoiceDescription(
+      intervention,
+    );
 
     const invoice = await prisma.invoice.create({
       data: {

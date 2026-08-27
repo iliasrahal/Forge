@@ -1099,13 +1099,17 @@ const handleCreateInvoice = async () => {
 
   return (
     <main
-      className={`h-[calc(100dvh-7rem)] overflow-hidden bg-white px-6 text-slate-950 dark:bg-slate-950 dark:text-white ${
-        showGreeting ? "pt-12" : "pt-6"
+      className={`h-[calc(100dvh-7rem)] overflow-hidden bg-white px-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
+        showGreeting
+          ? "pt-8 sm:pt-12"
+          : showUpcoming
+            ? "pt-2 sm:pt-3"
+            : "pt-4 sm:pt-6"
       }`}
     >
-      <div className="mx-auto flex h-full w-full max-w-xl flex-col">
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-xl flex-col overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
-  <div className="mb-4 flex justify-end">
+  <div className={`${showUpcoming ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
     <UserMenu />
   </div>
 
@@ -1113,11 +1117,11 @@ const handleCreateInvoice = async () => {
   {homeState === "intervention" &&
     appointmentsList.length > 0 && (
 
-      <section className="mb-4 min-w-0 shrink-0">
+      <section className={`${showUpcoming ? "mb-1.5" : "mb-3"} min-w-0 shrink-0`}>
 
         <div
           ref={appointmentsContainerRef}
-          className="flex w-full gap-3 overflow-x-auto pb-2"
+          className="flex w-full gap-2 overflow-x-auto pb-1"
         >
 
           {appointmentsList.map((appointment) => {
@@ -1136,7 +1140,7 @@ const handleCreateInvoice = async () => {
                     appointment.id,
                   )
                 }
-                className={`min-w-32 shrink-0 rounded-2xl border px-4 py-3 text-left transition ${
+                className={`min-w-28 shrink-0 rounded-2xl border px-3 py-2 text-left transition ${
                   isSelected
                     ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                     : "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
@@ -1150,7 +1154,7 @@ const handleCreateInvoice = async () => {
                 </span>
 
                 {appointment.time && (
-                  <span className="mt-1 block text-sm font-semibold">
+                  <span className="mt-0.5 block text-sm font-semibold">
                     {appointment.time}
                   </span>
                 )}
@@ -1158,7 +1162,7 @@ const handleCreateInvoice = async () => {
                 {(getAppointmentSubject(
                   appointment,
                 ) || appointment.client) && (
-                  <span className="mt-1 block truncate text-sm font-medium">
+                  <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
                     {getAppointmentSubject(
                       appointment,
                     ) || appointment.client}
@@ -1166,7 +1170,7 @@ const handleCreateInvoice = async () => {
                 )}
 
                 <span
-                  className={`mt-3 inline-flex rounded-full px-2 py-1 text-xs font-medium ${getAppointmentStatusClasses(
+                  className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${getAppointmentStatusClasses(
                     appointment.status,
                     isSelected,
                   )}`}
@@ -1192,7 +1196,7 @@ const handleCreateInvoice = async () => {
   {homeState === "intervention" &&
     upcomingAppointmentsList.length > 0 && (
 
-      <section className="mb-4 shrink-0">
+      <section className="mb-1.5 shrink-0">
 
         <button
           type="button"
@@ -1201,7 +1205,7 @@ const handleCreateInvoice = async () => {
               (previous) => !previous,
             )
           }
-          className="mb-3 flex w-full items-center justify-center text-lg font-semibold text-blue-700"
+          className="mb-1 flex w-full items-center justify-center py-1 text-base font-semibold text-blue-700"
         >
 
           <span>
@@ -1217,7 +1221,7 @@ const handleCreateInvoice = async () => {
 
         {showUpcoming && (
 
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
 
             {upcomingAppointmentsList.map(
               (appointment) => (
@@ -1230,7 +1234,7 @@ const handleCreateInvoice = async () => {
                       appointment.id,
                     )
                   }
-                  className="min-w-40 shrink-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+                  className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
                 >
 
                   <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
@@ -1240,7 +1244,7 @@ const handleCreateInvoice = async () => {
                   </span>
 
                   {appointment.time && (
-                    <span className="mt-1 block text-sm font-semibold">
+                    <span className="mt-0.5 block text-sm font-semibold">
                       {appointment.time}
                     </span>
                   )}
@@ -1248,14 +1252,14 @@ const handleCreateInvoice = async () => {
                   {(getAppointmentSubject(
                     appointment,
                   ) || appointment.client) && (
-                    <span className="mt-1 block truncate text-sm font-medium">
+                    <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
                       {getAppointmentSubject(
                         appointment,
                       ) || appointment.client}
                     </span>
                   )}
 
-                  <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     À venir
                   </span>
 

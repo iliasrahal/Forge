@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { cleanInvoiceDescriptionValue } from "@/src/lib/invoiceDescription";
 
 
 function generateInvoiceReference() {
@@ -127,7 +128,9 @@ export async function POST(
 
 
           description:
-            quote.description,
+            cleanInvoiceDescriptionValue(
+              quote.description,
+            ) || null,
 
 
           amountCents:

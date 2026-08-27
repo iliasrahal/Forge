@@ -354,7 +354,7 @@ export default async function ClientPage({
         <div className="mt-8">
 
 
-          <h2 className="font-semibold text-blue-700 dark:text-blue-400">
+          <h2 className="text-center text-lg font-semibold text-blue-700 dark:text-blue-400">
             Historique
           </h2>
 
