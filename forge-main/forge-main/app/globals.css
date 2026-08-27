@@ -43,6 +43,142 @@ html.dark body {
   color: var(--foreground);
 }
 
+/* Identité premium commune à toute l'application authentifiée. */
+.forge-app-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  overflow-x: clip;
+  background:
+    radial-gradient(circle at 8% 2%, rgb(219 234 254 / 0.72), transparent 28rem),
+    radial-gradient(circle at 92% 28%, rgb(224 242 254 / 0.55), transparent 30rem),
+    #f8fafc;
+}
+
+.forge-app-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  opacity: 0.38;
+  background-image:
+    linear-gradient(rgb(148 163 184 / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+}
+
+.dark .forge-app-shell {
+  background:
+    radial-gradient(circle at 8% 2%, rgb(30 64 175 / 0.2), transparent 28rem),
+    radial-gradient(circle at 92% 28%, rgb(14 116 144 / 0.12), transparent 30rem),
+    #020617;
+}
+
+.dark .forge-app-shell::before {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgb(51 65 85 / 0.45) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(51 65 85 / 0.45) 1px, transparent 1px);
+}
+
+.forge-app-shell main {
+  background-color: transparent !important;
+}
+
+.forge-app-shell :is(h1, h2, h3) {
+  letter-spacing: -0.025em;
+}
+
+.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  border-color: rgb(203 213 225 / 0.9);
+  background-color: rgb(255 255 255 / 0.78);
+  box-shadow: 0 14px 35px -28px rgb(15 23 42 / 0.55);
+  backdrop-filter: blur(12px);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select):focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgb(59 130 246 / 0.11), 0 18px 40px -28px rgb(37 99 235 / 0.5);
+}
+
+.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+  border-color: rgb(51 65 85 / 0.95);
+  background-color: rgb(15 23 42 / 0.78);
+  box-shadow: 0 14px 35px -28px rgb(0 0 0 / 0.9);
+}
+
+.forge-app-shell :is(section, article, form)[class*="rounded-3xl"][class*="bg-white"],
+.forge-app-shell div[class*="rounded-3xl"][class*="bg-white"] {
+  border-color: rgb(226 232 240 / 0.85) !important;
+  background-color: rgb(255 255 255 / 0.8) !important;
+  box-shadow: 0 24px 70px -42px rgb(15 23 42 / 0.48) !important;
+  backdrop-filter: blur(18px);
+}
+
+.dark .forge-app-shell :is(section, article, form)[class*="rounded-3xl"][class*="bg-white"],
+.dark .forge-app-shell div[class*="rounded-3xl"][class*="bg-white"] {
+  border-color: rgb(51 65 85 / 0.82) !important;
+  background-color: rgb(15 23 42 / 0.8) !important;
+  box-shadow: 0 24px 70px -42px rgb(0 0 0 / 0.9) !important;
+}
+
+.forge-app-shell button,
+.forge-app-shell a {
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.forge-app-shell button[class*="bg-blue-600"]:not(:disabled):hover,
+.forge-app-shell a[class*="bg-blue-600"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px -20px rgb(37 99 235 / 0.75);
+}
+
+.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-black"] {
+  backdrop-filter: blur(8px);
+  background-color: rgb(2 6 23 / 0.48) !important;
+}
+
+.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-950"] {
+  backdrop-filter: blur(8px);
+  background-color: rgb(2 6 23 / 0.48) !important;
+}
+
+.forge-app-shell :is(div, p)[class*="bg-red-50"],
+.forge-app-shell :is(div, p)[class*="bg-green-50"],
+.forge-app-shell :is(div, p)[class*="bg-blue-50"] {
+  border: 1px solid rgb(226 232 240 / 0.7);
+  box-shadow: 0 14px 36px -30px rgb(15 23 42 / 0.45);
+}
+
+.forge-app-shell [class*="border-dashed"] {
+  background-color: rgb(248 250 252 / 0.62);
+  backdrop-filter: blur(10px);
+}
+
+.dark .forge-app-shell [class*="border-dashed"] {
+  background-color: rgb(15 23 42 / 0.56);
+}
+
+.forge-app-shell main > :first-child {
+  animation: forge-screen-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes forge-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .auth-page-enter {
   animation: auth-page-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -83,6 +219,10 @@ html.dark body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .forge-app-shell main > :first-child {
+    animation: none;
+  }
+
   .auth-page-enter {
     animation: none;
   }

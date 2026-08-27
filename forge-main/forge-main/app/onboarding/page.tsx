@@ -68,9 +68,13 @@ export default function OnboardingPage() {
       );
 
 
-    setFirstName(
-      savedFirstName?.trim() || "",
-    );
+    const frame = window.requestAnimationFrame(() => {
+      setFirstName(
+        savedFirstName?.trim() || "",
+      );
+    });
+
+    return () => window.cancelAnimationFrame(frame);
 
   }, []);
 
@@ -230,12 +234,12 @@ localStorage.setItem(
 
 
   const jobButtonClassName =
-    "h-14 w-full rounded-2xl border-2 border-slate-200 bg-white px-5 text-base font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-blue-950 dark:hover:text-blue-300";
+    "h-14 w-full rounded-2xl border border-white/80 bg-white/75 px-5 text-base font-semibold text-slate-800 shadow-[0_14px_38px_-28px_rgba(15,23,42,0.6)] backdrop-blur transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:text-blue-700 dark:border-slate-700/80 dark:bg-slate-900/75 dark:text-slate-100 dark:hover:border-blue-600 dark:hover:bg-slate-900 dark:hover:text-blue-300";
 
 
 
   const workModeButtonClassName =
-    "h-16 w-full rounded-2xl border-2 border-slate-200 bg-white px-6 text-lg font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-blue-950 dark:hover:text-blue-300";
+    "h-16 w-full rounded-2xl border border-white/80 bg-white/75 px-6 text-lg font-semibold text-slate-800 shadow-[0_14px_38px_-28px_rgba(15,23,42,0.6)] backdrop-blur transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-white hover:text-blue-700 dark:border-slate-700/80 dark:bg-slate-900/75 dark:text-slate-100 dark:hover:border-blue-600 dark:hover:bg-slate-900 dark:hover:text-blue-300";
 
 
 
@@ -385,7 +389,7 @@ localStorage.setItem(
           <div>
 
 
-            <h1 className="text-center text-4xl font-bold text-blue-700">
+            <h1 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
               Tu travailles…
             </h1>
 
@@ -439,7 +443,7 @@ localStorage.setItem(
   <ForgeLogo size={80} />
 </div>
 
-            <h1 className="mt-8 text-4xl font-bold text-blue-700">
+            <h1 className="mt-8 text-4xl font-bold text-blue-700 dark:text-blue-400">
               Ton espace est prêt.
             </h1>
 
@@ -467,9 +471,9 @@ localStorage.setItem(
   />
 
   <p className="text-sm text-slate-600 dark:text-slate-300">
-    J'accepte les{" "}
+    J&apos;accepte les{" "}
     <span className="font-semibold text-blue-700">
-      Conditions Générales d'Utilisation
+      Conditions Générales d&apos;Utilisation
     </span>{" "}
     et la{" "}
     <span className="font-semibold text-blue-700">

@@ -58,10 +58,10 @@ export default function BottomNavigation() {
   const getLinkClassName = (
     isActive: boolean,
   ) =>
-    `relative flex min-h-16 flex-col items-center justify-center rounded-2xl px-3 transition ${
+    `relative flex min-h-16 flex-col items-center justify-center rounded-2xl px-3 transition duration-300 ${
       isActive
-        ? "bg-blue-50 font-semibold text-blue-600 dark:bg-blue-950 dark:text-blue-400"
-        : "text-slate-500 hover:bg-slate-50 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+        ? "bg-blue-50/90 font-semibold text-blue-600 shadow-sm ring-1 ring-blue-100 dark:bg-blue-950/80 dark:text-blue-400 dark:ring-blue-900"
+        : "text-slate-500 hover:-translate-y-0.5 hover:bg-white/80 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-blue-400"
     }`;
 
 

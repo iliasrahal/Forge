@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import AuthShell from "@/components/auth/AuthShell";
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -46,19 +48,15 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
-      <section className="w-full max-w-md">
+    <AuthShell
+      title="Nouveau mot de passe"
+      description="Choisis un mot de passe d’au moins 8 caractères."
+    >
         <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
-          Retour à la connexion
+          ← Retour à la connexion
         </Link>
-        <h1 className="mt-8 text-4xl font-bold text-blue-700">
-          Nouveau mot de passe
-        </h1>
-        <p className="mt-3 text-slate-500 dark:text-slate-400">
-          Choisis un mot de passe d’au moins 8 caractères.
-        </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <input
             type="password"
             value={password}
@@ -92,7 +90,6 @@ export default function ResetPasswordPage() {
             {isLoading ? "Enregistrement..." : "Réinitialiser le mot de passe"}
           </button>
         </form>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

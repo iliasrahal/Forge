@@ -17,7 +17,7 @@ export default function AuthShell({
   description,
   eyebrow = "Votre activité, simplement.",
   wide = false,
-  bare = false,
+  bare = true,
 }: AuthShellProps) {
   return (
     <main className="relative isolate flex min-h-dvh overflow-hidden bg-slate-50 px-5 py-8 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-8 sm:py-12">
@@ -84,7 +84,7 @@ export default function AuthShell({
 
 
         {/* Formulaire sans carte blanche : intégré dans le fond */}
-        <section className="mx-auto max-w-sm">
+        <section className={`mx-auto ${wide ? "max-w-xl" : "max-w-sm"}`}>
           {children}
         </section>
 

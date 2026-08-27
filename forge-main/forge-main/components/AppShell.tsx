@@ -38,8 +38,8 @@ export default function AppShell({
       <div
         className={
           hideNavigation
-            ? "min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white"
-            : "min-h-screen pb-32 bg-white text-slate-950 dark:bg-slate-950 dark:text-white"
+            ? "forge-public-shell min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white"
+            : "forge-app-shell min-h-screen pb-32 text-slate-950 dark:text-white"
         }
       >
         {children}
@@ -59,13 +59,15 @@ export default function AppShell({
               max-w-md
               rounded-3xl
               border
-              border-slate-200
-              bg-white
+              border-white/80
+              bg-white/80
               px-5
               py-3
-              shadow-lg
-              dark:border-slate-700
-              dark:bg-slate-900
+              shadow-[0_22px_60px_-28px_rgba(15,23,42,0.45)]
+              backdrop-blur-xl
+              dark:border-slate-700/80
+              dark:bg-slate-900/80
+              dark:shadow-black/40
             "
           >
 
