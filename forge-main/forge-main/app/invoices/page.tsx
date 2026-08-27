@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 
@@ -92,9 +94,11 @@ export default async function InvoicesPage() {
           invoices.map((invoice) => (
 
 
-            <div
+            <Link
               key={invoice.id}
-              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+              href={`/invoices/${invoice.id}`}
+              aria-label={`Ouvrir la facture ${invoice.reference}`}
+              className="block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500"
             >
 
 
@@ -126,7 +130,7 @@ export default async function InvoicesPage() {
 
 
 
-            </div>
+            </Link>
 
 
           ))

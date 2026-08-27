@@ -41,6 +41,16 @@ export async function PATCH(
       );
     }
 
+    if (invoice.status !== "BROUILLON") {
+      return NextResponse.json(
+        {
+          error:
+            "Seule une facture en brouillon peut être modifiée.",
+        },
+        { status: 409 },
+      );
+    }
+
     const updatedInvoice = await prisma.invoice.update({
       where: { id },
       data: { amountCents: Math.round(amount * 100) },

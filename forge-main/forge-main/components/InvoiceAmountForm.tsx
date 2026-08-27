@@ -6,15 +6,19 @@ import { useRouter } from "next/navigation";
 type InvoiceAmountFormProps = {
   invoiceId: string;
   amountCents: number;
+  editable: boolean;
 };
 
 export default function InvoiceAmountForm({
   invoiceId,
   amountCents,
+  editable,
 }: InvoiceAmountFormProps) {
   const router = useRouter();
   const [amount, setAmount] = useState((amountCents / 100).toFixed(2));
-  const [isEditing, setIsEditing] = useState(amountCents === 0);
+  const [isEditing, setIsEditing] = useState(
+    editable && amountCents === 0,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -101,13 +105,15 @@ export default function InvoiceAmountForm({
               currency: "EUR",
             }).format(amountCents / 100)}
           </p>
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-            className="text-sm font-semibold text-blue-700 dark:text-blue-300"
-          >
-            Modifier
-          </button>
+          {editable && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="text-sm font-semibold text-blue-700 dark:text-blue-300"
+            >
+              Modifier
+            </button>
+          )}
         </div>
       )}
     </div>

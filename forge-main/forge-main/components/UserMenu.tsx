@@ -99,7 +99,7 @@ export default function UserMenu() {
 
 
 
-    router.push("/");
+    router.push("/login");
     router.refresh();
 
 

@@ -5,6 +5,7 @@ import {
 } from "pdf-lib";
 
 import { prisma } from "@/src/lib/prisma";
+import { requireCurrentUser } from "@/src/lib/auth";
 
 
 type PdfRouteProps = {
@@ -69,6 +70,9 @@ export async function GET(
 
   try {
 
+    const currentUser =
+      await requireCurrentUser();
+
 
     const {
       id,
@@ -77,10 +81,13 @@ export async function GET(
 
 
     const invoice =
-      await prisma.invoice.findUnique({
+      await prisma.invoice.findFirst({
 
         where: {
           id,
+          client: {
+            userId: currentUser.id,
+          },
         },
 
         include: {

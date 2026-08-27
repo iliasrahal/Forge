@@ -86,6 +86,8 @@ export default async function InvoicePage({
 
         quote: true,
 
+        intervention: true,
+
       },
 
     });
@@ -174,6 +176,7 @@ export default async function InvoicePage({
         <InvoiceAmountForm
           invoiceId={invoice.id}
           amountCents={invoice.amountCents}
+          editable={invoice.status === "BROUILLON"}
         />
 
 
@@ -227,6 +230,25 @@ export default async function InvoicePage({
 
 
 
+        {invoice.intervention && (
+
+          <div className="mt-6 rounded-2xl border border-slate-200 p-5 dark:border-slate-700">
+
+            <p className="text-sm text-slate-500">
+              Intervention associée
+            </p>
+
+            <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+              {invoice.intervention.title}
+            </p>
+
+          </div>
+
+        )}
+
+
+
+
         <div className="mt-6 space-y-4 pt-5">
 
 
@@ -234,6 +256,16 @@ export default async function InvoicePage({
             invoiceId={invoice.id}
             clientId={invoice.clientId}
           />
+
+
+
+          <a
+            href={`/api/invoices/${invoice.id}/pdf`}
+            download={`facture-${invoice.reference}.pdf`}
+            className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+          >
+            Télécharger la facture
+          </a>
 
 
 
