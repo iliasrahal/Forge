@@ -45,7 +45,7 @@ export async function getCurrentUser() {
     session.expiresAt <= new Date()
   ) {
 
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
 
       where: {
         id: session.id,
