@@ -74,6 +74,9 @@ const [isExtending, setIsExtending] =
 const [appointmentsList, setAppointmentsList] =
   useState<Appointment[]>(todayAppointments ?? []);
 
+const [upcomingAppointmentsList, setUpcomingAppointmentsList] =
+  useState<Appointment[]>(upcomingAppointments ?? []);
+
 const [
   selectedAppointmentId,
   setSelectedAppointmentId,
@@ -96,6 +99,15 @@ const [
     useState(false);
 const [showUpcoming, setShowUpcoming] =
   useState(false);
+const [actionMode, setActionMode] =
+  useState<"edit" | "reschedule" | null>(null);
+const [actionClientName, setActionClientName] = useState("");
+const [actionTitle, setActionTitle] = useState("");
+const [actionDescription, setActionDescription] = useState("");
+const [actionDate, setActionDate] = useState("");
+const [actionTime, setActionTime] = useState("");
+const [actionError, setActionError] = useState("");
+const [isSavingAction, setIsSavingAction] = useState(false);
   const [
     isInitialWelcomeActive,
     setIsInitialWelcomeActive,
@@ -119,8 +131,8 @@ const [showUpcoming, setShowUpcoming] =
   const [nextAppointmentId, setNextAppointmentId] =
     useState<string | null>(null);
 const currentAppointment = [
-  ...(todayAppointments ?? []),
-  ...(upcomingAppointments ?? []),
+  ...appointmentsList,
+  ...upcomingAppointmentsList,
 ].find(
   (appointment) =>
     appointment.id === selectedAppointmentId,
@@ -130,6 +142,7 @@ const currentAppointment = [
 useEffect(() => {
 
   setAppointmentsList(todayAppointments ?? []);
+  setUpcomingAppointmentsList(upcomingAppointments ?? []);
 
 
   setSelectedAppointmentId((currentId) => {
@@ -592,6 +605,106 @@ const handleSaveNotes = async (notes: string) => {
     setHomeState("intervention");
   };
 
+  const openInterventionAction = (
+    mode: "edit" | "reschedule",
+  ) => {
+    if (!currentAppointment) {
+      return;
+    }
+
+    setActionMode(mode);
+    setActionClientName(currentAppointment.client);
+    setActionTitle(currentAppointment.intervention);
+    setActionDescription(currentAppointment.description ?? "");
+    setActionDate(currentAppointment.date);
+    setActionTime(currentAppointment.time);
+    setActionError("");
+  };
+
+  const handleSaveInterventionAction = async () => {
+    if (!currentAppointment || !actionMode || isSavingAction) {
+      return;
+    }
+
+    setIsSavingAction(true);
+    setActionError("");
+
+    try {
+      const response = await fetch("/api/interventions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation:
+            actionMode === "edit" ? "edit" : "rescheduleById",
+          interventionId: currentAppointment.id,
+          clientName: actionClientName,
+          title: actionTitle,
+          description: actionDescription,
+          scheduledDate:
+            actionMode === "edit" ? currentAppointment.date : actionDate,
+          scheduledTime: actionTime,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Impossible de modifier l’intervention.");
+      }
+
+      setActionMode(null);
+      router.refresh();
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Une erreur est survenue.",
+      );
+    } finally {
+      setIsSavingAction(false);
+    }
+  };
+
+  const handleDeleteIntervention = async () => {
+    if (
+      !currentAppointment ||
+      !window.confirm("Supprimer définitivement cette intervention ?")
+    ) {
+      return;
+    }
+
+    setActionError("");
+
+    try {
+      const response = await fetch("/api/interventions", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interventionId: currentAppointment.id }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Impossible de supprimer l’intervention.");
+      }
+
+      const deletedId = currentAppointment.id;
+      const remainingToday = appointmentsList.filter(
+        (appointment) => appointment.id !== deletedId,
+      );
+      const remainingUpcoming = upcomingAppointmentsList.filter(
+        (appointment) => appointment.id !== deletedId,
+      );
+
+      setAppointmentsList(remainingToday);
+      setUpcomingAppointmentsList(remainingUpcoming);
+      setSelectedAppointmentId(
+        remainingToday[0]?.id ?? remainingUpcoming[0]?.id ?? null,
+      );
+      router.refresh();
+    } catch (error) {
+      setReportError(
+        error instanceof Error ? error.message : "Une erreur est survenue.",
+      );
+    }
+  };
+
   const handleInterventionCreated = (
     interventionId: string,
   ) => {
@@ -961,7 +1074,7 @@ const handleCreateInvoice = async () => {
 
 
   {homeState === "intervention" &&
-    upcomingAppointments.length > 0 && (
+    upcomingAppointmentsList.length > 0 && (
 
       <section className="mb-4 shrink-0">
 
@@ -976,7 +1089,7 @@ const handleCreateInvoice = async () => {
         >
 
           <span>
-            Prochainement ({upcomingAppointments.length})
+            Prochainement ({upcomingAppointmentsList.length})
           </span>
 
           <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
@@ -990,7 +1103,7 @@ const handleCreateInvoice = async () => {
 
           <div className="flex gap-3 overflow-x-auto pb-2">
 
-            {upcomingAppointments.map(
+            {upcomingAppointmentsList.map(
               (appointment) => (
 
                 <button
@@ -1036,6 +1149,96 @@ const handleCreateInvoice = async () => {
     )}
 
 
+  {actionMode && currentAppointment && (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
+      <section className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+        <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+          {actionMode === "edit" ? "Modifier l’intervention" : "Décaler l’intervention"}
+        </h2>
+
+        <div className="mt-5 space-y-4">
+          {actionMode === "edit" && (
+            <>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Client
+                <input
+                  value={actionClientName}
+                  onChange={(event) => setActionClientName(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Titre
+                <input
+                  value={actionTitle}
+                  onChange={(event) => setActionTitle(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Description / cause
+                <textarea
+                  rows={3}
+                  value={actionDescription}
+                  onChange={(event) => setActionDescription(event.target.value)}
+                  className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+            </>
+          )}
+
+          {actionMode === "reschedule" && (
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Date
+              <input
+                type="date"
+                value={actionDate}
+                onChange={(event) => setActionDate(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+          )}
+
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Heure
+            <input
+              type="time"
+              value={actionTime}
+              onChange={(event) => setActionTime(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+
+          {actionError && (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {actionError}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setActionMode(null)}
+            disabled={isSavingAction}
+            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold dark:border-slate-700"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveInterventionAction}
+            disabled={isSavingAction}
+            className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
+          >
+            {isSavingAction ? "Enregistrement…" : "Enregistrer"}
+          </button>
+        </div>
+      </section>
+    </div>
+  )}
+
+
 
   <HomeContent
 
@@ -1057,6 +1260,12 @@ const handleCreateInvoice = async () => {
     onStartIntervention={
       handleStartIntervention
     }
+
+    onEditIntervention={() => openInterventionAction("edit")}
+
+    onRescheduleIntervention={() => openInterventionAction("reschedule")}
+
+    onDeleteIntervention={handleDeleteIntervention}
 
 
     onFinishIntervention={

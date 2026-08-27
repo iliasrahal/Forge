@@ -11,6 +11,9 @@ type CurrentInterventionCardProps = {
   appointment: Appointment;
   isInProgress: boolean;
   onStart: () => void;
+  onEdit: () => void;
+  onReschedule: () => void;
+  onDelete: () => void;
 };
 
 
@@ -19,6 +22,9 @@ export default function CurrentInterventionCard({
   appointment,
   isInProgress,
   onStart,
+  onEdit,
+  onReschedule,
+  onDelete,
 }: CurrentInterventionCardProps) {
   return (
     <div className="w-full rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
@@ -74,6 +80,30 @@ export default function CurrentInterventionCard({
           ? "Continuer l'intervention"
           : "Commencer l'intervention"}
       </button>
+
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
+        >
+          Modifier
+        </button>
+        <button
+          type="button"
+          onClick={onReschedule}
+          className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-200"
+        >
+          Décaler
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950"
+        >
+          Supprimer
+        </button>
+      </div>
 
 
 

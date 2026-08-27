@@ -42,6 +42,8 @@ async function getCurrentUser() {
 
 type InterventionOperation =
   | "reschedule"
+  | "rescheduleById"
+  | "edit"
   | "extend"
   | "updateNotes"
   | "cancel"
@@ -336,6 +338,8 @@ export async function PATCH(request: Request) {
 
     const operation: InterventionOperation | null =
       body.operation === "reschedule" ||
+      body.operation === "rescheduleById" ||
+      body.operation === "edit" ||
       body.operation === "extend" ||
       body.operation === "updateNotes" ||
       body.operation === "cancel" ||
@@ -355,6 +359,111 @@ export async function PATCH(request: Request) {
       typeof body.interventionId === "string"
         ? body.interventionId.trim()
         : "";
+
+    if (operation === "edit" || operation === "rescheduleById") {
+      if (!interventionId) {
+        return NextResponse.json(
+          { error: "L’identifiant de l’intervention est obligatoire." },
+          { status: 400 },
+        );
+      }
+
+      const existingIntervention =
+        await prisma.intervention.findFirst({
+          where: {
+            id: interventionId,
+            client: { userId: currentUser.id },
+          },
+          include: { client: true },
+        });
+
+      if (!existingIntervention) {
+        return NextResponse.json(
+          { error: "Cette intervention est introuvable." },
+          { status: 404 },
+        );
+      }
+
+      const scheduledDate =
+        typeof body.scheduledDate === "string"
+          ? body.scheduledDate.trim()
+          : "";
+      const scheduledTime =
+        typeof body.scheduledTime === "string"
+          ? body.scheduledTime.trim()
+          : "";
+      const scheduledAt = createScheduledAt(
+        scheduledDate,
+        scheduledTime,
+      );
+
+      if (!scheduledAt) {
+        return NextResponse.json(
+          { error: "La date ou l’heure est invalide." },
+          { status: 400 },
+        );
+      }
+
+      if (operation === "rescheduleById") {
+        const updatedIntervention =
+          await prisma.intervention.update({
+            where: { id: interventionId },
+            data: {
+              scheduledAt,
+              status: "PLANIFIEE",
+            },
+          });
+
+        return NextResponse.json({
+          intervention: updatedIntervention,
+          operation,
+        });
+      }
+
+      const clientName =
+        typeof body.clientName === "string"
+          ? body.clientName.trim()
+          : "";
+      const title =
+        typeof body.title === "string"
+          ? body.title.trim()
+          : "";
+      const description = cleanOptionalString(body.description);
+
+      if (!clientName || !title) {
+        return NextResponse.json(
+          { error: "Le client et le titre sont obligatoires." },
+          { status: 400 },
+        );
+      }
+
+      const clientData =
+        existingIntervention.client.type === "PROFESSIONNEL"
+          ? { companyName: clientName }
+          : splitClientName(clientName);
+
+      const [, updatedIntervention] =
+        await prisma.$transaction([
+          prisma.client.update({
+            where: { id: existingIntervention.clientId },
+            data: clientData,
+          }),
+          prisma.intervention.update({
+            where: { id: interventionId },
+            data: {
+              title,
+              description,
+              scheduledAt,
+            },
+          }),
+        ]);
+
+      return NextResponse.json({
+        intervention: updatedIntervention,
+        operation,
+        clientName,
+      });
+    }
 
     if (operation === "start" || operation === "complete") {
       if (!interventionId) {
@@ -726,6 +835,57 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(
       { error: "Impossible de modifier l’intervention." },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "Tu dois être connecté pour supprimer une intervention." },
+        { status: 401 },
+      );
+    }
+
+    const body = await request.json();
+    const interventionId =
+      typeof body.interventionId === "string"
+        ? body.interventionId.trim()
+        : "";
+
+    const intervention =
+      await prisma.intervention.findFirst({
+        where: {
+          id: interventionId,
+          client: { userId: currentUser.id },
+        },
+        select: { id: true },
+      });
+
+    if (!intervention) {
+      return NextResponse.json(
+        { error: "Cette intervention est introuvable." },
+        { status: 404 },
+      );
+    }
+
+    await prisma.intervention.delete({
+      where: { id: intervention.id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(
+      "Erreur lors de la suppression de l’intervention :",
+      error,
+    );
+
+    return NextResponse.json(
+      { error: "Impossible de supprimer l’intervention." },
       { status: 500 },
     );
   }

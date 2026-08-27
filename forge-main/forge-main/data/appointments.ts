@@ -19,6 +19,7 @@ export type Appointment = {
   date: string;
   time: string;
   intervention: string;
+  description?: string;
   status: AppointmentStatus;
   notes?: string;
   report?: InterventionReport;

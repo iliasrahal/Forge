@@ -65,6 +65,9 @@ type HomeContentProps = {
   savedClientName?: string;
 
   onStartIntervention: () => void;
+  onEditIntervention: () => void;
+  onRescheduleIntervention: () => void;
+  onDeleteIntervention: () => void;
   onFinishIntervention: () => void;
   onExtendIntervention: () => void;
   onSaveNotes: (notes: string) => Promise<void>;
@@ -92,6 +95,9 @@ export default function HomeContent({
   error,
   savedClientName,
   onStartIntervention,
+  onEditIntervention,
+  onRescheduleIntervention,
+  onDeleteIntervention,
   onFinishIntervention,
   onExtendIntervention,
   onSaveNotes,
@@ -775,6 +781,9 @@ export default function HomeContent({
   appointment={currentAppointment}
   isInProgress={currentAppointment.status === "inProgress"}
   onStart={onStartIntervention}
+  onEdit={onEditIntervention}
+  onReschedule={onRescheduleIntervention}
+  onDelete={onDeleteIntervention}
 />
 )}
 

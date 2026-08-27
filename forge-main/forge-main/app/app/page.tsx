@@ -62,6 +62,7 @@ function mapIntervention(intervention: any): Appointment {
       minute: "2-digit",
     }),
     intervention: intervention.title,
+    description: intervention.description ?? undefined,
     status: mapStatus(intervention.status),
     notes,
     report:
