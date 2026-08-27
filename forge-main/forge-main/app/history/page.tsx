@@ -18,7 +18,10 @@ export default async function HistoryPage() {
   const interventions =
     await prisma.intervention.findMany({
       where: {
-        userId: currentUser.id,
+        OR: [
+          { userId: currentUser.id },
+          { client: { userId: currentUser.id } },
+        ],
         status: "TERMINEE",
       },
 

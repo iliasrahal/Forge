@@ -374,7 +374,10 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            userId: currentUser.id,
+            OR: [
+              { userId: currentUser.id },
+              { client: { userId: currentUser.id } },
+            ],
           },
           include: { client: true },
         });
@@ -470,7 +473,10 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            userId: currentUser.id,
+            OR: [
+              { userId: currentUser.id },
+              { client: { userId: currentUser.id } },
+            ],
           },
           include: {
             client: true,
@@ -634,7 +640,10 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            userId: currentUser.id,
+            OR: [
+              { userId: currentUser.id },
+              { client: { userId: currentUser.id } },
+            ],
           },
         });
 
@@ -893,7 +902,10 @@ export async function DELETE(request: Request) {
       await prisma.intervention.findFirst({
         where: {
           id: interventionId,
-          userId: currentUser.id,
+          OR: [
+            { userId: currentUser.id },
+            { client: { userId: currentUser.id } },
+          ],
         },
         select: { id: true },
       });

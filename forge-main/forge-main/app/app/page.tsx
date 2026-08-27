@@ -89,7 +89,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const interventions = await prisma.intervention.findMany({
     where: {
-      userId: currentUser.id,
+      OR: [
+        { userId: currentUser.id },
+        { client: { userId: currentUser.id } },
+      ],
       status: {
         in: ["PLANIFIEE", "EN_COURS"],
       },

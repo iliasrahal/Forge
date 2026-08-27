@@ -27,7 +27,10 @@ export async function POST(request: Request) {
       where: {
         id: interventionId,
         status: "TERMINEE",
-        userId: currentUser.id,
+        OR: [
+          { userId: currentUser.id },
+          { client: { userId: currentUser.id } },
+        ],
       },
     });
 

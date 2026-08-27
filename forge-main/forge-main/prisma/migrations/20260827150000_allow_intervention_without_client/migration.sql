@@ -5,7 +5,6 @@ SET "userId" = "Client"."userId"
 FROM "Client"
 WHERE "Intervention"."clientId" = "Client"."id";
 
-ALTER TABLE "Intervention" ALTER COLUMN "userId" SET NOT NULL;
 ALTER TABLE "Intervention" ALTER COLUMN "clientId" DROP NOT NULL;
 
 ALTER TABLE "Intervention" DROP CONSTRAINT IF EXISTS "Intervention_clientId_fkey";
