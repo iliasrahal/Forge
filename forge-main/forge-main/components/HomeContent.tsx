@@ -339,17 +339,22 @@ export default function HomeContent({
 
           <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
 
-            {currentAppointment?.client}
+            {currentAppointment?.client ||
+              currentAppointment?.intervention ||
+              "Intervention"}
 
           </h2>
 
 
 
-          <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
+          {currentAppointment?.client && (
+            <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
 
-            {currentAppointment?.intervention}
+              {currentAppointment.intervention ||
+                "Intervention"}
 
-          </p>
+            </p>
+          )}
 
 
 

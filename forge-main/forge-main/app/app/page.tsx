@@ -38,7 +38,7 @@ function mapIntervention(intervention: any): Appointment {
       : undefined;
 
   const clientName = !intervention.client
-    ? "Client à renseigner"
+    ? ""
     : intervention.client.type === "PROFESSIONNEL"
       ? intervention.client.companyName ?? "Client professionnel"
       : `${intervention.client.firstName ?? ""} ${
@@ -55,7 +55,7 @@ function mapIntervention(intervention: any): Appointment {
 
   return {
     id: intervention.id,
-    client: clientName || "Client sans nom",
+    client: clientName,
     hasClient: Boolean(intervention.clientId),
     address,
     date: intervention.scheduledAt.toISOString().slice(0, 10),
@@ -66,7 +66,8 @@ function mapIntervention(intervention: any): Appointment {
             hour: "2-digit",
             minute: "2-digit",
           }),
-    intervention: intervention.title,
+    intervention:
+      intervention.title || "Intervention",
     description: intervention.description ?? undefined,
     status: mapStatus(intervention.status),
     notes,

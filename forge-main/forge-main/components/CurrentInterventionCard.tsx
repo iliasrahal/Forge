@@ -38,14 +38,19 @@ export default function CurrentInterventionCard({
 
 
       <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
-        {appointment.client}
+        {appointment.client ||
+          appointment.intervention ||
+          "Intervention"}
       </h2>
 
 
 
-      <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
-        {appointment.intervention}
-      </p>
+      {appointment.client && (
+        <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
+          {appointment.intervention ||
+            "Intervention"}
+        </p>
+      )}
 
 
 

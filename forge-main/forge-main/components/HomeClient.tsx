@@ -1119,7 +1119,9 @@ const handleCreateInvoice = async () => {
                 </span>
 
                 <span className="mt-1 block truncate text-sm font-medium">
-                  {appointment.client}
+                  {appointment.client ||
+                    appointment.intervention ||
+                    "Intervention"}
                 </span>
 
                 <span
@@ -1201,7 +1203,9 @@ const handleCreateInvoice = async () => {
                   </span>
 
                   <span className="mt-1 block truncate text-sm font-medium">
-                    {appointment.client}
+                    {appointment.client ||
+                      appointment.intervention ||
+                      "Intervention"}
                   </span>
 
                   <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
