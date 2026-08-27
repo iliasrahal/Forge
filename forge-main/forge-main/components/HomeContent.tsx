@@ -589,9 +589,9 @@ export default function HomeContent({
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
         <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
-          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Fiche client créée</h2>
+          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Client temporaire</h2>
 
-          <p className="mt-4 text-slate-600 dark:text-slate-300">J'ai créé une fiche client temporaire pour cette intervention.</p>
+          <p className="mt-4 text-slate-600 dark:text-slate-300">Ce client a été créé uniquement pour cette intervention.</p>
 
           <p className="mt-6 text-lg font-bold">Souhaites‑tu conserver ce client ?</p>
 

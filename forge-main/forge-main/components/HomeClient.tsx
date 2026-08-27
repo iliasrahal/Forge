@@ -35,6 +35,7 @@ type InterventionReport = {
 type CompleteInterventionResponse = {
   clientId?: string;
   clientName?: string;
+  clientIsTemporary?: boolean;
   interventionId?: string;
   error?: string;
 };
@@ -891,7 +892,11 @@ const handleSaveNotes = async (notes: string) => {
 
         setReport(null);
         setReportError("");
-        setHomeState("clientChoice");
+        setHomeState(
+          data.clientIsTemporary
+            ? "clientChoice"
+            : "invoiceChoice",
+        );
         router.refresh();
       } catch (error) {
         setReportError(
@@ -956,25 +961,18 @@ console.log("ID CLIENT ENVOYE :", savedClientId);
 
 
 const handleDeleteTemporaryClient = async () => {
-  // Use savedClientName as fallback when currentAppointment is not available
-  const clientNameToDelete =
-    currentAppointment?.client || savedClientName || "";
-
-  if (!clientNameToDelete) {
-    console.warn("No client name available to delete");
+  if (!savedClientId) {
     setReportError("Aucun client trouvé à supprimer.");
     return;
   }
 
   try {
-    console.log("Deleting temporary client:", clientNameToDelete);
-
     const response = await fetch("/api/clients", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ clientName: clientNameToDelete }),
+      body: JSON.stringify({ clientId: savedClientId }),
     });
 
     const data = await response.json().catch(() => ({}));
@@ -985,14 +983,10 @@ const handleDeleteTemporaryClient = async () => {
       return;
     }
 
-    // suppression réussie — avancer à l'étape devis
-    // Conserver l'ID renvoyé par l'API si fourni afin de permettre
-    // la création du devis même après archivage. Ne pas vider
     if (data && data.clientId) {
       setSavedClientId(data.clientId);
     }
 
-    setSavedClientName(clientNameToDelete);
     setReportError("");
     setHomeState("invoiceChoice");
     router.refresh();

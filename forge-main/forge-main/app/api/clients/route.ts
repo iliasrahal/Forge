@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { requireCurrentUser } from "@/src/lib/auth";
 
 
 function normalize(value: string) {
@@ -263,21 +264,21 @@ export async function PATCH(request: Request) {
 // Suppression uniquement des clients temporaires créés par Forge
 export async function DELETE(request: Request) {
   try {
+    const currentUser =
+      await requireCurrentUser();
 
     const body = await request.json();
 
-
-    const clientName =
-      typeof body.clientName === "string"
-        ? body.clientName.trim()
+    const clientId =
+      typeof body.clientId === "string"
+        ? body.clientId.trim()
         : "";
 
-
-    if (!clientName) {
+    if (!clientId) {
       return NextResponse.json(
         {
           error:
-            "Précise le nom du client à supprimer.",
+            "Précise le client à supprimer.",
         },
         {
           status: 400,
@@ -286,21 +287,13 @@ export async function DELETE(request: Request) {
     }
 
 
-    const clients =
-      await prisma.client.findMany();
-
-
-    const normalizedClientName =
-      normalize(clientName);
-
-
     const client =
-      clients.find(
-        (client) =>
-          normalize(
-            getClientDisplayName(client),
-          ) === normalizedClientName,
-      );
+      await prisma.client.findFirst({
+        where: {
+          id: clientId,
+          userId: currentUser.id,
+        },
+      });
 
 
     if (!client) {
@@ -331,7 +324,7 @@ export async function DELETE(request: Request) {
 
     const updated = await prisma.client.update({
       where: { id: client.id },
-      data: { archived: true, isTemporary: false },
+      data: { archived: true },
     });
 
     return NextResponse.json({

@@ -554,6 +554,7 @@ export async function PATCH(request: Request) {
                     clientType === "PROFESSIONNEL" ? companyName : null,
                   phone,
                   street,
+                  isTemporary: true,
                   userId: currentUser.id,
                 },
               });
@@ -626,6 +627,9 @@ export async function PATCH(request: Request) {
         clientName: completedIntervention.client
           ? getClientDisplayName(completedIntervention.client)
           : "",
+        clientIsTemporary:
+          completedIntervention.client?.isTemporary ??
+          false,
         message:
           "Le compte rendu a été enregistré et l’intervention est terminée.",
       });
