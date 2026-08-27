@@ -1431,6 +1431,7 @@ const handleCreateInvoice = async () => {
             Heure
             <input
               type="time"
+              step={60}
               value={actionTime}
               onChange={(event) => setActionTime(event.target.value)}
               className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"

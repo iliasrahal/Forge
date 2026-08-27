@@ -244,10 +244,10 @@ export default async function NewInterventionPage({
             <input
               id="time"
               name="time"
-              type="text"
+              type="time"
+              step={60}
               required
               defaultValue="09:00"
-              placeholder="Exemple : 14:30"
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
 
