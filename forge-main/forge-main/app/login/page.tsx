@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 
@@ -33,17 +34,13 @@ export default function LoginPage() {
   const router = useRouter();
   const { setTheme } = useTheme();
 
-  const [identifier, setIdentifier] =
-    useState("");
+  const [identifier, setIdentifier] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [password, setPassword] = useState("");
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
@@ -54,13 +51,9 @@ export default function LoginPage() {
       return;
     }
 
-    const cleanIdentifier =
-      identifier.trim();
+    const cleanIdentifier = identifier.trim();
 
-    if (
-      !cleanIdentifier ||
-      !password
-    ) {
+    if (!cleanIdentifier || !password) {
       setError(
         "Complète toutes les informations.",
       );
@@ -77,12 +70,10 @@ export default function LoginPage() {
         {
           method: "POST",
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            identifier:
-              cleanIdentifier,
+            identifier: cleanIdentifier,
             password,
           }),
         },
@@ -114,18 +105,14 @@ export default function LoginPage() {
         localStorage.setItem(
           "forgeUserProfile",
           JSON.stringify({
-            firstName:
-              data.user.firstName,
+            firstName: data.user.firstName,
             job: data.user.job,
-            workMode:
-              data.user.workMode,
+            workMode: data.user.workMode,
           }),
         );
       }
 
-      if (
-        data.user.onboardingCompleted
-      ) {
+      if (data.user.onboardingCompleted) {
         localStorage.setItem(
           "forgeOnboardingCompleted",
           "true",
@@ -141,6 +128,7 @@ export default function LoginPage() {
       }
 
       router.refresh();
+
     } catch (error) {
       setError(
         error instanceof Error
@@ -158,52 +146,63 @@ export default function LoginPage() {
       title="Bon retour."
       description="Connecte-toi pour retrouver ton espace et reprendre ta journée là où tu l’as laissée."
     >
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
-          <input
-            type="text"
-            value={identifier}
-            onChange={(event) =>
-              setIdentifier(
-                event.target.value,
-              )
-            }
-            autoComplete="username"
-            placeholder="E-mail ou téléphone"
-            className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
-          />
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
 
-          <input
-            type="password"
-            value={password}
-            onChange={(event) =>
-              setPassword(
-                event.target.value,
-              )
-            }
-            autoComplete="current-password"
-            placeholder="Mot de passe"
-            className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
-          />
-          {error && (
-            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
-              {error}
-            </p>
-          )}
+        <input
+          type="text"
+          value={identifier}
+          onChange={(event) =>
+            setIdentifier(event.target.value)
+          }
+          autoComplete="username"
+          placeholder="E-mail ou téléphone"
+          className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
+        />
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+
+        <input
+          type="password"
+          value={password}
+          onChange={(event) =>
+            setPassword(event.target.value)
+          }
+          autoComplete="current-password"
+          placeholder="Mot de passe"
+          className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
+        />
+
+
+        <div className="text-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-400"
           >
-            {isLoading
-              ? "Connexion..."
-              : "Se connecter"}
-          </button>
-        </form>
+            Mot de passe oublié ?
+          </Link>
+        </div>
 
+
+        {error && (
+          <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
+            {error}
+          </p>
+        )}
+
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+        >
+          {isLoading
+            ? "Connexion..."
+            : "Se connecter"}
+        </button>
+
+      </form>
     </AuthShell>
   );
 }
