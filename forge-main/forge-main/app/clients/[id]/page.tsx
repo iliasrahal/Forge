@@ -376,7 +376,7 @@ export default async function ClientPage({
                         ? `/invoices/${item.itemId}`
                         : `/interventions/${item.itemId}`
                   }
-                  className="block rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-blue-200 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950"
+                  className="block rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.5)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_55px_-36px_rgba(37,99,235,0.35)] dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30 dark:hover:border-blue-700"
                 >
 
 
@@ -398,7 +398,7 @@ export default async function ClientPage({
                     </div>
 
 
-                    <span className="shrink-0 text-sm font-medium text-blue-700 dark:text-blue-400">
+                    <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-900">
                       {item.status}
                     </span>
 

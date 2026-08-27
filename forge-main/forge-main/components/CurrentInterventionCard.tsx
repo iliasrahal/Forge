@@ -1,9 +1,4 @@
 import {
-  CalendarDays,
-  Clock3,
-} from "lucide-react";
-
-import {
   getAppointmentDateLabel,
   getAppointmentDisplayTitle,
   type Appointment,
@@ -84,8 +79,7 @@ export default function CurrentInterventionCard({
 
       <div className="mx-auto mt-4 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
         {appointment.date && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/65 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
-            <CalendarDays size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/65 px-3.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
             <span className="capitalize">
               {getAppointmentDateLabel(appointment.date)}
             </span>
@@ -93,8 +87,7 @@ export default function CurrentInterventionCard({
         )}
 
         {appointment.time && (
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/65 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
-            <Clock3 size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/65 px-3.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
             {appointment.time}
           </span>
         )}
