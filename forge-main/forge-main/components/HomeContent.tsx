@@ -9,6 +9,7 @@ import ForgeListenCard from "@/components/ForgeListenCard";
 import ForgeProcessingCard from "@/components/ForgeProcessingCard";
 import ForgeReplyCard from "@/components/ForgeReplyCard";
 import ForgeReportCard from "@/components/ForgeReportCard";
+import { getAppointmentDisplayTitle } from "@/data/appointments";
 
 type HomeState =
   | "finished"
@@ -25,8 +26,10 @@ type Appointment = {
   id: string;
   client: string;
   address: string;
+  date: string;
   time: string;
   intervention: string;
+  description?: string;
   status:
     | "scheduled"
     | "inProgress"
@@ -340,8 +343,11 @@ export default function HomeContent({
           <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
 
             {currentAppointment?.client ||
-              currentAppointment?.intervention ||
-              "Intervention"}
+              (currentAppointment
+                ? getAppointmentDisplayTitle(
+                    currentAppointment,
+                  )
+                : "Intervention")}
 
           </h2>
 
@@ -350,8 +356,9 @@ export default function HomeContent({
           {currentAppointment?.client && (
             <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
 
-              {currentAppointment.intervention ||
-                "Intervention"}
+              {getAppointmentDisplayTitle(
+                currentAppointment,
+              )}
 
             </p>
           )}

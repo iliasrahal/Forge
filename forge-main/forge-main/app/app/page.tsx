@@ -66,8 +66,7 @@ function mapIntervention(intervention: any): Appointment {
             hour: "2-digit",
             minute: "2-digit",
           }),
-    intervention:
-      intervention.title || "Intervention",
+    intervention: intervention.title ?? "",
     description: intervention.description ?? undefined,
     status: mapStatus(intervention.status),
     notes,

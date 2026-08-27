@@ -1,11 +1,7 @@
-type Appointment = {
-  client: string;
-  address: string;
-  time: string;
-  intervention: string;
-};
-
-
+import {
+  getAppointmentDisplayTitle,
+  type Appointment,
+} from "@/data/appointments";
 
 type CurrentInterventionCardProps = {
   appointment: Appointment;
@@ -24,6 +20,11 @@ export default function CurrentInterventionCard({
   onEdit,
   onDelete,
 }: CurrentInterventionCardProps) {
+  const displayTitle =
+    getAppointmentDisplayTitle(
+      appointment,
+    );
+
   return (
     <div className="w-full rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
 
@@ -39,16 +40,14 @@ export default function CurrentInterventionCard({
 
       <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
         {appointment.client ||
-          appointment.intervention ||
-          "Intervention"}
+          displayTitle}
       </h2>
 
 
 
       {appointment.client && (
         <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
-          {appointment.intervention ||
-            "Intervention"}
+          {displayTitle}
         </p>
       )}
 

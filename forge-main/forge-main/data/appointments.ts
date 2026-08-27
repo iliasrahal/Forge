@@ -26,6 +26,42 @@ export type Appointment = {
   report?: InterventionReport;
 };
 
+export function getAppointmentDisplayTitle(
+  appointment: Pick<
+    Appointment,
+    | "intervention"
+    | "description"
+    | "date"
+    | "time"
+  >,
+) {
+  const subject =
+    appointment.intervention.trim() ||
+    appointment.description?.trim();
+
+  if (subject) {
+    return subject;
+  }
+
+  const displayDate = appointment.date
+    ? new Intl.DateTimeFormat("fr-FR").format(
+        new Date(
+          `${appointment.date}T00:00:00`,
+        ),
+      )
+    : "";
+
+  if (displayDate && appointment.time) {
+    return `${displayDate} à ${appointment.time}`;
+  }
+
+  return (
+    appointment.time ||
+    displayDate ||
+    "Intervention"
+  );
+}
+
 export const appointments: Appointment[] = [
   {
     id: "1",
