@@ -5,6 +5,7 @@ import { LoaderCircle } from "lucide-react";
 
 import CurrentInterventionCard from "@/components/CurrentInterventionCard";
 import FixedForgeBar from "@/components/FixedForgeBar";
+import ForgeBar from "@/components/ForgeBar";
 import ForgeListenCard from "@/components/ForgeListenCard";
 import ForgeProcessingCard from "@/components/ForgeProcessingCard";
 import ForgeReplyCard from "@/components/ForgeReplyCard";
@@ -784,7 +785,7 @@ export default function HomeContent({
 
   return (
     <section
-      className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 pb-56 pt-4"
+      className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 pb-12 pt-4"
     >
       <div className="w-full max-w-2xl">
        {replyStatus === "idle" && (
@@ -794,6 +795,40 @@ export default function HomeContent({
   onStart={onStartIntervention}
   onEdit={onEditIntervention}
   onDelete={onDeleteIntervention}
+  forgeBar={
+    <ForgeBar
+      context="home"
+      variant="embedded"
+      initialMessage={replyDraft}
+      onInitialMessageUsed={() => {
+        setReplyDraft("");
+      }}
+      onStartReply={(originalMessage) => {
+        resetReply();
+        setOriginalReplyMessage(originalMessage);
+        setClientReply("");
+        setClientReplyError("");
+        setReplyStatus("processing");
+      }}
+      onReplyGenerated={(generatedReply) => {
+        setClientReply(generatedReply);
+        setClientReplyError("");
+        setReplyStatus("ready");
+      }}
+      onInterventionCreated={(interventionId) => {
+        resetReply();
+        onInterventionCreated(interventionId);
+      }}
+      onInterventionsDeleted={onInterventionsDeleted}
+      onAssistantNotice={(message) => {
+        setAssistantNotice(message);
+        setClientReply("");
+        setClientReplyError("");
+        setReplyStatus("notice");
+      }}
+      onReplyError={handleForgeError}
+    />
+  }
 />
 )}
 
@@ -853,50 +888,6 @@ export default function HomeContent({
           </div>
         )}
       </div>
-
-      {state === "intervention" &&
-        replyStatus !== "ready" && (
-          <FixedForgeBar
-            context="home"
-            initialMessage={replyDraft}
-            onInitialMessageUsed={() => {
-              setReplyDraft("");
-            }}
-            onStartReply={(originalMessage) => {
-              resetReply();
-              setOriginalReplyMessage(
-                originalMessage,
-              );
-              setClientReply("");
-              setClientReplyError("");
-              setReplyStatus("processing");
-            }}
-            onReplyGenerated={(generatedReply) => {
-              setClientReply(generatedReply);
-              setClientReplyError("");
-              setReplyStatus("ready");
-            }}
-            onInterventionCreated={(
-              interventionId,
-            ) => {
-              resetReply();
-
-              onInterventionCreated(
-                interventionId,
-              );
-            }}
-            onInterventionsDeleted={
-              onInterventionsDeleted
-            }
-            onAssistantNotice={(message) => {
-              setAssistantNotice(message);
-              setClientReply("");
-              setClientReplyError("");
-              setReplyStatus("notice");
-            }}
-            onReplyError={handleForgeError}
-          />
-        )}
     </section>
   );
 }

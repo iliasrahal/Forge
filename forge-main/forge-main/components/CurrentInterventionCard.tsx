@@ -1,4 +1,11 @@
 import {
+  CalendarDays,
+  Clock3,
+  MapPin,
+} from "lucide-react";
+
+import {
+  getAppointmentDateLabel,
   getAppointmentDisplayTitle,
   type Appointment,
 } from "@/data/appointments";
@@ -9,6 +16,7 @@ type CurrentInterventionCardProps = {
   onStart: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  forgeBar?: React.ReactNode;
 };
 
 
@@ -19,6 +27,7 @@ export default function CurrentInterventionCard({
   onStart,
   onEdit,
   onDelete,
+  forgeBar,
 }: CurrentInterventionCardProps) {
   const displayTitle =
     getAppointmentDisplayTitle(
@@ -26,19 +35,23 @@ export default function CurrentInterventionCard({
     );
 
   return (
-    <div className="w-full rounded-[2rem] border border-white/80 bg-white/80 p-6 text-center shadow-[0_28px_80px_-38px_rgba(15,23,42,0.48)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/40 sm:p-8">
+    <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
+      <div className="p-6 text-center sm:p-9">
 
 
       {isInProgress && (
-        <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-900">
-          <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.08em] text-emerald-700 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-50 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+          </span>
           Intervention en cours
         </div>
       )}
 
 
 
-      <h2 className="text-balance text-center text-3xl font-bold tracking-[-0.035em] text-slate-950 dark:text-white sm:text-4xl">
+      <h2 className="text-balance text-center text-3xl font-bold tracking-[-0.045em] text-slate-950 dark:text-white sm:text-[2.65rem] sm:leading-tight">
         {appointment.client ||
           displayTitle}
       </h2>
@@ -46,15 +59,40 @@ export default function CurrentInterventionCard({
 
 
       {appointment.client && (
-        <p className="mt-3 text-center text-lg font-semibold text-blue-700 dark:text-blue-400 sm:text-xl">
+        <p className="mx-auto mt-3 max-w-xl text-center text-base font-semibold leading-7 text-blue-700 dark:text-blue-400 sm:text-lg">
           {displayTitle}
         </p>
       )}
 
+      <div className="mx-auto mt-7 flex max-w-xl flex-wrap items-center justify-center gap-2.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+        {appointment.date && (
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+            <CalendarDays size={16} className="text-blue-600 dark:text-blue-400" />
+            <span className="capitalize">
+              {getAppointmentDateLabel(appointment.date)}
+            </span>
+          </span>
+        )}
+
+        {appointment.time && (
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+            <Clock3 size={16} className="text-blue-600 dark:text-blue-400" />
+            {appointment.time}
+          </span>
+        )}
+
+        {appointment.address && (
+          <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/75 px-4 py-2 dark:border-slate-700 dark:bg-slate-800/70">
+            <MapPin size={16} className="shrink-0 text-blue-600 dark:text-blue-400" />
+            <span className="truncate">{appointment.address}</span>
+          </span>
+        )}
+      </div>
+
 
 
       {isInProgress && (
-        <div className="mt-6 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-5 py-4 text-sm leading-6 text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
+        <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-slate-200/70 bg-slate-50/60 px-5 py-4 text-sm leading-6 text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
 
 
           <p className="dark:text-slate-300">
@@ -76,14 +114,14 @@ export default function CurrentInterventionCard({
       <button
         type="button"
         onClick={onStart}
-        className="mt-6 w-full rounded-2xl bg-blue-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 sm:text-xl"
+        className="mt-7 inline-flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-7 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30"
       >
         {isInProgress
           ? "Continuer l'intervention"
           : "Commencer l'intervention"}
       </button>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mx-auto mt-3 grid max-w-sm grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onEdit}
@@ -99,9 +137,13 @@ export default function CurrentInterventionCard({
           Supprimer
         </button>
       </div>
+      </div>
 
-
-
-    </div>
+      {forgeBar && (
+        <div className="border-t border-slate-200/70 bg-slate-50/45 px-5 py-3 dark:border-slate-700/80 dark:bg-slate-950/25 sm:px-7">
+          {forgeBar}
+        </div>
+      )}
+    </article>
   );
 }

@@ -152,6 +152,7 @@ type DeleteAllInterventionsResponse = {
 
 type ForgeBarProps = {
   context?: "home" | "clients" | "quotes" | "invoices";
+  variant?: "floating" | "embedded";
   clientId?: string;
   clientName?: string;
   initialMessage?: string;
@@ -236,6 +237,7 @@ function getUserFacingErrorMessage(
 
 export default function ForgeBar({
   context = "home",
+  variant = "floating",
   clientId,
   clientName,
   initialMessage = "",
@@ -1694,7 +1696,13 @@ export default function ForgeBar({
         className="hidden"
       />
 
-     <div className="flex h-20 w-full items-center gap-3 rounded-3xl border border-white/80 bg-white/80 px-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/50">
+     <div
+       className={`flex h-20 w-full items-center gap-3 px-1 sm:px-2 ${
+         variant === "floating"
+           ? "rounded-3xl border border-white/80 bg-white/80 px-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/50"
+           : "bg-transparent"
+       }`}
+     >
     <input
   type="text"
   value={message}
