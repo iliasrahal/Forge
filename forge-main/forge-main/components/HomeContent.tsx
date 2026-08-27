@@ -769,11 +769,7 @@ export default function HomeContent({
 
   return (
     <section
-      className={`flex flex-1 flex-col items-center px-4 ${
-        replyStatus === "ready"
-          ? "justify-start overflow-y-auto pb-8 pt-4"
-          : "justify-center"
-      }`}
+      className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 pb-56 pt-4"
     >
       <div className="w-full max-w-2xl">
        {replyStatus === "idle" && (
