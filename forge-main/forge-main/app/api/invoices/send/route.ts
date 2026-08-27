@@ -140,7 +140,8 @@ export async function POST(
         : invoice.client.companyName?.trim() ||
           "Madame, Monsieur";
 
-    const artisanName =
+    const artisanSignature =
+      currentUser.emailSignature?.trim() ||
       currentUser.firstName?.trim() ||
       "L'équipe Forge";
 
@@ -154,7 +155,7 @@ export async function POST(
     await sendInvoiceEmail(
       invoice.client.email,
       clientName,
-      artisanName,
+      artisanSignature,
       invoice.reference,
       interventionDescription,
       pdfBuffer,

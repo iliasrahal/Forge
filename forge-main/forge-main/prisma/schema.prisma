@@ -72,6 +72,8 @@ model User {
 
   onboardingCompleted Boolean @default(false)
 
+  emailSignature String?
+
   clients Client[]
 
   interventions Intervention[]

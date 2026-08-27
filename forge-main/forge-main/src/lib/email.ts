@@ -137,7 +137,7 @@ export async function sendAccountDeletedEmail(
 export async function sendQuoteEmail(
   recipient: string,
   clientName: string,
-  artisanName: string,
+  artisanSignature: string,
   quoteTitle: string,
   quoteDescription: string,
   pdfBuffer: Buffer,
@@ -163,7 +163,7 @@ Merci pour votre confiance.
 
 Cordialement,
 
-${artisanName}
+${artisanSignature}
 `,
 
     html: renderEmailLayout(`
@@ -178,7 +178,7 @@ ${artisanName}
 
 <p>
 Cordialement,<br/>
-${escapeHtml(artisanName)}
+${formatEmailSignature(artisanSignature)}
 </p>
 `),
 
@@ -196,7 +196,7 @@ ${escapeHtml(artisanName)}
 export async function sendInvoiceEmail(
   recipient: string,
   clientName: string,
-  artisanName: string,
+  artisanSignature: string,
   invoiceReference: string,
   interventionDescription: string,
   pdfBuffer: Buffer,
@@ -222,7 +222,7 @@ Merci pour votre confiance.
 
 Cordialement,
 
-${artisanName}
+${artisanSignature}
 `,
 
     html: renderEmailLayout(`
@@ -237,7 +237,7 @@ ${artisanName}
 
 <p>
 Cordialement,<br/>
-${escapeHtml(artisanName)}
+${formatEmailSignature(artisanSignature)}
 </p>
 `),
 
@@ -249,6 +249,15 @@ ${escapeHtml(artisanName)}
     ],
 
   });
+}
+
+function formatEmailSignature(
+  value: string,
+) {
+  return escapeHtml(value).replace(
+    /\r?\n/g,
+    "<br/>",
+  );
 }
 
 

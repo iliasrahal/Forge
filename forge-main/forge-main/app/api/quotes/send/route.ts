@@ -131,7 +131,8 @@ export async function POST(
         : quote.client.companyName?.trim() ||
           "Madame, Monsieur";
 
-    const artisanName =
+    const artisanSignature =
+      currentUser.emailSignature?.trim() ||
       currentUser.firstName?.trim() ||
       "L'équipe Forge";
 
@@ -144,7 +145,7 @@ export async function POST(
     await sendQuoteEmail(
       quote.client.email,
       clientName,
-      artisanName,
+      artisanSignature,
       quote.title,
       quoteDescription,
       pdfBuffer,
