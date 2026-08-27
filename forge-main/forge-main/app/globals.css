@@ -91,7 +91,7 @@ html.dark body {
   letter-spacing: -0.025em;
 }
 
-.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
   border-color: rgb(203 213 225 / 0.9);
   background-color: rgb(255 255 255 / 0.78);
   box-shadow: 0 14px 35px -28px rgb(15 23 42 / 0.55);
@@ -99,12 +99,12 @@ html.dark body {
   transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
-.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select):focus {
+.forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select):focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 4px rgb(59 130 246 / 0.11), 0 18px 40px -28px rgb(37 99 235 / 0.5);
 }
 
-.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
   border-color: rgb(51 65 85 / 0.95);
   background-color: rgb(15 23 42 / 0.78);
   box-shadow: 0 14px 35px -28px rgb(0 0 0 / 0.9);
@@ -123,6 +123,27 @@ html.dark body {
   border-color: rgb(51 65 85 / 0.82) !important;
   background-color: rgb(15 23 42 / 0.8) !important;
   box-shadow: 0 24px 70px -42px rgb(0 0 0 / 0.9) !important;
+}
+
+.forge-app-shell :is(section, article, form, a)[class*="rounded-2xl"][class*="bg-white"],
+.forge-app-shell div[class*="rounded-2xl"][class*="bg-white"] {
+  border-color: rgb(226 232 240 / 0.82) !important;
+  background-color: rgb(255 255 255 / 0.74) !important;
+  box-shadow: 0 18px 50px -38px rgb(15 23 42 / 0.5) !important;
+  backdrop-filter: blur(14px);
+}
+
+.dark .forge-app-shell :is(section, article, form, a)[class*="rounded-2xl"][class*="bg-white"],
+.dark .forge-app-shell div[class*="rounded-2xl"][class*="bg-white"] {
+  border-color: rgb(51 65 85 / 0.78) !important;
+  background-color: rgb(15 23 42 / 0.74) !important;
+  box-shadow: 0 18px 50px -38px rgb(0 0 0 / 0.9) !important;
+}
+
+.forge-app-shell :is(a, article)[class*="rounded-2xl"]:hover,
+.forge-app-shell :is(a, article)[class*="rounded-3xl"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 52px -34px rgb(37 99 235 / 0.35) !important;
 }
 
 .forge-app-shell button,

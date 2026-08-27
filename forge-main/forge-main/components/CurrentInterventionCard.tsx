@@ -26,11 +26,11 @@ export default function CurrentInterventionCard({
     );
 
   return (
-    <div className="w-full rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+    <div className="w-full rounded-[2rem] border border-white/80 bg-white/80 p-6 text-center shadow-[0_28px_80px_-38px_rgba(15,23,42,0.48)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/40 sm:p-8">
 
 
       {isInProgress && (
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
+        <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:text-emerald-300 dark:ring-emerald-900">
           <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
           Intervention en cours
         </div>
@@ -38,7 +38,7 @@ export default function CurrentInterventionCard({
 
 
 
-      <h2 className="text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+      <h2 className="text-balance text-center text-3xl font-bold tracking-[-0.035em] text-slate-950 dark:text-white sm:text-4xl">
         {appointment.client ||
           displayTitle}
       </h2>
@@ -46,7 +46,7 @@ export default function CurrentInterventionCard({
 
 
       {appointment.client && (
-        <p className="mt-4 text-center text-xl font-medium text-slate-700 dark:text-slate-300">
+        <p className="mt-3 text-center text-lg font-semibold text-blue-700 dark:text-blue-400 sm:text-xl">
           {displayTitle}
         </p>
       )}
@@ -54,7 +54,7 @@ export default function CurrentInterventionCard({
 
 
       {isInProgress && (
-        <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <div className="mt-6 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-5 py-4 text-sm leading-6 text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
 
 
           <p className="dark:text-slate-300">
@@ -76,7 +76,7 @@ export default function CurrentInterventionCard({
       <button
         type="button"
         onClick={onStart}
-        className="mt-5 w-full rounded-2xl bg-blue-600 px-6 py-4 text-xl font-semibold text-white transition hover:bg-blue-700"
+        className="mt-6 w-full rounded-2xl bg-blue-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 sm:text-xl"
       >
         {isInProgress
           ? "Continuer l'intervention"

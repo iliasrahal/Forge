@@ -29,7 +29,7 @@ export default function ClientCard({ client }: ClientCardProps) {
   return (
     <Link
       href={`/clients/${client.id}`}
-      className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm transition hover:border-blue-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500"
+      className="group flex items-center justify-between rounded-3xl border border-white/80 bg-white/80 px-6 py-5 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.5)] backdrop-blur transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-lg dark:border-slate-700/80 dark:bg-slate-900/80 dark:hover:border-blue-600"
     >
       <div className="flex flex-col justify-center">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
@@ -41,7 +41,9 @@ export default function ClientCard({ client }: ClientCardProps) {
         <p className={cityClass}>{client.street || "Adresse non renseignée"}</p>
       </div>
 
-      <ChevronRight size={24} className="shrink-0 text-slate-400 dark:text-slate-500" />
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-slate-50 text-slate-400 transition group-hover:bg-blue-50 group-hover:text-blue-700 dark:bg-slate-800 dark:text-slate-500 dark:group-hover:bg-blue-950 dark:group-hover:text-blue-300">
+        <ChevronRight size={21} />
+      </span>
     </Link>
   );
 }

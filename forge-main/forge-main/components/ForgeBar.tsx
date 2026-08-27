@@ -1443,7 +1443,7 @@ export default function ForgeBar({
         className="hidden"
       />
 
-     <div className="flex h-20 w-full items-center gap-3 rounded-3xl border border-slate-200 bg-white px-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+     <div className="flex h-20 w-full items-center gap-3 rounded-3xl border border-white/80 bg-white/80 px-5 shadow-[0_24px_70px_-30px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/50">
     <input
   type="text"
   value={message}
@@ -1475,7 +1475,7 @@ export default function ForgeBar({
   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition disabled:opacity-50 ${
     selectedPhotos.length > 0
       ? "bg-blue-600 text-white"
-      : "bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-slate-700"
+      : "bg-blue-50/90 text-blue-600 shadow-sm ring-1 ring-blue-100 hover:-translate-y-0.5 hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-400 dark:ring-slate-700 dark:hover:bg-slate-700"
   }`}
 >
   <Camera
@@ -1502,7 +1502,7 @@ export default function ForgeBar({
       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition disabled:opacity-50 ${
         isListening
           ? "border-blue-600 bg-blue-600 text-white"
-          : "border-blue-600 bg-white text-blue-600 hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:hover:bg-slate-800"
+          : "border-blue-600 bg-white/70 text-blue-600 shadow-sm hover:-translate-y-0.5 hover:bg-blue-50 dark:bg-slate-900/70 dark:text-blue-400 dark:hover:bg-slate-800"
       }`}
     >
       {isListening ? (
@@ -1530,7 +1530,7 @@ export default function ForgeBar({
       }
       aria-label="Envoyer à Forge"
       title="Envoyer"
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none dark:disabled:bg-slate-700"
     >
       {isLoading ? (
         <LoaderCircle
