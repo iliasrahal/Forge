@@ -2,8 +2,10 @@
 
 import {
   CalendarDays,
+  Camera,
   Check,
   FileText,
+  Keyboard,
   Mic,
   Receipt,
   Send,
@@ -14,6 +16,8 @@ import {
   useRef,
   useState,
 } from "react";
+
+import ForgeBarPreview from "@/components/landing/ForgeBarPreview";
 
 const features = [
   {
@@ -124,9 +128,8 @@ function FeatureIllustration({
             <p className="text-xs text-slate-500 dark:text-slate-400">À votre écoute</p>
           </div>
         </div>
-        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-slate-100 p-3 pl-4 dark:bg-slate-950">
-          <p className="min-w-0 flex-1 truncate text-sm text-slate-500 dark:text-slate-300">« Prépare un devis pour Martin… »</p>
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Mic size={19} /></span>
+        <div className="mt-6">
+          <ForgeBarPreview text="« Prépare un devis pour Martin… »" />
         </div>
         <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
           <Check size={16} /> Demande comprise
@@ -151,8 +154,11 @@ export default function Features() {
     ).matches;
 
     if (reduceMotion) {
-      setVisibleItems(features.map((_, index) => index));
-      return;
+      const frame = window.requestAnimationFrame(() => {
+        setVisibleItems(features.map((_, index) => index));
+      });
+
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const observer = new IntersectionObserver(
@@ -207,6 +213,31 @@ export default function Features() {
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">0{index + 1} · {feature.eyebrow}</p>
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
+                {index === 3 && (
+                  <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
+                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                      <Camera size={20} className="text-blue-600 dark:text-blue-400" />
+                      <p className="mt-3 font-semibold">Photo</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                        Envoyez l’image d’une installation, d’une panne, d’une chaudière, d’un document ou d’un élément chez le client. Forge l’analyse pour aider à créer une intervention, un devis ou un suivi client.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                      <Mic size={20} className="text-blue-600 dark:text-blue-400" />
+                      <p className="mt-3 font-semibold">Voix</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                        Parlez naturellement à Forge.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+                      <Keyboard size={20} className="text-blue-600 dark:text-blue-400" />
+                      <p className="mt-3 font-semibold">Texte</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                        Écrivez simplement votre demande.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className={`transition-all delay-150 duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-1" : ""} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>

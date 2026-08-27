@@ -2,11 +2,11 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  Mic,
   Sparkles,
 } from "lucide-react";
 
 import ForgeLogo from "@/components/ForgeLogo";
+import ForgeBarPreview from "@/components/landing/ForgeBarPreview";
 import LandingLoginLink from "@/components/landing/LandingLoginLink";
 
 export default function Hero() {
@@ -113,13 +113,8 @@ export default function Hero() {
                 </span>
               </div>
 
-              <div className="mt-7 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 pl-5 dark:border-slate-700 dark:bg-slate-900">
-                <p className="min-w-0 flex-1 truncate text-sm text-slate-500 dark:text-slate-300 sm:text-base">
-                  « Crée une intervention demain à 10 h… »
-                </p>
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/20">
-                  <Mic size={20} />
-                </span>
+              <div className="mt-7">
+                <ForgeBarPreview text="« Crée une intervention demain à 10 h… »" />
               </div>
             </div>
           </div>
