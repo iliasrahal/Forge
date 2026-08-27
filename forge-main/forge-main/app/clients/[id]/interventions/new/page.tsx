@@ -166,7 +166,7 @@ export default async function NewInterventionPage({
 
 
     redirect(
-      `/?newIntervention=${intervention.id}`,
+      `/app?newIntervention=${intervention.id}`,
     );
 
   }

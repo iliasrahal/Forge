@@ -38,11 +38,13 @@ type CompleteInterventionResponse = {
 type HomeClientProps = {
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
+  newInterventionId?: string | null;
 };
 
 export default function HomeClient({
   todayAppointments,
   upcomingAppointments,
+  newInterventionId: initialNewInterventionId = null,
 }: HomeClientProps) {
   const router = useRouter();
 
@@ -91,7 +93,7 @@ const [
 const [
   newInterventionId,
   setNewInterventionId,
-] = useState<string | null>(null);
+] = useState<string | null>(initialNewInterventionId);
 
   const [showGreeting, setShowGreeting] =
     useState(false);
