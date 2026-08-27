@@ -775,6 +775,51 @@ const handleSaveNotes = async (notes: string) => {
     }
   };
 
+  const handleInterventionsDeleted = (
+    scheduledDate: string,
+  ) => {
+    const keepAppointment = (
+      appointment: Appointment,
+    ) =>
+      appointment.date !== scheduledDate ||
+      appointment.status !== "scheduled";
+
+    const remainingToday =
+      appointmentsList.filter(
+        keepAppointment,
+      );
+    const remainingUpcoming =
+      upcomingAppointmentsList.filter(
+        keepAppointment,
+      );
+
+    setAppointmentsList(remainingToday);
+    setUpcomingAppointmentsList(
+      remainingUpcoming,
+    );
+    setSelectedAppointmentId(
+      (currentId) => {
+        const currentStillExists = [
+          ...remainingToday,
+          ...remainingUpcoming,
+        ].some(
+          (appointment) =>
+            appointment.id === currentId,
+        );
+
+        if (currentStillExists) {
+          return currentId;
+        }
+
+        return (
+          remainingToday[0]?.id ??
+          remainingUpcoming[0]?.id ??
+          null
+        );
+      },
+    );
+  };
+
   const handleInterventionCreated = (
     interventionId: string,
   ) => {
@@ -1488,6 +1533,11 @@ const handleCreateInvoice = async () => {
 
     onInterventionCreated={
       handleInterventionCreated
+    }
+
+
+    onInterventionsDeleted={
+      handleInterventionsDeleted
     }
 
 

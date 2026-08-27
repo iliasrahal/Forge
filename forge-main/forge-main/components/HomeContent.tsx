@@ -86,6 +86,9 @@ type HomeContentProps = {
   onInterventionCreated: (
     interventionId: string,
   ) => void;
+  onInterventionsDeleted: (
+    scheduledDate: string,
+  ) => void;
   onSkipInvoice: () => void;
   onCreateInvoice: () => void;
 };
@@ -110,6 +113,7 @@ export default function HomeContent({
   onEditReport,
   onValidateReport,
   onInterventionCreated,
+  onInterventionsDeleted,
   onSkipInvoice,
   onCreateInvoice,
 }: HomeContentProps) {
@@ -763,6 +767,9 @@ export default function HomeContent({
               interventionId,
             );
           }}
+          onInterventionsDeleted={
+            onInterventionsDeleted
+          }
           onAssistantNotice={(message) => {
             setAssistantNotice(message);
             setClientReply("");
@@ -878,6 +885,9 @@ export default function HomeContent({
                 interventionId,
               );
             }}
+            onInterventionsDeleted={
+              onInterventionsDeleted
+            }
             onAssistantNotice={(message) => {
               setAssistantNotice(message);
               setClientReply("");

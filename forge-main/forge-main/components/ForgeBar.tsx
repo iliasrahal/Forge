@@ -159,6 +159,9 @@ type ForgeBarProps = {
   onInterventionCreated?: (
     interventionId: string,
   ) => void;
+  onInterventionsDeleted?: (
+    scheduledDate: string,
+  ) => void;
 };
 
 const placeholders = {
@@ -217,6 +220,7 @@ export default function ForgeBar({
   onReplyError,
   onAssistantNotice,
   onInterventionCreated,
+  onInterventionsDeleted,
 }: ForgeBarProps) {
   const router = useRouter();
 
@@ -947,8 +951,13 @@ export default function ForgeBar({
             "fr-FR",
           )}`;
 
+    const interventionLabel =
+      count > 1
+        ? `les ${count} interventions prévues`
+        : "l’intervention prévue";
+
     const confirmed = window.confirm(
-      `Tu es sûr de vouloir supprimer ${count} intervention${count > 1 ? "s" : ""} prévue${count > 1 ? "s" : ""} ${dayLabel} ?`,
+      `Tu es sûr de vouloir supprimer ${interventionLabel} ${dayLabel} ?`,
     );
 
     if (!confirmed) {
@@ -959,6 +968,10 @@ export default function ForgeBar({
     const result = await requestDeletion(true);
     const deletedCount =
       result.deletedCount ?? count;
+
+    onInterventionsDeleted?.(
+      decision.scheduledDate,
+    );
 
     showNotice(
       `${deletedCount} intervention${deletedCount > 1 ? "s" : ""} supprimée${deletedCount > 1 ? "s" : ""}.`,

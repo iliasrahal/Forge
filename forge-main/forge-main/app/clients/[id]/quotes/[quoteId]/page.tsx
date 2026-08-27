@@ -1,6 +1,6 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 
 import { requireCurrentUser } from "@/src/lib/auth";
@@ -91,52 +91,6 @@ export default async function QuotePage({
         }`.trim()
       : quote.client.companyName ??
         "Client professionnel";
-
-
-
-  async function createInterventionFromQuote() {
-    "use server";
-
-    const actionUser =
-      await requireCurrentUser();
-
-    const sourceQuote =
-      await prisma.quote.findFirst({
-        where: {
-          id: quoteId,
-          clientId: id,
-          client: {
-            userId: actionUser.id,
-          },
-        },
-        select: {
-          title: true,
-          description: true,
-          clientId: true,
-        },
-      });
-
-    if (!sourceQuote) {
-      notFound();
-    }
-
-    const intervention =
-      await prisma.intervention.create({
-        data: {
-          userId: actionUser.id,
-          clientId: sourceQuote.clientId,
-          title: sourceQuote.title,
-          description: sourceQuote.description,
-          scheduledAt: new Date(),
-        },
-      });
-
-    redirect(
-      `/app?newIntervention=${intervention.id}`,
-    );
-  }
-
-
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
@@ -291,14 +245,23 @@ export default async function QuotePage({
 
 
 
-  <form action={createInterventionFromQuote}>
-    <button
-      type="submit"
-      className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-    >
-      Créer une intervention
-    </button>
-  </form>
+  <Link
+    href={{
+      pathname: `/clients/${id}/interventions/new`,
+      query: {
+        title: quote.title,
+        ...(quote.description
+          ? {
+              description:
+                quote.description,
+            }
+          : {}),
+      },
+    }}
+    className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+  >
+    Créer une intervention
+  </Link>
 
 
   <Link

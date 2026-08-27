@@ -108,20 +108,24 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     },
   });
 
-  const todayAppointments: Appointment[] = interventions
-    .filter(
-      (intervention) =>
-        intervention.scheduledAt.toISOString().slice(0, 10) === todayKey,
-    )
-    .map(mapIntervention);
+  const todayAppointments: Appointment[] = [];
+  const upcomingAppointments: Appointment[] = [];
 
-  const upcomingAppointments: Appointment[] = interventions
-    .filter(
-      (intervention) =>
-        intervention.status === "PLANIFIEE" &&
-        intervention.scheduledAt.toISOString().slice(0, 10) > todayKey,
-    )
-    .map(mapIntervention);
+  for (const intervention of interventions) {
+    const appointment =
+      mapIntervention(intervention);
+    const isScheduledToday =
+      appointment.date === todayKey;
+
+    if (isScheduledToday) {
+      todayAppointments.push(appointment);
+      continue;
+    }
+
+    if (intervention.status === "PLANIFIEE") {
+      upcomingAppointments.push(appointment);
+    }
+  }
 
   return (
     <HomeClient

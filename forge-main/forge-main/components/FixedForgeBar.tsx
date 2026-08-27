@@ -15,6 +15,9 @@ type FixedForgeBarProps = {
   onInterventionCreated?: (
     interventionId: string,
   ) => void;
+  onInterventionsDeleted?: (
+    scheduledDate: string,
+  ) => void;
 };
 
 export default function FixedForgeBar({
@@ -28,6 +31,7 @@ export default function FixedForgeBar({
   onReplyError,
   onAssistantNotice,
   onInterventionCreated,
+  onInterventionsDeleted,
 }: FixedForgeBarProps) {
   return (
     <div className="fixed bottom-28 left-1/2 z-40 w-full max-w-xl -translate-x-1/2 px-6">
@@ -43,6 +47,9 @@ export default function FixedForgeBar({
         onAssistantNotice={onAssistantNotice}
         onInterventionCreated={
           onInterventionCreated
+        }
+        onInterventionsDeleted={
+          onInterventionsDeleted
         }
       />
     </div>

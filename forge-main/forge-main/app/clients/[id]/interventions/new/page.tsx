@@ -92,14 +92,9 @@ export default async function NewInterventionPage({
 
 
 
-    if (
-      !date ||
-      !time ||
-      !cleanTitle ||
-      !cleanDescription
-    ) {
+    if (!date || !time || !cleanTitle) {
       throw new Error(
-        "Tous les champs doivent être remplis.",
+        "La date, l’heure et le motif doivent être remplis.",
       );
     }
 
@@ -158,7 +153,8 @@ export default async function NewInterventionPage({
         data: {
           userId: currentUser.id,
           title: cleanTitle,
-          description: cleanDescription,
+          description:
+            cleanDescription || null,
           scheduledAt,
           clientId: id,
         },
@@ -266,7 +262,7 @@ export default async function NewInterventionPage({
               htmlFor="title"
               className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
             >
-              Titre de l’intervention
+              Motif / titre de l’intervention
             </label>
 
 
@@ -283,32 +279,11 @@ export default async function NewInterventionPage({
 
           </div>
 
-
-
-
-          <div>
-
-            <label
-              htmlFor="description"
-              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
-            >
-              Intervention prévue
-            </label>
-
-
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              required
-              defaultValue={
-                description ?? ""
-              }
-              placeholder="Exemple : remplacer le robinet de la cuisine"
-              className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500"
-            />
-
-          </div>
+          <input
+            type="hidden"
+            name="description"
+            value={description ?? ""}
+          />
 
 
 
