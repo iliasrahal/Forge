@@ -10,16 +10,62 @@ function getResendClient() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+function getFirstName(firstName: string) {
+  return firstName.trim() || "utilisateur Forge";
+}
+
+function renderEmailLayout(
+  content: string,
+  action?: {
+    label: string;
+    url: string;
+  },
+  showFooterLogo = false,
+) {
+  const actionHtml = action
+    ? `<p style="margin:28px 0;text-align:center"><a href="${escapeHtml(action.url)}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:12px">${escapeHtml(action.label)}</a></p>`
+    : "";
+  const renderedContent = action
+    ? content.replace("{{ACTION}}", actionHtml)
+    : content;
+  const appUrl = (
+    process.env.APP_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://myforge.online"
+  ).replace(/\/$/, "");
+  const footerLogo = showFooterLogo
+    ? `<div style="margin-top:28px;padding-top:22px;border-top:1px solid #e2e8f0;text-align:center"><img src="${escapeHtml(`${appUrl}/logo-forge-v1.png`)}" width="72" height="72" alt="Logo Forge" style="display:block;width:72px;height:72px;margin:0 auto;border:0;border-radius:16px"/><p style="margin:10px 0 0;color:#64748b;font-size:13px;font-weight:600">Forge</p></div>`
+    : "";
+
+  return `<!doctype html>
+<html lang="fr">
+<body style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#1e293b">
+  <div style="max-width:640px;margin:0 auto;padding:32px 16px">
+    <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
+      <div style="padding:22px 28px;border-bottom:1px solid #e2e8f0;color:#2563eb;font-size:22px;font-weight:800;letter-spacing:.04em">FORGE</div>
+      <div style="padding:28px;font-size:16px;line-height:1.65">
+        ${renderedContent}
+        ${footerLogo}
+      </div>
+    </div>
+    <p style="margin:18px 0 0;text-align:center;color:#94a3b8;font-size:12px">Forge — L’assistant des artisans</p>
+  </div>
+</body>
+</html>`;
+}
+
 export async function sendWelcomeEmail(
   recipient: string,
   firstName: string,
 ) {
+  const userFirstName = getFirstName(firstName);
+
   return getResendClient().emails.send({
     from: sender,
     to: recipient,
     subject: "Bienvenue sur Forge",
-    text: `Bonjour ${firstName},\n\nBienvenue sur Forge. Ton espace est prêt.\n\nÀ bientôt,\nL'équipe Forge`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>Bienvenue sur Forge. Ton espace est prêt.</p><p>À bientôt,<br/>L'équipe Forge</p>`,
+    text: `Bonjour ${userFirstName},\n\nBienvenue sur Forge. Votre espace est prêt.\n\nCordialement,\n\nL'équipe Forge`,
+    html: renderEmailLayout(`<p>Bonjour ${escapeHtml(userFirstName)},</p><p>Bienvenue sur Forge. Votre espace est prêt.</p><p>Cordialement,<br/><strong>L'équipe Forge</strong></p>`),
   });
 }
 
@@ -29,12 +75,21 @@ export async function sendPasswordResetEmail(
   firstName: string,
   resetUrl: string,
 ) {
+  const userFirstName = getFirstName(firstName);
+
   return getResendClient().emails.send({
     from: sender,
     to: recipient,
-    subject: "Réinitialise ton mot de passe Forge",
-    text: `Bonjour ${firstName},\n\nRéinitialise ton mot de passe ici : ${resetUrl}\n\nCe lien expire dans 30 minutes. Si tu n'es pas à l'origine de cette demande, ignore cet e-mail.`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p><a href="${escapeHtml(resetUrl)}">Réinitialiser mon mot de passe</a></p><p>Ce lien expire dans 30 minutes. Si tu n'es pas à l'origine de cette demande, ignore cet e-mail.</p>`,
+    subject: "Réinitialisation de votre mot de passe Forge",
+    text: `Bonjour ${userFirstName},\n\nVous avez demandé la réinitialisation de votre mot de passe Forge.\n\nCliquez sur le lien suivant pour choisir un nouveau mot de passe :\n${resetUrl}\n\nCe lien est valable pendant une durée limitée pour des raisons de sécurité.\n\nSi vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.\n\nCordialement,\n\nL'équipe Forge`,
+    html: renderEmailLayout(
+      `<p>Bonjour ${escapeHtml(userFirstName)},</p><p>Vous avez demandé la réinitialisation de votre mot de passe Forge.</p><p>Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe :</p>{{ACTION}}<p>Ce lien est valable pendant une durée limitée pour des raisons de sécurité.</p><p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p><p>Cordialement,<br/><strong>L'équipe Forge</strong></p>`,
+      {
+        label: "Réinitialiser mon mot de passe",
+        url: resetUrl,
+      },
+      true,
+    ),
   });
 }
 
@@ -44,12 +99,21 @@ export async function sendActivationEmail(
   firstName: string,
   activationUrl: string,
 ) {
+  const userFirstName = getFirstName(firstName);
+
   return getResendClient().emails.send({
     from: sender,
     to: recipient,
-    subject: "Active ton compte Forge",
-    text: `Bonjour ${firstName},\n\nBienvenue sur Forge. Active ton compte ici : ${activationUrl}\n\nCe lien expire dans 24 heures.`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>Bienvenue sur Forge.</p><p><a href="${escapeHtml(activationUrl)}">Activer mon compte</a></p><p>Ce lien expire dans 24 heures.</p>`,
+    subject: "Vérification de votre adresse email Forge",
+    text: `Bonjour ${userFirstName},\n\nBienvenue sur Forge.\n\nPour finaliser la création de votre compte et sécuriser votre accès, veuillez confirmer votre adresse email :\n${activationUrl}\n\nCette étape permet de protéger votre compte et vos informations.\n\nMerci de rejoindre Forge.\n\nCordialement,\n\nL'équipe Forge`,
+    html: renderEmailLayout(
+      `<p>Bonjour ${escapeHtml(userFirstName)},</p><p>Bienvenue sur Forge.</p><p>Pour finaliser la création de votre compte et sécuriser votre accès, veuillez confirmer votre adresse email :</p>{{ACTION}}<p>Cette étape permet de protéger votre compte et vos informations.</p><p>Merci de rejoindre Forge.</p><p>Cordialement,<br/><strong>L'équipe Forge</strong></p>`,
+      {
+        label: "Vérifier mon adresse email",
+        url: activationUrl,
+      },
+      true,
+    ),
   });
 }
 
@@ -58,12 +122,14 @@ export async function sendAccountDeletedEmail(
   recipient: string,
   firstName: string,
 ) {
+  const userFirstName = getFirstName(firstName);
+
   return getResendClient().emails.send({
     from: sender,
     to: recipient,
     subject: "Ton compte Forge a été supprimé",
-    text: `Bonjour ${firstName},\n\nLa suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.\n\nÀ bientôt,\nL'équipe Forge`,
-    html: `<p>Bonjour ${escapeHtml(firstName)},</p><p>La suppression de ton compte Forge a bien été prise en compte. Tes données ont été supprimées.</p><p>À bientôt,<br/>L'équipe Forge</p>`,
+    text: `Bonjour ${userFirstName},\n\nLa suppression de votre compte Forge a bien été prise en compte. Vos données ont été supprimées.\n\nCordialement,\n\nL'équipe Forge`,
+    html: renderEmailLayout(`<p>Bonjour ${escapeHtml(userFirstName)},</p><p>La suppression de votre compte Forge a bien été prise en compte. Vos données ont été supprimées.</p><p>Cordialement,<br/><strong>L'équipe Forge</strong></p>`),
   });
 }
 
@@ -100,9 +166,7 @@ Cordialement,
 ${artisanName}
 `,
 
-    html:
-`
-<div style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.6;max-width:640px">
+    html: renderEmailLayout(`
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
 <p>Veuillez trouver ci-joint votre devis concernant :</p>
@@ -116,8 +180,7 @@ ${artisanName}
 Cordialement,<br/>
 ${escapeHtml(artisanName)}
 </p>
-</div>
-`,
+`),
 
     attachments: [
       {
@@ -162,9 +225,7 @@ Cordialement,
 ${artisanName}
 `,
 
-    html:
-`
-<div style="font-family:Arial,sans-serif;color:#1e293b;line-height:1.6;max-width:640px">
+    html: renderEmailLayout(`
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
 <p>Veuillez trouver ci-joint votre facture concernant :</p>
@@ -178,8 +239,7 @@ ${artisanName}
 Cordialement,<br/>
 ${escapeHtml(artisanName)}
 </p>
-</div>
-`,
+`),
 
     attachments: [
       {
