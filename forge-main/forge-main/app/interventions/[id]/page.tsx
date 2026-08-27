@@ -86,8 +86,9 @@ export default async function InterventionPage({
   }
 
 
-  const clientName =
-    intervention.client.type === "PARTICULIER"
+  const clientName = !intervention.client
+    ? "Client à renseigner"
+    : intervention.client.type === "PARTICULIER"
       ? `${intervention.client.firstName ?? ""} ${
           intervention.client.lastName ?? ""
         }`.trim()
@@ -96,10 +97,10 @@ export default async function InterventionPage({
 
 
   const clientAddress = [
-    intervention.client.street,
+    intervention.client?.street,
     [
-      intervention.client.postalCode,
-      intervention.client.city,
+      intervention.client?.postalCode,
+      intervention.client?.city,
     ]
       .filter(Boolean)
       .join(" "),

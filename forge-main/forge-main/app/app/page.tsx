@@ -37,17 +37,18 @@ function mapIntervention(intervention: any): Appointment {
       ? description.slice(notesIndex + notesMarker.length).trim()
       : undefined;
 
-  const clientName =
-    intervention.client.type === "PROFESSIONNEL"
+  const clientName = !intervention.client
+    ? "Client à renseigner"
+    : intervention.client.type === "PROFESSIONNEL"
       ? intervention.client.companyName ?? "Client professionnel"
       : `${intervention.client.firstName ?? ""} ${
           intervention.client.lastName ?? ""
         }`.trim();
 
   const address = [
-    intervention.client.street,
-    intervention.client.postalCode,
-    intervention.client.city,
+    intervention.client?.street,
+    intervention.client?.postalCode,
+    intervention.client?.city,
   ]
     .filter(Boolean)
     .join(", ");
@@ -55,6 +56,7 @@ function mapIntervention(intervention: any): Appointment {
   return {
     id: intervention.id,
     client: clientName || "Client sans nom",
+    hasClient: Boolean(intervention.clientId),
     address,
     date: intervention.scheduledAt.toISOString().slice(0, 10),
     time: intervention.scheduledAt.toLocaleTimeString("fr-FR", {
@@ -87,9 +89,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const interventions = await prisma.intervention.findMany({
     where: {
-      client: {
-        userId: currentUser.id,
-      },
+      userId: currentUser.id,
       status: {
         in: ["PLANIFIEE", "EN_COURS"],
       },

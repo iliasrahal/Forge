@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       where: {
         id: interventionId,
         status: "TERMINEE",
-        client: { userId: currentUser.id },
+        userId: currentUser.id,
       },
     });
 
@@ -35,6 +35,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Cette intervention est introuvable ou non terminée." },
         { status: 404 },
+      );
+    }
+
+    if (!intervention.clientId) {
+      return NextResponse.json(
+        { error: "Ajoute un client avant de créer une facture." },
+        { status: 400 },
       );
     }
 

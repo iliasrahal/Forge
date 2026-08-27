@@ -15,6 +15,7 @@ export type InterventionReport = {
 export type Appointment = {
   id: string;
   client: string;
+  hasClient?: boolean;
   address: string;
   date: string;
   time: string;

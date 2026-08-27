@@ -107,6 +107,12 @@ const [actionDate, setActionDate] = useState("");
 const [actionTime, setActionTime] = useState("");
 const [actionError, setActionError] = useState("");
 const [isSavingAction, setIsSavingAction] = useState(false);
+const [showAddClientModal, setShowAddClientModal] = useState(false);
+const [startClientName, setStartClientName] = useState("");
+const [startClientPhone, setStartClientPhone] = useState("");
+const [startClientAddress, setStartClientAddress] = useState("");
+const [startClientError, setStartClientError] = useState("");
+const [isAddingStartClient, setIsAddingStartClient] = useState(false);
   const [
     isInitialWelcomeActive,
     setIsInitialWelcomeActive,
@@ -428,7 +434,11 @@ const newInterventionExists =
     );
   };
 
- const handleStartIntervention = async () => {
+ const startIntervention = async (clientDetails?: {
+  clientName: string;
+  phone: string;
+  address: string;
+ }) => {
   if (!currentAppointment) {
     return;
   }
@@ -461,6 +471,7 @@ const newInterventionExists =
           operation: "start",
           interventionId:
             currentAppointment.id,
+          ...clientDetails,
         }),
       },
     );
@@ -481,6 +492,27 @@ const newInterventionExists =
       "inProgress",
     );
 
+    if (clientDetails) {
+      const updateStartedAppointment = (appointment: Appointment) =>
+        appointment.id === currentAppointment.id
+          ? {
+              ...appointment,
+              client: clientDetails.clientName,
+              address: clientDetails.address,
+              hasClient: true,
+              status: "inProgress" as const,
+            }
+          : appointment;
+
+      setAppointmentsList((appointments) =>
+        appointments.map(updateStartedAppointment),
+      );
+      setUpcomingAppointmentsList((appointments) =>
+        appointments.map(updateStartedAppointment),
+      );
+      setShowAddClientModal(false);
+    }
+
 
     setHomeState("inProgress");
 
@@ -489,13 +521,61 @@ const newInterventionExists =
 
 
   } catch (error) {
-
-    setReportError(
+    const message =
       error instanceof Error
         ? error.message
-        : "Une erreur est survenue.",
-    );
+        : "Une erreur est survenue.";
 
+    if (clientDetails) {
+      setStartClientError(message);
+    } else {
+      setReportError(message);
+    }
+
+  }
+};
+
+const handleStartIntervention = async () => {
+  if (!currentAppointment) {
+    return;
+  }
+
+  if (currentAppointment.status === "inProgress") {
+    setReport(null);
+    setReportError("");
+    setHomeState("inProgress");
+    return;
+  }
+
+  if (!currentAppointment.hasClient) {
+    setStartClientName("");
+    setStartClientPhone("");
+    setStartClientAddress("");
+    setStartClientError("");
+    setShowAddClientModal(true);
+    return;
+  }
+
+  await startIntervention();
+};
+
+const handleAddClientAndStart = async () => {
+  if (!startClientName.trim() || isAddingStartClient) {
+    setStartClientError("Le nom du client est obligatoire.");
+    return;
+  }
+
+  setIsAddingStartClient(true);
+  setStartClientError("");
+
+  try {
+    await startIntervention({
+      clientName: startClientName.trim(),
+      phone: startClientPhone.trim(),
+      address: startClientAddress.trim(),
+    });
+  } finally {
+    setIsAddingStartClient(false);
   }
 };
 const handleFinishIntervention = () => {
@@ -1140,6 +1220,73 @@ const handleCreateInvoice = async () => {
       </section>
 
     )}
+
+
+  {showAddClientModal && currentAppointment && (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
+      <section className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+        <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+          Ajouter le client
+        </h2>
+
+        <div className="mt-5 space-y-4">
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Nom du client
+            <input
+              required
+              value={startClientName}
+              onChange={(event) => setStartClientName(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Téléphone <span className="font-normal text-slate-400">(optionnel)</span>
+            <input
+              type="tel"
+              value={startClientPhone}
+              onChange={(event) => setStartClientPhone(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Adresse <span className="font-normal text-slate-400">(optionnelle)</span>
+            <input
+              value={startClientAddress}
+              onChange={(event) => setStartClientAddress(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+
+          {startClientError && (
+            <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+              {startClientError}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setShowAddClientModal(false)}
+            disabled={isAddingStartClient}
+            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold dark:border-slate-700"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={handleAddClientAndStart}
+            disabled={isAddingStartClient}
+            className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
+          >
+            {isAddingStartClient ? "Démarrage…" : "Ajouter et commencer"}
+          </button>
+        </div>
+      </section>
+    </div>
+  )}
 
 
   {actionMode && currentAppointment && (

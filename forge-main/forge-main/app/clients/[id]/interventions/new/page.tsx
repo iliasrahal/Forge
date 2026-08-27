@@ -156,6 +156,7 @@ export default async function NewInterventionPage({
     const intervention =
       await prisma.intervention.create({
         data: {
+          userId: currentUser.id,
           title: cleanTitle,
           description: cleanDescription,
           scheduledAt,

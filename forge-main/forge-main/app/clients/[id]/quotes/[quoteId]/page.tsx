@@ -123,6 +123,7 @@ export default async function QuotePage({
     const intervention =
       await prisma.intervention.create({
         data: {
+          userId: actionUser.id,
           clientId: sourceQuote.clientId,
           title: sourceQuote.title,
           description: sourceQuote.description,

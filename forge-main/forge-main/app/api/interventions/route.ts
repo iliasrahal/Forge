@@ -179,11 +179,11 @@ export async function POST(request: Request) {
     const postalCode = cleanOptionalString(body.postalCode);
     const city = cleanOptionalString(body.city);
 
-    if (!clientName || !title || !scheduledDate || !scheduledTime) {
+    if (!title || !scheduledDate || !scheduledTime) {
       return NextResponse.json(
         {
           error:
-            "Le client, le motif, la date et l’heure sont obligatoires.",
+            "Le motif, la date et l’heure sont obligatoires.",
         },
         { status: 400 },
       );
@@ -201,12 +201,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const clients =
-      await prisma.client.findMany({
-        where: {
-          userId: currentUser.id,
-        },
-      });
+    const clients = clientName
+      ? await prisma.client.findMany({
+          where: {
+            userId: currentUser.id,
+          },
+        })
+      : [];
     const normalizedClientName = normalize(clientName);
 
     const matchingClients = clients.filter((client) => {
@@ -233,7 +234,7 @@ export async function POST(request: Request) {
     let clientCreated = false;
     let clientUpdated = false;
 
-    if (!client) {
+    if (clientName && !client) {
       const { firstName, lastName } = splitClientName(clientName);
 
     client = await prisma.client.create({
@@ -254,7 +255,7 @@ export async function POST(request: Request) {
 });
 
       clientCreated = true;
-    } else {
+    } else if (client) {
       const updateData: {
         phone?: string;
         street?: string;
@@ -281,7 +282,8 @@ export async function POST(request: Request) {
 
     const intervention = await prisma.intervention.create({
       data: {
-        clientId: client.id,
+        userId: currentUser.id,
+        clientId: client?.id,
         title,
         description: description || null,
         scheduledAt,
@@ -295,7 +297,9 @@ export async function POST(request: Request) {
         intervention,
         clientCreated,
         clientUpdated,
-        message: clientCreated
+        message: !client
+          ? "L’intervention a été créée sans client."
+          : clientCreated
           ? "Le client et l’intervention ont été créés."
           : clientUpdated
             ? "La fiche client a été complétée et l’intervention a été créée."
@@ -370,7 +374,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            client: { userId: currentUser.id },
+            userId: currentUser.id,
           },
           include: { client: true },
         });
@@ -417,6 +421,13 @@ export async function PATCH(request: Request) {
         );
       }
 
+      if (!existingIntervention.client || !existingIntervention.clientId) {
+        return NextResponse.json(
+          { error: "Aucun client n’est encore associé à cette intervention." },
+          { status: 409 },
+        );
+      }
+
       const clientData =
         existingIntervention.client.type === "PROFESSIONNEL"
           ? { companyName: clientName }
@@ -459,9 +470,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            client: {
-              userId: currentUser.id,
-            },
+            userId: currentUser.id,
           },
           include: {
             client: true,
@@ -486,20 +495,64 @@ export async function PATCH(request: Request) {
           );
         }
 
-        const startedIntervention =
-          await prisma.intervention.update({
-            where: { id: interventionId },
-            data: { status: "EN_COURS" },
-            include: { client: true },
-          });
+        let startedIntervention;
+
+        if (existingIntervention.client) {
+          startedIntervention =
+            await prisma.intervention.update({
+              where: { id: interventionId },
+              data: { status: "EN_COURS" },
+              include: { client: true },
+            });
+        } else {
+          const clientName =
+            typeof body.clientName === "string"
+              ? body.clientName.trim()
+              : "";
+
+          if (!clientName) {
+            return NextResponse.json(
+              { error: "Le nom du client est obligatoire." },
+              { status: 400 },
+            );
+          }
+
+          const phone = cleanOptionalString(body.phone);
+          const street = cleanOptionalString(body.address);
+          const { firstName, lastName } = splitClientName(clientName);
+
+          startedIntervention = await prisma.$transaction(
+            async (transaction) => {
+              const client = await transaction.client.create({
+                data: {
+                  type: "PARTICULIER",
+                  firstName,
+                  lastName,
+                  phone,
+                  street,
+                  userId: currentUser.id,
+                },
+              });
+
+              return transaction.intervention.update({
+                where: { id: interventionId },
+                data: {
+                  clientId: client.id,
+                  status: "EN_COURS",
+                },
+                include: { client: true },
+              });
+            },
+          );
+        }
 
         return NextResponse.json({
           intervention: startedIntervention,
           operation,
           clientId: startedIntervention.clientId,
-          clientName: getClientDisplayName(
-            startedIntervention.client,
-          ),
+          clientName: startedIntervention.client
+            ? getClientDisplayName(startedIntervention.client)
+            : "",
         });
       }
 
@@ -545,9 +598,9 @@ export async function PATCH(request: Request) {
         intervention: completedIntervention,
         operation,
         clientId: completedIntervention.clientId,
-        clientName: getClientDisplayName(
-          completedIntervention.client,
-        ),
+        clientName: completedIntervention.client
+          ? getClientDisplayName(completedIntervention.client)
+          : "",
         message:
           "Le compte rendu a été enregistré et l’intervention est terminée.",
       });
@@ -581,7 +634,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            client: { userId: currentUser.id },
+            userId: currentUser.id,
           },
         });
 
@@ -840,7 +893,7 @@ export async function DELETE(request: Request) {
       await prisma.intervention.findFirst({
         where: {
           id: interventionId,
-          client: { userId: currentUser.id },
+          userId: currentUser.id,
         },
         select: { id: true },
       });

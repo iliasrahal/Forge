@@ -18,9 +18,7 @@ export default async function HistoryPage() {
   const interventions =
     await prisma.intervention.findMany({
       where: {
-        client: {
-          userId: currentUser.id,
-        },
+        userId: currentUser.id,
         status: "TERMINEE",
       },
 
@@ -65,10 +63,11 @@ export default async function HistoryPage() {
 
 
 
-            const clientName =
-              `${intervention.client.firstName ?? ""} ${
-                intervention.client.lastName ?? ""
-              }`.trim();
+            const clientName = intervention.client
+              ? `${intervention.client.firstName ?? ""} ${
+                  intervention.client.lastName ?? ""
+                }`.trim()
+              : "Client à renseigner";
 
 
 

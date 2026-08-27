@@ -74,6 +74,8 @@ model User {
 
   clients Client[]
 
+  interventions Intervention[]
+
   sessions Session[]
 
   passwordResetTokens PasswordResetToken[]
@@ -218,15 +220,20 @@ model Intervention {
 
   invoices Invoice[]
 
-  clientId String
+  userId String
 
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId String?
+
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([userId])
   @@index([scheduledAt])
   @@index([endDate])
 }
