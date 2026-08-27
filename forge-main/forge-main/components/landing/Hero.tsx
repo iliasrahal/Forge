@@ -73,7 +73,7 @@ export default function Hero() {
         </p>
 
         <h1 className="forge-hero-reveal forge-hero-delay-1 mt-6 max-w-5xl text-balance text-5xl font-bold tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl dark:text-white">
-          La solution simple et intelligente pour les artisans.
+          La solution intelligente pour les artisans.
         </h1>
 
         <p className="forge-hero-reveal forge-hero-delay-2 mt-7 max-w-3xl text-balance text-lg leading-8 text-slate-600 sm:text-xl dark:text-slate-300">
