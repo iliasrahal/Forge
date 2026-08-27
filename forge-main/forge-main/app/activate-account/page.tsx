@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import AuthShell from "@/components/auth/AuthShell";
+
 export default function ActivateAccountPage() {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
@@ -34,12 +36,15 @@ export default function ActivateAccountPage() {
   }, []);
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-center text-slate-950">
-      <section className="w-full max-w-md">
-        <h1 className="text-4xl font-bold text-blue-700">
-          {status === "loading" ? "Activation en cours..." : status === "success" ? "Compte activé" : "Activation impossible"}
-        </h1>
-        {message && <p className="mt-4 text-slate-500">{message}</p>}
+    <AuthShell
+      eyebrow="Bienvenue sur Forge"
+      title={status === "loading" ? "Activation en cours…" : status === "success" ? "Ton espace est activé." : "Activation impossible"}
+      description={status === "loading" ? "Nous sécurisons ton accès. Cela ne prendra qu’un instant." : message}
+    >
+      <div className="text-center">
+        {status === "loading" && (
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
+        )}
         {status !== "loading" && (
           <Link
             href="/login"
@@ -48,7 +53,7 @@ export default function ActivateAccountPage() {
             Aller à la connexion
           </Link>
         )}
-      </section>
-    </main>
+      </div>
+    </AuthShell>
   );
 }

@@ -74,6 +74,8 @@ model User {
 
   emailSignature String?
 
+  themePreference String?
+
   clients Client[]
 
   interventions Intervention[]

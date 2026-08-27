@@ -230,19 +230,19 @@ localStorage.setItem(
 
 
   const jobButtonClassName =
-    "h-14 w-full rounded-2xl border-2 border-slate-200 bg-white px-5 text-base font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700";
+    "h-14 w-full rounded-2xl border-2 border-slate-200 bg-white px-5 text-base font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-blue-950 dark:hover:text-blue-300";
 
 
 
   const workModeButtonClassName =
-    "h-16 w-full rounded-2xl border-2 border-slate-200 bg-white px-6 text-lg font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700";
+    "h-16 w-full rounded-2xl border-2 border-slate-200 bg-white px-6 text-lg font-semibold text-slate-800 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-blue-500 dark:hover:bg-blue-950 dark:hover:text-blue-300";
 
 
 
 
   return (
 
-    <main className="flex min-h-screen items-center justify-center bg-white px-6 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-white px-6 py-10 text-slate-950 dark:bg-slate-950 dark:text-white">
 
 
       <section className="w-full max-w-md">
@@ -408,7 +408,7 @@ localStorage.setItem(
 
             {error && (
 
-              <p className="mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              <p className="mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
                 {error}
               </p>
 
@@ -427,7 +427,7 @@ localStorage.setItem(
     className="mt-1 h-5 w-5 rounded border-slate-300"
   />
 
-  <p className="text-sm text-slate-600">
+  <p className="text-sm text-slate-600 dark:text-slate-300">
     J'accepte les{" "}
     <span className="font-semibold text-blue-700">
       Conditions Générales d'Utilisation

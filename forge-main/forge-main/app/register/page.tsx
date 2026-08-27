@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import AuthShell from "@/components/auth/AuthShell";
+
 type RegisterResponse = {
   user?: {
     id: string;
@@ -188,37 +190,38 @@ export default function RegisterPage() {
 
   if (activationSent) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white px-6 py-10">
-        <section className="mx-auto w-full max-w-md text-center">
-          <h1 className="text-4xl font-bold text-blue-700">Vérifie ton e-mail.</h1>
-          <p className="mt-4 text-slate-500">
+      <AuthShell
+        eyebrow="Une dernière étape"
+        title="Vérifie ton e-mail."
+        description="Ton espace Forge est presque prêt."
+      >
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-xl text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+            ✓
+          </div>
+          <p className="mt-5 text-slate-600 dark:text-slate-300">
             Un lien d’activation a été envoyé à ton adresse e-mail. Il est valable 24 heures.
           </p>
-          <p className="mt-3 text-sm text-slate-500">
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
             Pense à vérifier tes courriers indésirables.
           </p>
-        </section>
-      </main>
+        </div>
+      </AuthShell>
     );
   }
 
 
 
   return (
-    <main className="min-h-screen bg-white px-6 py-10">
-
-      <section className="mx-auto max-w-md">
-
-
-        <h1 className="text-center text-4xl font-bold text-blue-700">
-          Commençons.
-        </h1>
-
-
-
+    <AuthShell
+      wide
+      eyebrow="Bienvenue sur Forge"
+      title="Créons ton espace."
+      description="Quelques informations suffisent pour préparer un espace adapté à ton activité."
+    >
         <form
           onSubmit={handleSubmit}
-          className="mt-8 space-y-4"
+          className="space-y-4"
         >
 
 
@@ -226,12 +229,11 @@ export default function RegisterPage() {
   type="text"
   value={firstName}
   onChange={(event) => {
-    console.log(event.target.value);
     setFirstName(event.target.value);
   }}
   autoComplete="given-name"
   placeholder="Ton prénom"
-  className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+  className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
 />
 
 
@@ -245,7 +247,7 @@ export default function RegisterPage() {
             }
             autoComplete="email"
             placeholder="Ton adresse e-mail"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 
@@ -260,7 +262,7 @@ export default function RegisterPage() {
             }
             autoComplete="tel"
             placeholder="Ton numéro de téléphone"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 
@@ -279,7 +281,7 @@ export default function RegisterPage() {
             inputMode="numeric"
             autoComplete="bday"
             placeholder="Ta date de naissance"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 
@@ -294,7 +296,7 @@ export default function RegisterPage() {
             }
             autoComplete="new-password"
             placeholder="Ton mot de passe"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 
@@ -309,13 +311,13 @@ export default function RegisterPage() {
             }
             autoComplete="new-password"
             placeholder="Confirme ton mot de passe"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 
 
           {error && (
-            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700">
+            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </p>
           )}
@@ -325,7 +327,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-3 h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="mt-3 h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
           >
 
             {isLoading
@@ -338,9 +340,6 @@ export default function RegisterPage() {
         </form>
 
 
-      </section>
-
-
-    </main>
+    </AuthShell>
   );
 }

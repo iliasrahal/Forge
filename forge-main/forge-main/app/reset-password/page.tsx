@@ -46,15 +46,15 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950">
+    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
       <section className="w-full max-w-md">
-        <Link href="/login" className="text-sm font-medium text-blue-700">
+        <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
           Retour à la connexion
         </Link>
         <h1 className="mt-8 text-4xl font-bold text-blue-700">
           Nouveau mot de passe
         </h1>
-        <p className="mt-3 text-slate-500">
+        <p className="mt-3 text-slate-500 dark:text-slate-400">
           Choisis un mot de passe d’au moins 8 caractères.
         </p>
 
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
             placeholder="Nouveau mot de passe"
             required
             minLength={8}
-            className="h-14 w-full rounded-2xl border border-slate-200 px-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
           <input
             type="password"
@@ -77,10 +77,10 @@ export default function ResetPasswordPage() {
             placeholder="Confirmer le mot de passe"
             required
             minLength={8}
-            className="h-14 w-full rounded-2xl border border-slate-200 px-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
           {error && (
-            <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
             </p>
           )}

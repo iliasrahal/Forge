@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useState } from "react";
+
+import AuthShell from "@/components/auth/AuthShell";
 
 type UserJob =
   | "PLOMBIER_CHAUFFAGISTE"
@@ -22,12 +25,14 @@ type LoginResponse = {
     job: UserJob | null;
     workMode: WorkMode | null;
     onboardingCompleted: boolean;
+    themePreference: "light" | "dark" | null;
   };
   error?: string;
 };
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   const [identifier, setIdentifier] =
     useState("");
@@ -99,6 +104,10 @@ export default function LoginPage() {
         data.user.firstName,
       );
 
+      if (data.user.themePreference) {
+        setTheme(data.user.themePreference);
+      }
+
       if (
         data.user.job &&
         data.user.workMode
@@ -145,21 +154,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
-      <section className="w-full max-w-md">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-blue-700">
-            Bon retour.
-          </h1>
-
-          <p className="mt-3 text-slate-500 dark:text-slate-400">
-            Connecte-toi pour retrouver ton espace.
-          </p>
-        </div>
-
+    <AuthShell
+      title="Bon retour."
+      description="Connecte-toi pour retrouver ton espace et reprendre ta journée là où tu l’as laissée."
+    >
         <form
           onSubmit={handleSubmit}
-          className="mt-8 space-y-4"
+          className="space-y-4"
         >
           <input
             type="text"
@@ -186,14 +187,14 @@ export default function LoginPage() {
             placeholder="Mot de passe"
             className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
-<div className="text-center">
-  <Link
-    href="/forgot-password"
-    className="text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-  >
-    Mot de passe oublié ?
-  </Link>
-</div>
+          <div className="text-center">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </div>
           {error && (
             <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
@@ -223,7 +224,6 @@ export default function LoginPage() {
             Créer mon espace
           </Link>
         </div>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

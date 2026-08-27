@@ -144,14 +144,14 @@ export default async function NewClientPage({
 
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-6">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <main className="mx-auto w-full max-w-3xl px-6 py-6 text-slate-950 dark:text-white">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
         <div className="flex items-center">
           <Link
             href="/clients"
             aria-label="Retour à la liste des clients"
-            className="flex items-center gap-2 text-slate-500 transition hover:text-blue-700"
+            className="flex items-center gap-2 text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
           >
             <span className="text-xl">
               ←

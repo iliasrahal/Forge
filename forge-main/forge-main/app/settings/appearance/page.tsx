@@ -21,6 +21,16 @@ export default function AppearancePage() {
     setMounted(true);
   }, []);
 
+  function selectTheme(nextTheme: "light" | "dark") {
+    setTheme(nextTheme);
+
+    void fetch("/api/settings/theme", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme: nextTheme }),
+    });
+  }
+
 
 
 
@@ -69,7 +79,7 @@ export default function AppearancePage() {
 
           <button
             type="button"
-            onClick={() => setTheme("light")}
+            onClick={() => selectTheme("light")}
             className={`w-full rounded-2xl border px-5 py-4 text-left font-semibold transition ${
               theme === "light"
                 ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
@@ -84,7 +94,7 @@ export default function AppearancePage() {
 
           <button
             type="button"
-            onClick={() => setTheme("dark")}
+            onClick={() => selectTheme("dark")}
             className={`w-full rounded-2xl border px-5 py-4 text-left font-semibold transition ${
               theme === "dark"
                 ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"

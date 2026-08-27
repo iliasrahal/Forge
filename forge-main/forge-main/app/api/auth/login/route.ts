@@ -155,6 +155,8 @@ return NextResponse.json({
     workMode: user.workMode,
     onboardingCompleted:
       user.onboardingCompleted,
+    themePreference:
+      user.themePreference,
   },
 });
   } catch (error) {
