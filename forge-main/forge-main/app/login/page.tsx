@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState } from "react";
@@ -155,6 +154,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell
+      bare
       title="Bon retour."
       description="Connecte-toi pour retrouver ton espace et reprendre ta journée là où tu l’as laissée."
     >
@@ -172,7 +172,7 @@ export default function LoginPage() {
             }
             autoComplete="username"
             placeholder="E-mail ou téléphone"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
+            className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
           />
 
           <input
@@ -185,16 +185,8 @@ export default function LoginPage() {
             }
             autoComplete="current-password"
             placeholder="Mot de passe"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
+            className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
           />
-          <div className="text-center">
-            <Link
-              href="/forgot-password"
-              className="text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              Mot de passe oublié ?
-            </Link>
-          </div>
           {error && (
             <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
               {error}
@@ -212,18 +204,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-7 text-center">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Pas encore de compte ?
-          </p>
-
-          <Link
-            href="/register"
-            className="mt-2 inline-block font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Créer mon espace
-          </Link>
-        </div>
     </AuthShell>
   );
 }

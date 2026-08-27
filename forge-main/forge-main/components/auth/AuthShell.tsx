@@ -8,6 +8,7 @@ type AuthShellProps = {
   description?: React.ReactNode;
   eyebrow?: string;
   wide?: boolean;
+  bare?: boolean;
 };
 
 export default function AuthShell({
@@ -16,6 +17,7 @@ export default function AuthShell({
   description,
   eyebrow = "Votre activité, simplement.",
   wide = false,
+  bare = false,
 }: AuthShellProps) {
   return (
     <main className="relative isolate flex min-h-dvh overflow-hidden bg-slate-50 px-5 py-8 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-8 sm:py-12">
@@ -43,10 +45,12 @@ export default function AuthShell({
             </span>
           </Link>
 
-          <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400">
-            {eyebrow}
-          </p>
-          <h1 className="mx-auto mt-3 text-balance text-3xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl">
+          {!bare && (
+            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-400">
+              {eyebrow}
+            </p>
+          )}
+          <h1 className={`mx-auto text-balance text-3xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl ${bare ? "mt-8" : "mt-3"}`}>
             {title}
           </h1>
           {description && (
@@ -56,13 +60,15 @@ export default function AuthShell({
           )}
         </header>
 
-        <section className="rounded-[2rem] border border-white/80 bg-white/80 p-5 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 dark:shadow-[0_24px_80px_-40px_rgba(0,0,0,0.8)] sm:p-8">
+        <section className={bare ? "mx-auto max-w-sm" : "rounded-[2rem] border border-white/80 bg-white/80 p-5 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 dark:shadow-[0_24px_80px_-40px_rgba(0,0,0,0.8)] sm:p-8"}>
           {children}
         </section>
 
-        <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-600">
-          Forge · Pensé pour les artisans
-        </p>
+        {!bare && (
+          <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-600">
+            Forge · Pensé pour les artisans
+          </p>
+        )}
       </div>
     </main>
   );

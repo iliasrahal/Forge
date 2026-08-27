@@ -51,8 +51,11 @@ export default function Problem() {
     ).matches;
 
     if (reduceMotion) {
-      setIsVisible(true);
-      return;
+      const frame = window.requestAnimationFrame(() => {
+        setIsVisible(true);
+      });
+
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const section = sectionRef.current;
@@ -87,7 +90,7 @@ export default function Problem() {
 
       <div className="mx-auto max-w-6xl">
         <div
-          className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${
+          className={`mx-auto max-w-5xl text-center transition-all duration-700 motion-reduce:transition-none ${
             isVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-6 opacity-0"
@@ -96,8 +99,13 @@ export default function Problem() {
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
             Les défis des artisans
           </p>
-          <h2 className="mt-5 text-balance text-3xl font-bold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
-            Le métier est déjà exigeant. La gestion ne devrait pas l’être aussi.
+          <h2 className="mt-5 text-3xl font-bold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
+            <span className="block text-balance lg:whitespace-nowrap">
+              Le métier est déjà exigeant.
+            </span>
+            <span className="block text-balance lg:whitespace-nowrap">
+              La&nbsp;gestion ne devrait pas l’être&nbsp;aussi.
+            </span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
             Avant Forge, trop de temps disparaît entre les appels, les documents et le suivi quotidien.
