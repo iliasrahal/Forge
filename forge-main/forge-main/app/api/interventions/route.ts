@@ -179,11 +179,11 @@ export async function POST(request: Request) {
     const postalCode = cleanOptionalString(body.postalCode);
     const city = cleanOptionalString(body.city);
 
-    if (!title || !scheduledDate || !scheduledTime) {
+    if (!scheduledDate) {
       return NextResponse.json(
         {
           error:
-            "Le motif, la date et l’heure sont obligatoires.",
+            "La date de l’intervention est obligatoire.",
         },
         { status: 400 },
       );
@@ -191,7 +191,7 @@ export async function POST(request: Request) {
 
     const scheduledAt = createScheduledAt(
       scheduledDate,
-      scheduledTime,
+      scheduledTime || "00:00",
     );
 
     if (!scheduledAt) {
@@ -284,7 +284,7 @@ export async function POST(request: Request) {
       data: {
         userId: currentUser.id,
         clientId: client?.id,
-        title,
+        title: title || description || "Intervention",
         description: description || null,
         scheduledAt,
         status: "PLANIFIEE",

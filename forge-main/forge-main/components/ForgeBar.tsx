@@ -546,23 +546,9 @@ export default function ForgeBar({
     const missingFields: MissingField[] =
       [];
 
-    if (!decision.entity) {
-      missingFields.push("entity");
-    }
-
-    if (!decision.title) {
-      missingFields.push("title");
-    }
-
     if (!decision.scheduledDate) {
       missingFields.push(
         "scheduledDate",
-      );
-    }
-
-    if (!decision.scheduledTime) {
-      missingFields.push(
-        "scheduledTime",
       );
     }
 

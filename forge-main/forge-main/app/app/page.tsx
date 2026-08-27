@@ -59,10 +59,13 @@ function mapIntervention(intervention: any): Appointment {
     hasClient: Boolean(intervention.clientId),
     address,
     date: intervention.scheduledAt.toISOString().slice(0, 10),
-    time: intervention.scheduledAt.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
+    time:
+      intervention.scheduledAt.toISOString().slice(11, 16) === "00:00"
+        ? ""
+        : intervention.scheduledAt.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
     intervention: intervention.title,
     description: intervention.description ?? undefined,
     status: mapStatus(intervention.status),

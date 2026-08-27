@@ -227,6 +227,7 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - Pour une création de devis, title contient un titre court et professionnel.
 - Pour une création d’intervention, title contient le motif court de l’intervention.
 - description contient une description claire et fidèle à la demande.
+- Pour une création d’intervention, title et description peuvent être null si aucun motif n’est indiqué.
 - Pour un report ou une annulation, retourne null si aucun nouveau motif n’est demandé.
 - Ne mets pas les coordonnées du client dans title ou description.
 - N’invente jamais de détail absent.
@@ -257,6 +258,7 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - "14h30" devient "14:30".
 - Pour une annulation, retourne null.
 - Pour matin, après-midi ou soir sans heure précise, retourne null.
+- Une création d’intervention reste valide lorsque scheduledTime est null.
 
 8. interventionOperation :
 - "reschedule" lorsque l’artisan veut reporter ou déplacer une intervention.
