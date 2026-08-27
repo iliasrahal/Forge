@@ -28,18 +28,6 @@ function formatAmount(amountCents: number) {
   }).format(amountCents / 100);
 }
 
-function formatStatus(status: string) {
-  const labels: Record<string, string> = {
-    BROUILLON: "Brouillon",
-    ENVOYEE: "Envoyée",
-    PAYEE: "Payée",
-    EN_RETARD: "En retard",
-    ANNULEE: "Annulée",
-  };
-
-  return labels[status] ?? status;
-}
-
 function cleanPdfText(text: string) {
   return (text ?? "")
     .replaceAll("’", "'")
@@ -277,19 +265,6 @@ export async function GET(
     currentY -= 56;
     page.drawText(`Créée le ${formatDate(invoice.createdAt)}`, {
       x: margin,
-      y: currentY,
-      size: 9,
-      font: regularFont,
-      color: grey,
-    });
-
-    const statusText = `Statut : ${formatStatus(invoice.status)}`;
-    const statusWidth = regularFont.widthOfTextAtSize(
-      statusText,
-      9,
-    );
-    page.drawText(cleanPdfText(statusText), {
-      x: rightEdge - statusWidth,
       y: currentY,
       size: 9,
       font: regularFont,
