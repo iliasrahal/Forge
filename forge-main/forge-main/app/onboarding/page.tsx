@@ -395,10 +395,10 @@ localStorage.setItem(
           <div className="text-center">
 
 
-           <div className="mx-auto flex h-20 w-20 items-center justify-center">
+  <div className="relative mx-auto flex h-20 w-20 items-center justify-center">
+  <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl" />
   <ForgeLogo size={80} />
 </div>
-
 
             <h1 className="mt-8 text-4xl font-bold text-blue-700">
               Ton espace est prêt.
