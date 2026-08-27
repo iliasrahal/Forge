@@ -116,8 +116,6 @@ const [startClientType, setStartClientType] = useState<"PARTICULIER" | "PROFESSI
 const [startClientFirstName, setStartClientFirstName] = useState("");
 const [startClientLastName, setStartClientLastName] = useState("");
 const [startClientCompanyName, setStartClientCompanyName] = useState("");
-const [startClientPhone, setStartClientPhone] = useState("");
-const [startClientAddress, setStartClientAddress] = useState("");
 const [startInterventionTitle, setStartInterventionTitle] = useState("");
 const [startClientError, setStartClientError] = useState("");
 const [isAddingStartClient, setIsAddingStartClient] = useState(false);
@@ -522,8 +520,6 @@ const handleStartIntervention = async () => {
     setStartClientFirstName("");
     setStartClientLastName("");
     setStartClientCompanyName("");
-    setStartClientPhone("");
-    setStartClientAddress("");
     setStartInterventionTitle(
       getAppointmentSubject(currentAppointment),
     );
@@ -570,8 +566,8 @@ const handleAddClientAndStart = async () => {
       firstName: startClientFirstName.trim(),
       lastName: startClientLastName.trim(),
       companyName: startClientCompanyName.trim(),
-      phone: startClientPhone.trim(),
-      address: startClientAddress.trim(),
+      phone: "",
+      address: "",
       title: startInterventionTitle.trim(),
     });
   } finally {
@@ -1308,25 +1304,6 @@ const handleCreateInvoice = async () => {
               />
             </label>
           )}
-
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Téléphone <span className="font-normal text-slate-400">(optionnel)</span>
-            <input
-              type="tel"
-              value={startClientPhone}
-              onChange={(event) => setStartClientPhone(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-            />
-          </label>
-
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Adresse <span className="font-normal text-slate-400">(optionnelle)</span>
-            <input
-              value={startClientAddress}
-              onChange={(event) => setStartClientAddress(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-            />
-          </label>
 
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Motif de l&apos;intervention

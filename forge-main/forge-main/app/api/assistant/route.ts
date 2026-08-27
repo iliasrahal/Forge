@@ -20,6 +20,7 @@ type AssistantAction =
   | "update"
   | "start"
   | "finish"
+  | "deleteAll"
   | "unknown";
 
 type InterventionOperation =
@@ -178,6 +179,34 @@ function containsRdvAlias(
   return /\brdv\b/i.test(message);
 }
 
+function requestsDeleteAllInterventions(
+  message: string,
+) {
+  const normalizedMessage = message
+    .toLocaleLowerCase("fr-FR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  const requestsDeletion =
+    /\b(supprime|retire|annule|efface)\b/.test(
+      normalizedMessage,
+    );
+  const targetsWholeDay =
+    /\b(toutes?|tous|planning|journee)\b/.test(
+      normalizedMessage,
+    );
+  const targetsInterventions =
+    /\b(interventions?|rendez-vous|rdv|planning)\b/.test(
+      normalizedMessage,
+    );
+
+  return (
+    requestsDeletion &&
+    targetsWholeDay &&
+    targetsInterventions
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -233,9 +262,11 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - update : reporter, annuler ou modifier un élément existant.
 - start : démarrer une intervention.
 - finish : terminer une intervention.
+- deleteAll : supprimer toutes les interventions planifiées d’une journée.
 - unknown : l’action n’est pas suffisamment claire.
 
 - « rdv » est un alias de rendez-vous : « j’ai rdv aujourd’hui à 19h » correspond à intent = "intervention", action = "create", scheduledDate = la date d’aujourd’hui et scheduledTime = "19:00".
+- « supprime toutes les interventions de la journée », « retire tous mes rdv », « annule toutes les interventions prévues aujourd’hui » et « efface mon planning » correspondent à intent = "intervention" et action = "deleteAll". scheduledDate contient la journée demandée, ou la date d’aujourd’hui lorsque la demande dit seulement « la journée » ou « mon planning d’aujourd’hui ».
 
 3. entity :
 - Contient uniquement le nom du client, le nom de société ou la référence précise concernée.
@@ -628,6 +659,7 @@ if (
         "update",
         "start",
         "finish",
+        "deleteAll",
         "unknown",
       ];
 
@@ -643,6 +675,11 @@ if (
         ? parsed.action
         : "unknown";
 
+    const deleteAllRequested =
+      requestsDeleteAllInterventions(
+        message,
+      );
+
     const hasRdvAlias =
       containsRdvAlias(
         message,
@@ -651,12 +688,16 @@ if (
       );
 
     const resolvedIntent: AssistantIntent =
-      hasRdvAlias
+      deleteAllRequested
+        ? "intervention"
+        : hasRdvAlias
         ? "intervention"
         : intent;
 
     const resolvedAction: AssistantAction =
-      hasRdvAlias
+      deleteAllRequested
+        ? "deleteAll"
+        : hasRdvAlias
         ? "create"
         : action;
 
@@ -677,9 +718,11 @@ if (
       parsed.currentScheduledDate,
     );
 
-    const scheduledDate = cleanDate(
-      parsed.scheduledDate,
-    );
+    const scheduledDate =
+      cleanDate(parsed.scheduledDate) ||
+      (deleteAllRequested
+        ? currentDate
+        : null);
 
     const scheduledTime = cleanTime(
       parsed.scheduledTime,

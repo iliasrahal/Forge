@@ -912,6 +912,70 @@ export async function DELETE(request: Request) {
     }
 
     const body = await request.json();
+
+    if (body.deleteAll === true) {
+      const scheduledDate =
+        typeof body.scheduledDate === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          body.scheduledDate,
+        )
+          ? body.scheduledDate
+          : "";
+
+      if (!scheduledDate) {
+        return NextResponse.json(
+          { error: "La date est obligatoire." },
+          { status: 400 },
+        );
+      }
+
+      const startOfDay = new Date(
+        `${scheduledDate}T00:00:00.000Z`,
+      );
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setUTCDate(
+        endOfDay.getUTCDate() + 1,
+      );
+
+      const where = {
+        status: "PLANIFIEE" as const,
+        scheduledAt: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+        OR: [
+          { userId: currentUser.id },
+          {
+            client: {
+              userId: currentUser.id,
+            },
+          },
+        ],
+      };
+
+      const count =
+        await prisma.intervention.count({
+          where,
+        });
+
+      if (body.confirmed !== true) {
+        return NextResponse.json({
+          count,
+          requiresConfirmation: count > 0,
+        });
+      }
+
+      const deleted =
+        await prisma.intervention.deleteMany({
+          where,
+        });
+
+      return NextResponse.json({
+        success: true,
+        deletedCount: deleted.count,
+      });
+    }
+
     const interventionId =
       typeof body.interventionId === "string"
         ? body.interventionId.trim()

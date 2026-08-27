@@ -70,6 +70,7 @@ type AssistantAction =
   | "update"
   | "start"
   | "finish"
+  | "deleteAll"
   | "unknown";
 
 type InterventionOperation =
@@ -135,6 +136,13 @@ type UpdateClientResponse = {
     id: string;
   };
   message?: string;
+  error?: string;
+};
+
+type DeleteAllInterventionsResponse = {
+  count?: number;
+  deletedCount?: number;
+  requiresConfirmation?: boolean;
   error?: string;
 };
 
@@ -852,6 +860,96 @@ export default function ForgeBar({
     router.refresh();
   }
 
+  async function deleteAllInterventions(
+    decision: AssistantDecision,
+  ) {
+    if (!decision.scheduledDate) {
+      throw new Error(
+        "Précise la journée dont tu souhaites supprimer les interventions.",
+      );
+    }
+
+    const requestDeletion = async (
+      confirmed: boolean,
+    ) => {
+      const response = await fetch(
+        "/api/interventions",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            deleteAll: true,
+            confirmed,
+            scheduledDate:
+              decision.scheduledDate,
+          }),
+        },
+      );
+
+      const data =
+        (await response.json()) as DeleteAllInterventionsResponse;
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Impossible de supprimer les interventions.",
+        );
+      }
+
+      return data;
+    };
+
+    const preview = await requestDeletion(false);
+    const count = preview.count ?? 0;
+
+    if (count === 0) {
+      showNotice(
+        "Aucune intervention planifiée n’est prévue pour cette journée.",
+      );
+      return;
+    }
+
+    const requestedDate = new Date(
+      `${decision.scheduledDate}T00:00:00`,
+    );
+    const today = new Date();
+    const todayKey = [
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(
+        2,
+        "0",
+      ),
+      String(today.getDate()).padStart(2, "0"),
+    ].join("-");
+    const dayLabel =
+      decision.scheduledDate === todayKey
+        ? "aujourd’hui"
+        : `le ${requestedDate.toLocaleDateString(
+            "fr-FR",
+          )}`;
+
+    const confirmed = window.confirm(
+      `Tu es sûr de vouloir supprimer ${count} intervention${count > 1 ? "s" : ""} prévue${count > 1 ? "s" : ""} ${dayLabel} ?`,
+    );
+
+    if (!confirmed) {
+      setMessage("");
+      return;
+    }
+
+    const result = await requestDeletion(true);
+    const deletedCount =
+      result.deletedCount ?? count;
+
+    showNotice(
+      `${deletedCount} intervention${deletedCount > 1 ? "s" : ""} supprimée${deletedCount > 1 ? "s" : ""}.`,
+    );
+    router.refresh();
+  }
+
   async function updateClient(
     decision: AssistantDecision,
   ) {
@@ -1189,6 +1287,12 @@ export default function ForgeBar({
 
         case "intervention:update":
           await updateIntervention(
+            decision,
+          );
+          break;
+
+        case "intervention:deleteAll":
+          await deleteAllInterventions(
             decision,
           );
           break;
