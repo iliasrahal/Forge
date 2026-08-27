@@ -11,7 +11,7 @@ export default function ForgeLogo({
         width: size,
         height: size,
       }}
-      className="rounded-3xl"
+      className="object-contain"
     />
   );
 }
