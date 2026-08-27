@@ -284,20 +284,9 @@ export default async function QuotePage({
 <div className="mt-6 flex flex-col gap-3">
 
 
-  <Link
-    href={`/clients/${id}/quotes/${quoteId}/edit`}
-    className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
-  >
-    Modifier le devis
-  </Link>
-
-
-
   <DownloadQuotePdf
-    pdfUrl={`/api/quotes/${quoteId}/pdf`}
     clientId={id}
     quoteId={quoteId}
-    fileName={`devis-${quote.reference}.pdf`}
   />
 
 
@@ -310,6 +299,23 @@ export default async function QuotePage({
       Créer une intervention
     </button>
   </form>
+
+
+  <Link
+    href={`/clients/${id}/quotes/${quoteId}/edit`}
+    className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+  >
+    Modifier le devis
+  </Link>
+
+
+  <a
+    href={`/api/quotes/${quoteId}/pdf`}
+    download={`devis-${quote.reference}.pdf`}
+    className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+  >
+    Télécharger le devis
+  </a>
 
 
 </div>

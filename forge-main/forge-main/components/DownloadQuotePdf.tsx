@@ -4,16 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type DownloadQuotePdfProps = {
-  pdfUrl: string;
   clientId: string;
-  fileName: string;
   quoteId?: string;
 };
 
 export default function DownloadQuotePdf({
-  pdfUrl,
   clientId,
-  fileName,
   quoteId,
 }: DownloadQuotePdfProps) {
 
@@ -113,15 +109,6 @@ export default function DownloadQuotePdf({
 
   return (
     <div className="space-y-3">
-
-
-      <a
-        href={pdfUrl}
-        download={fileName}
-        className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
-      >
-        Télécharger le devis
-      </a>
 
 
       <button
