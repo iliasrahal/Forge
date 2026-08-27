@@ -8,6 +8,7 @@ const openai = new OpenAI({
 type AssistantIntent =
   | "clientReply"
   | "quote"
+  | "invoice"
   | "client"
   | "intervention"
   | "unknown";
@@ -21,6 +22,9 @@ type AssistantAction =
   | "start"
   | "finish"
   | "deleteAll"
+  | "send"
+  | "download"
+  | "createIntervention"
   | "unknown";
 
 type InterventionOperation =
@@ -169,6 +173,7 @@ function containsRdvAlias(
   if (
     intent === "clientReply" ||
     intent === "quote" ||
+    intent === "invoice" ||
     intent === "client" ||
     action !== "unknown" &&
       action !== "create"
@@ -249,7 +254,8 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 
 1. intent :
 - clientReply : préparer une réponse à un SMS, un mail, WhatsApp ou un message client.
-- quote : créer, rechercher, ouvrir ou modifier un devis.
+- quote : créer, rechercher, ouvrir, modifier, envoyer ou télécharger un devis, ou créer une intervention depuis un devis.
+- invoice : créer, rechercher, ouvrir, modifier, envoyer ou télécharger une facture.
 - client : créer, rechercher, ouvrir ou modifier une fiche client.
 - intervention : créer, rechercher, ouvrir, reporter, annuler, démarrer, terminer ou modifier une intervention.
 - unknown : la demande ne correspond clairement à aucune catégorie.
@@ -263,7 +269,17 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - start : démarrer une intervention.
 - finish : terminer une intervention.
 - deleteAll : supprimer toutes les interventions planifiées d’une journée.
+- send : envoyer un devis ou une facture au client.
+- download : télécharger le PDF d’un devis ou d’une facture.
+- createIntervention : créer une intervention depuis un devis existant.
 - unknown : l’action n’est pas suffisamment claire.
+
+Règles documents :
+- « facture », « FAC-123 » et toute demande portant explicitement sur une facture correspondent à intent = "invoice".
+- « devis » et toute demande portant explicitement sur un devis correspondent à intent = "quote".
+- « envoie le devis/la facture » correspond à action = "send".
+- « télécharge le devis/la facture » correspond à action = "download".
+- « transforme ce devis en intervention » et « crée une intervention depuis ce devis » correspondent à intent = "quote", action = "createIntervention".
 
 - « rdv » est un alias de rendez-vous : « j’ai rdv aujourd’hui à 19h » correspond à intent = "intervention", action = "create", scheduledDate = la date d’aujourd’hui et scheduledTime = "19:00".
 - « supprime toutes les interventions de la journée », « retire tous mes rdv », « annule toutes les interventions prévues aujourd’hui » et « efface mon planning » correspondent à intent = "intervention" et action = "deleteAll". scheduledDate contient la journée demandée, ou la date d’aujourd’hui lorsque la demande dit seulement « la journée » ou « mon planning d’aujourd’hui ».
@@ -645,6 +661,7 @@ if (
       [
         "clientReply",
         "quote",
+        "invoice",
         "client",
         "intervention",
         "unknown",
@@ -660,6 +677,9 @@ if (
         "start",
         "finish",
         "deleteAll",
+        "send",
+        "download",
+        "createIntervention",
         "unknown",
       ];
 

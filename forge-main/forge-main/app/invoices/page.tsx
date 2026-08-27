@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import FixedForgeBar from "@/components/FixedForgeBar";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 
@@ -67,7 +68,7 @@ export default async function InvoicesPage() {
 
   return (
 
-    <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-6 dark:bg-slate-950">
 
 
       <div className="mt-6 space-y-4">
@@ -141,6 +142,9 @@ export default async function InvoicesPage() {
 
 
       </div>
+
+
+      <FixedForgeBar context="invoices" />
 
 
 

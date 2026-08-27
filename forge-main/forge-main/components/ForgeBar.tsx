@@ -58,6 +58,7 @@ type SpeechRecognitionWindow = Window & {
 type AssistantIntent =
   | "clientReply"
   | "quote"
+  | "invoice"
   | "client"
   | "intervention"
   | "unknown";
@@ -71,6 +72,9 @@ type AssistantAction =
   | "start"
   | "finish"
   | "deleteAll"
+  | "send"
+  | "download"
+  | "createIntervention"
   | "unknown";
 
 type InterventionOperation =
@@ -147,7 +151,7 @@ type DeleteAllInterventionsResponse = {
 };
 
 type ForgeBarProps = {
-  context?: "home" | "clients" | "quotes";
+  context?: "home" | "clients" | "quotes" | "invoices";
   clientId?: string;
   clientName?: string;
   initialMessage?: string;
@@ -180,11 +184,32 @@ const placeholders = {
   ],
 
   quotes: [
-    "Créer un devis ?",
-    "Modifier un devis ?",
-    "Ouvrir un devis ?",
-    "Préparer un devis ?",
+    "Créer un devis",
+    "Modifier un devis",
+    "Envoyer un devis",
+    "Télécharger un devis",
+    "Créer une intervention depuis ce devis",
   ],
+
+  invoices: [
+    "Créer une facture",
+    "Modifier une facture",
+    "Envoyer une facture",
+    "Télécharger une facture",
+  ],
+};
+
+type DocumentResolution = {
+  id: string;
+  clientId: string;
+  title: string;
+  description: string | null;
+  reference: string;
+};
+
+type InvoiceSourceResolution = {
+  source: "intervention" | "quote";
+  sourceId: string;
 };
 
 const technicalErrorPattern =
@@ -1052,7 +1077,7 @@ export default function ForgeBar({
   }
 
   function buildSearchUrl(
-    path: "/clients" | "/quotes",
+    path: "/clients" | "/quotes" | "/invoices",
     entity: string | null,
   ) {
     if (!entity) {
@@ -1062,6 +1087,224 @@ export default function ForgeBar({
     return `${path}?search=${encodeURIComponent(
       entity,
     )}`;
+  }
+
+  async function resolveDocument(
+    kind: "quote" | "invoice",
+    entity: string | null,
+  ) {
+    const response = await fetch(
+      "/api/assistant/documents",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          kind,
+          entity,
+        }),
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.document) {
+      throw new Error(
+        data.error ||
+          `Précise le client ou le numéro du ${kind === "quote" ? "devis" : "facture"} concerné.`,
+      );
+    }
+
+    return data.document as DocumentResolution;
+  }
+
+  async function handleQuoteAction(
+    action: AssistantAction,
+    entity: string | null,
+  ) {
+    const quote = await resolveDocument(
+      "quote",
+      entity,
+    );
+
+    setMessage("");
+
+    if (action === "update") {
+      router.push(
+        `/clients/${quote.clientId}/quotes/${quote.id}/edit`,
+      );
+      return;
+    }
+
+    if (action === "download") {
+      window.location.assign(
+        `/api/quotes/${quote.id}/pdf`,
+      );
+      return;
+    }
+
+    if (action === "send") {
+      const response = await fetch(
+        "/api/quotes/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            quoteId: quote.id,
+          }),
+        },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error === "email_missing"
+            ? "Ce client n’a pas encore d’adresse email. Ajoute-la dans sa fiche puis réessaie."
+            : "Impossible d’envoyer ce devis. Vérifie l’adresse email du client puis réessaie.",
+        );
+      }
+
+      showNotice(`Le devis ${quote.reference} a été envoyé.`);
+      router.refresh();
+      return;
+    }
+
+    if (action === "createIntervention") {
+      const params = new URLSearchParams({
+        title: quote.title,
+      });
+
+      if (quote.description) {
+        params.set(
+          "description",
+          quote.description,
+        );
+      }
+
+      router.push(
+        `/clients/${quote.clientId}/interventions/new?${params.toString()}`,
+      );
+      return;
+    }
+
+    router.push(
+      `/clients/${quote.clientId}/quotes/${quote.id}`,
+    );
+  }
+
+  async function handleInvoiceAction(
+    action: AssistantAction,
+    entity: string | null,
+  ) {
+    if (action === "create") {
+      if (!entity) {
+        throw new Error(
+          "Précise le client concerné par la facture.",
+        );
+      }
+
+      const sourceResponse = await fetch(
+        "/api/assistant/documents",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            kind: "invoiceSource",
+            entity,
+          }),
+        },
+      );
+
+      const sourceData = await sourceResponse.json();
+
+      if (!sourceResponse.ok || !sourceData.source) {
+        throw new Error(
+          sourceData.error ||
+            "Forge ne trouve aucune intervention terminée ou aucun devis à facturer pour ce client.",
+        );
+      }
+
+      const source =
+        sourceData.source as InvoiceSourceResolution;
+      const createResponse = await fetch(
+        source.source === "intervention"
+          ? "/api/invoices/create-from-intervention"
+          : "/api/invoices/create-from-quote",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(
+            source.source === "intervention"
+              ? { interventionId: source.sourceId }
+              : { quoteId: source.sourceId },
+          ),
+        },
+      );
+
+      const invoiceData = await createResponse.json();
+
+      if (!createResponse.ok || !invoiceData.invoice?.id) {
+        throw new Error(
+          invoiceData.error ||
+            "Impossible de créer cette facture. Vérifie les éléments du client puis réessaie.",
+        );
+      }
+
+      setMessage("");
+      router.push(`/invoices/${invoiceData.invoice.id}`);
+      return;
+    }
+
+    const invoice = await resolveDocument(
+      "invoice",
+      entity,
+    );
+
+    setMessage("");
+
+    if (action === "download") {
+      window.location.assign(
+        `/api/invoices/${invoice.id}/pdf`,
+      );
+      return;
+    }
+
+    if (action === "send") {
+      const response = await fetch(
+        "/api/invoices/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            invoiceId: invoice.id,
+          }),
+        },
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error === "email_missing"
+            ? "Ce client n’a pas encore d’adresse email. Ajoute-la dans sa fiche puis réessaie."
+            : "Impossible d’envoyer cette facture. Vérifie l’adresse email du client puis réessaie.",
+        );
+      }
+
+      showNotice(`La facture ${invoice.reference} a été envoyée.`);
+      router.refresh();
+      return;
+    }
+
+    router.push(`/invoices/${invoice.id}`);
   }
 
   async function handleSubmit(
@@ -1216,15 +1459,23 @@ export default function ForgeBar({
 
         case "quote:search":
         case "quote:open":
-        case "quote:update":
+          router.push(buildSearchUrl("/quotes", entity));
           setMessage("");
+          break;
 
-          router.push(
-            buildSearchUrl(
-              "/quotes",
-              entity,
-            ),
-          );
+        case "quote:update":
+        case "quote:send":
+        case "quote:download":
+        case "quote:createIntervention":
+          await handleQuoteAction(action, entity);
+          break;
+
+        case "invoice:create":
+        case "invoice:update":
+        case "invoice:open":
+        case "invoice:send":
+        case "invoice:download":
+          await handleInvoiceAction(action, entity);
           break;
 
       case "client:create":

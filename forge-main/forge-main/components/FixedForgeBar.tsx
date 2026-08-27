@@ -3,7 +3,7 @@
 import ForgeBar from "@/components/ForgeBar";
 
 type FixedForgeBarProps = {
-  context: "home" | "clients" | "quotes";
+  context: "home" | "clients" | "quotes" | "invoices";
   clientId?: string;
   clientName?: string;
   initialMessage?: string;
