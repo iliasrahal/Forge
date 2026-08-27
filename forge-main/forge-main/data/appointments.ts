@@ -26,6 +26,70 @@ export type Appointment = {
   report?: InterventionReport;
 };
 
+function getUsefulText(value?: string) {
+  const cleanedValue = value?.trim();
+
+  if (
+    !cleanedValue ||
+    cleanedValue.toLocaleLowerCase("fr-FR") ===
+      "intervention"
+  ) {
+    return "";
+  }
+
+  return cleanedValue;
+}
+
+export function getAppointmentSubject(
+  appointment: Pick<
+    Appointment,
+    "intervention" | "description"
+  >,
+) {
+  return (
+    getUsefulText(appointment.intervention) ||
+    getUsefulText(appointment.description)
+  );
+}
+
+export function getAppointmentDateLabel(
+  appointmentDate: string,
+) {
+  if (!appointmentDate) {
+    return "";
+  }
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const formatDateKey = (date: Date) =>
+    [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(
+        2,
+        "0",
+      ),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+  if (appointmentDate === formatDateKey(today)) {
+    return "Aujourd’hui";
+  }
+
+  if (
+    appointmentDate === formatDateKey(tomorrow)
+  ) {
+    return "Demain";
+  }
+
+  return new Date(
+    `${appointmentDate}T00:00:00`,
+  ).toLocaleDateString("fr-FR", {
+    weekday: "long",
+  });
+}
+
 export function getAppointmentDisplayTitle(
   appointment: Pick<
     Appointment,
@@ -36,20 +100,16 @@ export function getAppointmentDisplayTitle(
   >,
 ) {
   const subject =
-    appointment.intervention.trim() ||
-    appointment.description?.trim();
+    getAppointmentSubject(appointment);
 
   if (subject) {
     return subject;
   }
 
-  const displayDate = appointment.date
-    ? new Intl.DateTimeFormat("fr-FR").format(
-        new Date(
-          `${appointment.date}T00:00:00`,
-        ),
-      )
-    : "";
+  const displayDate =
+    getAppointmentDateLabel(
+      appointment.date,
+    );
 
   if (displayDate && appointment.time) {
     return `${displayDate} à ${appointment.time}`;

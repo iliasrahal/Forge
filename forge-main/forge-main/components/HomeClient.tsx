@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import HomeContent from "@/components/HomeContent";
 import {
-  getAppointmentDisplayTitle,
+  getAppointmentDateLabel,
+  getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
 
@@ -354,54 +355,6 @@ const newInterventionExists =
       default:
         return "bg-slate-100 text-slate-600";
     }
-  };
-
-  const getAppointmentDateLabel = (
-    appointmentDate: string,
-  ) => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-
-    tomorrow.setDate(today.getDate() + 1);
-
-    const appointmentDay = new Date(
-      `${appointmentDate}T00:00:00`,
-    );
-
-    const formatDateKey = (date: Date) => {
-      const year = date.getFullYear();
-
-      const month = String(
-        date.getMonth() + 1,
-      ).padStart(2, "0");
-
-      const day = String(
-        date.getDate(),
-      ).padStart(2, "0");
-
-      return `${year}-${month}-${day}`;
-    };
-
-    const todayKey = formatDateKey(today);
-    const tomorrowKey =
-      formatDateKey(tomorrow);
-
-    if (appointmentDate === todayKey) {
-      return "Aujourd’hui";
-    }
-
-    if (appointmentDate === tomorrowKey) {
-      return "Demain";
-    }
-
-    return appointmentDay.toLocaleDateString(
-      "fr-FR",
-      {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-      },
-    );
   };
 
   const findNextAvailableAppointment = (
@@ -1117,16 +1070,21 @@ const handleCreateInvoice = async () => {
                   )}
                 </span>
 
-                <span className="mt-1 block text-sm font-semibold">
-                  {appointment.time}
-                </span>
+                {appointment.time && (
+                  <span className="mt-1 block text-sm font-semibold">
+                    {appointment.time}
+                  </span>
+                )}
 
-                <span className="mt-1 block truncate text-sm font-medium">
-                  {appointment.client ||
-                    getAppointmentDisplayTitle(
+                {(getAppointmentSubject(
+                  appointment,
+                ) || appointment.client) && (
+                  <span className="mt-1 block truncate text-sm font-medium">
+                    {getAppointmentSubject(
                       appointment,
-                    )}
-                </span>
+                    ) || appointment.client}
+                  </span>
+                )}
 
                 <span
                   className={`mt-3 inline-flex rounded-full px-2 py-1 text-xs font-medium ${getAppointmentStatusClasses(
@@ -1202,16 +1160,21 @@ const handleCreateInvoice = async () => {
                     )}
                   </span>
 
-                  <span className="mt-1 block text-sm font-semibold">
-                    {appointment.time}
-                  </span>
+                  {appointment.time && (
+                    <span className="mt-1 block text-sm font-semibold">
+                      {appointment.time}
+                    </span>
+                  )}
 
-                  <span className="mt-1 block truncate text-sm font-medium">
-                    {appointment.client ||
-                      getAppointmentDisplayTitle(
+                  {(getAppointmentSubject(
+                    appointment,
+                  ) || appointment.client) && (
+                    <span className="mt-1 block truncate text-sm font-medium">
+                      {getAppointmentSubject(
                         appointment,
-                      )}
-                  </span>
+                      ) || appointment.client}
+                    </span>
+                  )}
 
                   <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     À venir
