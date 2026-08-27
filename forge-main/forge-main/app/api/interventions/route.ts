@@ -511,29 +511,47 @@ export async function PATCH(request: Request) {
               include: { client: true },
             });
         } else {
-          const clientName =
-            typeof body.clientName === "string"
-              ? body.clientName.trim()
-              : "";
+          const clientType =
+            body.clientType === "PROFESSIONNEL"
+              ? "PROFESSIONNEL" as const
+              : "PARTICULIER" as const;
+          const firstName = cleanOptionalString(body.firstName);
+          const lastName = cleanOptionalString(body.lastName);
+          const companyName = cleanOptionalString(body.companyName);
+          const title = cleanOptionalString(body.title);
 
-          if (!clientName) {
+          if (
+            (clientType === "PARTICULIER" &&
+              (!firstName || !lastName)) ||
+            (clientType === "PROFESSIONNEL" && !companyName)
+          ) {
             return NextResponse.json(
-              { error: "Le nom du client est obligatoire." },
+              { error: "Les informations du client sont incomplètes." },
+              { status: 400 },
+            );
+          }
+
+          if (!title) {
+            return NextResponse.json(
+              { error: "Le motif de l’intervention est obligatoire." },
               { status: 400 },
             );
           }
 
           const phone = cleanOptionalString(body.phone);
           const street = cleanOptionalString(body.address);
-          const { firstName, lastName } = splitClientName(clientName);
 
           startedIntervention = await prisma.$transaction(
             async (transaction) => {
               const client = await transaction.client.create({
                 data: {
-                  type: "PARTICULIER",
-                  firstName,
-                  lastName,
+                  type: clientType,
+                  firstName:
+                    clientType === "PARTICULIER" ? firstName : null,
+                  lastName:
+                    clientType === "PARTICULIER" ? lastName : null,
+                  companyName:
+                    clientType === "PROFESSIONNEL" ? companyName : null,
                   phone,
                   street,
                   userId: currentUser.id,
@@ -544,6 +562,7 @@ export async function PATCH(request: Request) {
                 where: { id: interventionId },
                 data: {
                   clientId: client.id,
+                  title,
                   status: "EN_COURS",
                 },
                 include: { client: true },

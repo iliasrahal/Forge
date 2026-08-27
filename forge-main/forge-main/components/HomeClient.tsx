@@ -112,9 +112,13 @@ const [actionTime, setActionTime] = useState("");
 const [actionError, setActionError] = useState("");
 const [isSavingAction, setIsSavingAction] = useState(false);
 const [showAddClientModal, setShowAddClientModal] = useState(false);
-const [startClientName, setStartClientName] = useState("");
+const [startClientType, setStartClientType] = useState<"PARTICULIER" | "PROFESSIONNEL">("PARTICULIER");
+const [startClientFirstName, setStartClientFirstName] = useState("");
+const [startClientLastName, setStartClientLastName] = useState("");
+const [startClientCompanyName, setStartClientCompanyName] = useState("");
 const [startClientPhone, setStartClientPhone] = useState("");
 const [startClientAddress, setStartClientAddress] = useState("");
+const [startInterventionTitle, setStartInterventionTitle] = useState("");
 const [startClientError, setStartClientError] = useState("");
 const [isAddingStartClient, setIsAddingStartClient] = useState(false);
   const [
@@ -391,9 +395,13 @@ const newInterventionExists =
   };
 
  const startIntervention = async (clientDetails?: {
-  clientName: string;
+  clientType: "PARTICULIER" | "PROFESSIONNEL";
+  firstName: string;
+  lastName: string;
+  companyName: string;
   phone: string;
   address: string;
+  title: string;
  }) => {
   if (!currentAppointment) {
     return;
@@ -449,12 +457,18 @@ const newInterventionExists =
     );
 
     if (clientDetails) {
+      const clientName =
+        clientDetails.clientType === "PROFESSIONNEL"
+          ? clientDetails.companyName
+          : `${clientDetails.firstName} ${clientDetails.lastName}`.trim();
+
       const updateStartedAppointment = (appointment: Appointment) =>
         appointment.id === currentAppointment.id
           ? {
               ...appointment,
-              client: clientDetails.clientName,
+              client: clientName,
               address: clientDetails.address,
+              intervention: clientDetails.title,
               hasClient: true,
               status: "inProgress" as const,
             }
@@ -504,9 +518,15 @@ const handleStartIntervention = async () => {
   }
 
   if (!currentAppointment.hasClient) {
-    setStartClientName("");
+    setStartClientType("PARTICULIER");
+    setStartClientFirstName("");
+    setStartClientLastName("");
+    setStartClientCompanyName("");
     setStartClientPhone("");
     setStartClientAddress("");
+    setStartInterventionTitle(
+      getAppointmentSubject(currentAppointment),
+    );
     setStartClientError("");
     setShowAddClientModal(true);
     return;
@@ -516,8 +536,28 @@ const handleStartIntervention = async () => {
 };
 
 const handleAddClientAndStart = async () => {
-  if (!startClientName.trim() || isAddingStartClient) {
-    setStartClientError("Le nom du client est obligatoire.");
+  if (isAddingStartClient) {
+    return;
+  }
+
+  if (
+    startClientType === "PARTICULIER" &&
+    (!startClientFirstName.trim() || !startClientLastName.trim())
+  ) {
+    setStartClientError("Le prénom et le nom du client sont obligatoires.");
+    return;
+  }
+
+  if (
+    startClientType === "PROFESSIONNEL" &&
+    !startClientCompanyName.trim()
+  ) {
+    setStartClientError("Le nom de l’entreprise est obligatoire.");
+    return;
+  }
+
+  if (!startInterventionTitle.trim()) {
+    setStartClientError("Le motif de l’intervention est obligatoire.");
     return;
   }
 
@@ -526,9 +566,13 @@ const handleAddClientAndStart = async () => {
 
   try {
     await startIntervention({
-      clientName: startClientName.trim(),
+      clientType: startClientType,
+      firstName: startClientFirstName.trim(),
+      lastName: startClientLastName.trim(),
+      companyName: startClientCompanyName.trim(),
       phone: startClientPhone.trim(),
       address: startClientAddress.trim(),
+      title: startInterventionTitle.trim(),
     });
   } finally {
     setIsAddingStartClient(false);
@@ -1196,21 +1240,74 @@ const handleCreateInvoice = async () => {
 
   {showAddClientModal && currentAppointment && (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
-      <section className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+      <section className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-          Ajouter le client
+          Informations client
         </h2>
 
         <div className="mt-5 space-y-4">
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Nom du client
-            <input
-              required
-              value={startClientName}
-              onChange={(event) => setStartClientName(event.target.value)}
+            Type de client
+            <select
+              value={startClientType}
+              onChange={(event) =>
+                setStartClientType(
+                  event.target.value as
+                    | "PARTICULIER"
+                    | "PROFESSIONNEL",
+                )
+              }
               className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-            />
+            >
+              <option value="PARTICULIER">Particulier</option>
+              <option value="PROFESSIONNEL">Professionnel</option>
+            </select>
           </label>
+
+          {startClientType === "PARTICULIER" ? (
+            <>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Prénom
+                <input
+                  required
+                  value={startClientFirstName}
+                  onChange={(event) =>
+                    setStartClientFirstName(
+                      event.target.value,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Nom
+                <input
+                  required
+                  value={startClientLastName}
+                  onChange={(event) =>
+                    setStartClientLastName(
+                      event.target.value,
+                    )
+                  }
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+            </>
+          ) : (
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Nom de l&apos;entreprise
+              <input
+                required
+                value={startClientCompanyName}
+                onChange={(event) =>
+                  setStartClientCompanyName(
+                    event.target.value,
+                  )
+                }
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+          )}
 
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Téléphone <span className="font-normal text-slate-400">(optionnel)</span>
@@ -1227,6 +1324,20 @@ const handleCreateInvoice = async () => {
             <input
               value={startClientAddress}
               onChange={(event) => setStartClientAddress(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+
+          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Motif de l&apos;intervention
+            <input
+              required
+              value={startInterventionTitle}
+              onChange={(event) =>
+                setStartInterventionTitle(
+                  event.target.value,
+                )
+              }
               className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
             />
           </label>
