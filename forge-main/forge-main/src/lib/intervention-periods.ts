@@ -53,7 +53,7 @@ function getPeriod(
     return {
       key: `week-${weekDifference}`,
       label: labels[weekDifference],
-      order: interventionMonday.getTime(),
+      order: interventionDate.getTime(),
     };
   }
 
@@ -71,11 +71,7 @@ function getPeriod(
         monthDifference === 0
           ? "Ce mois-ci"
           : `Dans ${monthDifference} mois`,
-      order: Date.UTC(
-        interventionDate.getUTCFullYear(),
-        interventionDate.getUTCMonth(),
-        1,
-      ),
+      order: interventionDate.getTime(),
     };
   }
 
@@ -91,11 +87,7 @@ function getPeriod(
         : yearDifference === 1
           ? "L’année prochaine"
           : `Dans ${yearDifference} ans`,
-    order: Date.UTC(
-      interventionDate.getUTCFullYear(),
-      0,
-      1,
-    ),
+    order: interventionDate.getTime(),
   };
 }
 
@@ -149,4 +141,3 @@ export function groupFutureInterventions<
       appointments: groupedAppointments,
     }));
 }
-
