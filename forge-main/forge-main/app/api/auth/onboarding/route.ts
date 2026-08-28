@@ -20,6 +20,7 @@ type WorkMode =
 type OnboardingBody = {
   job?: UserJob;
   workMode?: WorkMode;
+  organizationName?: string;
 };
 
 
@@ -122,6 +123,9 @@ export async function PATCH(
     const workMode =
       body.workMode;
 
+    const organizationName =
+      body.organizationName?.trim() ?? "";
+
 
 
 
@@ -164,11 +168,55 @@ export async function PATCH(
 
     }
 
+    if (workMode === "TEAM" && !organizationName) {
+      return NextResponse.json(
+        { error: "Renseigne le nom de ton entreprise ou de ton équipe." },
+        { status: 400 },
+      );
+    }
 
 
 
-    const user =
-      await prisma.user.update({
+
+    const user = await prisma.$transaction(async (transaction) => {
+      let organizationId: string | undefined;
+
+      if (workMode === "TEAM") {
+        const existingMembership =
+          await transaction.organizationMember.findFirst({
+            where: { userId: session.userId },
+          });
+
+        if (!existingMembership) {
+          const organization = await transaction.organization.create({
+            data: {
+              name: organizationName,
+              members: {
+                create: {
+                  userId: session.userId,
+                  role: "OWNER",
+                },
+              },
+            },
+          });
+          organizationId = organization.id;
+        } else {
+          organizationId = existingMembership.organizationId;
+        }
+
+        await Promise.all([
+          transaction.client.updateMany({
+            where: { userId: session.userId, organizationId: null },
+            data: { organizationId },
+          }),
+          transaction.intervention.updateMany({
+            where: { userId: session.userId, organizationId: null },
+            data: { organizationId },
+          }),
+        ]);
+      }
+
+      return transaction.user.update({
 
         where: {
           id: session.userId,
@@ -202,6 +250,7 @@ export async function PATCH(
         },
 
       });
+    });
 
 
 

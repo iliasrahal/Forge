@@ -34,7 +34,7 @@ export default function OnboardingPage() {
 
 
   const [step, setStep] =
-    useState<"job" | "workMode" | "ready">("job");
+    useState<"job" | "workMode" | "team" | "ready">("job");
 
 
   const [firstName, setFirstName] =
@@ -47,6 +47,9 @@ export default function OnboardingPage() {
 
   const [workMode, setWorkMode] =
     useState<WorkMode | null>(null);
+
+  const [organizationName, setOrganizationName] =
+    useState("");
 
 
   const [error, setError] =
@@ -105,7 +108,7 @@ export default function OnboardingPage() {
 
     setWorkMode(selectedWorkMode);
 
-    setStep("ready");
+    setStep(selectedWorkMode === "TEAM" ? "team" : "ready");
 
   }
 
@@ -115,6 +118,7 @@ if (
   isLoading ||
   !job ||
   !workMode ||
+  (workMode === "TEAM" && !organizationName.trim()) ||
   !acceptedTerms
 ) {
   return;
@@ -142,6 +146,10 @@ if (
             body: JSON.stringify({
               job,
               workMode,
+              organizationName:
+                workMode === "TEAM"
+                  ? organizationName.trim()
+                  : undefined,
             }),
 
           },
@@ -427,6 +435,57 @@ localStorage.setItem(
 
           </div>
 
+        )}
+
+        {step === "team" && (
+          <div>
+            <p className="text-center text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
+              Travail en équipe
+            </p>
+            <h1 className="mt-4 text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+              Trouvez votre organisation
+            </h1>
+            <p className="mx-auto mt-4 max-w-sm text-center leading-7 text-slate-600 dark:text-slate-300">
+              Créez votre espace d’entreprise. Vous en deviendrez automatiquement le Responsable.
+            </p>
+
+            <div className="mt-8">
+              <label
+                htmlFor="organizationName"
+                className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+              >
+                Nom de l’entreprise / équipe
+              </label>
+              <input
+                id="organizationName"
+                type="text"
+                value={organizationName}
+                onChange={(event) =>
+                  setOrganizationName(event.target.value)
+                }
+                placeholder="Exemple : Martin Plomberie"
+                className="h-14 w-full rounded-2xl border border-white/80 bg-white/75 px-5 text-slate-900 shadow-[0_14px_38px_-28px_rgba(15,23,42,0.6)] outline-none backdrop-blur transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700/80 dark:bg-slate-900/75 dark:text-white dark:placeholder:text-slate-500"
+              />
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/35">
+              <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                Votre rôle : Responsable
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                Les collaborateurs rejoignent ensuite cet espace grâce à une invitation sécurisée par email.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              disabled={!organizationName.trim()}
+              onClick={() => setStep("ready")}
+              className="mt-8 h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700"
+            >
+              Continuer
+            </button>
+          </div>
         )}
 
 
