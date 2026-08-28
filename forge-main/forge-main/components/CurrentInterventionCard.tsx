@@ -25,8 +25,6 @@ export default function CurrentInterventionCard({
     getAppointmentDisplayTitle(
       appointment,
     );
-  const description =
-    appointment.description?.trim();
 
   return (
     <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
@@ -67,13 +65,6 @@ export default function CurrentInterventionCard({
           {displayTitle}
         </p>
       )}
-
-      {description &&
-        description !== displayTitle && (
-          <p className="mx-auto mt-1.5 line-clamp-2 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-            {description}
-          </p>
-        )}
 
       <div className="mx-auto mt-4 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
         {appointment.date && (

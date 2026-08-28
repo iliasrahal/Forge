@@ -1,5 +1,8 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+
 import ForgeBar from "@/components/ForgeBar";
 
 type FixedForgeBarProps = {
@@ -33,7 +36,17 @@ export default function FixedForgeBar({
   onInterventionCreated,
   onInterventionsDeleted,
 }: FixedForgeBarProps) {
-  return (
+  const isMounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  if (!isMounted) {
+    return null;
+  }
+
+  return createPortal(
     <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-40 mx-auto w-full max-w-xl px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6">
       <ForgeBar
         context={context}
@@ -52,6 +65,7 @@ export default function FixedForgeBar({
           onInterventionsDeleted
         }
       />
-    </div>
+    </div>,
+    document.body,
   );
 }
