@@ -35,10 +35,9 @@ export default function AboutPage() {
       <div className="mx-auto w-full max-w-4xl">
         <Link
           href="/app"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300"
+          className="inline-flex items-center text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          <span aria-hidden="true">←</span>
-          Retour à l’accueil
+          Retour
         </Link>
 
         <section className="mt-8 overflow-hidden rounded-[2rem] border border-white/80 bg-white/75 p-6 shadow-[0_30px_100px_-45px_rgba(15,23,42,0.38)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/75 dark:shadow-black/40 sm:p-10">

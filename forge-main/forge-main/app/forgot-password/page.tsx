@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
       description="Saisis ton e-mail et nous t’enverrons un lien sécurisé pour choisir un nouveau mot de passe."
     >
         <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
-          ← Retour à la connexion
+          Retour
         </Link>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

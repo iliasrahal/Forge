@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
       description="Choisis un mot de passe d’au moins 8 caractères."
     >
         <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
-          ← Retour à la connexion
+          Retour
         </Link>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

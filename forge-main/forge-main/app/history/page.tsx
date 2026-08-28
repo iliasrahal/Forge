@@ -49,9 +49,9 @@ export default async function HistoryPage() {
       <div className="mb-6">
         <Link
           href="/clients"
-          className="text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
+          className="font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          ← Retour
+          Retour
         </Link>
       </div>
 

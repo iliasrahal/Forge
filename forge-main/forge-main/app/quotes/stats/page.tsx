@@ -134,15 +134,15 @@ export default async function QuoteStatsPage() {
             href="/quotes"
             className="
               text-sm
-              font-medium
-              text-slate-500
+              font-semibold
+              text-blue-600
               transition
               hover:text-blue-700
-              dark:text-slate-400
-              dark:hover:text-blue-400
+              dark:text-blue-400
+              dark:hover:text-blue-300
             "
           >
-            ← Retour aux devis
+            Retour
           </Link>
 
 

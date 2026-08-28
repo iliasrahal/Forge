@@ -151,13 +151,9 @@ export default async function NewClientPage({
           <Link
             href="/clients"
             aria-label="Retour à la liste des clients"
-            className="flex items-center gap-2 text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
+            className="flex items-center text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
-            <span className="text-xl">
-              ←
-            </span>
-
-            <span className="text-sm font-medium">
+            <span className="text-sm font-semibold">
               Retour
             </span>
           </Link>

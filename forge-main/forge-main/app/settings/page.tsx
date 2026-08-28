@@ -11,7 +11,7 @@ export default function SettingsPage() {
           href="/app"
           className="inline-flex items-center text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          ← Retour
+          Retour
         </Link>
 
 

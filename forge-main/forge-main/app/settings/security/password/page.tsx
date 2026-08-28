@@ -119,7 +119,7 @@ export default function PasswordPage() {
           href="/settings/security"
           className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
         >
-          ← Retour
+          Retour
         </Link>
 
 

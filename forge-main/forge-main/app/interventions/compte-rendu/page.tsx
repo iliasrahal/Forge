@@ -87,9 +87,8 @@ useState(false);
       <div className="mx-auto max-w-3xl">
         <Link
           href="/interventions"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600"
+          className="mb-6 inline-flex items-center text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          <span aria-hidden="true">←</span>
           <span>Retour</span>
         </Link>
 

@@ -58,7 +58,7 @@ export default async function EmailSignaturePage({
           href="/settings"
           className="text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          ← Retour
+          Retour
         </Link>
 
         <h1 className="mt-6 text-3xl font-bold text-blue-700 dark:text-blue-400">

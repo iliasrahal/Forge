@@ -143,12 +143,8 @@ export default async function EditQuotePage({
         <Link
           href={`/clients/${id}/quotes/${quoteId}`}
           aria-label="Retour au devis"
-          className="inline-flex items-center gap-2 text-base font-medium text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-400"
+          className="inline-flex items-center text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
-          <span className="text-xl">
-            ←
-          </span>
-
           <span>
             Retour
           </span>

@@ -130,7 +130,7 @@ export default function EditAccountPage() {
           href="/settings/account"
           className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
         >
-          ← Retour
+          Retour
         </Link>
 
 

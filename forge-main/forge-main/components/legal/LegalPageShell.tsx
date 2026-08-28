@@ -48,9 +48,9 @@ export default function LegalPageShell({
 
           <Link
             href="/"
-            className="rounded-full border border-slate-200/80 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm backdrop-blur transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-blue-700 dark:hover:text-blue-300"
+            className="rounded-full border border-blue-200/80 bg-white/70 px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm backdrop-blur transition hover:border-blue-400 hover:text-blue-700 dark:border-blue-900 dark:bg-slate-900/70 dark:text-blue-400 dark:hover:border-blue-700 dark:hover:text-blue-300"
           >
-            Retour à l’accueil
+            Retour
           </Link>
         </nav>
 
