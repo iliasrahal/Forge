@@ -42,7 +42,7 @@ export default async function HistoryPage() {
 
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-xl flex-col px-6 py-6 pb-36 dark:bg-slate-950">
+    <main className="mx-auto flex min-h-[calc(100dvh-7rem)] w-full max-w-xl flex-col px-4 py-5 pb-40 dark:bg-slate-950 sm:px-6 sm:py-6">
 
 
 

@@ -32,7 +32,7 @@ export default function CurrentInterventionCard({
 
   return (
     <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
-      <div className="px-5 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
+      <div className="px-4 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
 
 
       <div
@@ -97,7 +97,7 @@ export default function CurrentInterventionCard({
       <button
         type="button"
         onClick={onStart}
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:text-base"
+        className="mt-4 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:w-auto sm:px-6 sm:text-base"
       >
         {isInProgress
           ? "Continuer l'intervention"

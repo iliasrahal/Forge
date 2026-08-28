@@ -84,7 +84,7 @@ export default function ClientForm({
         </p>
 
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 min-[360px]:grid-cols-2">
 
 
           <button
@@ -92,7 +92,7 @@ export default function ClientForm({
             onClick={() =>
               setClientType("PARTICULIER")
             }
-            className={`rounded-2xl border px-4 py-4 font-semibold transition ${
+            className={`min-h-12 rounded-2xl border px-3 py-3 text-sm font-semibold transition sm:px-4 sm:py-4 sm:text-base ${
               isParticulier
                 ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                 : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
@@ -108,7 +108,7 @@ export default function ClientForm({
             onClick={() =>
               setClientType("PROFESSIONNEL")
             }
-            className={`rounded-2xl border px-4 py-4 font-semibold transition ${
+            className={`min-h-12 rounded-2xl border px-3 py-3 text-sm font-semibold transition sm:px-4 sm:py-4 sm:text-base ${
               !isParticulier
                 ? "border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                 : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"

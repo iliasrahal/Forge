@@ -68,16 +68,16 @@ export default async function QuotesPage() {
 
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-6 dark:bg-slate-950">
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 dark:bg-slate-950 sm:px-6 sm:py-6">
 
 
-      <div className="mb-6 flex gap-3">
+      <div className="mb-6 grid gap-3 min-[380px]:grid-cols-2">
 
 
 
         <Link
           href="/quotes/new"
-          className="flex-1 rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+          className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-5"
         >
           + Nouveau devis
         </Link>
@@ -87,7 +87,7 @@ export default async function QuotesPage() {
 
         <Link
           href="/quotes/stats"
-          className="flex-1 rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+          className="flex min-h-12 items-center justify-center rounded-2xl border border-blue-600 px-4 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950 sm:px-5"
         >
           Statistiques devis
         </Link>
@@ -136,11 +136,11 @@ export default async function QuotesPage() {
                 >
 
 
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 flex-col items-start gap-3 min-[380px]:flex-row min-[380px]:justify-between">
 
 
 
-                    <div>
+                    <div className="min-w-0">
 
 
                       <p className="text-lg font-semibold text-blue-700 dark:text-blue-400">
@@ -175,7 +175,7 @@ export default async function QuotesPage() {
 
 
 
-                    <div className="shrink-0 text-right">
+                    <div className="shrink-0 text-left min-[380px]:text-right">
 
 
 

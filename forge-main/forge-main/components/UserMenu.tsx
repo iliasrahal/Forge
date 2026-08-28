@@ -122,7 +122,7 @@ export default function UserMenu({
   return (
     <div
       ref={menuRef}
-      className="relative"
+      className="relative min-w-0"
     >
 
 
@@ -166,7 +166,7 @@ export default function UserMenu({
             absolute
             right-0
             mt-2
-            w-52
+            w-[min(13rem,calc(100vw-2rem))]
             rounded-2xl
             border
             border-slate-200

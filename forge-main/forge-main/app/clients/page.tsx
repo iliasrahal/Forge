@@ -31,13 +31,13 @@ export default async function ClientsPage() {
 
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-xl flex-col px-6 py-6 pb-36">
+    <main className="mx-auto flex min-h-[calc(100dvh-7rem)] w-full max-w-xl flex-col px-4 py-5 pb-40 sm:px-6 sm:py-6">
 
 
 
 
 
-      <div className="mb-6 flex justify-center gap-3">
+      <div className="mb-6 grid gap-3 sm:grid-cols-2">
 
 
 
@@ -45,7 +45,7 @@ export default async function ClientsPage() {
 
         <Link
           href="/clients/new"
-          className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+          className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-6"
         >
           + Nouveau client
         </Link>
@@ -57,7 +57,7 @@ export default async function ClientsPage() {
 
         <Link
           href="/history"
-          className="rounded-2xl border border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50 dark:hover:bg-blue-950"
+          className="flex min-h-12 items-center justify-center rounded-2xl border border-blue-600 px-4 py-3 text-center font-semibold text-blue-600 transition hover:bg-blue-50 dark:hover:bg-blue-950 sm:px-6"
         >
           Historique Interventions
         </Link>

@@ -58,7 +58,7 @@ export default function BottomNavigation() {
   const getLinkClassName = (
     isActive: boolean,
   ) =>
-    `relative flex min-h-16 flex-col items-center justify-center rounded-2xl px-3 transition duration-300 ${
+    `relative flex min-h-14 min-w-0 flex-col items-center justify-center rounded-xl px-1 transition duration-300 sm:min-h-16 sm:rounded-2xl sm:px-3 ${
       isActive
         ? "bg-blue-50/90 font-semibold text-blue-600 shadow-sm ring-1 ring-blue-100 dark:bg-blue-950/80 dark:text-blue-400 dark:ring-blue-900"
         : "text-slate-500 hover:-translate-y-0.5 hover:bg-white/80 hover:text-blue-600 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-blue-400"
@@ -70,7 +70,7 @@ export default function BottomNavigation() {
 
   return (
 
-    <nav className="grid grid-cols-4 gap-2 text-center">
+    <nav className="grid grid-cols-4 gap-0.5 text-center sm:gap-2">
 
 
 
@@ -94,7 +94,7 @@ export default function BottomNavigation() {
         />
 
 
-        <span className="mt-1 text-sm">
+        <span className="mt-1 text-[0.68rem] leading-tight sm:text-sm">
           Accueil
         </span>
 
@@ -131,7 +131,7 @@ export default function BottomNavigation() {
         />
 
 
-        <span className="mt-1 text-sm">
+        <span className="mt-1 text-[0.68rem] leading-tight sm:text-sm">
           Clients
         </span>
 
@@ -168,7 +168,7 @@ export default function BottomNavigation() {
         />
 
 
-        <span className="mt-1 text-sm">
+        <span className="mt-1 text-[0.68rem] leading-tight sm:text-sm">
           Devis
         </span>
 
@@ -205,7 +205,7 @@ export default function BottomNavigation() {
         />
 
 
-        <span className="mt-1 text-sm">
+        <span className="mt-1 text-[0.68rem] leading-tight sm:text-sm">
           Factures
         </span>
 

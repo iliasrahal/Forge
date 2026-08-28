@@ -156,7 +156,7 @@ export default async function ClientPage({
 
 
   return (
-    <main className="min-h-screen bg-white px-6 py-10 dark:bg-slate-950">
+    <main className="min-h-dvh bg-white px-4 py-6 pb-36 dark:bg-slate-950 sm:px-6 sm:py-10">
 
 
       <section className="mx-auto max-w-3xl">
@@ -197,7 +197,7 @@ export default async function ClientPage({
 
 
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
 
           <div className="rounded-2xl bg-slate-50 p-4 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -242,15 +242,15 @@ export default async function ClientPage({
 
 
 
-          <div className="mt-6 grid grid-cols-3 gap-3 border-y border-slate-100 py-5 text-center dark:border-slate-700">
+          <div className="mt-6 grid grid-cols-3 gap-1 border-y border-slate-100 py-5 text-center dark:border-slate-700 sm:gap-3">
 
 
             <div>
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
                 {interventionCount}
               </p>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
                 Interventions
               </p>
             </div>
@@ -258,11 +258,11 @@ export default async function ClientPage({
 
 
             <div>
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
                 {quoteCount}
               </p>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
                 Devis
               </p>
             </div>
@@ -270,11 +270,11 @@ export default async function ClientPage({
 
 
             <div>
-              <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
+              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
                 {invoiceCount}
               </p>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
                 Factures
               </p>
             </div>
@@ -380,10 +380,10 @@ export default async function ClientPage({
                 >
 
 
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 flex-col items-start gap-3 min-[380px]:flex-row min-[380px]:justify-between">
 
 
-                    <div>
+                    <div className="min-w-0">
 
                       <p className="font-semibold text-slate-800 dark:text-white">
                         {item.title}

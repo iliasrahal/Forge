@@ -1099,7 +1099,7 @@ const handleCreateInvoice = async () => {
 
   return (
     <main
-      className={`h-[calc(100dvh-7rem)] overflow-hidden bg-white px-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
+      className={`min-h-[calc(100dvh-8rem)] overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
         showGreeting
           ? "pt-8 sm:pt-12"
           : showUpcoming
@@ -1107,7 +1107,7 @@ const handleCreateInvoice = async () => {
             : "pt-4 sm:pt-6"
       }`}
     >
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-xl flex-col overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mx-auto flex min-h-0 w-full max-w-xl flex-col pb-4">
 
   <div className={`${showUpcoming ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
     <UserMenu showLogout={homeState === "intervention"} />
@@ -1278,8 +1278,8 @@ const handleCreateInvoice = async () => {
 
 
   {showAddClientModal && currentAppointment && (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
-      <section className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
+      <section className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Informations client
         </h2>
@@ -1369,7 +1369,7 @@ const handleCreateInvoice = async () => {
           )}
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
           <button
             type="button"
             onClick={() => setShowAddClientModal(false)}
@@ -1393,8 +1393,8 @@ const handleCreateInvoice = async () => {
 
 
   {actionMode && currentAppointment && (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/50 p-4 sm:items-center">
-      <section className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
+      <section className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Modifier l’intervention
         </h2>
@@ -1449,7 +1449,7 @@ const handleCreateInvoice = async () => {
           )}
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
           <button
             type="button"
             onClick={() => setActionMode(null)}
@@ -1569,9 +1569,9 @@ const handleCreateInvoice = async () => {
 
   {showExtendModal && (
 
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
 
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl dark:bg-slate-900">
+      <div className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
 
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
           Prolonger l'intervention
@@ -1612,7 +1612,7 @@ const handleCreateInvoice = async () => {
           </p>
         )}
 
-        <div className="mt-6 flex gap-3">
+        <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
 
           <button
             type="button"

@@ -8,6 +8,14 @@
   --foreground: #171717;
 }
 
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 
 
 @theme inline {
@@ -20,10 +28,31 @@
 
 
 body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+:is(img, svg, video, canvas) {
+  max-width: 100%;
+}
+
+:is(button, input, textarea, select) {
+  max-width: 100%;
+}
+
+:is(button, a, input, textarea, select) {
+  touch-action: manipulation;
+}
+
+:is(p, h1, h2, h3, h4, a, button, dd) {
+  overflow-wrap: anywhere;
 }
 
 
@@ -53,6 +82,20 @@ html.dark body {
     radial-gradient(circle at 8% 2%, rgb(219 234 254 / 0.72), transparent 28rem),
     radial-gradient(circle at 92% 28%, rgb(224 242 254 / 0.55), transparent 30rem),
     #f8fafc;
+}
+
+.forge-app-shell main {
+  width: 100%;
+  min-width: 0;
+}
+
+.forge-app-shell :is(section, article, form, div) {
+  min-width: 0;
+}
+
+.forge-app-shell :is(input, textarea, select) {
+  width: 100%;
+  min-width: 0;
 }
 
 .forge-app-shell::before {
@@ -250,5 +293,24 @@ html.dark body {
 
   .landing-o-zoom {
     animation-duration: 1ms;
+  }
+}
+
+@media (max-width: 480px) {
+  .forge-app-shell main {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .forge-app-shell :is(input, textarea, select) {
+    font-size: 16px;
+  }
+
+  .forge-app-shell [class*="fixed"][class*="inset-0"] {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
   }
 }

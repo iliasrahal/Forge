@@ -7,6 +7,7 @@ import {
   Mail,
   MapPin,
   Mic,
+  PencilLine,
   Phone,
   Sparkles,
   UserRound,
@@ -50,6 +51,16 @@ const clientDetails = [
     label: "Ville",
     value: "Paris",
   },
+];
+
+const manualFields = [
+  "Nom / Prénom",
+  "Nom de l’entreprise",
+  "Téléphone",
+  "Email",
+  "Adresse",
+  "Code postal",
+  "Ville",
 ];
 
 export default function ClientCreation() {
@@ -108,7 +119,10 @@ export default function ClientCreation() {
             Créez vos fiches clients instantanément
           </h2>
           <p className="mx-auto mt-6 max-w-3xl text-pretty text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Plus besoin de remplir les formulaires manuellement. Dites simplement à Forge ce dont vous avez besoin, à l’écrit ou à la voix, et votre fiche client est créée automatiquement.
+            Créez vos fiches clients instantanément à la voix, à l’écrit ou manuellement selon votre besoin.
+          </p>
+          <p className="mx-auto mt-3 max-w-3xl text-pretty text-base leading-7 text-slate-500 dark:text-slate-400">
+            Confiez les informations à Forge pour une création automatique, ou utilisez le formulaire classique lorsque vous préférez tout renseigner vous-même. Les deux méthodes fonctionnent pour les particuliers et les professionnels.
           </p>
         </div>
 
@@ -126,7 +140,7 @@ export default function ClientCreation() {
                   <Mic size={20} />
                 </span>
                 <div>
-                  <p className="font-semibold">Demande à Forge</p>
+                  <p className="font-semibold">Création automatique par Forge</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     À l’écrit ou à la voix
                   </p>
@@ -204,6 +218,43 @@ export default function ClientCreation() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+
+        <div
+          className={`mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-[2rem] border border-slate-200/90 bg-white/80 p-5 shadow-[0_24px_75px_-44px_rgba(15,23,42,0.4)] backdrop-blur-xl transition-all delay-300 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/75 sm:p-7 lg:grid-cols-[0.8fr_1.2fr] ${revealClass}`}
+        >
+          <div>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <PencilLine size={21} />
+            </span>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">
+              Création manuelle
+            </p>
+            <h3 className="mt-2 text-2xl font-bold tracking-tight">
+              Vous gardez toujours la main
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              Remplissez directement un formulaire classique pour créer une fiche particulier ou professionnel avec uniquement les informations dont vous disposez.
+            </p>
+          </div>
+
+          <div className="grid gap-3 min-[420px]:grid-cols-2">
+            {manualFields.map((field, index) => (
+              <div
+                key={field}
+                className={`rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-slate-700 dark:bg-slate-950/70 ${
+                  index === manualFields.length - 1
+                    ? "min-[420px]:col-span-2"
+                    : ""
+                }`}
+              >
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  {field}
+                </p>
+                <div className="mt-2 h-2 w-2/3 rounded-full bg-slate-200 dark:bg-slate-700" />
+              </div>
+            ))}
           </div>
         </div>
 

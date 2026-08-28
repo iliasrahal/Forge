@@ -68,7 +68,7 @@ export default async function InvoicesPage() {
 
   return (
 
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col px-6 py-6 dark:bg-slate-950">
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 dark:bg-slate-950 sm:px-6 sm:py-6">
 
 
       <div className="mt-6 space-y-4">
@@ -99,11 +99,11 @@ export default async function InvoicesPage() {
               key={invoice.id}
               href={`/invoices/${invoice.id}`}
               aria-label={`Ouvrir la facture ${invoice.reference}`}
-              className="block rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500"
+              className="block min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 sm:p-6"
             >
 
 
-              <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+              <h2 className="break-words text-lg font-bold text-blue-700 dark:text-blue-400 sm:text-xl">
                 {invoice.title}
               </h2>
 
