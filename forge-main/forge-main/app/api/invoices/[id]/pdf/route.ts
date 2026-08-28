@@ -8,8 +8,8 @@ import {
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
-  buildInvoiceDescriptionParts,
-  cleanInvoiceDescriptionValue,
+  buildInvoiceDescriptionSections,
+  parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 
@@ -125,14 +125,12 @@ export async function GET(
     ].filter((value): value is string => Boolean(value?.trim()));
 
     const usefulServiceDetails = invoice.intervention
-      ? buildInvoiceDescriptionParts(
+      ? buildInvoiceDescriptionSections(
           invoice.intervention,
         )
-      : [
-          cleanInvoiceDescriptionValue(
-            invoice.description,
-          ),
-        ].filter(Boolean);
+      : parseInvoiceDescriptionSections(
+          invoice.description,
+        );
 
     const pdfDocument = await PDFDocument.create();
     const regularFont = await pdfDocument.embedFont(
@@ -320,10 +318,18 @@ export async function GET(
     );
 
     for (const detail of usefulServiceDetails) {
-      currentY -= 5;
+      currentY -= 8;
+      drawLines([detail.label], {
+        x: margin,
+        size: 10,
+        lineHeight: 15,
+        font: boldFont,
+        color: blue,
+      });
+      currentY -= 2;
       drawLines(
         wrapText(
-          detail,
+          detail.content,
           regularFont,
           10,
           contentWidth,

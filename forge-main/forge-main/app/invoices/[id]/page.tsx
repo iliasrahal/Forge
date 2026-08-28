@@ -5,7 +5,10 @@ import SendInvoiceButton from "@/components/SendInvoiceButton";
 import InvoiceAmountForm from "@/components/InvoiceAmountForm";
 
 import { requireCurrentUser } from "@/src/lib/auth";
-import { cleanInvoiceDescriptionValue } from "@/src/lib/invoiceDescription";
+import {
+  buildInvoiceDescriptionSections,
+  parseInvoiceDescriptionSections,
+} from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 
 
@@ -113,10 +116,14 @@ export default async function InvoicePage({
       : invoice.client.companyName ??
         "Client professionnel";
 
-  const invoiceDescription =
-    cleanInvoiceDescriptionValue(
-      invoice.description,
-    );
+  const invoiceDescriptionSections =
+    invoice.intervention
+      ? buildInvoiceDescriptionSections(
+          invoice.intervention,
+        )
+      : parseInvoiceDescriptionSections(
+          invoice.description,
+        );
 
 
 
@@ -212,20 +219,32 @@ export default async function InvoicePage({
 
 
 
-        {invoiceDescription && (
+        {invoiceDescriptionSections.length > 0 && (
 
           <div className="mt-6">
 
 
-            <p className="text-sm text-slate-500">
-              Description
+            <p className="text-sm font-semibold text-slate-500">
+              Détail de l’intervention
             </p>
 
 
-            <div className="mt-2 rounded-2xl border border-slate-200 bg-white p-4 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-
-              {invoiceDescription}
-
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {invoiceDescriptionSections.map(
+                ({ label, content }) => (
+                  <section
+                    key={label}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    <h2 className="text-sm font-bold text-blue-700 dark:text-blue-400">
+                      {label}
+                    </h2>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700 dark:text-slate-200">
+                      {content}
+                    </p>
+                  </section>
+                ),
+              )}
             </div>
 
 

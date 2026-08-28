@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { sendInvoiceEmail } from "@/src/lib/email";
+import {
+  buildInvoiceDescriptionSections,
+  parseInvoiceDescriptionSections,
+} from "@/src/lib/invoiceDescription";
 
 
 export async function POST(
@@ -145,10 +149,21 @@ export async function POST(
       currentUser.firstName?.trim() ||
       "L'équipe Forge";
 
-    const interventionDescription =
-      invoice.intervention?.description?.trim() ||
-      invoice.description?.trim() ||
-      invoice.title.trim();
+    const generatedInterventionSections =
+      invoice.intervention
+        ? buildInvoiceDescriptionSections(
+            invoice.intervention,
+          )
+        : parseInvoiceDescriptionSections(
+            invoice.description?.trim() ||
+              invoice.title.trim(),
+          );
+    const interventionSections =
+      generatedInterventionSections.length > 0
+        ? generatedInterventionSections
+        : parseInvoiceDescriptionSections(
+            invoice.title,
+          );
 
 
 
@@ -157,7 +172,7 @@ export async function POST(
       clientName,
       artisanSignature,
       invoice.reference,
-      interventionDescription,
+      interventionSections,
       pdfBuffer,
       `facture-${invoice.reference}.pdf`,
     );

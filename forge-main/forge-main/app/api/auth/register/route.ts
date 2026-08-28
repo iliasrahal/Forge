@@ -9,9 +9,10 @@ import { sendActivationEmail } from "@/src/lib/email";
 
 type RegisterBody = {
   firstName?: string;
+  lastName?: string;
+  companyName?: string;
   email?: string;
   phone?: string;
-  birthDate?: string;
   password?: string;
 };
 
@@ -19,68 +20,6 @@ type RegisterBody = {
 function normalizePhone(phone: string) {
   return phone.replace(/\s+/g, "").trim();
 }
-
-
-
-function parseBirthDate(value: string) {
-
-  const cleanValue =
-    value.trim();
-
-
-  let date: Date;
-
-
-  // Format JJ/MM/AAAA
-  if (cleanValue.includes("/")) {
-
-    const parts =
-      cleanValue.split("/");
-
-
-    if (parts.length !== 3) {
-      return new Date("invalid");
-    }
-
-
-    const day =
-      Number(parts[0]);
-
-    const month =
-      Number(parts[1]);
-
-    const year =
-      Number(parts[2]);
-
-
-    date = new Date(
-      year,
-      month - 1,
-      day,
-    );
-
-
-    // Vérification que la date existe
-    if (
-      date.getFullYear() !== year ||
-      date.getMonth() !== month - 1 ||
-      date.getDate() !== day
-    ) {
-      return new Date("invalid");
-    }
-
-
-    return date;
-  }
-
-
-  // Format ISO AAAA-MM-JJ
-  date = new Date(cleanValue);
-
-
-  return date;
-}
-
 
 
 
@@ -98,6 +37,12 @@ export async function POST(
     const firstName =
       body.firstName?.trim() ?? "";
 
+    const lastName =
+      body.lastName?.trim() ?? "";
+
+    const companyName =
+      body.companyName?.trim() || null;
+
 
     const email =
       body.email?.trim().toLowerCase() ?? "";
@@ -109,10 +54,6 @@ export async function POST(
       );
 
 
-    const birthDate =
-      body.birthDate ?? "";
-
-
     const password =
       body.password ?? "";
 
@@ -120,9 +61,9 @@ export async function POST(
 
     if (
       !firstName ||
+      !lastName ||
       !email ||
       !phone ||
-      !birthDate ||
       !password
     ) {
 
@@ -130,34 +71,6 @@ export async function POST(
         {
           error:
             "Toutes les informations sont obligatoires.",
-        },
-        {
-          status: 400,
-        },
-      );
-
-    }
-
-
-
-
-    const parsedBirthDate =
-      parseBirthDate(
-        birthDate,
-      );
-
-
-
-    if (
-      Number.isNaN(
-        parsedBirthDate.getTime(),
-      )
-    ) {
-
-      return NextResponse.json(
-        {
-          error:
-            "La date de naissance est invalide.",
         },
         {
           status: 400,
@@ -275,12 +188,13 @@ export async function POST(
 
           firstName,
 
+          lastName,
+
+          companyName,
+
           email,
 
           phone,
-
-          birthDate:
-            parsedBirthDate,
 
           passwordHash,
 
@@ -301,11 +215,13 @@ export async function POST(
 
           firstName: true,
 
+          lastName: true,
+
+          companyName: true,
+
           email: true,
 
           phone: true,
-
-          birthDate: true,
 
           onboardingCompleted: true,
 

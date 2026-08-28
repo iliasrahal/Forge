@@ -33,6 +33,26 @@ export const metadata: Metadata = {
   title: "Forge",
   description:
     "L’assistant administratif des artisans",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.ico?v=myforge-2",
+        sizes: "64x64",
+      },
+      {
+        url: "/icon.png?v=myforge-2",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+    apple: [
+      {
+        url: "/apple-icon.png?v=myforge-2",
+        type: "image/png",
+        sizes: "180x180",
+      },
+    ],
+  },
 };
 
 

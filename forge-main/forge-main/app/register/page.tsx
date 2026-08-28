@@ -8,9 +8,10 @@ type RegisterResponse = {
   user?: {
     id: string;
     firstName: string;
+    lastName: string | null;
+    companyName: string | null;
     email: string;
     phone: string;
-    birthDate: string;
     onboardingCompleted: boolean;
   };
   error?: string;
@@ -20,11 +21,13 @@ type RegisterResponse = {
 export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
 
+  const [lastName, setLastName] = useState("");
+
+  const [companyName, setCompanyName] = useState("");
+
   const [email, setEmail] = useState("");
 
   const [phone, setPhone] = useState("");
-
-  const [birthDate, setBirthDate] = useState("");
 
   const [password, setPassword] = useState("");
 
@@ -40,21 +43,6 @@ export default function RegisterPage() {
   const [activationSent, setActivationSent] = useState(false);
 
 
-  function formatBirthDate(value: string) {
-    const numbers = value.replace(/\D/g, "");
-
-    if (numbers.length <= 2) {
-      return numbers;
-    }
-
-    if (numbers.length <= 4) {
-      return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
-    }
-
-    return `${numbers.slice(0, 2)}/${numbers.slice(2, 4)}/${numbers.slice(4, 8)}`;
-  }
-
-
   async function handleSubmit(
     event: React.FormEvent,
   ) {
@@ -68,21 +56,23 @@ export default function RegisterPage() {
     const cleanFirstName =
       firstName.trim();
 
+    const cleanLastName =
+      lastName.trim();
+
+    const cleanCompanyName =
+      companyName.trim();
+
     const cleanEmail =
       email.trim().toLowerCase();
 
     const cleanPhone =
       phone.trim();
 
-    const cleanBirthDate =
-      birthDate.trim();
-
-
     if (
       !cleanFirstName ||
+      !cleanLastName ||
       !cleanEmail ||
       !cleanPhone ||
-      !cleanBirthDate ||
       !password ||
       !passwordConfirmation
     ) {
@@ -143,14 +133,17 @@ export default function RegisterPage() {
               firstName:
                 cleanFirstName,
 
+              lastName:
+                cleanLastName,
+
+              companyName:
+                cleanCompanyName,
+
               email:
                 cleanEmail,
 
               phone:
                 cleanPhone,
-
-              birthDate:
-                cleanBirthDate,
 
               password,
             }),
@@ -233,8 +226,32 @@ export default function RegisterPage() {
   }}
   autoComplete="given-name"
   placeholder="Ton prénom"
+  required
   className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
 />
+
+          <input
+            type="text"
+            value={lastName}
+            onChange={(event) => {
+              setLastName(event.target.value);
+            }}
+            autoComplete="family-name"
+            placeholder="Ton nom"
+            required
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
+          />
+
+          <input
+            type="text"
+            value={companyName}
+            onChange={(event) => {
+              setCompanyName(event.target.value);
+            }}
+            autoComplete="organization"
+            placeholder="Nom de l’entreprise (facultatif)"
+            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
+          />
 
 
           <input
@@ -263,25 +280,6 @@ export default function RegisterPage() {
             autoComplete="tel"
             placeholder="Ton numéro de téléphone"
             className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
-          />
-
-
-
-          <input
-            type="text"
-            value={birthDate}
-            onChange={(event) =>
-              setBirthDate(
-                formatBirthDate(
-                  event.target.value,
-                ),
-              )
-            }
-            maxLength={10}
-            inputMode="numeric"
-            autoComplete="bday"
-            placeholder="Ta date de naissance"
-            className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-5 text-base text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:ring-blue-950"
           />
 
 

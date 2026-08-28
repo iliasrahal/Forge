@@ -53,6 +53,246 @@ const features = [
   },
 ];
 
+const artisanNote =
+  "« J’ai remplacé le robinet d’arrêt, changé le joint et vérifié l’étanchéité. »";
+
+const reportItems = [
+  {
+    label: "Intervention réalisée",
+    value:
+      "Remplacement d’un robinet d’arrêt sous évier suite à une fuite constatée.",
+  },
+  {
+    label: "Diagnostic",
+    value:
+      "Fuite détectée au niveau du raccord du robinet d’arrêt. Le joint était usé et provoquait une perte d’étanchéité.",
+  },
+  {
+    label: "Travaux effectués",
+    value:
+      "Dépose de l’ancien robinet, installation du nouveau modèle, remplacement du joint et vérification de l’étanchéité de l’ensemble.",
+  },
+  {
+    label: "Recommandation",
+    value:
+      "Contrôle conseillé lors des prochaines utilisations afin de vérifier le bon fonctionnement de l’installation.",
+  },
+];
+
+const noteDuration = 2900;
+const processingDuration = 900;
+const reportItemDuration = 1550;
+const reportItemGap = 180;
+const reportStart = noteDuration + processingDuration;
+const reportEnd =
+  reportStart +
+  reportItems.length *
+    (reportItemDuration + reportItemGap);
+const animationDuration = reportEnd + 3600;
+
+function getTypedText(
+  text: string,
+  progress: number,
+) {
+  const characterCount = Math.floor(
+    text.length * Math.min(1, Math.max(0, progress)),
+  );
+
+  return {
+    visible: text.slice(0, characterCount),
+    remaining: text.slice(characterCount),
+    isComplete: characterCount >= text.length,
+  };
+}
+
+function ReportIllustration() {
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [reduceMotion, setReduceMotion] =
+    useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+    const updatePreference = () => {
+      setReduceMotion(mediaQuery.matches);
+    };
+    const frame = window.requestAnimationFrame(
+      updatePreference,
+    );
+
+    mediaQuery.addEventListener(
+      "change",
+      updatePreference,
+    );
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      mediaQuery.removeEventListener(
+        "change",
+        updatePreference,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    const card = cardRef.current;
+
+    if (!card) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(card);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || reduceMotion) return;
+
+    const timer = window.setInterval(() => {
+      setElapsed((current) =>
+        (current + 40) % animationDuration,
+      );
+    }, 40);
+
+    return () => window.clearInterval(timer);
+  }, [isVisible, reduceMotion]);
+
+  const effectiveElapsed = reduceMotion
+    ? reportEnd
+    : elapsed;
+  const note = getTypedText(
+    artisanNote,
+    effectiveElapsed / noteDuration,
+  );
+  const isProcessing =
+    effectiveElapsed >= noteDuration &&
+    effectiveElapsed < reportStart;
+  const isReady = effectiveElapsed >= reportEnd;
+
+  return (
+    <div
+      ref={cardRef}
+      className="relative mx-auto w-full max-w-md rounded-[1.75rem] border border-slate-200 bg-white/95 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95"
+    >
+      <div className="flex items-center gap-3 border-b border-slate-100 pb-5 dark:border-slate-800">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-600 text-white">
+          <ClipboardCheck size={20} />
+        </span>
+        <div>
+          <p className="font-bold text-slate-950 dark:text-white">
+            Ton compte rendu est prêt
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            Généré automatiquement par Forge
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/35">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
+          <Mic size={14} /> Note de l’artisan
+        </div>
+        <p
+          aria-label={artisanNote}
+          className="mt-2 text-sm italic leading-6 text-slate-700 dark:text-slate-200"
+        >
+          <span>{note.visible}</span>
+          {!note.isComplete && !reduceMotion && (
+            <span className="ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-blue-600 motion-reduce:hidden" />
+          )}
+          <span aria-hidden="true" className="invisible">
+            {note.remaining}
+          </span>
+        </p>
+        <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <Keyboard size={13} /> Dictée ou saisie écrite
+        </p>
+      </div>
+
+      <div
+        aria-live="polite"
+        className="mt-3 flex h-5 items-center text-xs font-semibold text-blue-600 dark:text-blue-400"
+      >
+        <span
+          className={`transition-opacity duration-300 ${
+            isProcessing || isReady
+              ? "opacity-100"
+              : "opacity-0"
+          }`}
+        >
+          {isReady
+            ? "Compte rendu prêt"
+            : "Forge prépare le compte rendu…"}
+        </span>
+      </div>
+
+      <div className="mt-2 space-y-4">
+        {reportItems.map((item, itemIndex) => {
+          const itemStart =
+            reportStart +
+            itemIndex *
+              (reportItemDuration + reportItemGap);
+          const progress =
+            (effectiveElapsed - itemStart) /
+            reportItemDuration;
+          const typedItem = getTypedText(
+            item.value,
+            progress,
+          );
+          const hasStarted = progress > 0;
+
+          return (
+            <div key={item.label}>
+              <p
+                className={`text-sm font-bold text-blue-700 transition-opacity duration-300 dark:text-blue-400 ${
+                  hasStarted || reduceMotion
+                    ? "opacity-100"
+                    : "opacity-35"
+                }`}
+              >
+                {item.label}
+              </p>
+              <p
+                aria-label={item.value}
+                className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300"
+              >
+                <span>{typedItem.visible}</span>
+                <span aria-hidden="true" className="invisible">
+                  {typedItem.remaining}
+                </span>
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+        <button
+          type="button"
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:text-blue-300"
+        >
+          Modifier
+        </button>
+        <button
+          type="button"
+          className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+        >
+          Valider
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FeatureIllustration({
   index,
 }: {
@@ -90,86 +330,7 @@ function FeatureIllustration({
   }
 
   if (index === 1) {
-    const reportItems = [
-      {
-        label: "Intervention réalisée",
-        value:
-          "Remplacement d’un robinet d’arrêt sous évier suite à une fuite constatée.",
-      },
-      {
-        label: "Diagnostic",
-        value:
-          "Fuite détectée au niveau du raccord du robinet d’arrêt. Le joint était usé et provoquait une perte d’étanchéité.",
-      },
-      {
-        label: "Travaux effectués",
-        value:
-          "Dépose de l’ancien robinet, installation du nouveau modèle, remplacement du joint et vérification de l’étanchéité de l’ensemble.",
-      },
-      {
-        label: "Recommandation",
-        value:
-          "Contrôle conseillé lors des prochaines utilisations afin de vérifier le bon fonctionnement de l’installation.",
-      },
-    ];
-
-    return (
-      <div className="relative mx-auto w-full max-w-md rounded-[1.75rem] border border-slate-200 bg-white/95 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <div className="flex items-center gap-3 border-b border-slate-100 pb-5 dark:border-slate-800">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-600 text-white">
-            <ClipboardCheck size={20} />
-          </span>
-          <div>
-            <p className="font-bold text-slate-950 dark:text-white">
-              Ton compte rendu est prêt
-            </p>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Généré automatiquement par Forge
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/35">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
-            <Mic size={14} /> Note de l’artisan
-          </div>
-          <p className="mt-2 text-sm italic leading-6 text-slate-700 dark:text-slate-200">
-            « J’ai remplacé le robinet d’arrêt, changé le joint et vérifié l’étanchéité. »
-          </p>
-          <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <Keyboard size={13} /> Dictée ou saisie écrite
-          </p>
-        </div>
-
-        <div className="mt-5 space-y-4">
-          {reportItems.map((item) => (
-            <div key={item.label}>
-              <p className="text-sm font-bold text-blue-700 dark:text-blue-400">
-                {item.label}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                {item.value}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
-          <button
-            type="button"
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:text-blue-300"
-          >
-            Modifier
-          </button>
-          <button
-            type="button"
-            className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-          >
-            Valider
-          </button>
-        </div>
-      </div>
-    );
+    return <ReportIllustration />;
   }
 
   if (index === 2) {

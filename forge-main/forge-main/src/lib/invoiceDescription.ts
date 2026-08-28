@@ -6,6 +6,11 @@ type InvoiceDescriptionSource = {
   reportRecommendation?: string | null;
 };
 
+export type InvoiceDescriptionSection = {
+  label: string;
+  content: string;
+};
+
 function normalize(value: string) {
   return value
     .toLocaleLowerCase("fr-FR")
@@ -35,15 +40,18 @@ export function cleanInvoiceDescriptionValue(
     : cleanedValue;
 }
 
-export function buildInvoiceDescriptionParts(
+export function buildInvoiceDescriptionSections(
   source: InvoiceDescriptionSource,
 ) {
-  const fields = [
-    ["Description", source.description],
-    [
-      "Intervention réalisée",
+  const interventionValue =
+    cleanInvoiceDescriptionValue(
       source.reportIntervention,
-    ],
+    ) ||
+    cleanInvoiceDescriptionValue(
+      source.description,
+    );
+  const fields = [
+    ["Intervention réalisée", interventionValue],
     ["Diagnostic", source.reportDiagnostic],
     ["Travaux effectués", source.reportTravaux],
     ["Recommandation", source.reportRecommendation],
@@ -63,7 +71,64 @@ export function buildInvoiceDescriptionParts(
     }
 
     seenValues.add(normalizedValue);
-    return [`${label} : ${cleanedValue}`];
+    return [{ label, content: cleanedValue }];
+  });
+}
+
+export function buildInvoiceDescriptionParts(
+  source: InvoiceDescriptionSource,
+) {
+  return buildInvoiceDescriptionSections(source).map(
+    ({ label, content }) => `${label} : ${content}`,
+  );
+}
+
+export function parseInvoiceDescriptionSections(
+  value?: string | null,
+): InvoiceDescriptionSection[] {
+  const cleanedValue =
+    cleanInvoiceDescriptionValue(value);
+
+  if (!cleanedValue) {
+    return [];
+  }
+
+  const sectionPattern =
+    /(?:^|\n+)\s*(Description|Intervention réalisée|Diagnostic|Travaux effectués|Recommandation)\s*:\s*/g;
+  const matches = [...cleanedValue.matchAll(sectionPattern)];
+
+  if (matches.length === 0) {
+    return [
+      {
+        label: "Intervention réalisée",
+        content: cleanedValue,
+      },
+    ];
+  }
+
+  return matches.flatMap((match, index) => {
+    const start = (match.index ?? 0) + match[0].length;
+    const end =
+      index + 1 < matches.length
+        ? matches[index + 1].index
+        : cleanedValue.length;
+    const content = cleanInvoiceDescriptionValue(
+      cleanedValue.slice(start, end),
+    );
+
+    if (!content) {
+      return [];
+    }
+
+    return [
+      {
+        label:
+          match[1] === "Description"
+            ? "Intervention réalisée"
+            : match[1],
+        content,
+      },
+    ];
   });
 }
 

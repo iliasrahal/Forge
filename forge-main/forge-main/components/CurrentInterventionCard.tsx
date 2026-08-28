@@ -1,6 +1,6 @@
 import {
   getAppointmentDateLabel,
-  getAppointmentDisplayTitle,
+  getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
 
@@ -21,10 +21,10 @@ export default function CurrentInterventionCard({
   onEdit,
   onDelete,
 }: CurrentInterventionCardProps) {
-  const displayTitle =
-    getAppointmentDisplayTitle(
-      appointment,
-    );
+  const subject =
+    getAppointmentSubject(appointment);
+  const mainTitle =
+    appointment.client || subject;
 
   return (
     <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
@@ -53,16 +53,17 @@ export default function CurrentInterventionCard({
 
 
 
-      <h2 className="text-balance text-center text-2xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-3xl">
-        {appointment.client ||
-          displayTitle}
-      </h2>
+      {mainTitle && (
+        <h2 className="text-balance text-center text-2xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-3xl">
+          {mainTitle}
+        </h2>
+      )}
 
 
 
-      {appointment.client && (
+      {appointment.client && subject && (
         <p className="mx-auto mt-2 max-w-xl text-center text-base font-semibold leading-6 text-blue-700 dark:text-blue-400 sm:text-lg">
-          {displayTitle}
+          {subject}
         </p>
       )}
 
