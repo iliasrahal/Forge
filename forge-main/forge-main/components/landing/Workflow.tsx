@@ -10,6 +10,12 @@ const reportSections = [
   "Recommandation",
 ];
 
+const interventionSteps = [
+  "Remplacement du robinet…",
+  "Réparation de la fuite…",
+  "Vérification de l’installation…",
+];
+
 export default function Workflow() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -47,7 +53,7 @@ export default function Workflow() {
 
       <div className="mx-auto max-w-7xl">
         <div className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${revealClass}`}>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Après l’intervention</p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Parcours Forge</p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Du terrain au document envoyé, sans rupture.</h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-slate-600 dark:text-slate-300">
             Après votre intervention, Forge transforme simplement vos informations en documents professionnels : compte rendu, facture, devis et envoi au client.
@@ -62,9 +68,27 @@ export default function Workflow() {
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">01 · Intervention</p>
             <h3 className="mt-2 text-xl font-bold">Intervention terminée</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">L’artisan indique simplement ce qui a été réalisé chez le client, à la voix ou à l’écrit.</p>
-            <blockquote className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm italic leading-6 text-slate-700 dark:bg-slate-950 dark:text-slate-300">
-              « J’ai remplacé le robinet, réparé la fuite et vérifié l’installation. »
-            </blockquote>
+            <div className="mt-5 space-y-2 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
+              {interventionSteps.map((step, index) => (
+                <div
+                  key={step}
+                  className={`flex items-center gap-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 ${
+                    isVisible
+                      ? "workflow-progress-item"
+                      : "opacity-0"
+                  }`}
+                  style={{
+                    animationDelay: `${index * 240}ms`,
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                  <span className="min-w-0 flex-1">{step}</span>
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                    <Check size={12} />
+                  </span>
+                </div>
+              ))}
+            </div>
             <div className="mt-4 flex gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Mic size={13} /> Voix</span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Keyboard size={13} /> Texte</span>
@@ -77,8 +101,18 @@ export default function Workflow() {
             <h3 className="mt-2 text-xl font-bold">Généré automatiquement</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Forge structure automatiquement l’intervention avec :</p>
             <div className="mt-5 space-y-2.5">
-              {reportSections.map((label) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-300">
+              {reportSections.map((label, index) => (
+                <div
+                  key={label}
+                  className={`flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-950/80 dark:text-slate-300 ${
+                    isVisible
+                      ? "workflow-progress-item"
+                      : "opacity-0"
+                  }`}
+                  style={{
+                    animationDelay: `${850 + index * 240}ms`,
+                  }}
+                >
                   <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><Check size={12} /></span>
                   {label}
                 </div>
