@@ -1099,7 +1099,7 @@ const handleCreateInvoice = async () => {
 
   return (
     <main
-      className={`min-h-[calc(100dvh-8rem)] overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
+      className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
         showGreeting
           ? "pt-8 sm:pt-12"
           : showUpcoming
@@ -1107,7 +1107,7 @@ const handleCreateInvoice = async () => {
             : "pt-4 sm:pt-6"
       }`}
     >
-      <div className="mx-auto flex min-h-0 w-full max-w-xl flex-col pb-4">
+      <div className="mx-auto flex min-h-0 w-full max-w-xl flex-1 flex-col pb-4">
 
   <div className={`${showUpcoming ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
     <UserMenu showLogout={homeState === "intervention"} />

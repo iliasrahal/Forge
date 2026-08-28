@@ -34,7 +34,7 @@ export default function FixedForgeBar({
   onInterventionsDeleted,
 }: FixedForgeBarProps) {
   return (
-    <div className="fixed bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] left-1/2 z-40 w-full max-w-xl -translate-x-1/2 px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6">
+    <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-40 mx-auto w-full max-w-xl px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6">
       <ForgeBar
         context={context}
         clientId={clientId}
