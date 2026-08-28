@@ -91,6 +91,8 @@ function getProgressiveText(
 export default function ClientCreation() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasRevealed, setHasRevealed] =
+    useState(false);
   const [animationElapsed, setAnimationElapsed] =
     useState(0);
   const [reduceMotion, setReduceMotion] =
@@ -119,10 +121,13 @@ export default function ClientCreation() {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting) {
-          setAnimationElapsed(0);
+          setHasRevealed(true);
         }
       },
-      { threshold: 0.15 },
+      {
+        threshold: 0.08,
+        rootMargin: "100px 0px",
+      },
     );
 
     observer.observe(section);
@@ -140,10 +145,18 @@ export default function ClientCreation() {
     if (!isVisible || reduceMotion) return;
 
     const timer = window.setInterval(() => {
-      setAnimationElapsed(
-        (current) =>
-          (current + 40) % clientAnimationDuration,
-      );
+      setAnimationElapsed((current) => {
+        const next = Math.min(
+          current + 40,
+          clientAnimationDuration,
+        );
+
+        if (next >= clientAnimationDuration) {
+          window.clearInterval(timer);
+        }
+
+        return next;
+      });
     }, 40);
 
     return () => window.clearInterval(timer);
@@ -155,7 +168,7 @@ export default function ClientCreation() {
   const clientIsCreated =
     effectiveElapsed >= clientAnimationEnd;
 
-  const revealClass = isVisible
+  const revealClass = hasRevealed
     ? "translate-y-0 opacity-100"
     : "translate-y-8 opacity-0";
 
@@ -187,7 +200,7 @@ export default function ClientCreation() {
         <div className="mt-16 grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div
             className={`transition-all delay-100 duration-1000 motion-reduce:transition-none ${
-              isVisible
+              hasRevealed
                 ? "translate-x-0 opacity-100"
                 : "-translate-x-8 opacity-0"
             }`}
@@ -239,7 +252,7 @@ export default function ClientCreation() {
 
           <div
             className={`relative transition-all delay-200 duration-1000 motion-reduce:transition-none ${
-              isVisible
+              hasRevealed
                 ? "translate-y-0 opacity-100"
                 : "translate-y-10 opacity-0"
             }`}

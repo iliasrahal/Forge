@@ -11,7 +11,7 @@ import LandingLoginLink from "@/components/landing/LandingLoginLink";
 
 export default function Hero() {
   return (
-    <section className="relative isolate min-h-dvh overflow-hidden border-b border-slate-200 bg-white text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
+    <section className="relative isolate min-h-svh overflow-hidden border-b border-slate-200 bg-white text-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-white">
       <style>{`
         @keyframes forge-hero-reveal {
           from { opacity: 0; transform: translateY(24px); }
@@ -31,6 +31,9 @@ export default function Hero() {
         .forge-hero-delay-3 { animation-delay: .3s; }
         .forge-hero-float { animation: forge-hero-float 6s ease-in-out infinite; }
         .forge-hero-glow { animation: forge-hero-glow 7s ease-in-out infinite; }
+        @media (max-width: 767px) {
+          .forge-hero-float, .forge-hero-glow { animation: none; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .forge-hero-reveal, .forge-hero-float, .forge-hero-glow { animation: none; }
         }

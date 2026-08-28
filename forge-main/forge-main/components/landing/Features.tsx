@@ -158,9 +158,18 @@ function ReportIllustration() {
     if (!isVisible || reduceMotion) return;
 
     const timer = window.setInterval(() => {
-      setElapsed((current) =>
-        (current + 40) % animationDuration,
-      );
+      setElapsed((current) => {
+        const next = Math.min(
+          current + 40,
+          animationDuration,
+        );
+
+        if (next >= animationDuration) {
+          window.clearInterval(timer);
+        }
+
+        return next;
+      });
     }, 40);
 
     return () => window.clearInterval(timer);

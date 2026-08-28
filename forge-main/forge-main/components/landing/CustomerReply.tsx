@@ -66,6 +66,8 @@ export default function CustomerReply() {
   );
   const [isVisible, setIsVisible] =
     useState(false);
+  const [hasRevealed, setHasRevealed] =
+    useState(false);
   const [animationElapsed, setAnimationElapsed] =
     useState(0);
   const [reduceMotion, setReduceMotion] =
@@ -96,10 +98,13 @@ export default function CustomerReply() {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting) {
-          setAnimationElapsed(0);
+          setHasRevealed(true);
         }
       },
-      { threshold: 0.2 },
+      {
+        threshold: 0.08,
+        rootMargin: "100px 0px",
+      },
     );
 
     observer.observe(section);
@@ -117,10 +122,18 @@ export default function CustomerReply() {
     if (!isVisible || reduceMotion) return;
 
     const timer = window.setInterval(() => {
-      setAnimationElapsed(
-        (current) =>
-          (current + 40) % replyAnimationDuration,
-      );
+      setAnimationElapsed((current) => {
+        const next = Math.min(
+          current + 40,
+          replyAnimationDuration,
+        );
+
+        if (next >= replyAnimationDuration) {
+          window.clearInterval(timer);
+        }
+
+        return next;
+      });
     }, 40);
 
     return () => window.clearInterval(timer);
@@ -153,7 +166,7 @@ export default function CustomerReply() {
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
         <div
           className={`transition-all duration-1000 motion-reduce:transition-none ${
-            isVisible
+            hasRevealed
               ? "translate-x-0 opacity-100"
               : "-translate-x-8 opacity-0"
           }`}
@@ -173,7 +186,7 @@ export default function CustomerReply() {
               <div
                 key={label}
                 className={`flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-[0_16px_45px_-36px_rgba(15,23,42,0.45)] backdrop-blur transition-all duration-700 dark:border-slate-800 dark:bg-slate-900/65 ${
-                  isVisible
+                  hasRevealed
                     ? "translate-y-0 opacity-100"
                     : "translate-y-4 opacity-0"
                 }`}
@@ -194,7 +207,7 @@ export default function CustomerReply() {
 
         <div
           className={`relative transition-all delay-150 duration-1000 motion-reduce:transition-none ${
-            isVisible
+            hasRevealed
               ? "translate-y-0 opacity-100"
               : "translate-y-10 opacity-0"
           }`}

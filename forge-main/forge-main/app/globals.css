@@ -282,7 +282,7 @@ html.dark body {
 .workflow-progress-item {
   opacity: 0;
   transform: translateY(5px);
-  animation: workflow-progress 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  animation: workflow-progress 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes workflow-progress {
@@ -293,13 +293,8 @@ html.dark body {
   }
 
   18%,
-  84% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   100% {
-    opacity: 0;
+    opacity: 1;
     transform: translateY(0);
   }
 }

@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Check,
   Mic,
@@ -24,39 +28,81 @@ const resultDelay = 650;
 const animationDuration = 8000;
 
 export default function ProductDemo() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
-    const reduceMotion = window.matchMedia(
+    const mediaQuery = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
-    ).matches;
+    );
+    const updateMotionPreference = () =>
+      setReduceMotion(mediaQuery.matches);
+    const frame = window.requestAnimationFrame(
+      updateMotionPreference,
+    );
 
-    if (reduceMotion) {
-      const frame = window.requestAnimationFrame(
-        () => {
-          setElapsed(
-            typingDuration +
-              analysisDuration +
-              results.length * resultDelay,
-          );
-        },
-      );
+    mediaQuery.addEventListener(
+      "change",
+      updateMotionPreference,
+    );
 
-      return () =>
-        window.cancelAnimationFrame(frame);
+    const section = sectionRef.current;
+    const observer = section
+      ? new IntersectionObserver(
+          ([entry]) =>
+            setIsVisible(entry.isIntersecting),
+          {
+            threshold: 0.08,
+            rootMargin: "120px 0px",
+          },
+        )
+      : null;
+
+    if (section && observer) {
+      observer.observe(section);
     }
 
-    const interval = window.setInterval(() => {
-      setElapsed(
-        (current) =>
-          (current + 50) %
-          animationDuration,
+    return () => {
+      window.cancelAnimationFrame(frame);
+      mediaQuery.removeEventListener(
+        "change",
+        updateMotionPreference,
       );
+      observer?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) {
+      const frame = window.requestAnimationFrame(() => {
+        setElapsed(animationDuration);
+      });
+
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    if (!isVisible) return;
+
+    const interval = window.setInterval(() => {
+      setElapsed((current) => {
+        const next = Math.min(
+          current + 50,
+          animationDuration,
+        );
+
+        if (next >= animationDuration) {
+          window.clearInterval(interval);
+        }
+
+        return next;
+      });
     }, 50);
 
     return () =>
       window.clearInterval(interval);
-  }, []);
+  }, [isVisible, reduceMotion]);
 
   const typedCharacters = Math.min(
     artisanRequest.length,
@@ -85,6 +131,7 @@ export default function ProductDemo() {
 
   return (
     <section
+      ref={sectionRef}
       id="product-demo"
       className="bg-slate-50 px-6 py-20 text-slate-950 sm:py-24 lg:px-8 dark:bg-slate-900/40 dark:text-white"
     >
