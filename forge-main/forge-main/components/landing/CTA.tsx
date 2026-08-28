@@ -19,7 +19,7 @@ export default function CTA() {
 
         <div className="relative mx-auto max-w-4xl">
           <div className="mx-auto mb-8 flex w-fit items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-2 pr-4 shadow-xl backdrop-blur">
-            <span className="rounded-xl shadow-lg shadow-slate-950/20">
+            <span className="overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-950/20 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
               <ForgeLogo
                 size={44}
                 invertTheme
