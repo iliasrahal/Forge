@@ -36,7 +36,7 @@ const features = [
   {
     title: "Devis",
     description:
-      "Créez automatiquement des devis professionnels et envoyez-les facilement à vos clients.",
+      "Forge génère automatiquement des devis professionnels à partir d’une simple demande.",
     eyebrow: "Une proposition claire",
   },
   {
@@ -226,7 +226,7 @@ type FeaturesProps = {
   showHeading?: boolean;
 };
 
-const featureNumbers = [1, 2, 5, 6, 0];
+const featureNumbers = [1, 2, 4, 3, 0];
 
 export default function Features({
   group = "all",
@@ -242,6 +242,10 @@ export default function Features({
       if (group === "operations") return index < 2;
       if (group === "documents") return index >= 2 && index < 4;
       return true;
+    })
+    .sort((first, second) => {
+      if (group !== "documents") return first.index - second.index;
+      return second.index - first.index;
     });
 
   useEffect(() => {

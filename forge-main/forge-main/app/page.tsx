@@ -15,11 +15,11 @@ export default function LandingPage() {
       <Hero />
       <ProductDemo />
       <Problem />
+      <Workflow />
       <Features group="operations" />
+      <Features group="documents" showHeading={false} />
       <ClientCreation />
       <CustomerReply />
-      <Features group="documents" showHeading={false} />
-      <Workflow />
       <Pricing />
       <CTA />
       <Footer />
