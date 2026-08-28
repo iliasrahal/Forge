@@ -197,8 +197,6 @@ function FeatureIllustration({
   if (index === 3) {
     return (
       <div className="relative mx-auto flex max-w-md items-center justify-center py-10">
-        <div className="absolute h-64 w-64 rounded-full border border-blue-200 dark:border-blue-900" />
-        <div className="absolute h-48 w-48 rounded-full border border-blue-300/70 dark:border-blue-800" />
         <div className="relative z-10 rounded-[2rem] border border-slate-200 bg-white p-7 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900">
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white"><Euro size={25} /></span>
           <p className="mt-5 text-sm font-semibold text-slate-500 dark:text-slate-400">Facture prête</p>

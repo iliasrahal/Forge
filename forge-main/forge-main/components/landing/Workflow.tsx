@@ -49,7 +49,7 @@ export default function Workflow() {
         <div className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${revealClass}`}>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Après l’intervention</p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Du terrain au document envoyé, sans rupture.</h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-slate-600 dark:text-slate-300">
             Après votre intervention, Forge transforme simplement vos informations en documents professionnels : compte rendu, facture, devis et envoi au client.
           </p>
         </div>
