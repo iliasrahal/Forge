@@ -47,6 +47,18 @@ enum WorkMode {
   TEAM
 }
 
+enum TeamRole {
+  OWNER
+  MANAGER
+  TECHNICIAN
+}
+
+enum TeamInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -90,9 +102,62 @@ model User {
 
   accountActivationTokens AccountActivationToken[]
 
+  memberships OrganizationMember[]
+
+  assignedInterventions Intervention[] @relation("AssignedInterventions")
+
+  sentTeamInvitations TeamInvitation[] @relation("InvitationSender")
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id            String               @id @default(cuid())
+  name          String
+  members       OrganizationMember[]
+  invitations   TeamInvitation[]
+  clients       Client[]
+  interventions Intervention[]
+  quotes        Quote[]
+  invoices      Invoice[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  role           TeamRole
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+model TeamInvitation {
+  id             String               @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String
+  role           TeamRole
+  tokenHash      String               @unique
+  expiresAt      DateTime
+  status         TeamInvitationStatus @default(PENDING)
+  organizationId String
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String
+  invitedBy      User                 @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Cascade)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([organizationId])
+  @@index([email])
 }
 
 model Session {
@@ -185,6 +250,10 @@ model Client {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  organizationId String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   interventions Intervention[]
 
   quotes Quote[]
@@ -196,7 +265,9 @@ model Client {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([organizationId])
 }
+
 model Intervention {
   id String @id @default(cuid())
 
@@ -232,6 +303,14 @@ model Intervention {
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  organizationId String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  assignedToId String?
+
+  assignedTo User? @relation("AssignedInterventions", fields: [assignedToId], references: [id], onDelete: SetNull)
+
   clientId String?
 
   client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -242,6 +321,8 @@ model Intervention {
 
   @@index([clientId])
   @@index([userId])
+  @@index([organizationId])
+  @@index([assignedToId])
   @@index([scheduledAt])
   @@index([endDate])
 }
@@ -263,6 +344,10 @@ model Quote {
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
+  organizationId String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   lines QuoteLine[]
 
   invoices Invoice[]
@@ -272,6 +357,7 @@ model Quote {
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([organizationId])
 }
 
 model QuoteLine {
@@ -321,11 +407,16 @@ model Invoice {
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
+  organizationId String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
+  @@index([organizationId])
   @@index([quoteId])
   @@index([interventionId])
 }
