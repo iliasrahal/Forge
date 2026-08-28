@@ -102,7 +102,7 @@ export default function ClientCreation() {
           className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${revealClass}`}
         >
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-            Gestion client instantanée
+            03 · Gestion client instantanée
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
             Créez vos fiches clients instantanément

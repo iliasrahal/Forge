@@ -93,7 +93,7 @@ export default function CustomerReply() {
           }`}
         >
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-            Relation client
+            04 · Relation client
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
             Répondez facilement à vos clients

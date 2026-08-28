@@ -221,10 +221,28 @@ function FeatureIllustration({
   );
 }
 
-export default function Features() {
+type FeaturesProps = {
+  group?: "all" | "operations" | "documents";
+  showHeading?: boolean;
+};
+
+const featureNumbers = [1, 2, 5, 6, 0];
+
+export default function Features({
+  group = "all",
+  showHeading = true,
+}: FeaturesProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [visibleItems, setVisibleItems] =
     useState<number[]>([]);
+
+  const featureEntries = features
+    .map((feature, index) => ({ feature, index }))
+    .filter(({ index }) => {
+      if (group === "operations") return index < 2;
+      if (group === "documents") return index >= 2 && index < 4;
+      return true;
+    });
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -237,7 +255,13 @@ export default function Features() {
 
     if (reduceMotion) {
       const frame = window.requestAnimationFrame(() => {
-        setVisibleItems(features.map((_, index) => index));
+        setVisibleItems(
+          Array.from(
+            section.querySelectorAll<HTMLElement>(
+              "[data-feature-item]",
+            ),
+          ).map((item) => Number(item.dataset.index)),
+        );
       });
 
       return () => window.cancelAnimationFrame(frame);
@@ -274,13 +298,15 @@ export default function Features() {
       ref={sectionRef}
       className="overflow-hidden bg-slate-50 py-24 text-slate-950 sm:py-32 dark:bg-slate-950 dark:text-white"
     >
-      <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Tout votre quotidien</p>
-        <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Une seule expérience, du premier appel au paiement.</h2>
-      </div>
+      {showHeading && (
+        <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Tout votre quotidien</p>
+          <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Une seule expérience, du premier appel au paiement.</h2>
+        </div>
+      )}
 
-      <div className="mx-auto mt-20 max-w-7xl">
-        {features.map((feature, index) => {
+      <div className={`mx-auto max-w-7xl ${showHeading ? "mt-20" : ""}`}>
+        {featureEntries.map(({ feature, index }) => {
           const isVisible = visibleItems.includes(index);
           const isReversed = index % 2 === 1;
 
@@ -292,7 +318,10 @@ export default function Features() {
               className="relative grid min-h-[34rem] items-center gap-12 border-t border-slate-200 px-6 py-20 last:border-b dark:border-slate-800 lg:grid-cols-2 lg:px-12"
             >
               <div className={`transition-all duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-2" : ""} ${isVisible ? "translate-x-0 opacity-100" : isReversed ? "translate-x-10 opacity-0" : "-translate-x-10 opacity-0"}`}>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">0{index + 1} · {feature.eyebrow}</p>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
+                  {featureNumbers[index] > 0 && `0${featureNumbers[index]} · `}
+                  {feature.eyebrow}
+                </p>
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
                 {index === 1 && (
