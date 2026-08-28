@@ -10,7 +10,6 @@ type CurrentInterventionCardProps = {
   onStart: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  forgeBar?: React.ReactNode;
 };
 
 
@@ -21,7 +20,6 @@ export default function CurrentInterventionCard({
   onStart,
   onEdit,
   onDelete,
-  forgeBar,
 }: CurrentInterventionCardProps) {
   const displayTitle =
     getAppointmentDisplayTitle(
@@ -122,11 +120,6 @@ export default function CurrentInterventionCard({
       </div>
       </div>
 
-      {forgeBar && (
-        <div className="border-t border-slate-200/60 bg-transparent px-4 py-1 dark:border-slate-700/70 sm:px-6 sm:py-1.5">
-          {forgeBar}
-        </div>
-      )}
     </article>
   );
 }
