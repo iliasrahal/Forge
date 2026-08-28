@@ -348,7 +348,7 @@ function FeatureIllustration({
           <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">1 240 €</span>
         </div>
         <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-          <Check size={16} />
+          <Send size={16} />
           Envoyé au client
         </div>
       </div>
@@ -362,9 +362,10 @@ function FeatureIllustration({
           <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white"><Euro size={25} /></span>
           <p className="mt-5 text-sm font-semibold text-slate-500 dark:text-slate-400">Facture prête</p>
           <p className="mt-1 text-3xl font-bold">840 €</p>
-          <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-            <Send size={15} /> Envoyée
-          </span>
+          <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            <Send size={16} />
+            Envoyée au client
+          </div>
         </div>
       </div>
     );
