@@ -30,7 +30,7 @@ const features = [
   {
     title: "Comptes rendus",
     description:
-      "Après chaque intervention, Forge transforme vos notes vocales ou écrites en compte rendu professionnel automatiquement.",
+      "L’intervention terminée, dictez ou écrivez simplement ce que vous avez réalisé. Forge transforme automatiquement vos notes en un compte rendu professionnel clair et structuré.",
     eyebrow: "Compte rendu automatique",
   },
   {
@@ -127,6 +127,18 @@ function FeatureIllustration({
               Généré automatiquement par Forge
             </p>
           </div>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/35">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">
+            <Mic size={14} /> Note de l’artisan
+          </div>
+          <p className="mt-2 text-sm italic leading-6 text-slate-700 dark:text-slate-200">
+            « J’ai remplacé le robinet d’arrêt, changé le joint et vérifié l’étanchéité. »
+          </p>
+          <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <Keyboard size={13} /> Dictée ou saisie écrite
+          </p>
         </div>
 
         <div className="mt-5 space-y-4">
@@ -331,9 +343,9 @@ export default function Features({
                 {index === 1 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
-                      "Dictée vocale ou saisie rapide après l’intervention",
-                      "Analyse automatique par Forge",
-                      "Compte rendu professionnel prêt en quelques secondes",
+                      "Terminez l’intervention puis dictez ou écrivez vos notes",
+                      "Forge analyse et reformule automatiquement les informations utiles",
+                      "Obtenez un compte rendu professionnel prêt en quelques secondes",
                     ].map((benefit) => (
                       <div
                         key={benefit}
