@@ -5,27 +5,18 @@ import {
   detectPhotoIntent,
   getPhotoPrompt,
 } from "@/src/lib/photoPrompts";
+import {
+  MAX_PHOTOS,
+  MAX_PHOTO_SIZE,
+} from "@/src/lib/photoConfig";
+import {
+  fileToDataUrl,
+  isImage,
+} from "@/src/lib/photoFiles.server";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const MAX_PHOTOS = 4;
-const MAX_PHOTO_SIZE = 8 * 1024 * 1024;
-
-function isImage(file: File) {
-  return file.type.startsWith("image/");
-}
-
-async function fileToDataUrl(file: File) {
-  const arrayBuffer = await file.arrayBuffer();
-
-  const base64 = Buffer.from(
-    arrayBuffer,
-  ).toString("base64");
-
-  return `data:${file.type};base64,${base64}`;
-}
 
 function cleanJsonOutput(output: string) {
   return output

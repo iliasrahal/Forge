@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, FileText, Keyboard, Mail, Mic, Receipt, Wrench } from "lucide-react";
+import { ArrowRight, Camera, Check, FileText, Keyboard, Mail, Mic, Receipt, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const reportSections = [
@@ -67,7 +67,7 @@ export default function Workflow() {
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Wrench size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">01 · Intervention</p>
             <h3 className="mt-2 text-xl font-bold">Intervention terminée</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">L’artisan indique simplement ce qui a été réalisé chez le client, à la voix ou à l’écrit.</p>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">L’artisan indique simplement ce qui a été réalisé chez le client, à la voix, à l’écrit ou avec des photos.</p>
             <div className="mt-5 space-y-2 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
               {interventionSteps.map((step, index) => (
                 <div
@@ -89,9 +89,10 @@ export default function Workflow() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Mic size={13} /> Voix</span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Keyboard size={13} /> Texte</span>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Camera size={13} /> Photo</span>
             </div>
           </article>
 

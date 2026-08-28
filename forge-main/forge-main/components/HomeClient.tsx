@@ -852,12 +852,7 @@ const handleSaveNotes = async (notes: string) => {
       return;
     }
 
-    setHomeState(
-      currentAppointment?.status ===
-        "inProgress"
-        ? "inProgress"
-        : "intervention",
-    );
+    setHomeState("reportInput");
   };
 
   const handleEditReport = () => {

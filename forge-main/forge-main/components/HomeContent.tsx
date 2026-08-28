@@ -150,6 +150,12 @@ export default function HomeContent({
   const [notesError, setNotesError] =
     useState("");
 
+  const [reportDraft, setReportDraft] =
+    useState("");
+
+  const [reportMedia, setReportMedia] =
+    useState<File[]>([]);
+
   useEffect(() => {
     setNotesDraft(currentAppointment?.notes ?? "");
     setIsEditingNotes(false);
@@ -523,6 +529,11 @@ export default function HomeContent({
           onStartProcessing={onStartProcessing}
           onReportGenerated={onReportGenerated}
           onError={onReportError}
+          message={reportDraft}
+          onMessageChange={setReportDraft}
+          selectedMedia={reportMedia}
+          onSelectedMediaChange={setReportMedia}
+          errorMessage={error}
         />
       </section>
     );

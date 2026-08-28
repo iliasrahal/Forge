@@ -5,6 +5,15 @@ export type PhotoIntent =
   | "intervention"
   | "description";
 
+export const PHOTO_SAFETY_RULES = `
+Les déclarations explicites de l'artisan sont la source principale.
+Les photos servent uniquement à compléter, contextualiser ou confirmer les éléments visibles.
+Ne contredis jamais arbitrairement les déclarations de l'artisan.
+Décris uniquement ce qui est réellement visible et précise toute incertitude.
+N'invente jamais une panne, un diagnostic, une marque, un modèle, une référence, une prestation ou un prix.
+Une photo seule ne permet jamais de confirmer avec certitude un diagnostic technique.
+`.trim();
+
 export function detectPhotoIntent(
   message: string,
 ): PhotoIntent {
@@ -55,10 +64,7 @@ Tu es Forge, l'assistant administratif des plombiers et chauffagistes.
 Tu accompagnes l'artisan dans son travail.
 
 Règles obligatoires :
-- décris uniquement ce qui est réellement visible ;
-- n'invente jamais une panne, une marque, un modèle, une référence, une capacité, une prestation ou un prix ;
-- précise lorsqu'une information n'est pas visible ou reste incertaine ;
-- une photo seule ne permet jamais de confirmer un diagnostic ;
+${PHOTO_SAFETY_RULES}
 - réponds en français ;
 - sois synthétique, professionnel et rassurant ;
 - évite les longues listes ;

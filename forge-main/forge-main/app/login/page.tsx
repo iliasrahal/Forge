@@ -151,14 +151,18 @@ export default function LoginPage() {
         className="space-y-4"
       >
 
+        <label htmlFor="loginIdentifier" className="sr-only">
+          Email ou numéro de téléphone
+        </label>
         <input
+          id="loginIdentifier"
           type="text"
           value={identifier}
           onChange={(event) =>
             setIdentifier(event.target.value)
           }
           autoComplete="username"
-          placeholder="E-mail ou téléphone"
+          placeholder="email@exemple.com ou 06 12 34 56 78"
           className="h-14 w-full rounded-2xl border border-slate-200/90 bg-white/85 px-5 text-base shadow-[0_10px_30px_-20px_rgba(15,23,42,0.45)] outline-none backdrop-blur-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900/80 dark:text-white dark:shadow-black/30 dark:focus:ring-blue-950"
         />
 

@@ -34,7 +34,7 @@ export default function OnboardingPage() {
 
 
   const [step, setStep] =
-    useState<"job" | "workMode" | "team" | "ready">("job");
+    useState<"job" | "workMode" | "team" | "invite" | "ready">("job");
 
 
   const [firstName, setFirstName] =
@@ -50,6 +50,11 @@ export default function OnboardingPage() {
 
   const [organizationName, setOrganizationName] =
     useState("");
+
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteEmails, setInviteEmails] = useState<string[]>([]);
+  const [inviteMessage, setInviteMessage] = useState("");
+  const [isSendingInvitations, setIsSendingInvitations] = useState(false);
 
 
   const [error, setError] =
@@ -110,6 +115,44 @@ export default function OnboardingPage() {
 
     setStep(selectedWorkMode === "TEAM" ? "team" : "ready");
 
+  }
+
+  function addInviteEmail(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const email = inviteEmail.trim().toLowerCase();
+
+    if (!email.includes("@")) {
+      setInviteMessage("Renseigne une adresse e-mail valide.");
+      return;
+    }
+
+    setInviteEmails((current) =>
+      current.includes(email) ? current : [...current, email],
+    );
+    setInviteEmail("");
+    setInviteMessage("");
+  }
+
+  async function sendInvitations() {
+    if (isSendingInvitations || inviteEmails.length === 0) return;
+    setIsSendingInvitations(true);
+    setInviteMessage("");
+
+    try {
+      const response = await fetch("/api/team/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails: inviteEmails, organizationName }),
+      });
+      const data = (await response.json()) as { count?: number; error?: string };
+      if (!response.ok) throw new Error(data.error || "Impossible d’envoyer les invitations.");
+
+      setInviteMessage(`${data.count ?? inviteEmails.length} invitations envoyées`);
+      window.setTimeout(() => setStep("ready"), 1200);
+    } catch (sendError) {
+      setInviteMessage(sendError instanceof Error ? sendError.message : "Impossible d’envoyer les invitations.");
+      setIsSendingInvitations(false);
+    }
   }
 
 async function finishOnboarding() {
@@ -485,10 +528,65 @@ localStorage.setItem(
             <button
               type="button"
               disabled={!organizationName.trim()}
-              onClick={() => setStep("ready")}
+              onClick={() => setStep("invite")}
               className="mt-8 h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700"
             >
               Continuer
+            </button>
+          </div>
+        )}
+
+        {step === "invite" && (
+          <div>
+            <p className="text-center text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
+              Travail en équipe
+            </p>
+            <h1 className="mt-4 text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
+              Invitez votre équipe
+            </h1>
+            <p className="mx-auto mt-4 max-w-sm text-center leading-7 text-slate-600 dark:text-slate-300">
+              Ajoutez les collaborateurs qui travailleront avec vous sur Forge.
+            </p>
+
+            <form onSubmit={addInviteEmail} className="mt-8">
+              <label htmlFor="inviteEmail" className="mb-2 block text-center text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Adresse e-mail du collaborateur
+              </label>
+              <input
+                id="inviteEmail"
+                type="email"
+                value={inviteEmail}
+                onChange={(event) => setInviteEmail(event.target.value)}
+                placeholder="exemple@email.com"
+                className="h-14 w-full rounded-2xl border border-white/80 bg-white/75 px-5 text-slate-900 shadow-[0_14px_38px_-28px_rgba(15,23,42,0.6)] outline-none backdrop-blur transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700/80 dark:bg-slate-900/75 dark:text-white"
+              />
+              <button type="submit" className="mt-3 h-12 w-full rounded-2xl border border-blue-200 bg-white/75 px-5 font-semibold text-blue-700 transition hover:border-blue-400 dark:border-blue-800 dark:bg-slate-900/75 dark:text-blue-300">
+                + Ajouter un collaborateur
+              </button>
+            </form>
+
+            {inviteEmails.length > 0 && (
+              <div className="mt-5 space-y-2">
+                {inviteEmails.map((email) => (
+                  <div key={email} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3 text-sm dark:border-slate-700 dark:bg-slate-900/75">
+                    <span className="min-w-0 truncate">{email}</span>
+                    <button type="button" onClick={() => setInviteEmails((current) => current.filter((item) => item !== email))} className="shrink-0 font-semibold text-red-600 dark:text-red-400">
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {inviteMessage && (
+              <p className="mt-4 text-center text-sm font-semibold text-blue-700 dark:text-blue-300">{inviteMessage}</p>
+            )}
+
+            <button type="button" onClick={sendInvitations} disabled={inviteEmails.length === 0 || isSendingInvitations} className="mt-6 h-14 w-full rounded-2xl bg-blue-600 px-6 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700">
+              {isSendingInvitations ? "Envoi en cours…" : "Envoyer les invitations"}
+            </button>
+            <button type="button" onClick={() => setStep("ready")} className="mt-4 w-full text-sm font-semibold text-slate-500 transition hover:text-blue-700 dark:text-slate-400 dark:hover:text-blue-300">
+              Passer pour le moment
             </button>
           </div>
         )}

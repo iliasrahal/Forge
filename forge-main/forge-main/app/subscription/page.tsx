@@ -1,12 +1,14 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
+import { redirect } from "next/navigation";
 import ForgeLogo from "@/components/ForgeLogo";
+import CancelSubscriptionControls from "@/components/subscription/CancelSubscriptionControls";
+import { getCurrentUser } from "@/src/lib/auth";
+import { getForgePlan } from "@/src/lib/pricing";
 
-export default function SubscriptionPage() {
-
-  const [cancelRequested, setCancelRequested] = useState(false);
+export default async function SubscriptionPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const plan = getForgePlan(user.workMode);
 
   return (
     <main className="min-h-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
@@ -53,10 +55,14 @@ export default function SubscriptionPage() {
               Forge Pro
             </h2>
 
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">
+              {plan.label}
+            </p>
+
 
 
             <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-              29,99€/mois
+              {plan.monthlyLabel}
             </p>
 
 
@@ -81,67 +87,7 @@ export default function SubscriptionPage() {
 
 
 
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950">
-
-
-            <p className="text-center text-sm text-red-600 dark:text-red-300">
-              Tu peux arrêter ton abonnement Forge à tout moment.
-            </p>
-
-
-
-            {!cancelRequested ? (
-
-              <button
-                type="button"
-                onClick={() =>
-                  setCancelRequested(true)
-                }
-                className="mt-5 w-full rounded-2xl border border-red-300 px-5 py-4 font-semibold text-red-600 transition hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900"
-              >
-                Résilier mon abonnement
-              </button>
-
-
-            ) : (
-
-
-              <div className="mt-5 space-y-3">
-
-
-                <p className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
-                  Confirme-tu vouloir résilier ton abonnement Forge ?
-                </p>
-
-
-
-                <button
-                  type="button"
-                  className="w-full rounded-2xl bg-red-600 px-5 py-4 font-semibold text-white transition hover:bg-red-700"
-                >
-                  Confirmer la résiliation
-                </button>
-
-
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCancelRequested(false)
-                  }
-                  className="w-full rounded-2xl border border-slate-300 px-5 py-4 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                  Annuler
-                </button>
-
-
-              </div>
-
-
-            )}
-
-
-          </div>
+          <CancelSubscriptionControls />
 
 
 

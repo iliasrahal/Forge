@@ -21,8 +21,8 @@ CREATE TABLE "OrganizationMember" (
 
 CREATE TABLE "TeamInvitation" (
   "id" TEXT NOT NULL,
-  "firstName" TEXT NOT NULL,
-  "lastName" TEXT NOT NULL,
+  "firstName" TEXT,
+  "lastName" TEXT,
   "email" TEXT NOT NULL,
   "role" "TeamRole" NOT NULL,
   "tokenHash" TEXT NOT NULL,

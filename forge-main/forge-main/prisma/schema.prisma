@@ -142,8 +142,8 @@ model OrganizationMember {
 
 model TeamInvitation {
   id             String               @id @default(cuid())
-  firstName      String
-  lastName       String
+  firstName      String?
+  lastName       String?
   email          String
   role           TeamRole
   tokenHash      String               @unique

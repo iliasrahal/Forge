@@ -89,6 +89,24 @@ export async function sendWelcomeEmail(
   });
 }
 
+export async function sendTeamInvitationEmail(
+  recipient: string,
+  organizationName: string,
+  invitationUrl: string,
+) {
+  return getResendClient().emails.send({
+    from: sender,
+    to: recipient,
+    subject: `Invitation à rejoindre ${organizationName} sur Forge`,
+    text: `Vous êtes invité à rejoindre l’équipe Forge de ${organizationName}.\n\nRejoignez l’équipe avec ce lien :\n${invitationUrl}\n\nCe lien est personnel et valable pendant 7 jours.`,
+    html: renderEmailLayout(
+      `<p>Vous êtes invité à rejoindre l’équipe Forge de <strong>${escapeHtml(organizationName)}</strong>.</p><p>Créez votre compte pour rejoindre automatiquement l’espace existant de votre équipe.</p>{{ACTION}}<p>Ce lien est personnel et valable pendant 7 jours.</p><p>Cordialement,<br/><strong>L’équipe Forge</strong></p>`,
+      { label: "Rejoindre l’équipe Forge", url: invitationUrl },
+      true,
+    ),
+  });
+}
+
 
 export async function sendPasswordResetEmail(
   recipient: string,

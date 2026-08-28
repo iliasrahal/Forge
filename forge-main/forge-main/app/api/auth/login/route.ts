@@ -5,15 +5,12 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { getPhoneSearchVariants } from "@/src/lib/phone";
 
 type LoginBody = {
   identifier?: string;
   password?: string;
 };
-
-function normalizePhone(value: string) {
-  return value.replace(/\s+/g, "").trim();
-}
 
 export async function POST(request: Request) {
   try {
@@ -37,26 +34,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const normalizedIdentifier =
-      identifier.toLowerCase();
-
-    const normalizedPhone =
-      normalizePhone(identifier);
-
-    const user =
-      await prisma.user.findFirst({
-        where: {
-          OR: [
-            {
-              email:
-                normalizedIdentifier,
-            },
-            {
-              phone: normalizedPhone,
-            },
-          ],
-        },
-      });
+    const isEmail = identifier.includes("@");
+    const users = await prisma.user.findMany({
+      where: isEmail
+        ? { email: identifier.toLowerCase() }
+        : { phone: { in: getPhoneSearchVariants(identifier) } },
+      take: 2,
+    });
+    const user = users.length === 1 ? users[0] : null;
 
     if (!user) {
       return NextResponse.json(

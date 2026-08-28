@@ -1,19 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Camera,
+  Images,
   LoaderCircle,
   Mic,
+  Play,
   Send,
+  Video,
+  X,
 } from "lucide-react";
 
-declare global {
-  interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
-  }
-}
+import {
+  MAX_MEDIA,
+  MAX_PHOTOS,
+  MAX_PHOTO_SIZE,
+  MAX_VIDEO_DURATION_SECONDS,
+  MAX_VIDEO_SIZE,
+  MAX_VIDEOS,
+} from "@/src/lib/photoConfig";
+import {
+  extractVideoFrames,
+  getVideoDuration,
+} from "@/src/lib/videoFrames";
+
+type ListenRecognitionEvent = {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: {
+      [index: number]: { transcript: string };
+    };
+  };
+};
+
+type ListenRecognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: (() => void) | null;
+  onresult: ((event: ListenRecognitionEvent) => void) | null;
+  start: () => void;
+};
+
+type ListenRecognitionConstructor =
+  new () => ListenRecognition;
+
+type ForgeListenWindow = Window & {
+  SpeechRecognition?: ListenRecognitionConstructor;
+  webkitSpeechRecognition?: ListenRecognitionConstructor;
+};
 
 type InterventionReport = {
   intervention: string;
@@ -29,18 +72,191 @@ type ForgeListenCardProps = {
     report: InterventionReport,
   ) => void;
   onError: (message: string) => void;
+  message: string;
+  onMessageChange: (message: string) => void;
+  selectedMedia: File[];
+  onSelectedMediaChange: (media: File[]) => void;
+  errorMessage?: string;
 };
+
+function MediaPreview({
+  media,
+  index,
+  isLoading,
+  onRemove,
+}: {
+  media: File;
+  index: number;
+  isLoading: boolean;
+  onRemove: () => void;
+}) {
+  const [previewUrl] = useState(() => URL.createObjectURL(media));
+  const isVideo = media.type.startsWith("video/");
+
+  useEffect(() => {
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  return (
+    <div className="group relative h-16 w-16 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      {isVideo ? (
+        <>
+          <video
+            src={previewUrl}
+            muted
+            playsInline
+            preload="auto"
+            aria-label={`Aperçu de la vidéo ${index + 1}`}
+            className="h-full w-full object-cover"
+          />
+          <span className="pointer-events-none absolute inset-0 grid place-items-center bg-slate-950/15 text-white">
+            <span className="grid h-7 w-7 place-items-center rounded-full bg-slate-950/65 backdrop-blur-sm">
+              <Play size={13} fill="currentColor" />
+            </span>
+          </span>
+        </>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={previewUrl}
+          alt={`Aperçu de la photo ${index + 1}`}
+          className="h-full w-full object-cover"
+        />
+      )}
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={isLoading}
+        aria-label={`Retirer ${isVideo ? "la vidéo" : "la photo"} ${index + 1}`}
+        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-950/75 text-white shadow-sm backdrop-blur-sm transition hover:bg-red-600 disabled:opacity-50"
+      >
+        <X size={14} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
 
 export default function ForgeListenCard({
   clientName,
   onStartProcessing,
   onReportGenerated,
   onError,
+  message,
+  onMessageChange,
+  selectedMedia,
+  onSelectedMediaChange,
+  errorMessage = "",
 }: ForgeListenCardProps) {
 
-  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const [isMediaMenuOpen, setIsMediaMenuOpen] = useState(false);
+  const photoCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const videoCaptureInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
+  const selectedMediaRef = useRef(selectedMedia);
+
+  useEffect(() => {
+    selectedMediaRef.current = selectedMedia;
+  }, [selectedMedia]);
+
+  function openMediaInput(
+    inputRef: React.RefObject<HTMLInputElement | null>,
+  ) {
+    setIsMediaMenuOpen(false);
+    inputRef.current?.click();
+  }
+
+  async function handleMediaSelection(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const newMedia = Array.from(event.target.files ?? []).filter(
+      (file) =>
+        file.type.startsWith("image/") ||
+        file.type.startsWith("video/"),
+    );
+
+    event.target.value = "";
+    setIsMediaMenuOpen(false);
+
+    if (newMedia.length === 0) {
+      return;
+    }
+
+    if (selectedMedia.length + newMedia.length > MAX_MEDIA) {
+      setMediaError(`Tu peux ajouter au maximum ${MAX_MEDIA} médias.`);
+      return;
+    }
+
+    const photos = newMedia.filter((file) =>
+      file.type.startsWith("image/"),
+    );
+    const videos = newMedia.filter((file) =>
+      file.type.startsWith("video/"),
+    );
+    const existingVideoCount = selectedMedia.filter((file) =>
+      file.type.startsWith("video/"),
+    ).length;
+
+    if (existingVideoCount + videos.length > MAX_VIDEOS) {
+      setMediaError("Tu peux ajouter une seule vidéo par compte rendu.");
+      return;
+    }
+
+    const oversizedPhoto = photos.find(
+      (photo) => photo.size > MAX_PHOTO_SIZE,
+    );
+
+    if (oversizedPhoto) {
+      setMediaError("Chaque photo doit peser au maximum 8 Mo.");
+      return;
+    }
+
+    if (
+      selectedMedia.filter((file) =>
+        file.type.startsWith("image/"),
+      ).length + photos.length > MAX_PHOTOS
+    ) {
+      setMediaError(`Tu peux ajouter au maximum ${MAX_PHOTOS} photos.`);
+      return;
+    }
+
+    const oversizedVideo = videos.find(
+      (video) => video.size > MAX_VIDEO_SIZE,
+    );
+
+    if (oversizedVideo) {
+      setMediaError("La vidéo doit peser au maximum 50 Mo.");
+      return;
+    }
+
+    for (const video of videos) {
+      try {
+        const duration = await getVideoDuration(video);
+
+        if (duration > MAX_VIDEO_DURATION_SECONDS) {
+          setMediaError("La vidéo doit durer au maximum 30 secondes.");
+          return;
+        }
+      } catch {
+        setMediaError(
+          "Cette vidéo ne peut pas être analysée sur cet appareil. Essayez une autre vidéo ou filmez directement depuis Forge.",
+        );
+        return;
+      }
+    }
+
+    setMediaError("");
+    onSelectedMediaChange([...selectedMedia, ...newMedia]);
+  }
+
+  function removeMedia(index: number) {
+    onSelectedMediaChange(
+      selectedMedia.filter((_, mediaIndex) => mediaIndex !== index),
+    );
+    setMediaError("");
+  }
 
 
   async function handleSubmit(text?: string) {
@@ -59,17 +275,45 @@ export default function ForgeListenCard({
 
     try {
 
+      const currentMedia = selectedMediaRef.current;
+      const formData = new FormData();
+      formData.append("intervention", intervention);
+      const photos = currentMedia.filter((file) =>
+        file.type.startsWith("image/"),
+      );
+      const video = currentMedia.find((file) =>
+        file.type.startsWith("video/"),
+      );
+
+      photos.forEach((photo) => {
+        formData.append("photos", photo);
+      });
+
+      if (video) {
+        let videoFrames: File[];
+
+        try {
+          videoFrames = await extractVideoFrames(video);
+        } catch {
+          throw new Error(
+            "Cette vidéo ne peut pas être analysée sur cet appareil. Essayez une autre vidéo ou filmez directement depuis Forge.",
+          );
+        }
+
+        videoFrames.forEach((frame) => {
+          formData.append("photos", frame);
+        });
+        formData.append(
+          "videoFrameCount",
+          String(videoFrames.length),
+        );
+      }
+
       const response = await fetch(
         "/api/interventions/report",
         {
           method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            intervention,
-          }),
+          body: formData,
         },
       );
 
@@ -85,6 +329,9 @@ export default function ForgeListenCard({
         );
       }
 
+
+      onMessageChange("");
+      onSelectedMediaChange([]);
 
       onReportGenerated({
 
@@ -127,9 +374,10 @@ export default function ForgeListenCard({
 
   function startVoiceRecognition() {
 
+    const browserWindow = window as ForgeListenWindow;
     const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
+      browserWindow.SpeechRecognition ||
+      browserWindow.webkitSpeechRecognition;
 
 
     if (!SpeechRecognition) {
@@ -141,9 +389,7 @@ export default function ForgeListenCard({
       return;
     }
 
-
-    const recognition =
-      new SpeechRecognition();
+    const recognition = new SpeechRecognition();
 
 
     recognition.lang = "fr-FR";
@@ -172,7 +418,7 @@ export default function ForgeListenCard({
 
 
     recognition.onresult = (
-      event:any,
+      event: ListenRecognitionEvent,
     ) => {
 
       let transcript = "";
@@ -191,7 +437,7 @@ export default function ForgeListenCard({
       }
 
 
-      setMessage(transcript);
+      onMessageChange(transcript);
 
 
       if (transcript.trim()) {
@@ -291,12 +537,39 @@ export default function ForgeListenCard({
 
       <div className="mt-8 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-md shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
 
+        <input
+          ref={photoCaptureInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={(event) => void handleMediaSelection(event)}
+          className="hidden"
+        />
+
+        <input
+          ref={videoCaptureInputRef}
+          type="file"
+          accept="video/*"
+          capture="environment"
+          onChange={(event) => void handleMediaSelection(event)}
+          className="hidden"
+        />
+
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={(event) => void handleMediaSelection(event)}
+          className="hidden"
+        />
+
 
         <input
           type="text"
           value={message}
           onChange={(event)=>
-            setMessage(event.target.value)
+            onMessageChange(event.target.value)
           }
           onKeyDown={handleKeyDown}
           disabled={isLoading}
@@ -308,16 +581,45 @@ export default function ForgeListenCard({
 
 
 
-        <button
-          type="button"
-          aria-label="Ajouter une photo"
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsMediaMenuOpen((isOpen) => !isOpen)}
+            aria-label="Ajouter un média"
+            aria-expanded={isMediaMenuOpen}
+            disabled={isLoading || selectedMedia.length >= MAX_MEDIA}
+            className="flex h-12 w-12 items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
+          >
+            <Camera size={27}/>
+          </button>
 
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100 dark:text-white dark:hover:bg-slate-800"
-        >
-
-          <Camera size={27}/>
-
-        </button>
+          {isMediaMenuOpen && (
+            <div className="absolute bottom-14 right-0 z-20 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-left shadow-xl shadow-slate-900/15 backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95">
+              <button
+                type="button"
+                onClick={() => openMediaInput(photoCaptureInputRef)}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+              >
+                <Camera size={18} /> Prendre une photo
+              </button>
+              <button
+                type="button"
+                onClick={() => openMediaInput(videoCaptureInputRef)}
+                disabled={selectedMedia.some((file) => file.type.startsWith("video/"))}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+              >
+                <Video size={18} /> Filmer une vidéo
+              </button>
+              <button
+                type="button"
+                onClick={() => openMediaInput(galleryInputRef)}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+              >
+                <Images size={18} /> Choisir dans la galerie
+              </button>
+            </div>
+          )}
+        </div>
 
 
 
@@ -357,6 +659,32 @@ export default function ForgeListenCard({
 
 
       </div>
+
+      {selectedMedia.length > 0 && (
+        <div className="mt-3 flex flex-wrap justify-center gap-2" aria-label="Médias sélectionnés">
+          {selectedMedia.map((media, index) => (
+            <MediaPreview
+              key={`${media.name}-${media.lastModified}-${index}`}
+              media={media}
+              index={index}
+              isLoading={isLoading}
+              onRemove={() => removeMedia(index)}
+            />
+          ))}
+        </div>
+      )}
+
+      {mediaError && (
+        <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
+          {mediaError}
+        </p>
+      )}
+
+      {errorMessage && (
+        <p className="mt-2 text-sm font-medium text-red-600 dark:text-red-400">
+          {errorMessage}
+        </p>
+      )}
 
 
     </section>

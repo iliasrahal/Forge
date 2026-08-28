@@ -6,6 +6,12 @@ import {
 } from "lucide-react";
 
 import ForgeSymbol from "@/components/ForgeSymbol";
+import { FORGE_PRICING } from "@/src/lib/pricing";
+
+const offers = [
+  { ...FORGE_PRICING.SOLO, description: "Pour l’artisan qui utilise Forge seul." },
+  { ...FORGE_PRICING.TEAM, description: "Pour l’artisan qui travaille avec ses collaborateurs." },
+];
 
 const includedFeatures = [
   "Assistant IA pour vos interventions",
@@ -33,11 +39,11 @@ export default function Pricing() {
             1 mois offert pour découvrir Forge
           </p>
           <p className="mx-auto mt-3 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Après votre période d’essai, l’abonnement est à 29,99 € / mois.
+            Après votre période d’essai, choisissez l’offre adaptée à votre façon de travailler.
           </p>
         </div>
 
-        <div className="relative mx-auto mt-14 max-w-xl">
+        <div className="relative mx-auto mt-14 max-w-3xl">
           <div className="pointer-events-none absolute inset-x-10 top-8 -z-10 h-72 rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-600/20" />
 
           <article className="overflow-hidden rounded-[2.25rem] border border-blue-200/80 bg-white/90 shadow-[0_32px_100px_-38px_rgba(37,99,235,0.42)] backdrop-blur-xl dark:border-blue-900 dark:bg-slate-900/90">
@@ -45,16 +51,15 @@ export default function Pricing() {
               <span className="mx-auto inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 <ForgeSymbol size={17} /> 1 mois offert
               </span>
-              <p className="mt-6 text-sm font-bold tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                FORGE
-              </p>
-              <div className="mt-2 flex items-end justify-center gap-2">
-                <span className="text-5xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-6xl">
-                  29,99 €
-                </span>
-                <span className="pb-2 text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  / mois
-                </span>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {offers.map((offer) => (
+                  <div key={offer.label} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-950/70">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">{offer.label}</p>
+                    <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{offer.amount}</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">/ mois</p>
+                    <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">{offer.description}</p>
+                  </div>
+                ))}
               </div>
             </div>
 

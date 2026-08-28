@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
 import { sendActivationEmail } from "@/src/lib/email";
+import { getPhoneSearchVariants, normalizePhone } from "@/src/lib/phone";
 
 
 type RegisterBody = {
@@ -14,12 +15,9 @@ type RegisterBody = {
   email?: string;
   phone?: string;
   password?: string;
+  invitationToken?: string;
 };
 
-
-function normalizePhone(phone: string) {
-  return phone.replace(/\s+/g, "").trim();
-}
 
 
 
@@ -56,6 +54,30 @@ export async function POST(
 
     const password =
       body.password ?? "";
+
+    const invitationToken = body.invitationToken?.trim() ?? "";
+    const invitation = invitationToken
+      ? await prisma.teamInvitation.findUnique({
+          where: {
+            tokenHash: createHash("sha256")
+              .update(invitationToken)
+              .digest("hex"),
+          },
+        })
+      : null;
+
+    if (
+      invitationToken &&
+      (!invitation ||
+        invitation.status !== "PENDING" ||
+        invitation.expiresAt <= new Date() ||
+        invitation.email.toLowerCase() !== email)
+    ) {
+      return NextResponse.json(
+        { error: "Cette invitation est invalide, expirée ou ne correspond pas à cette adresse e-mail." },
+        { status: 400 },
+      );
+    }
 
 
 
@@ -128,9 +150,7 @@ export async function POST(
               email,
             },
 
-            {
-              phone,
-            },
+            { phone: { in: getPhoneSearchVariants(body.phone ?? "") } },
 
           ],
 
@@ -228,6 +248,26 @@ export async function POST(
         },
 
       });
+
+    if (invitation) {
+      await prisma.$transaction([
+        prisma.organizationMember.create({
+          data: {
+            userId: user.id,
+            organizationId: invitation.organizationId,
+            role: invitation.role,
+          },
+        }),
+        prisma.teamInvitation.update({
+          where: { id: invitation.id },
+          data: { status: "ACCEPTED" },
+        }),
+        prisma.user.update({
+          where: { id: user.id },
+          data: { workMode: "TEAM", onboardingCompleted: true },
+        }),
+      ]);
+    }
 
 
 

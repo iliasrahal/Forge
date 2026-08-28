@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AuthShell from "@/components/auth/AuthShell";
 
@@ -41,6 +41,17 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [activationSent, setActivationSent] = useState(false);
+  const [invitationToken, setInvitationToken] = useState("");
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() =>
+      setInvitationToken(
+        new URLSearchParams(window.location.search).get("invitation") || "",
+      ),
+    );
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
 
   async function handleSubmit(
@@ -146,6 +157,9 @@ export default function RegisterPage() {
                 cleanPhone,
 
               password,
+
+              invitationToken:
+                invitationToken || undefined,
             }),
           },
         );

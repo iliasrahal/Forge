@@ -30,7 +30,7 @@ const features = [
   {
     title: "Comptes rendus",
     description:
-      "L’intervention terminée, dictez ou écrivez simplement ce que vous avez réalisé. Forge transforme automatiquement vos notes en un compte rendu professionnel clair et structuré.",
+      "L’intervention terminée, transmettez simplement ce que vous avez réalisé à la voix, à l’écrit ou avec des photos. Forge transforme vos informations en un compte rendu professionnel clair et structuré.",
     eyebrow: "Compte rendu automatique",
   },
   {
@@ -213,8 +213,12 @@ function ReportIllustration() {
             {note.remaining}
           </span>
         </p>
-        <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-          <Keyboard size={13} /> Dictée ou saisie écrite
+        <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <Mic size={13} /> Dictée
+          <span aria-hidden="true">·</span>
+          <Keyboard size={13} /> Texte
+          <span aria-hidden="true">·</span>
+          <Camera size={13} /> Photos
         </p>
       </div>
 
@@ -501,12 +505,45 @@ export default function Features({
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
                 {index === 1 && (
-                  <div className="mt-8 grid max-w-xl gap-3">
-                    {[
-                      "Terminez l’intervention puis dictez ou écrivez vos notes",
-                      "Forge analyse et reformule automatiquement les informations utiles",
-                      "Obtenez un compte rendu professionnel prêt en quelques secondes",
-                    ].map((benefit) => (
+                  <div className="mt-8 max-w-xl">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {[
+                        {
+                          title: "Mode voix",
+                          text: "Dictez simplement ce qui a été réalisé.",
+                          icon: Mic,
+                        },
+                        {
+                          title: "Mode texte",
+                          text: "Écrivez rapidement vos notes d’intervention.",
+                          icon: Keyboard,
+                        },
+                        {
+                          title: "Mode photo",
+                          text: "Prenez directement une ou plusieurs photos sur place, ou choisissez-les dans votre galerie, puis ajoutez votre explication.",
+                          icon: Camera,
+                        },
+                      ].map(({ title, text, icon: Icon }) => (
+                        <div
+                          key={title}
+                          className="rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                        >
+                          <Icon size={19} className="text-blue-600 dark:text-blue-400" />
+                          <p className="mt-3 text-sm font-bold text-slate-950 dark:text-white">
+                            {title}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                            {text}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 grid gap-3">
+                      {[
+                        "Vérifiez les photos avant l’envoi et retirez facilement celle sélectionnée par erreur",
+                        "Vos photos complètent votre explication et Forge utilise l’ensemble pour préparer le même compte rendu structuré",
+                      ].map((benefit) => (
                       <div
                         key={benefit}
                         className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
@@ -516,7 +553,8 @@ export default function Features({
                         </span>
                         {benefit}
                       </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 )}
                 {index === 2 && (
