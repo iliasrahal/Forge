@@ -38,7 +38,7 @@ export default function SubscriptionPage() {
 
 
           <p className="mt-4 text-slate-600 dark:text-slate-400">
-            Ton essai de 14 jours est terminé.
+            Ton mois d&apos;essai est terminé.
             <br />
             Continue à gagner du temps dans ton activité.
           </p>
@@ -56,7 +56,7 @@ export default function SubscriptionPage() {
 
 
             <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-              29€/mois
+              29,99€/mois
             </p>
 
 
