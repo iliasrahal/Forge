@@ -1224,15 +1224,16 @@ const handleCreateInvoice = async () => {
   {homeState === "intervention" &&
     upcomingAppointmentsList.length > 0 && (
 
-      <section className="mb-1.5 shrink-0 space-y-0.5">
-        {upcomingAppointmentGroups.map((group) => {
-          const isOpen = Boolean(
-            openUpcomingGroups[group.key],
-          );
+      <section className="mb-1.5 min-w-0 shrink-0">
+        <div className="flex w-full gap-4 overflow-x-auto pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1">
+          {upcomingAppointmentGroups.map((group) => {
+            const isOpen = Boolean(
+              openUpcomingGroups[group.key],
+            );
 
-          return (
-            <div key={group.key}>
+            return (
               <button
+                key={group.key}
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() =>
@@ -1243,7 +1244,7 @@ const handleCreateInvoice = async () => {
                     }),
                   )
                 }
-                className="mb-1 flex w-full items-center justify-center py-1 text-base font-semibold text-blue-700 dark:text-blue-400"
+                className="flex shrink-0 items-center justify-center whitespace-nowrap py-1 text-base font-semibold text-blue-700 dark:text-blue-400"
               >
                 <span>
                   {group.label} ({group.appointments.length})
@@ -1253,55 +1254,58 @@ const handleCreateInvoice = async () => {
                   {isOpen ? "▲" : "▼"}
                 </span>
               </button>
+            );
+          })}
+        </div>
 
-              {isOpen && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {group.appointments.map(
-                    (appointment) => (
-                      <button
-                        id={`appointment-${appointment.id}`}
-                        key={appointment.id}
-                        type="button"
-                        onClick={() =>
-                          handleSelectAppointment(
-                            appointment.id,
-                          )
-                        }
-                        className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
-                      >
-                        <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
-                          {getAppointmentDateLabel(
-                            appointment.date,
-                          )}
-                        </span>
+        {upcomingAppointmentGroups.map((group) =>
+          openUpcomingGroups[group.key] ? (
+            <div
+              key={group.key}
+              className="mt-1 flex gap-2 overflow-x-auto pb-1"
+            >
+              {group.appointments.map((appointment) => (
+                <button
+                  id={`appointment-${appointment.id}`}
+                  key={appointment.id}
+                  type="button"
+                  onClick={() =>
+                    handleSelectAppointment(
+                      appointment.id,
+                    )
+                  }
+                  className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+                >
+                  <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
+                    {getAppointmentDateLabel(
+                      appointment.date,
+                    )}
+                  </span>
 
-                        {appointment.time && (
-                          <span className="mt-0.5 block text-sm font-semibold">
-                            {appointment.time}
-                          </span>
-                        )}
-
-                        {(getAppointmentSubject(
-                          appointment,
-                        ) || appointment.client) && (
-                          <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
-                            {getAppointmentSubject(
-                              appointment,
-                            ) || appointment.client}
-                          </span>
-                        )}
-
-                        <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          À venir
-                        </span>
-                      </button>
-                    ),
+                  {appointment.time && (
+                    <span className="mt-0.5 block text-sm font-semibold">
+                      {appointment.time}
+                    </span>
                   )}
-                </div>
-              )}
+
+                  {(getAppointmentSubject(
+                    appointment,
+                  ) || appointment.client) && (
+                    <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
+                      {getAppointmentSubject(
+                        appointment,
+                      ) || appointment.client}
+                    </span>
+                  )}
+
+                  <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    À venir
+                  </span>
+                </button>
+              ))}
             </div>
-          );
-        })}
+          ) : null,
+        )}
       </section>
 
     )}
