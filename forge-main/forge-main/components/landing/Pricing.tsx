@@ -3,8 +3,9 @@ import {
   ArrowRight,
   Check,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
+
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 const includedFeatures = [
   "Assistant IA pour vos interventions",
@@ -42,7 +43,7 @@ export default function Pricing() {
           <article className="overflow-hidden rounded-[2.25rem] border border-blue-200/80 bg-white/90 shadow-[0_32px_100px_-38px_rgba(37,99,235,0.42)] backdrop-blur-xl dark:border-blue-900 dark:bg-slate-900/90">
             <div className="border-b border-slate-100 px-6 py-7 text-center dark:border-slate-800 sm:px-8">
               <span className="mx-auto inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                <Sparkles size={15} /> 1 mois offert
+                <ForgeSymbol size={17} /> 1 mois offert
               </span>
               <p className="mt-6 text-sm font-bold tracking-[0.24em] text-slate-500 dark:text-slate-400">
                 FORGE

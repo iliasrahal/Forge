@@ -5,7 +5,6 @@ import {
   Clock3,
   MessageCircle,
   Mic,
-  Sparkles,
 } from "lucide-react";
 import {
   useEffect,
@@ -14,10 +13,11 @@ import {
 } from "react";
 
 import ForgeBarPreview from "@/components/landing/ForgeBarPreview";
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 const benefits = [
   {
-    icon: Sparkles,
+    icon: ForgeSymbol,
     label: "Réponse professionnelle automatique",
   },
   {
@@ -34,11 +34,41 @@ const benefits = [
   },
 ];
 
+const customerMessage =
+  "« Bonjour, est-ce que vous pouvez passer demain pour regarder ma fuite d’eau ? »";
+const forgeReply =
+  "Bonjour, merci pour votre message. Je peux passer demain afin de regarder votre fuite d’eau. Je vous confirme mon passage dans la journée.";
+const messageDuration = 2700;
+const analysisDuration = 850;
+const replyDuration = 3600;
+const replyStart = messageDuration + analysisDuration;
+const replyEnd = replyStart + replyDuration;
+const replyAnimationDuration = replyEnd + 2800;
+
+function getProgressiveText(
+  text: string,
+  progress: number,
+) {
+  const length = Math.floor(
+    text.length * Math.min(1, Math.max(0, progress)),
+  );
+
+  return {
+    visible: text.slice(0, length),
+    remaining: text.slice(length),
+    complete: length >= text.length,
+  };
+}
+
 export default function CustomerReply() {
   const sectionRef = useRef<HTMLElement | null>(
     null,
   );
   const [isVisible, setIsVisible] =
+    useState(false);
+  const [animationElapsed, setAnimationElapsed] =
+    useState(0);
+  const [reduceMotion, setReduceMotion] =
     useState(false);
 
   useEffect(() => {
@@ -48,34 +78,70 @@ export default function CustomerReply() {
       return;
     }
 
-    const reduceMotion = window.matchMedia(
+    const mediaQuery = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
-    ).matches;
+    );
+    const frame = window.requestAnimationFrame(() => {
+      setReduceMotion(mediaQuery.matches);
+    });
+    const updateMotionPreference = () =>
+      setReduceMotion(mediaQuery.matches);
 
-    if (reduceMotion) {
-      const frame = window.requestAnimationFrame(
-        () => setIsVisible(true),
-      );
-
-      return () =>
-        window.cancelAnimationFrame(frame);
-    }
+    mediaQuery.addEventListener(
+      "change",
+      updateMotionPreference,
+    );
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) {
-          return;
+        setIsVisible(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setAnimationElapsed(0);
         }
-
-        setIsVisible(true);
-        observer.disconnect();
       },
       { threshold: 0.2 },
     );
 
     observer.observe(section);
-    return () => observer.disconnect();
+    return () => {
+      window.cancelAnimationFrame(frame);
+      mediaQuery.removeEventListener(
+        "change",
+        updateMotionPreference,
+      );
+      observer.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    if (!isVisible || reduceMotion) return;
+
+    const timer = window.setInterval(() => {
+      setAnimationElapsed(
+        (current) =>
+          (current + 40) % replyAnimationDuration,
+      );
+    }, 40);
+
+    return () => window.clearInterval(timer);
+  }, [isVisible, reduceMotion]);
+
+  const effectiveElapsed = reduceMotion
+    ? replyEnd
+    : animationElapsed;
+  const animatedMessage = getProgressiveText(
+    customerMessage,
+    effectiveElapsed / messageDuration,
+  );
+  const animatedReply = getProgressiveText(
+    forgeReply,
+    (effectiveElapsed - replyStart) / replyDuration,
+  );
+  const isAnalyzing =
+    effectiveElapsed >= messageDuration &&
+    effectiveElapsed < replyStart;
+  const responseStarted =
+    effectiveElapsed >= messageDuration;
 
   return (
     <section
@@ -155,8 +221,14 @@ export default function CustomerReply() {
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
                 Client
               </p>
-              <p className="mt-2">
-                « Bonjour, est-ce que vous pouvez passer demain pour regarder ma fuite d’eau ? »
+              <p aria-label={customerMessage} className="mt-2">
+                <span>{animatedMessage.visible}</span>
+                {!animatedMessage.complete && !reduceMotion && (
+                  <span className="ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-slate-500 motion-reduce:hidden" />
+                )}
+                <span aria-hidden="true" className="invisible">
+                  {animatedMessage.remaining}
+                </span>
               </p>
             </div>
 
@@ -165,8 +237,8 @@ export default function CustomerReply() {
             </div>
 
             <div
-              className={`mt-4 rounded-3xl rounded-tr-lg border border-blue-100 bg-blue-50/75 p-5 transition-all delay-500 duration-1000 dark:border-blue-900 dark:bg-blue-950/40 ${
-                isVisible
+              className={`mt-4 rounded-3xl rounded-tr-lg border border-blue-100 bg-blue-50/75 p-5 transition-all duration-700 dark:border-blue-900 dark:bg-blue-950/40 ${
+                responseStarted
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
               }`}
@@ -175,10 +247,20 @@ export default function CustomerReply() {
                 <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
                   <Check size={14} />
                 </span>
-                Réponse prête
+                {isAnalyzing
+                  ? "Forge analyse le message…"
+                  : animatedReply.complete
+                    ? "Réponse prête"
+                    : "Forge rédige la réponse…"}
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-200 sm:text-base">
-                Bonjour, merci pour votre message. Je peux passer demain afin de regarder votre fuite d’eau. Je vous confirme mon passage dans la journée.
+              <p
+                aria-label={forgeReply}
+                className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-200 sm:text-base"
+              >
+                <span>{animatedReply.visible}</span>
+                <span aria-hidden="true" className="invisible">
+                  {animatedReply.remaining}
+                </span>
               </p>
             </div>
           </div>

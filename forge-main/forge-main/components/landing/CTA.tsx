@@ -2,10 +2,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  Sparkles,
 } from "lucide-react";
 
 import ForgeLogo from "@/components/ForgeLogo";
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 export default function CTA() {
   return (
@@ -23,7 +23,10 @@ export default function CTA() {
               <ForgeLogo size={44} />
             </span>
             <span className="flex items-center gap-2 text-sm font-semibold text-blue-50">
-              <Sparkles size={16} />
+              <ForgeSymbol
+                size={18}
+                className="rounded-md bg-white/90 p-0.5"
+              />
               Passez à Forge
             </span>
           </div>

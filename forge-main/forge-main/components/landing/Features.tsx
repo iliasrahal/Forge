@@ -10,7 +10,6 @@ import {
   Keyboard,
   Mic,
   Send,
-  Sparkles,
 } from "lucide-react";
 import {
   useEffect,
@@ -19,6 +18,7 @@ import {
 } from "react";
 
 import ForgeBarPreview from "@/components/landing/ForgeBarPreview";
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 const features = [
   {
@@ -375,7 +375,7 @@ function FeatureIllustration({
       <div className="absolute inset-10 rounded-full bg-blue-500/20 blur-3xl" />
       <div className="relative rounded-[2rem] border border-slate-200 bg-white/90 p-5 shadow-2xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/90">
         <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-600 text-white"><Sparkles size={20} /></span>
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 dark:bg-white"><ForgeSymbol size={26} /></span>
           <div>
             <p className="font-semibold">Assistant Forge</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">À votre écoute</p>

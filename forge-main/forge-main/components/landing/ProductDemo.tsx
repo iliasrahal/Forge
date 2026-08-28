@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import {
   Check,
   Mic,
-  Sparkles,
 } from "lucide-react";
+
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 const artisanRequest =
   "J'ai une intervention demain à 14h chez Martin";
@@ -31,12 +32,18 @@ export default function ProductDemo() {
     ).matches;
 
     if (reduceMotion) {
-      setElapsed(
-        typingDuration +
-          analysisDuration +
-          results.length * resultDelay,
+      const frame = window.requestAnimationFrame(
+        () => {
+          setElapsed(
+            typingDuration +
+              analysisDuration +
+              results.length * resultDelay,
+          );
+        },
       );
-      return;
+
+      return () =>
+        window.cancelAnimationFrame(frame);
     }
 
     const interval = window.setInterval(() => {
@@ -135,8 +142,8 @@ export default function ProductDemo() {
 
               <div className="rounded-3xl border border-blue-100 bg-blue-50/70 p-5 dark:border-blue-900 dark:bg-blue-950/40">
                 <div className="flex items-center gap-3 text-blue-700 dark:text-blue-300">
-                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-blue-600 text-white">
-                    <Sparkles size={17} />
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-white shadow-sm dark:bg-slate-100">
+                    <ForgeSymbol size={22} />
                   </span>
                   <p className="font-semibold">
                     Forge comprend

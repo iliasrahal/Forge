@@ -9,7 +9,6 @@ import {
   Mic,
   PencilLine,
   Phone,
-  Sparkles,
   UserRound,
 } from "lucide-react";
 import {
@@ -17,6 +16,8 @@ import {
   useRef,
   useState,
 } from "react";
+
+import ForgeSymbol from "@/components/ForgeSymbol";
 
 const benefits = [
   "Création par commande vocale ou écrite",
@@ -63,39 +64,96 @@ const manualFields = [
   "Ville",
 ];
 
+const clientFieldDuration = 720;
+const clientFieldGap = 130;
+const clientAnimationStart = 450;
+const clientAnimationEnd =
+  clientAnimationStart +
+  clientDetails.length *
+    (clientFieldDuration + clientFieldGap);
+const clientAnimationDuration =
+  clientAnimationEnd + 2600;
+
+function getProgressiveText(
+  text: string,
+  progress: number,
+) {
+  const length = Math.floor(
+    text.length * Math.min(1, Math.max(0, progress)),
+  );
+
+  return {
+    visible: text.slice(0, length),
+    remaining: text.slice(length),
+  };
+}
+
 export default function ClientCreation() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [animationElapsed, setAnimationElapsed] =
+    useState(0);
+  const [reduceMotion, setReduceMotion] =
+    useState(false);
 
   useEffect(() => {
     const section = sectionRef.current;
 
     if (!section) return;
 
-    if (
-      window.matchMedia("(prefers-reduced-motion: reduce)")
-        .matches
-    ) {
-      const frame = window.requestAnimationFrame(() => {
-        setIsVisible(true);
-      });
+    const mediaQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+    const frame = window.requestAnimationFrame(() => {
+      setReduceMotion(mediaQuery.matches);
+    });
+    const updateMotionPreference = () =>
+      setReduceMotion(mediaQuery.matches);
 
-      return () => window.cancelAnimationFrame(frame);
-    }
+    mediaQuery.addEventListener(
+      "change",
+      updateMotionPreference,
+    );
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-
-        setIsVisible(true);
-        observer.disconnect();
+        setIsVisible(entry.isIntersecting);
+        if (entry.isIntersecting) {
+          setAnimationElapsed(0);
+        }
       },
       { threshold: 0.15 },
     );
 
     observer.observe(section);
-    return () => observer.disconnect();
+    return () => {
+      window.cancelAnimationFrame(frame);
+      mediaQuery.removeEventListener(
+        "change",
+        updateMotionPreference,
+      );
+      observer.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    if (!isVisible || reduceMotion) return;
+
+    const timer = window.setInterval(() => {
+      setAnimationElapsed(
+        (current) =>
+          (current + 40) % clientAnimationDuration,
+      );
+    }, 40);
+
+    return () => window.clearInterval(timer);
+  }, [isVisible, reduceMotion]);
+
+  const effectiveElapsed = reduceMotion
+    ? clientAnimationEnd
+    : animationElapsed;
+  const clientIsCreated =
+    effectiveElapsed >= clientAnimationEnd;
 
   const revealClass = isVisible
     ? "translate-y-0 opacity-100"
@@ -155,7 +213,13 @@ export default function ClientCreation() {
                 <p>Ville : Paris.</p>
               </div>
 
-              <div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+              <div
+                className={`mt-5 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm font-semibold text-emerald-700 transition-opacity duration-500 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 ${
+                  clientIsCreated
+                    ? "opacity-100"
+                    : "opacity-0"
+                }`}
+              >
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 dark:bg-emerald-950">
                   <Check size={15} />
                 </span>
@@ -194,28 +258,46 @@ export default function ClientCreation() {
                     </p>
                   </div>
                 </div>
-                <Sparkles className="text-blue-600 dark:text-blue-400" size={20} />
+                <ForgeSymbol size={22} />
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {clientDetails.map(({ icon: Icon, label, value }, index) => (
-                  <div
-                    key={label}
-                    className={`rounded-2xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-950/75 ${
-                      index === 0 ? "sm:col-span-2" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                      <Icon size={15} />
-                      <p className="text-xs font-bold uppercase tracking-[0.12em]">
-                        {label}
+                {clientDetails.map(({ icon: Icon, label, value }, index) => {
+                  const fieldStart =
+                    clientAnimationStart +
+                    index *
+                      (clientFieldDuration + clientFieldGap);
+                  const field = getProgressiveText(
+                    value,
+                    (effectiveElapsed - fieldStart) /
+                      clientFieldDuration,
+                  );
+
+                  return (
+                    <div
+                      key={label}
+                      className={`rounded-2xl border border-slate-100 bg-slate-50/80 p-4 transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/75 ${
+                        index === 0 ? "sm:col-span-2" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                        <Icon size={15} />
+                        <p className="text-xs font-bold uppercase tracking-[0.12em]">
+                          {label}
+                        </p>
+                      </div>
+                      <p
+                        aria-label={value}
+                        className="mt-2 break-words text-sm font-semibold text-slate-800 dark:text-slate-100"
+                      >
+                        <span>{field.visible}</span>
+                        <span aria-hidden="true" className="invisible">
+                          {field.remaining}
+                        </span>
                       </p>
                     </div>
-                    <p className="mt-2 break-words text-sm font-semibold text-slate-800 dark:text-slate-100">
-                      {value}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -277,7 +359,7 @@ export default function ClientCreation() {
           className={`mx-auto mt-8 flex max-w-5xl items-start gap-3 rounded-2xl border border-slate-200/90 bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur transition-all delay-500 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
         >
           <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-            <Sparkles size={15} />
+            <ForgeSymbol size={18} />
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">

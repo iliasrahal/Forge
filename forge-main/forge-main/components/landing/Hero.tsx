@@ -2,10 +2,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  Sparkles,
 } from "lucide-react";
 
 import ForgeLogo from "@/components/ForgeLogo";
+import ForgeSymbol from "@/components/ForgeSymbol";
 import ForgeBarPreview from "@/components/landing/ForgeBarPreview";
 import LandingLoginLink from "@/components/landing/LandingLoginLink";
 
@@ -97,8 +97,8 @@ export default function Hero() {
             <div className="rounded-[1.4rem] border border-slate-200 bg-white p-5 text-left dark:border-slate-700 dark:bg-slate-950 sm:p-7">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white">
-                    <Sparkles size={19} />
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 dark:bg-white">
+                    <ForgeSymbol size={24} />
                   </span>
                   <div>
                     <p className="font-semibold">Assistant Forge</p>
