@@ -443,16 +443,21 @@ localStorage.setItem(
               Travail en équipe
             </p>
             <h1 className="mt-4 text-center text-4xl font-bold text-blue-700 dark:text-blue-400">
-              Trouvez votre organisation
+              Créez votre équipe
             </h1>
             <p className="mx-auto mt-4 max-w-sm text-center leading-7 text-slate-600 dark:text-slate-300">
-              Créez votre espace d’entreprise. Vous en deviendrez automatiquement le Responsable.
+              <span className="block">
+                Créez votre espace d’entreprise.
+              </span>
+              <span className="block">
+                Vous en deviendrez automatiquement le Responsable.
+              </span>
             </p>
 
             <div className="mt-8">
               <label
                 htmlFor="organizationName"
-                className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200"
+                className="mb-2 block text-center text-sm font-semibold text-slate-700 dark:text-slate-200"
               >
                 Nom de l’entreprise / équipe
               </label>
@@ -468,7 +473,7 @@ localStorage.setItem(
               />
             </div>
 
-            <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900 dark:bg-blue-950/35">
+            <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-center dark:border-blue-900 dark:bg-blue-950/35">
               <p className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                 Votre rôle : Responsable
               </p>
