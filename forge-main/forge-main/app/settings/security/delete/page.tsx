@@ -127,7 +127,7 @@ export default function DeleteAccountPage() {
 
 
 
-          <label className="mt-6 flex items-start gap-3 text-sm text-red-700 dark:text-red-300">
+          <label className="mt-6 flex items-center gap-3 text-sm text-red-700 dark:text-red-300">
 
 
 
@@ -139,7 +139,7 @@ export default function DeleteAccountPage() {
                   event.target.checked,
                 )
               }
-              className="mt-1 h-5 w-5"
+              className="h-5 w-5"
             />
 
 
