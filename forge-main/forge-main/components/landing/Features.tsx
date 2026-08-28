@@ -525,6 +525,7 @@ export default function Features({
                       "Génération automatique depuis une demande simple",
                       "Prestations structurées de manière professionnelle",
                       "Envoi facile et rapide au client",
+                      "Depuis un devis accepté, créez automatiquement l’intervention associée",
                     ].map((benefit) => (
                       <div
                         key={benefit}
