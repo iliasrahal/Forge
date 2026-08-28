@@ -39,12 +39,11 @@ export default function LegalPageShell({
           <Link
             href="/"
             aria-label="Retour à l’accueil Forge"
-            className="group inline-flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
+            className="group inline-flex items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
           >
             <span className="transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
-              <ForgeLogo size={48} />
+              <ForgeLogo size={72} />
             </span>
-            <span className="text-xl font-bold tracking-[-0.04em]">Forge</span>
           </Link>
 
           <Link

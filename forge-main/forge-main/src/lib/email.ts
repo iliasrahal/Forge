@@ -33,22 +33,40 @@ function renderEmailLayout(
     process.env.NEXT_PUBLIC_APP_URL ||
     "https://myforge.online"
   ).replace(/\/$/, "");
+  const emailLogoUrl = escapeHtml(`${appUrl}/myforge-email-symbol.png`);
+  const logoHtml = (width: number) => {
+    const height = Math.round(width * 0.7);
+
+    return `<img src="${emailLogoUrl}" width="${width}" height="${height}" alt="MyForge" style="display:block;width:${width}px;height:${height}px;margin:0 auto;border:0;object-fit:contain"/>`;
+  };
   const footerLogo = showFooterLogo
-    ? `<div style="margin-top:28px;padding-top:22px;border-top:1px solid #e2e8f0;text-align:center"><img src="${escapeHtml(`${appUrl}/logo-forge-v1.png`)}" width="72" height="72" alt="Logo Forge" style="display:block;width:72px;height:72px;margin:0 auto;border:0;border-radius:16px"/><p style="margin:10px 0 0;color:#64748b;font-size:13px;font-weight:600">Forge</p></div>`
+    ? `<div style="margin-top:28px;padding-top:22px;border-top:1px solid #e2e8f0;text-align:center">${logoHtml(88)}</div>`
     : "";
 
   return `<!doctype html>
 <html lang="fr">
-<body style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#1e293b">
+<head>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .forge-email-body { background: #020617 !important; color: #e2e8f0 !important; }
+      .forge-email-card { background: #0f172a !important; border-color: #334155 !important; }
+      .forge-email-header { border-color: #334155 !important; }
+      .forge-email-footer { color: #94a3b8 !important; }
+    }
+  </style>
+</head>
+<body class="forge-email-body" style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#1e293b">
   <div style="max-width:640px;margin:0 auto;padding:32px 16px">
-    <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
-      <div style="padding:22px 28px;border-bottom:1px solid #e2e8f0;color:#2563eb;font-size:22px;font-weight:800;letter-spacing:.04em">FORGE</div>
+    <div class="forge-email-card" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
+      <div class="forge-email-header" style="padding:14px 28px;border-bottom:1px solid #e2e8f0;text-align:center">${logoHtml(104)}</div>
       <div style="padding:28px;font-size:16px;line-height:1.65">
         ${renderedContent}
         ${footerLogo}
       </div>
     </div>
-    <p style="margin:18px 0 0;text-align:center;color:#94a3b8;font-size:12px">Forge — L’assistant des artisans</p>
+    <p class="forge-email-footer" style="margin:18px 0 0;text-align:center;color:#94a3b8;font-size:12px">Forge — L’assistant des artisans</p>
   </div>
 </body>
 </html>`;

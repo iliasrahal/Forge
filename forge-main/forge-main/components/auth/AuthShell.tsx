@@ -44,15 +44,11 @@ export default function AuthShell({
           <Link
             href="/"
             aria-label="Retour à l’accueil Forge"
-            className="group inline-flex items-center gap-3 rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
+            className="group inline-flex items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
           >
 
             <span className="transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
-              <ForgeLogo size={54} />
-            </span>
-
-            <span className="text-2xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white">
-              Forge
+              <ForgeLogo size={82} />
             </span>
 
           </Link>

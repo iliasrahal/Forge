@@ -43,13 +43,10 @@ export default function Hero() {
         <Link
           href="/"
           aria-label="Accueil Forge"
-          className="flex items-center gap-3"
+          className="flex items-center"
         >
-          <span className="rounded-2xl shadow-lg shadow-blue-600/20 ring-1 ring-blue-500/10">
-            <ForgeLogo size={42} />
-          </span>
-          <span className="text-lg font-bold tracking-[0.16em]">
-            FORGE
+          <span className="transition duration-300 hover:-translate-y-0.5 hover:scale-[1.02]">
+            <ForgeLogo size={64} />
           </span>
         </Link>
 
@@ -64,7 +61,7 @@ export default function Hero() {
         <div className="forge-hero-reveal relative mb-8">
           <div className="absolute inset-0 -z-10 scale-150 rounded-full bg-blue-500/20 blur-2xl" />
           <div className="rounded-[2rem] bg-white p-2 shadow-2xl shadow-blue-600/20 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700">
-            <ForgeLogo size={72} />
+            <ForgeLogo size={96} />
           </div>
         </div>
 
