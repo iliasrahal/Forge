@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import ForgeLogo from "@/components/ForgeLogo";
 
 type Job =
   | "PLOMBIER_CHAUFFAGISTE"
@@ -309,7 +308,9 @@ localStorage.setItem(
     overflow-hidden
     bg-slate-50
     px-6
-    py-10
+    pb-10
+    pt-28
+    sm:pt-32
     text-slate-950
     dark:bg-slate-950
     dark:text-white
@@ -600,11 +601,6 @@ localStorage.setItem(
 
           <div className="text-center">
 
-
-  <div className="relative mx-auto flex h-20 w-20 items-center justify-center">
-  <div className="absolute inset-0 rounded-full bg-blue-500/20 blur-2xl" />
-  <ForgeLogo size={80} />
-</div>
 
             <h1 className="mt-8 text-4xl font-bold text-blue-700 dark:text-blue-400">
               Ton espace est prêt.
