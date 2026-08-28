@@ -93,21 +93,23 @@ function FeatureIllustration({
     const reportItems = [
       {
         label: "Intervention réalisée",
-        value: "Intervention sur un tuyau.",
+        value:
+          "Remplacement d’un robinet d’arrêt sous évier suite à une fuite constatée.",
       },
       {
         label: "Diagnostic",
         value:
-          "Aucun défaut constaté après vérification, tout est conforme.",
+          "Fuite détectée au niveau du raccord du robinet d’arrêt. Le joint était usé et provoquait une perte d’étanchéité.",
       },
       {
         label: "Travaux effectués",
         value:
-          "Opération réalisée sur un tuyau (détail non précisé).",
+          "Dépose de l’ancien robinet, installation du nouveau modèle, remplacement du joint et vérification de l’étanchéité de l’ensemble.",
       },
       {
         label: "Recommandation",
-        value: "Non précisé",
+        value:
+          "Contrôle conseillé lors des prochaines utilisations afin de vérifier le bon fonctionnement de l’installation.",
       },
     ];
 
