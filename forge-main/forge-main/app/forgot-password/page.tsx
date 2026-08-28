@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
       title="Retrouve ton accès."
       description="Saisis ton e-mail et nous t’enverrons un lien sécurisé pour choisir un nouveau mot de passe."
     >
-        <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
+        <Link href="/login" className="forge-back-link text-sm font-semibold text-blue-700 dark:text-blue-400">
           Retour
         </Link>
 

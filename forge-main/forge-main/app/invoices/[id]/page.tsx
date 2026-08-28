@@ -131,7 +131,7 @@ export default async function InvoicePage({
 
         <Link
           href="/invoices"
-          className="inline-flex items-center text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
 
           Retour

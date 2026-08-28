@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
       title="Nouveau mot de passe"
       description="Choisis un mot de passe d’au moins 8 caractères."
     >
-        <Link href="/login" className="text-sm font-medium text-blue-700 dark:text-blue-400">
+        <Link href="/login" className="forge-back-link text-sm font-semibold text-blue-700 dark:text-blue-400">
           Retour
         </Link>
 

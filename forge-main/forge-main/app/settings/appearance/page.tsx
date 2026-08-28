@@ -51,7 +51,7 @@ export default function AppearancePage() {
 
         <Link
           href="/settings"
-          className="inline-flex items-center text-sm font-medium text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+          className="forge-back-link text-sm font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Retour
         </Link>

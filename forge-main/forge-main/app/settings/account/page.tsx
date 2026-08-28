@@ -69,7 +69,7 @@ export default function AccountPage() {
 
         <Link
           href="/settings"
-          className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+          className="forge-back-link text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Retour
         </Link>

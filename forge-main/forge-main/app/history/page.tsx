@@ -49,7 +49,7 @@ export default async function HistoryPage() {
       <div className="mb-6">
         <Link
           href="/clients"
-          className="font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="forge-back-link font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Retour
         </Link>

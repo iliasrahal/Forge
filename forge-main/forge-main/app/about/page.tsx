@@ -35,7 +35,7 @@ export default function AboutPage() {
       <div className="mx-auto w-full max-w-4xl">
         <Link
           href="/app"
-          className="inline-flex items-center text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          className="forge-back-link text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           Retour
         </Link>

@@ -133,6 +133,7 @@ export default async function QuoteStatsPage() {
           <Link
             href="/quotes"
             className="
+              forge-back-link
               text-sm
               font-semibold
               text-blue-600
