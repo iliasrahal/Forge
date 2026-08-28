@@ -12,6 +12,10 @@ import {
   Mic,
   Send,
 } from "lucide-react";
+import {
+  getSpeechRecognitionErrorMessage,
+  getSpeechRecognitionStartErrorMessage,
+} from "@/src/lib/speechRecognition";
 
 type SpeechRecognitionResultLike = {
   0?: {
@@ -20,8 +24,10 @@ type SpeechRecognitionResultLike = {
 };
 
 type SpeechRecognitionEventLike = Event & {
+  resultIndex?: number;
   results: {
-    0?: SpeechRecognitionResultLike;
+    length: number;
+    [index: number]: SpeechRecognitionResultLike;
   };
 };
 
@@ -1636,8 +1642,18 @@ export default function ForgeBar({
     recognition.onresult = (
       event: SpeechRecognitionEventLike,
     ) => {
-      const transcript =
-        event.results[0]?.[0]?.transcript?.trim();
+      let transcript = "";
+
+      for (
+        let index = event.resultIndex ?? 0;
+        index < event.results.length;
+        index += 1
+      ) {
+        transcript +=
+          event.results[index]?.[0]?.transcript ?? "";
+      }
+
+      transcript = transcript.trim();
 
       if (transcript) {
         setMessage(transcript);
@@ -1661,7 +1677,9 @@ export default function ForgeBar({
     ) => {
       if (event.error !== "aborted") {
         onReplyError?.(
-          "Je n’ai pas réussi à comprendre votre voix. Vérifiez votre micro, puis réessayez ou corrigez le texte affiché.",
+          getSpeechRecognitionErrorMessage(
+            event.error,
+          ),
         );
       }
     };
@@ -1672,7 +1690,18 @@ export default function ForgeBar({
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+
+    try {
+      recognition.start();
+    } catch (error) {
+      recognitionRef.current = null;
+      setIsListening(false);
+      onReplyError?.(
+        getSpeechRecognitionStartErrorMessage(
+          error,
+        ),
+      );
+    }
   }
 
   function handleKeyDown(
@@ -1731,7 +1760,7 @@ export default function ForgeBar({
   aria-label="Ajouter des photos"
   title="Ajouter des photos"
   disabled={isLoading}
-  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition disabled:opacity-50 ${
+  className={`flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full transition disabled:opacity-50 ${
     selectedPhotos.length > 0
       ? "bg-blue-600 text-white"
       : "bg-blue-50/90 text-blue-600 shadow-sm ring-1 ring-blue-100 hover:-translate-y-0.5 hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-400 dark:ring-slate-700 dark:hover:bg-slate-700"
@@ -1758,7 +1787,7 @@ export default function ForgeBar({
           : "Parler à Forge"
       }
       disabled={isLoading}
-      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border transition disabled:opacity-50 ${
+      className={`flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full border transition disabled:opacity-50 ${
         isListening
           ? "border-blue-600 bg-blue-600 text-white"
           : "border-blue-600 bg-white/70 text-blue-600 shadow-sm hover:-translate-y-0.5 hover:bg-blue-50 dark:bg-slate-900/70 dark:text-blue-400 dark:hover:bg-slate-800"
@@ -1789,7 +1818,7 @@ export default function ForgeBar({
       }
       aria-label="Envoyer à Forge"
       title="Envoyer"
-      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none dark:disabled:bg-slate-700"
+      className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none dark:disabled:bg-slate-700"
     >
       {isLoading ? (
         <LoaderCircle

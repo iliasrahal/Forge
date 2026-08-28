@@ -1,7 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
+
+import {
+  getSpeechRecognitionErrorMessage,
+  getSpeechRecognitionStartErrorMessage,
+} from "@/src/lib/speechRecognition";
+
+type Recognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  onresult: ((event: {
+    resultIndex: number;
+    results: {
+      length: number;
+      [index: number]: {
+        [index: number]: { transcript: string };
+      };
+    };
+  }) => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type RecognitionWindow = Window & {
+  SpeechRecognition?: new () => Recognition;
+  webkitSpeechRecognition?: new () => Recognition;
+};
 
 type InterventionReport = {
   intervention: string;
@@ -20,11 +54,96 @@ export default function InterventionReportPage() {
   const [isLoading, setIsLoading] =
     useState(false);
 
+  const [isListening, setIsListening] =
+    useState(false);
+
+  const recognitionRef = useRef<Recognition | null>(null);
+
+  useEffect(() => {
+    return () => recognitionRef.current?.stop();
+  }, []);
+
     const [acceptedTerms, setAcceptedTerms] =
 useState(false);
 
   const [error, setError] =
     useState("");
+
+  function handleVoiceInput() {
+    if (isLoading) {
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const browserWindow = window as RecognitionWindow;
+    const RecognitionConstructor =
+      browserWindow.SpeechRecognition ||
+      browserWindow.webkitSpeechRecognition;
+
+    if (!RecognitionConstructor) {
+      setError(
+        "La saisie vocale n’est pas disponible dans ce navigateur. Écris ton intervention dans le champ ou utilise un navigateur compatible.",
+      );
+      return;
+    }
+
+    const recognition = new RecognitionConstructor();
+    recognition.lang = "fr-FR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onstart = () => {
+      setError("");
+      setIsListening(true);
+    };
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setIsListening(false);
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== "aborted") {
+        setError(
+          getSpeechRecognitionErrorMessage(
+            event.error,
+          ),
+        );
+      }
+    };
+    recognition.onresult = (event) => {
+      let transcript = "";
+
+      for (
+        let index = event.resultIndex;
+        index < event.results.length;
+        index += 1
+      ) {
+        transcript +=
+          event.results[index]?.[0]?.transcript ?? "";
+      }
+
+      if (transcript.trim()) {
+        setInterventionText(transcript.trim());
+        setReport(null);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    try {
+      recognition.start();
+    } catch (caughtError) {
+      recognitionRef.current = null;
+      setIsListening(false);
+      setError(
+        getSpeechRecognitionStartErrorMessage(
+          caughtError,
+        ),
+      );
+    }
+  }
 
   async function handleGenerateReport() {
     const intervention = interventionText.trim();
@@ -117,10 +236,14 @@ useState(false);
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
-              disabled
-              className="rounded-xl border border-blue-600 px-5 py-3 font-semibold text-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 dark:disabled:border-slate-700 dark:disabled:text-slate-500"
+              onClick={handleVoiceInput}
+              disabled={isLoading}
+              aria-pressed={isListening}
+              className="min-h-12 touch-manipulation rounded-xl border border-blue-600 px-5 py-3 font-semibold text-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400 dark:disabled:border-slate-700 dark:disabled:text-slate-500"
             >
-              Parler à Forge
+              {isListening
+                ? "Arrêter l’écoute"
+                : "Parler à Forge"}
             </button>
 
             <button

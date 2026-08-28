@@ -65,6 +65,7 @@ type HomeContentProps = {
   currentAppointment?: Appointment;
   report?: InterventionReport | null;
   error?: string;
+  isValidatingReport?: boolean;
   savedClientName?: string;
 
   onStartIntervention: () => void;
@@ -98,6 +99,7 @@ export default function HomeContent({
   currentAppointment,
   report,
   error,
+  isValidatingReport = false,
   savedClientName,
   onStartIntervention,
   onEditIntervention,
@@ -593,6 +595,8 @@ export default function HomeContent({
           report={report}
           onEdit={onEditReport}
           onValidate={onValidateReport}
+          isValidating={isValidatingReport}
+          error={error}
         />
       </section>
     );

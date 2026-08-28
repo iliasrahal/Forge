@@ -28,6 +28,10 @@ import {
   extractVideoFrames,
   getVideoDuration,
 } from "@/src/lib/videoFrames";
+import {
+  getSpeechRecognitionErrorMessage,
+  getSpeechRecognitionStartErrorMessage,
+} from "@/src/lib/speechRecognition";
 
 type ListenRecognitionEvent = {
   resultIndex: number;
@@ -45,9 +49,10 @@ type ListenRecognition = {
   interimResults: boolean;
   onstart: (() => void) | null;
   onend: (() => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
   onresult: ((event: ListenRecognitionEvent) => void) | null;
   start: () => void;
+  stop: () => void;
 };
 
 type ListenRecognitionConstructor =
@@ -156,10 +161,24 @@ export default function ForgeListenCard({
   const videoCaptureInputRef = useRef<HTMLInputElement | null>(null);
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const selectedMediaRef = useRef(selectedMedia);
+  const recognitionRef = useRef<ListenRecognition | null>(null);
+  const voiceSubmitTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     selectedMediaRef.current = selectedMedia;
   }, [selectedMedia]);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+
+      if (voiceSubmitTimerRef.current) {
+        window.clearTimeout(
+          voiceSubmitTimerRef.current,
+        );
+      }
+    };
+  }, []);
 
   function openMediaInput(
     inputRef: React.RefObject<HTMLInputElement | null>,
@@ -374,6 +393,15 @@ export default function ForgeListenCard({
 
   function startVoiceRecognition() {
 
+    if (isLoading) {
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
     const browserWindow = window as ForgeListenWindow;
     const SpeechRecognition =
       browserWindow.SpeechRecognition ||
@@ -404,15 +432,18 @@ export default function ForgeListenCard({
 
     recognition.onend = () => {
       setIsListening(false);
+      recognitionRef.current = null;
     };
 
 
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
 
       setIsListening(false);
 
       onError(
-        "Impossible d'utiliser le micro.",
+        getSpeechRecognitionErrorMessage(
+          event.error,
+        ),
       );
     };
 
@@ -442,7 +473,15 @@ export default function ForgeListenCard({
 
       if (transcript.trim()) {
 
-        setTimeout(() => {
+        if (voiceSubmitTimerRef.current) {
+          window.clearTimeout(
+            voiceSubmitTimerRef.current,
+          );
+        }
+
+        voiceSubmitTimerRef.current = window.setTimeout(() => {
+
+          voiceSubmitTimerRef.current = null;
 
           void handleSubmit(
             transcript,
@@ -455,7 +494,19 @@ export default function ForgeListenCard({
     };
 
 
-    recognition.start();
+    recognitionRef.current = recognition;
+
+    try {
+      recognition.start();
+    } catch (error) {
+      recognitionRef.current = null;
+      setIsListening(false);
+      onError(
+        getSpeechRecognitionStartErrorMessage(
+          error,
+        ),
+      );
+    }
 
   }
 
@@ -504,9 +555,14 @@ export default function ForgeListenCard({
       <button
         type="button"
         onClick={startVoiceRecognition}
-        aria-label="Commencer l’enregistrement vocal"
+        aria-label={
+          isListening
+            ? "Arrêter l’enregistrement vocal"
+            : "Commencer l’enregistrement vocal"
+        }
+        disabled={isLoading}
 
-        className={`mx-auto mt-10 flex h-40 w-40 items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:shadow-blue-900/30 dark:hover:bg-slate-800 ${
+        className={`mx-auto mt-10 flex h-40 w-40 touch-manipulation items-center justify-center rounded-full border-2 border-blue-600 bg-white text-blue-600 shadow-lg shadow-blue-100 transition hover:bg-blue-50 disabled:opacity-60 dark:bg-slate-900 dark:text-blue-400 dark:shadow-blue-900/30 dark:hover:bg-slate-800 ${
           isListening
             ? "bg-blue-50 dark:bg-blue-950 animate-pulse"
             : ""
@@ -588,7 +644,7 @@ export default function ForgeListenCard({
             aria-label="Ajouter un média"
             aria-expanded={isMediaMenuOpen}
             disabled={isLoading || selectedMedia.length >= MAX_MEDIA}
-            className="flex h-12 w-12 items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
+            className="flex h-12 w-12 touch-manipulation items-center justify-center rounded-full text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-white dark:hover:bg-slate-800"
           >
             <Camera size={27}/>
           </button>
@@ -598,7 +654,7 @@ export default function ForgeListenCard({
               <button
                 type="button"
                 onClick={() => openMediaInput(photoCaptureInputRef)}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+                className="flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
               >
                 <Camera size={18} /> Prendre une photo
               </button>
@@ -606,14 +662,14 @@ export default function ForgeListenCard({
                 type="button"
                 onClick={() => openMediaInput(videoCaptureInputRef)}
                 disabled={selectedMedia.some((file) => file.type.startsWith("video/"))}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+                className="flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
               >
                 <Video size={18} /> Filmer une vidéo
               </button>
               <button
                 type="button"
                 onClick={() => openMediaInput(galleryInputRef)}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
+                className="flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-blue-300"
               >
                 <Images size={18} /> Choisir dans la galerie
               </button>
@@ -637,7 +693,7 @@ export default function ForgeListenCard({
 
           aria-label="Envoyer"
 
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
 
 

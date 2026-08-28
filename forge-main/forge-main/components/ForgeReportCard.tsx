@@ -11,11 +11,15 @@ type ForgeReportCardProps = {
   report: InterventionReport;
   onEdit?: () => void;
   onValidate?: () => void;
+  isValidating?: boolean;
+  error?: string;
 };
 export default function ForgeReportCard({
   report,
   onEdit,
   onValidate,
+  isValidating = false,
+  error = "",
 }: ForgeReportCardProps) {
   return (
     <div className="w-full max-w-3xl rounded-3xl bg-white p-6 sm:p-10 shadow-lg dark:bg-slate-900 dark:shadow-black/20">
@@ -73,10 +77,20 @@ export default function ForgeReportCard({
 
       {/* Barre d'actions collante pour rester visible */}
       <div className="mt-6 sticky bottom-0 bg-white dark:bg-slate-900 pt-4 sm:pt-6">
+        {error && (
+          <p
+            role="alert"
+            className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+          >
+            {error}
+          </p>
+        )}
+
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onEdit}
+            disabled={isValidating}
             className="rounded-xl border border-blue-600 px-5 py-2 font-medium text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
           >
             Modifier
@@ -85,9 +99,13 @@ export default function ForgeReportCard({
           <button
             type="button"
             onClick={onValidate}
-            className="rounded-xl bg-blue-600 px-7 py-3 text-lg font-semibold text-white transition hover:bg-blue-700"
+            disabled={isValidating}
+            aria-busy={isValidating}
+            className="min-h-12 touch-manipulation rounded-xl bg-blue-600 px-7 py-3 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-70"
           >
-            Valider
+            {isValidating
+              ? "Validation…"
+              : "Valider"}
           </button>
         </div>
       </div>

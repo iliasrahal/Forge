@@ -135,6 +135,9 @@ const [isAddingStartClient, setIsAddingStartClient] = useState(false);
   const [reportError, setReportError] =
     useState("");
 
+  const [isValidatingReport, setIsValidatingReport] =
+    useState(false);
+
   const [savedClientName, setSavedClientName] =
     useState("");
 
@@ -899,6 +902,11 @@ const handleSaveNotes = async (notes: string) => {
         return;
       }
 
+      if (isValidatingReport) {
+        return;
+      }
+
+      setIsValidatingReport(true);
       setReportError("");
 
       try {
@@ -979,6 +987,8 @@ const handleSaveNotes = async (notes: string) => {
         );
 
         setHomeState("review");
+      } finally {
+        setIsValidatingReport(false);
       }
     };
 const handleKeepClient = async () => {
@@ -1518,6 +1528,8 @@ const handleCreateInvoice = async () => {
     report={report}
 
     error={reportError}
+
+    isValidatingReport={isValidatingReport}
 
     savedClientName={
       savedClientName
