@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -13,6 +14,7 @@ import {
   getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
+import { groupFutureInterventions } from "@/src/lib/intervention-periods";
 
 type HomeState =
   | "finished"
@@ -43,12 +45,14 @@ type CompleteInterventionResponse = {
 type HomeClientProps = {
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
+  todayDateKey: string;
   newInterventionId?: string | null;
 };
 
 export default function HomeClient({
   todayAppointments,
   upcomingAppointments,
+  todayDateKey,
   newInterventionId: initialNewInterventionId = null,
 }: HomeClientProps) {
   const router = useRouter();
@@ -102,8 +106,8 @@ const [
 
   const [showGreeting, setShowGreeting] =
     useState(false);
-const [showUpcoming, setShowUpcoming] =
-  useState(false);
+const [openUpcomingGroups, setOpenUpcomingGroups] =
+  useState<Record<string, boolean>>({});
 const [actionMode, setActionMode] =
   useState<"edit" | null>(null);
 const [actionClientName, setActionClientName] = useState("");
@@ -149,6 +153,19 @@ const currentAppointment = [
   (appointment) =>
     appointment.id === selectedAppointmentId,
 );
+
+const upcomingAppointmentGroups = useMemo(
+  () =>
+    groupFutureInterventions(
+      upcomingAppointmentsList,
+      todayDateKey,
+    ),
+  [upcomingAppointmentsList, todayDateKey],
+);
+
+const hasOpenUpcomingGroup = Object.values(
+  openUpcomingGroups,
+).some(Boolean);
 
 
 useEffect(() => {
@@ -227,6 +244,21 @@ const newInterventionExists =
     setReportError("");
     setHomeState("intervention");
 
+    const futureGroup = upcomingAppointmentGroups.find(
+      (group) =>
+        group.appointments.some(
+          (appointment) =>
+            appointment.id === newInterventionId,
+        ),
+    );
+
+    if (futureGroup) {
+      setOpenUpcomingGroups((currentGroups) => ({
+        ...currentGroups,
+        [futureGroup.key]: true,
+      }));
+    }
+
     const interventionId =
       newInterventionId
 
@@ -248,7 +280,8 @@ const newInterventionExists =
     return () => window.clearTimeout(timer);
   }, [
     todayAppointments,
-    newInterventionId
+    newInterventionId,
+    upcomingAppointmentGroups,
   ]);
 
   useEffect(() => {
@@ -1097,14 +1130,14 @@ const handleCreateInvoice = async () => {
       className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
         showGreeting
           ? "pt-8 sm:pt-12"
-          : showUpcoming
+          : hasOpenUpcomingGroup
             ? "pt-2 sm:pt-3"
             : "pt-4 sm:pt-6"
       }`}
     >
       <div className="mx-auto flex min-h-0 w-full max-w-xl flex-1 flex-col pb-4">
 
-  <div className={`${showUpcoming ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
+  <div className={`${hasOpenUpcomingGroup ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
     <UserMenu showLogout={homeState === "intervention"} />
   </div>
 
@@ -1112,7 +1145,7 @@ const handleCreateInvoice = async () => {
   {homeState === "intervention" &&
     appointmentsList.length > 0 && (
 
-      <section className={`${showUpcoming ? "mb-1.5" : "mb-3"} min-w-0 shrink-0`}>
+      <section className={`${hasOpenUpcomingGroup ? "mb-1.5" : "mb-3"} min-w-0 shrink-0`}>
 
         <div
           ref={appointmentsContainerRef}
@@ -1191,82 +1224,84 @@ const handleCreateInvoice = async () => {
   {homeState === "intervention" &&
     upcomingAppointmentsList.length > 0 && (
 
-      <section className="mb-1.5 shrink-0">
+      <section className="mb-1.5 shrink-0 space-y-0.5">
+        {upcomingAppointmentGroups.map((group) => {
+          const isOpen = Boolean(
+            openUpcomingGroups[group.key],
+          );
 
-        <button
-          type="button"
-          onClick={() =>
-            setShowUpcoming(
-              (previous) => !previous,
-            )
-          }
-          className="mb-1 flex w-full items-center justify-center py-1 text-base font-semibold text-blue-700"
-        >
+          return (
+            <div key={group.key}>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() =>
+                  setOpenUpcomingGroups(
+                    (currentGroups) => ({
+                      ...currentGroups,
+                      [group.key]: !isOpen,
+                    }),
+                  )
+                }
+                className="mb-1 flex w-full items-center justify-center py-1 text-base font-semibold text-blue-700 dark:text-blue-400"
+              >
+                <span>
+                  {group.label} ({group.appointments.length})
+                </span>
 
-          <span>
-            Prochainement ({upcomingAppointmentsList.length})
-          </span>
+                <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
+                  {isOpen ? "▲" : "▼"}
+                </span>
+              </button>
 
-          <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
-            {showUpcoming ? "▲" : "▼"}
-          </span>
+              {isOpen && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {group.appointments.map(
+                    (appointment) => (
+                      <button
+                        id={`appointment-${appointment.id}`}
+                        key={appointment.id}
+                        type="button"
+                        onClick={() =>
+                          handleSelectAppointment(
+                            appointment.id,
+                          )
+                        }
+                        className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+                      >
+                        <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
+                          {getAppointmentDateLabel(
+                            appointment.date,
+                          )}
+                        </span>
 
-        </button>
+                        {appointment.time && (
+                          <span className="mt-0.5 block text-sm font-semibold">
+                            {appointment.time}
+                          </span>
+                        )}
 
+                        {(getAppointmentSubject(
+                          appointment,
+                        ) || appointment.client) && (
+                          <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
+                            {getAppointmentSubject(
+                              appointment,
+                            ) || appointment.client}
+                          </span>
+                        )}
 
-        {showUpcoming && (
-
-          <div className="flex gap-2 overflow-x-auto pb-1">
-
-            {upcomingAppointmentsList.map(
-              (appointment) => (
-
-                <button
-                  key={appointment.id}
-                  type="button"
-                  onClick={() =>
-                    handleSelectAppointment(
-                      appointment.id,
-                    )
-                  }
-                  className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
-                >
-
-                  <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
-                    {getAppointmentDateLabel(
-                      appointment.date,
-                    )}
-                  </span>
-
-                  {appointment.time && (
-                    <span className="mt-0.5 block text-sm font-semibold">
-                      {appointment.time}
-                    </span>
+                        <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          À venir
+                        </span>
+                      </button>
+                    ),
                   )}
-
-                  {(getAppointmentSubject(
-                    appointment,
-                  ) || appointment.client) && (
-                    <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
-                      {getAppointmentSubject(
-                        appointment,
-                      ) || appointment.client}
-                    </span>
-                  )}
-
-                  <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    À venir
-                  </span>
-
-                </button>
-
-              ),
-            )}
-
-          </div>
-
-        )}
-
+                </div>
+              )}
+            </div>
+          );
+        })}
       </section>
 
     )}

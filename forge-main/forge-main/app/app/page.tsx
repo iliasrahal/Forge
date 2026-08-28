@@ -6,6 +6,17 @@ import type {
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 
+const PARIS_TIME_ZONE = "Europe/Paris";
+
+function formatParisDateKey(date: Date) {
+  return new Intl.DateTimeFormat("fr-CA", {
+    timeZone: PARIS_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -58,11 +69,16 @@ function mapIntervention(intervention: any): Appointment {
     client: clientName,
     hasClient: Boolean(intervention.clientId),
     address,
-    date: intervention.scheduledAt.toISOString().slice(0, 10),
+    date: formatParisDateKey(intervention.scheduledAt),
     time:
-      intervention.scheduledAt.toISOString().slice(11, 16) === "00:00"
+      intervention.scheduledAt.toLocaleTimeString("fr-FR", {
+        timeZone: PARIS_TIME_ZONE,
+        hour: "2-digit",
+        minute: "2-digit",
+      }) === "00:00"
         ? ""
         : intervention.scheduledAt.toLocaleTimeString("fr-FR", {
+            timeZone: PARIS_TIME_ZONE,
             hour: "2-digit",
             minute: "2-digit",
           }),
@@ -88,7 +104,7 @@ function mapIntervention(intervention: any): Appointment {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const currentUser = await requireCurrentUser();
   const { newIntervention } = await searchParams;
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = formatParisDateKey(new Date());
 
   const interventions = await prisma.intervention.findMany({
     where: {
@@ -122,7 +138,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       continue;
     }
 
-    if (intervention.status === "PLANIFIEE") {
+    if (
+      intervention.status === "PLANIFIEE" &&
+      appointment.date > todayKey
+    ) {
       upcomingAppointments.push(appointment);
     }
   }
@@ -131,6 +150,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <HomeClient
       todayAppointments={todayAppointments}
       upcomingAppointments={upcomingAppointments}
+      todayDateKey={todayKey}
       newInterventionId={newIntervention ?? null}
     />
   );
