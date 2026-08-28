@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Camera,
   Check,
+  ClipboardCheck,
   Euro,
   FileText,
   Keyboard,
@@ -25,6 +26,12 @@ const features = [
     description:
       "Créer, modifier et suivre les interventions simplement.",
     eyebrow: "Du planning au terrain",
+  },
+  {
+    title: "Comptes rendus",
+    description:
+      "Après chaque intervention, Forge transforme vos notes vocales ou écrites en compte rendu professionnel automatiquement.",
+    eyebrow: "Compte rendu automatique",
   },
   {
     title: "Devis",
@@ -83,6 +90,75 @@ function FeatureIllustration({
   }
 
   if (index === 1) {
+    const reportItems = [
+      {
+        label: "Intervention réalisée",
+        value: "Intervention sur un tuyau.",
+      },
+      {
+        label: "Diagnostic",
+        value:
+          "Aucun défaut constaté après vérification, tout est conforme.",
+      },
+      {
+        label: "Travaux effectués",
+        value:
+          "Opération réalisée sur un tuyau (détail non précisé).",
+      },
+      {
+        label: "Recommandation",
+        value: "Non précisé",
+      },
+    ];
+
+    return (
+      <div className="relative mx-auto w-full max-w-md rounded-[1.75rem] border border-slate-200 bg-white/95 p-6 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-5 dark:border-slate-800">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-blue-600 text-white">
+            <ClipboardCheck size={20} />
+          </span>
+          <div>
+            <p className="font-bold text-slate-950 dark:text-white">
+              Ton compte rendu est prêt
+            </p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Généré automatiquement par Forge
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-4">
+          {reportItems.map((item) => (
+            <div key={item.label}>
+              <p className="text-sm font-bold text-blue-700 dark:text-blue-400">
+                {item.label}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+          <button
+            type="button"
+            className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:text-blue-300"
+          >
+            Modifier
+          </button>
+          <button
+            type="button"
+            className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
+          >
+            Valider
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (index === 2) {
     return (
       <div className="relative mx-auto max-w-sm rotate-[-2deg] rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/10 transition duration-700 hover:rotate-0 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between">
@@ -104,7 +180,7 @@ function FeatureIllustration({
     );
   }
 
-  if (index === 2) {
+  if (index === 3) {
     return (
       <div className="relative mx-auto flex max-w-md items-center justify-center py-10">
         <div className="absolute h-64 w-64 rounded-full border border-blue-200 dark:border-blue-900" />
@@ -220,6 +296,25 @@ export default function Features() {
                 {index === 1 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
+                      "Dictée vocale ou saisie rapide après l’intervention",
+                      "Analyse automatique par Forge",
+                      "Compte rendu professionnel prêt en quelques secondes",
+                    ].map((benefit) => (
+                      <div
+                        key={benefit}
+                        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-semibold shadow-sm dark:border-slate-800 dark:bg-slate-900/70"
+                      >
+                        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                          <Check size={15} />
+                        </span>
+                        {benefit}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {index === 2 && (
+                  <div className="mt-8 grid max-w-xl gap-3">
+                    {[
                       "Génération automatique depuis une demande simple",
                       "Prestations structurées de manière professionnelle",
                       "Envoi facile et rapide au client",
@@ -236,7 +331,7 @@ export default function Features() {
                     ))}
                   </div>
                 )}
-                {index === 2 && (
+                {index === 3 && (
                   <>
                     <p className="mt-3 max-w-xl text-lg leading-8 text-slate-600 dark:text-slate-300">
                       Vous pouvez ensuite l’envoyer directement par mail à votre client en quelques secondes.
@@ -260,7 +355,7 @@ export default function Features() {
                     </div>
                   </>
                 )}
-                {index === 3 && (
+                {index === 4 && (
                   <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
                       <Camera size={20} className="text-blue-600 dark:text-blue-400" />
