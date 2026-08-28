@@ -274,12 +274,22 @@ export default function ClientCreation() {
         </div>
 
         <div
-          className={`mx-auto mt-10 max-w-4xl rounded-3xl border border-blue-100 bg-blue-50/65 px-6 py-5 text-center text-sm leading-7 text-blue-900 transition-all delay-500 duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-blue-950/35 dark:text-blue-200 ${revealClass}`}
+          className={`mx-auto mt-8 flex max-w-5xl items-start gap-3 rounded-2xl border border-slate-200/90 bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur transition-all delay-500 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
         >
-          Forge comprend aussi les demandes simples comme :
-          <span className="font-semibold"> « Crée un client avec uniquement son nom et son numéro »</span>
-          {" ou "}
-          <span className="font-semibold">« Ajoute cette entreprise avec son adresse et son email »</span>.
+          <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+            <Sparkles size={15} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Forge comprend aussi les demandes simples.
+            </p>
+            <p className="mt-0.5 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              Créez une fiche client avec seulement un nom et un numéro, ou ajoutez une entreprise avec ses informations principales.
+            </p>
+            <p className="mt-1 text-xs font-medium text-blue-700 dark:text-blue-400">
+              À l’écrit ou à la voix.
+            </p>
+          </div>
         </div>
       </div>
     </section>
