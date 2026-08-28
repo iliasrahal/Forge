@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 import CurrentInterventionCard from "@/components/CurrentInterventionCard";
 import FixedForgeBar from "@/components/FixedForgeBar";
@@ -673,27 +673,19 @@ export default function HomeContent({
 
   if (!currentAppointment) {
     return (
-      <section className="flex min-h-[28rem] flex-1 flex-col items-center justify-center px-2 pb-28 sm:px-4">
+      <section className="flex min-h-[32rem] flex-1 flex-col items-center justify-center px-2 pb-32 pt-12 sm:px-4 sm:pb-36">
         <div className="w-full max-w-2xl">
           {replyStatus === "idle" && (
-            <div className="rounded-[2rem] border border-white/80 bg-white/75 px-5 py-8 text-center shadow-[0_28px_90px_-48px_rgba(15,23,42,0.48)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/75 dark:shadow-black/40 sm:px-8 sm:py-10">
-              <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                <Sparkles size={21} />
-              </span>
-
-              <h2 className="mt-5 text-3xl font-bold tracking-tight text-blue-700 dark:text-blue-400 sm:text-4xl">
+            <div className="text-center">
+              <h2 className="text-4xl font-bold tracking-[-0.04em] text-blue-600 dark:text-blue-400 sm:text-5xl">
                 Salut{firstName ? ` ${firstName}` : ""},
               </h2>
 
-              <p className="mt-4 text-lg font-semibold text-slate-700 dark:text-slate-200 sm:text-xl">
-                Vous n&apos;avez aucune intervention prévue
+              <p className="mx-auto mt-7 max-w-lg text-2xl leading-9 text-slate-500 dark:text-slate-400 sm:text-3xl sm:leading-10">
+                Décris-moi ta prochaine intervention.
               </p>
 
-              <p className="mx-auto mt-2 max-w-xl text-base leading-7 text-slate-500 dark:text-slate-400">
-                Créez votre première intervention avec Forge, à l’écrit ou à la voix.
-              </p>
-
-              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-400 dark:text-slate-500 sm:text-base">
+              <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-400 dark:text-slate-500 sm:text-xl">
                 Exemple : {getInterventionExample()}.
               </p>
             </div>
