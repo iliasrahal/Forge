@@ -8,7 +8,15 @@ import { useRouter } from "next/navigation";
 
 
 
-export default function UserMenu() {
+type UserMenuProps = {
+  showLogout?: boolean;
+};
+
+
+
+export default function UserMenu({
+  showLogout = false,
+}: UserMenuProps) {
   const router = useRouter();
 
 
@@ -253,25 +261,27 @@ export default function UserMenu() {
 
 
 
-          <button
-            onClick={logout}
-            className="
-              mt-1
-              w-full
-              rounded-xl
-              px-3
-              py-2
-              text-left
-              font-medium
-              text-red-600
-              transition
-              hover:bg-red-50
-              dark:text-red-400
-              dark:hover:bg-red-950
-            "
-          >
-            Déconnexion
-          </button>
+          {showLogout && (
+            <button
+              onClick={logout}
+              className="
+                mt-1
+                w-full
+                rounded-xl
+                px-3
+                py-2
+                text-left
+                font-medium
+                text-red-600
+                transition
+                hover:bg-red-50
+                dark:text-red-400
+                dark:hover:bg-red-950
+              "
+            >
+              Déconnexion
+            </button>
+          )}
 
 
 

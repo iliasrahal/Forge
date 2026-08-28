@@ -1110,7 +1110,7 @@ const handleCreateInvoice = async () => {
       <div className="mx-auto flex h-full min-h-0 w-full max-w-xl flex-col overflow-y-auto overscroll-contain pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
   <div className={`${showUpcoming ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
-    <UserMenu />
+    <UserMenu showLogout={homeState === "intervention"} />
   </div>
 
 
