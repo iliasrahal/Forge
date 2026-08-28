@@ -506,7 +506,7 @@ export default function Features({
               data-index={index}
               className="relative grid min-h-[34rem] items-center gap-12 border-t border-slate-200 px-6 py-20 last:border-b dark:border-slate-800 lg:grid-cols-2 lg:px-12"
             >
-              <div className={`transition-all duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-2" : ""} ${isVisible ? "translate-x-0 opacity-100" : isReversed ? "translate-x-10 opacity-0" : "-translate-x-10 opacity-0"}`}>
+              <div className={`landing-reveal-motion duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-2" : ""} ${isVisible ? "translate-x-0 opacity-100" : isReversed ? "translate-x-10 opacity-0" : "-translate-x-10 opacity-0"}`}>
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">
                   {featureNumbers[index] > 0 && `0${featureNumbers[index]} · `}
                   {feature.eyebrow}
@@ -637,7 +637,7 @@ export default function Features({
                 )}
               </div>
 
-              <div className={`transition-all delay-150 duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-1" : ""} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
+              <div className={`landing-reveal-motion delay-150 duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-1" : ""} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}>
                 <FeatureIllustration index={index} />
               </div>
             </article>

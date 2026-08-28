@@ -181,7 +181,7 @@ export default function ClientCreation() {
 
       <div className="mx-auto max-w-7xl">
         <div
-          className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${revealClass}`}
+          className={`landing-reveal-motion mx-auto max-w-3xl text-center duration-700 motion-reduce:transition-none ${revealClass}`}
         >
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
             05 · Gestion client instantanée
@@ -199,7 +199,7 @@ export default function ClientCreation() {
 
         <div className="mt-16 grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div
-            className={`transition-all delay-100 duration-1000 motion-reduce:transition-none ${
+            className={`landing-reveal-motion delay-100 duration-1000 motion-reduce:transition-none ${
               hasRevealed
                 ? "translate-x-0 opacity-100"
                 : "-translate-x-8 opacity-0"
@@ -251,7 +251,7 @@ export default function ClientCreation() {
           </div>
 
           <div
-            className={`relative transition-all delay-200 duration-1000 motion-reduce:transition-none ${
+            className={`landing-reveal-motion relative delay-200 duration-1000 motion-reduce:transition-none ${
               hasRevealed
                 ? "translate-y-0 opacity-100"
                 : "translate-y-10 opacity-0"
@@ -317,7 +317,7 @@ export default function ClientCreation() {
         </div>
 
         <div
-          className={`mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-[2rem] border border-slate-200/90 bg-white/80 p-5 shadow-[0_24px_75px_-44px_rgba(15,23,42,0.4)] backdrop-blur-xl transition-all delay-300 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/75 sm:p-7 lg:grid-cols-[0.8fr_1.2fr] ${revealClass}`}
+          className={`landing-reveal-motion mx-auto mt-12 grid max-w-5xl items-center gap-6 rounded-[2rem] border border-slate-200/90 bg-white/80 p-5 shadow-[0_24px_75px_-44px_rgba(15,23,42,0.4)] backdrop-blur-xl delay-300 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/75 sm:p-7 lg:grid-cols-[0.8fr_1.2fr] ${revealClass}`}
         >
           <div>
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
@@ -358,7 +358,7 @@ export default function ClientCreation() {
             <div
               key={benefit}
               style={{ transitionDelay: `${350 + index * 80}ms` }}
-              className={`flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 text-sm font-semibold shadow-sm backdrop-blur transition-all duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
+              className={`landing-reveal-motion flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 text-sm font-semibold shadow-sm backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
             >
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 <Check size={15} />
@@ -369,7 +369,7 @@ export default function ClientCreation() {
         </div>
 
         <div
-          className={`mx-auto mt-8 flex max-w-5xl items-start gap-3 rounded-2xl border border-slate-200/90 bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur transition-all delay-500 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
+          className={`landing-reveal-motion mx-auto mt-8 flex max-w-5xl items-start gap-3 rounded-2xl border border-slate-200/90 bg-white/75 px-4 py-3.5 text-left shadow-sm backdrop-blur delay-500 duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/70 ${revealClass}`}
         >
           <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
             <ForgeSymbol size={18} />

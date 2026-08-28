@@ -52,7 +52,7 @@ export default function Workflow() {
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[34rem] w-[70rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-100/70 blur-3xl dark:bg-blue-950/35" />
 
       <div className="mx-auto max-w-7xl">
-        <div className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${revealClass}`}>
+        <div className={`landing-reveal-motion mx-auto max-w-3xl text-center duration-700 motion-reduce:transition-none ${revealClass}`}>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Parcours Forge</p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Du terrain au document envoyé, sans rupture.</h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-slate-600 dark:text-slate-300">
@@ -63,7 +63,7 @@ export default function Workflow() {
         <div className="relative mt-16 grid gap-5 lg:grid-cols-4">
           <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-9 hidden h-px bg-gradient-to-r from-blue-200 via-blue-500 to-blue-200 dark:from-blue-900 dark:via-blue-600 dark:to-blue-900 lg:block" />
 
-          <article style={{ transitionDelay: "80ms" }} className={`relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-all duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
+          <article style={{ transitionDelay: "80ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Wrench size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">01 · Intervention</p>
             <h3 className="mt-2 text-xl font-bold">Intervention terminée</h3>
@@ -96,7 +96,7 @@ export default function Workflow() {
             </div>
           </article>
 
-          <article style={{ transitionDelay: "180ms" }} className={`relative rounded-[2rem] border border-blue-200 bg-white/95 p-6 shadow-[0_28px_80px_-38px_rgba(37,99,235,0.4)] backdrop-blur transition-all duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/95 ${revealClass}`}>
+          <article style={{ transitionDelay: "180ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-blue-200 bg-white/95 p-6 shadow-[0_28px_80px_-38px_rgba(37,99,235,0.4)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/95 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-900"><FileText size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">02 · Compte rendu</p>
             <h3 className="mt-2 text-xl font-bold">Généré automatiquement</h3>
@@ -121,7 +121,7 @@ export default function Workflow() {
             </div>
           </article>
 
-          <article style={{ transitionDelay: "280ms" }} className={`relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-all duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
+          <article style={{ transitionDelay: "280ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Receipt size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">03 · Facture</p>
             <h3 className="mt-2 text-xl font-bold">La suite administrative</h3>
@@ -132,7 +132,7 @@ export default function Workflow() {
             </div>
           </article>
 
-          <article style={{ transitionDelay: "380ms" }} className={`relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur transition-all duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
+          <article style={{ transitionDelay: "380ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><Mail size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">04 · Envoi</p>
             <h3 className="mt-2 text-xl font-bold">Envoyé au client</h3>
@@ -141,7 +141,7 @@ export default function Workflow() {
           </article>
         </div>
 
-        <div style={{ transitionDelay: "500ms" }} className={`mx-auto mt-10 flex w-fit flex-wrap items-center justify-center gap-3 rounded-full border border-blue-200 bg-blue-50/80 px-5 py-3 text-center text-sm font-semibold text-blue-700 transition-all duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300 ${revealClass}`}>
+        <div style={{ transitionDelay: "500ms" }} className={`landing-reveal-motion mx-auto mt-10 flex w-fit flex-wrap items-center justify-center gap-3 rounded-full border border-blue-200 bg-blue-50/80 px-5 py-3 text-center text-sm font-semibold text-blue-700 duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300 ${revealClass}`}>
           Intervention <ArrowRight size={15} /> Compte rendu <ArrowRight size={15} /> Facture <ArrowRight size={15} /> Email
         </div>
       </div>

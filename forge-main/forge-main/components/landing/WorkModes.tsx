@@ -79,7 +79,7 @@ export default function WorkModes() {
 
       <div className="mx-auto max-w-6xl">
         <div
-          className={`mx-auto max-w-3xl text-center transition-all duration-700 motion-reduce:transition-none ${
+          className={`landing-reveal-motion mx-auto max-w-3xl text-center duration-700 motion-reduce:transition-none ${
             isVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-6 opacity-0"
@@ -102,7 +102,7 @@ export default function WorkModes() {
               <article
                 key={title}
                 style={{ transitionDelay: `${150 + index * 120}ms` }}
-                className={`rounded-[2rem] border border-slate-200/90 bg-white/85 p-6 shadow-[0_28px_90px_-48px_rgba(15,23,42,0.45)] backdrop-blur-xl transition-all duration-700 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_32px_100px_-48px_rgba(37,99,235,0.32)] motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-blue-800 sm:p-8 ${
+                className={`landing-reveal-motion rounded-[2rem] border border-slate-200/90 bg-white/85 p-6 shadow-[0_28px_90px_-48px_rgba(15,23,42,0.45)] backdrop-blur-xl duration-700 hover:-translate-y-1 hover:border-blue-200 hover:shadow-[0_32px_100px_-48px_rgba(37,99,235,0.32)] motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/80 dark:hover:border-blue-800 sm:p-8 ${
                   isVisible
                     ? "translate-y-0 opacity-100"
                     : "translate-y-8 opacity-0"

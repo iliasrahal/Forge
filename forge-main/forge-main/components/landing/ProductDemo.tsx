@@ -215,7 +215,7 @@ export default function ProductDemo() {
                     return (
                       <div
                         key={result}
-                        className={`flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold shadow-sm transition-all duration-500 dark:bg-slate-900 ${
+                        className={`landing-reveal-motion flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold shadow-sm duration-500 dark:bg-slate-900 ${
                           isVisible
                             ? "translate-y-0 opacity-100"
                             : "translate-y-2 opacity-0"

@@ -90,7 +90,7 @@ export default function Problem() {
 
       <div className="mx-auto max-w-6xl">
         <div
-          className={`mx-auto max-w-5xl text-center transition-all duration-700 motion-reduce:transition-none ${
+          className={`landing-reveal-motion mx-auto max-w-5xl text-center duration-700 motion-reduce:transition-none ${
             isVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-6 opacity-0"
@@ -129,7 +129,7 @@ export default function Problem() {
                     100 + index * 90
                   }ms`,
                 }}
-                className={`group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-700 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-900/5 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-800 dark:hover:shadow-black/20 sm:p-8 ${
+                className={`landing-reveal-motion group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm duration-700 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-900/5 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-800 dark:hover:shadow-black/20 sm:p-8 ${
                   isVisible
                     ? "translate-y-0 opacity-100"
                     : "translate-y-8 opacity-0"
@@ -151,7 +151,7 @@ export default function Problem() {
 
         <div
           style={{ transitionDelay: "520ms" }}
-          className={`mx-auto mt-16 max-w-3xl border-t border-slate-200 pt-14 text-center transition-all duration-700 motion-reduce:transition-none dark:border-slate-800 ${
+          className={`landing-reveal-motion mx-auto mt-16 max-w-3xl border-t border-slate-200 pt-14 text-center duration-700 motion-reduce:transition-none dark:border-slate-800 ${
             isVisible
               ? "translate-y-0 opacity-100"
               : "translate-y-6 opacity-0"

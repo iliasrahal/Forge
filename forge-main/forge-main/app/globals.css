@@ -285,6 +285,17 @@ html.dark body {
   animation: workflow-progress 2.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Keep landing reveals on a stable compositor layer. Safari can otherwise
+   move a backdrop-blurred card by a fraction of a pixel when the transition
+   finishes and the temporary animation layer is released. */
+.landing-reveal-motion {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  transition-property: opacity, transform, translate, border-color,
+    background-color, color, box-shadow;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 @keyframes workflow-progress {
   0%,
   8% {
@@ -296,6 +307,23 @@ html.dark body {
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .workflow-progress-item {
+    transform: none;
+    animation-name: workflow-progress-mobile;
+  }
+
+  @keyframes workflow-progress-mobile {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -339,6 +367,11 @@ html.dark body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landing-reveal-motion {
+    transform: none;
+    transition: none;
+  }
+
   .forge-app-shell main > :first-child {
     animation: none;
   }

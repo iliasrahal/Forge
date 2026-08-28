@@ -165,7 +165,7 @@ export default function CustomerReply() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
         <div
-          className={`transition-all duration-1000 motion-reduce:transition-none ${
+          className={`landing-reveal-motion duration-1000 motion-reduce:transition-none ${
             hasRevealed
               ? "translate-x-0 opacity-100"
               : "-translate-x-8 opacity-0"
@@ -185,7 +185,7 @@ export default function CustomerReply() {
             {benefits.map(({ icon: Icon, label }, index) => (
               <div
                 key={label}
-                className={`flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-[0_16px_45px_-36px_rgba(15,23,42,0.45)] backdrop-blur transition-all duration-700 dark:border-slate-800 dark:bg-slate-900/65 ${
+                className={`landing-reveal-motion flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-[0_16px_45px_-36px_rgba(15,23,42,0.45)] backdrop-blur duration-700 dark:border-slate-800 dark:bg-slate-900/65 ${
                   hasRevealed
                     ? "translate-y-0 opacity-100"
                     : "translate-y-4 opacity-0"
@@ -206,7 +206,7 @@ export default function CustomerReply() {
         </div>
 
         <div
-          className={`relative transition-all delay-150 duration-1000 motion-reduce:transition-none ${
+          className={`landing-reveal-motion relative delay-150 duration-1000 motion-reduce:transition-none ${
             hasRevealed
               ? "translate-y-0 opacity-100"
               : "translate-y-10 opacity-0"
@@ -250,7 +250,7 @@ export default function CustomerReply() {
             </div>
 
             <div
-              className={`mt-4 rounded-3xl rounded-tr-lg border border-blue-100 bg-blue-50/75 p-5 transition-all duration-700 dark:border-blue-900 dark:bg-blue-950/40 ${
+              className={`landing-reveal-motion mt-4 rounded-3xl rounded-tr-lg border border-blue-100 bg-blue-50/75 p-5 duration-700 dark:border-blue-900 dark:bg-blue-950/40 ${
                 responseStarted
                   ? "translate-y-0 opacity-100"
                   : "translate-y-4 opacity-0"
