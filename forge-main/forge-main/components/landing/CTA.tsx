@@ -20,7 +20,10 @@ export default function CTA() {
         <div className="relative mx-auto max-w-4xl">
           <div className="mx-auto mb-8 flex w-fit items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-2 pr-4 shadow-xl backdrop-blur">
             <span className="rounded-xl shadow-lg shadow-slate-950/20">
-              <ForgeLogo size={44} />
+              <ForgeLogo
+                size={44}
+                invertTheme
+              />
             </span>
             <span className="flex items-center gap-2 text-sm font-semibold text-blue-50">
               <ForgeSymbol
