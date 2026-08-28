@@ -8,6 +8,7 @@ import Problem from "@/components/landing/Problem";
 import Pricing from "@/components/landing/Pricing";
 import ProductDemo from "@/components/landing/ProductDemo";
 import Workflow from "@/components/landing/Workflow";
+import WorkModes from "@/components/landing/WorkModes";
 
 export default function LandingPage() {
   return (
@@ -20,6 +21,7 @@ export default function LandingPage() {
       <Features group="documents" showHeading={false} />
       <ClientCreation />
       <CustomerReply />
+      <WorkModes />
       <Pricing />
       <CTA />
       <Footer />

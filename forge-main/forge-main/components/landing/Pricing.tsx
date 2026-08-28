@@ -24,7 +24,7 @@ export default function Pricing() {
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-            07 · Tarifs Forge
+            08 · Tarifs Forge
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
             Un assistant IA professionnel accessible
