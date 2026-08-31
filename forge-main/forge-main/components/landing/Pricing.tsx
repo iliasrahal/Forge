@@ -49,19 +49,15 @@ export default function Pricing() {
               <span className="mx-auto inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 <ForgeSymbol size={17} /> 1 mois offert
               </span>
-              <div className="mx-auto mt-6 max-w-md rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-950/70">
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">
+              <div className="mx-auto mt-6 max-w-md rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 px-5 py-6 shadow-[0_20px_50px_-24px_rgba(37,99,235,0.8)] ring-1 ring-inset ring-white/15 dark:from-blue-500 dark:to-blue-700 dark:shadow-[0_22px_55px_-26px_rgba(59,130,246,0.65)] dark:ring-white/20 sm:px-7 sm:py-7">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-100 dark:text-blue-50">
                   Forge
                 </p>
-                <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+                <p className="mt-3 text-4xl font-black tracking-tight text-white sm:text-5xl">
                   {forgeOffer.amount}
                 </p>
-                <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-sm font-semibold text-blue-100 dark:text-blue-50/85">
                   / mois
-                </p>
-                <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  Un seul abonnement Forge par utilisateur disposant d’un accès
-                  complet.
                 </p>
               </div>
             </div>
