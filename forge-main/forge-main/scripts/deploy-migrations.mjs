@@ -6,7 +6,10 @@ import pg from "pg";
 
 const { Client } = pg;
 
-const databaseUrl = process.env.DATABASE_URL;
+// Les migrations (DDL) doivent passer par une connexion « session » ou directe.
+// Le pooler transaction (port 6543) utilisé par l'app au runtime ne supporte
+// pas certaines commandes de migration. On privilégie donc DIRECT_URL.
+const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
 const migrationsDirectory = resolve(process.cwd(), "prisma/migrations");
 const pendingWorkspaceMigrations = new Set([
   "20260831120001_workspace_roles",
@@ -14,12 +17,14 @@ const pendingWorkspaceMigrations = new Set([
 ]);
 
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL est requis pour déployer les migrations Prisma.");
+  throw new Error(
+    "DIRECT_URL ou DATABASE_URL est requis pour déployer les migrations Prisma.",
+  );
 }
 
 function runPrisma(...args) {
   execFileSync("npx", ["--no-install", "prisma", ...args], {
-    env: process.env,
+    env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: "inherit",
   });
 }
