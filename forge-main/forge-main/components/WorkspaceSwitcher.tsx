@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
 
 type Workspace = {
   id: string;
@@ -117,10 +116,6 @@ export default function WorkspaceSwitcher() {
 
   return (
     <div ref={switcherRef} className="relative z-[65] min-w-0 text-right">
-      <p className="mb-1 pr-1 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-        Espace de travail
-      </p>
-
       <button
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
@@ -131,11 +126,7 @@ export default function WorkspaceSwitcher() {
         <span className="truncate">
           {getWorkspaceLabel(activeWorkspace)}
         </span>
-        <ChevronDown
-          aria-hidden="true"
-          size={16}
-          className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
+        <span aria-hidden="true">▼</span>
       </button>
 
       {isOpen && (
