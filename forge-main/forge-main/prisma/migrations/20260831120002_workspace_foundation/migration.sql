@@ -1,4 +1,4 @@
--- Fondation progressive des espaces de travail Forge.
+-- Fondation progressive des espaces de travail Forge, après ajout des rôles.
 -- Les anciens rôles TECHNICIAN sont volontairement conservés jusqu'à leur
 -- audit sur la base réelle. MANAGER peut être migré sans perte vers ADMIN.
 
