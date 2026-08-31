@@ -10,6 +10,7 @@ import {
   subscriptionSummary,
   userDisplayName,
 } from "../../_lib/display";
+import StaffToggle from "./_components/StaffToggle";
 import UserAdminPanel from "./_components/UserAdminPanel";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function AdminUserDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { staff } = await requireStaff("SUPPORT");
+  const { staff, user: viewer } = await requireStaff("SUPPORT");
   const { id } = await params;
 
   const user = await prisma.user.findUnique({
@@ -64,6 +65,7 @@ export default async function AdminUserDetailPage({
   const sub = subscriptionSummary(user);
   const canManage = roleAtLeast(staff.role, "ADMIN");
   const canDelete = roleAtLeast(staff.role, "SUPER_ADMIN");
+  const canManageStaff = roleAtLeast(staff.role, "SUPER_ADMIN");
   const trialEndsAtValue = user.trialEndsAt
     ? new Date(user.trialEndsAt).toISOString().slice(0, 10)
     : null;
@@ -175,6 +177,14 @@ export default async function AdminUserDetailPage({
             ))}
           </ul>
         </div>
+      ) : null}
+
+      {canManageStaff ? (
+        <StaffToggle
+          userId={user.id}
+          currentRole={user.staffMembership?.role ?? null}
+          isSelf={user.id === viewer.id}
+        />
       ) : null}
 
       <section>

@@ -420,3 +420,71 @@ export async function revokeStaff(userId: string): Promise<ActionResult> {
     return { ok: true };
   });
 }
+
+/**
+ * Nomme, change ou retire le rôle staff d'un compte depuis sa fiche.
+ * `role` : "SUPPORT" | "ADMIN" | "SUPER_ADMIN" | "NONE" (retire l'accès).
+ */
+export async function setUserStaffRole(
+  userId: string,
+  role: string,
+): Promise<ActionResult> {
+  return withStaff("SUPER_ADMIN", async (actorId) => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
+    if (!user) return fail("Utilisateur introuvable.");
+
+    const existing = await prisma.staffMember.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (role === "NONE") {
+      if (user.id === actorId) {
+        return fail("Tu ne peux pas retirer ton propre accès staff.");
+      }
+      if (!existing) return fail("Ce compte n'est pas membre du staff.");
+
+      await prisma.staffMember.delete({ where: { userId: user.id } });
+      await recordAdminAction({
+        actorId,
+        action: "STAFF_REVOKED",
+        targetType: "StaffMember",
+        targetId: user.id,
+        summary: `Accès staff retiré pour ${user.email}`,
+      });
+    } else {
+      const nextRole = role as StaffRole;
+      if (!STAFF_ROLES.includes(nextRole)) return fail("Rôle invalide.");
+
+      if (
+        user.id === actorId &&
+        existing &&
+        nextRole !== "SUPER_ADMIN"
+      ) {
+        return fail("Tu ne peux pas réduire ton propre rôle.");
+      }
+
+      await prisma.staffMember.upsert({
+        where: { userId: user.id },
+        update: { role: nextRole },
+        create: { userId: user.id, role: nextRole },
+      });
+      await recordAdminAction({
+        actorId,
+        action: existing ? "STAFF_ROLE_CHANGED" : "STAFF_GRANTED",
+        targetType: "StaffMember",
+        targetId: user.id,
+        summary: `${user.email} → staff ${nextRole}${
+          existing ? ` (avant : ${existing.role})` : ""
+        }`,
+      });
+    }
+
+    revalidatePath(`/admin/users/${user.id}`);
+    revalidatePath("/admin/staff");
+
+    return { ok: true };
+  });
+}
