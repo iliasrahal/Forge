@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 import { compare } from "bcryptjs";
 import { cookies } from "next/headers";
@@ -12,6 +12,7 @@ import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
 type LoginBody = {
   identifier?: string;
   password?: string;
+  invitationToken?: string;
 };
 
 export async function POST(request: Request) {
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
       body.identifier?.trim() ?? "";
 
     const password = body.password ?? "";
+    const invitationToken = body.invitationToken?.trim() ?? "";
 
     if (!identifier || !password) {
       return NextResponse.json(
@@ -85,6 +87,45 @@ export async function POST(request: Request) {
           status: 401,
         },
       );
+    }
+
+    if (invitationToken) {
+      const invitation = await prisma.teamInvitation.findUnique({
+        where: {
+          tokenHash: createHash("sha256")
+            .update(invitationToken)
+            .digest("hex"),
+        },
+        select: {
+          email: true,
+          expiresAt: true,
+          status: true,
+        },
+      });
+
+      if (!invitation || invitation.status === "REVOKED") {
+        return NextResponse.json(
+          { error: "Le lien d’invitation est invalide." },
+          { status: 400 },
+        );
+      }
+
+      if (invitation.expiresAt <= new Date()) {
+        return NextResponse.json(
+          { error: "Cette invitation a expiré." },
+          { status: 410 },
+        );
+      }
+
+      if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+        return NextResponse.json(
+          {
+            error:
+              "Cette invitation a été envoyée à une autre adresse e-mail.",
+          },
+          { status: 403 },
+        );
+      }
     }
 
     await prisma.session.deleteMany({

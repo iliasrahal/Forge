@@ -7,6 +7,7 @@ const PUBLIC_PAGE_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/activate-account",
+  "/invite",
   "/conditions-generales-utilisation",
   "/politique-confidentialite",
 ];

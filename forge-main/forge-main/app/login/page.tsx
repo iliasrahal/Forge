@@ -31,6 +31,11 @@ type LoginResponse = {
   error?: string;
 };
 
+type InvitationResponse = {
+  workspaceId?: string;
+  error?: string;
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const { setTheme } = useTheme();
@@ -45,7 +50,13 @@ export default function LoginPage() {
   const [invitationToken, setInvitationToken] = useState("");
 
   useEffect(() => {
-    setInvitationToken(new URLSearchParams(window.location.search).get("invitation") || "");
+    const frame = requestAnimationFrame(() => {
+      setInvitationToken(
+        new URLSearchParams(window.location.search).get("invitation") || "",
+      );
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   async function handleSubmit(
@@ -81,6 +92,7 @@ export default function LoginPage() {
           body: JSON.stringify({
             identifier: cleanIdentifier,
             password,
+            invitationToken: invitationToken || undefined,
           }),
         },
       );
@@ -101,9 +113,23 @@ export default function LoginPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: invitationToken }),
         });
-        if (!invitationResponse.ok) {
-          const invitationData = await invitationResponse.json();
+        const invitationData =
+          (await invitationResponse.json()) as InvitationResponse;
+
+        if (!invitationResponse.ok || !invitationData.workspaceId) {
           throw new Error(invitationData.error || "Impossible de rejoindre l’équipe.");
+        }
+
+        if (data.user.onboardingCompleted) {
+          const workspaceResponse = await fetch("/api/workspaces/active", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ workspaceId: invitationData.workspaceId }),
+          });
+
+          if (!workspaceResponse.ok) {
+            throw new Error("L’équipe a été rejointe, mais elle ne peut pas être ouverte.");
+          }
         }
       }
 

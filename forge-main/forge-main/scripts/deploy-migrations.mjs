@@ -6,16 +6,55 @@ import pg from "pg";
 
 const { Client } = pg;
 
-const databaseUrl = process.env.DATABASE_URL;
 const migrationsDirectory = resolve(process.cwd(), "prisma/migrations");
 const pendingWorkspaceMigrations = new Set([
   "20260831120001_workspace_roles",
   "20260831120002_workspace_foundation",
 ]);
 
+function normalizeDatabaseUrl(rawValue) {
+  if (!rawValue) return "";
+
+  let value = rawValue.trim();
+
+  // Vercel doit normalement contenir uniquement l'URL, mais cette forme est
+  // parfois copiée directement depuis un fichier .env.
+  value = value.replace(/^DATABASE_URL\s*=\s*/i, "").trim();
+
+  const hasMatchingQuotes =
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"));
+
+  if (hasMatchingQuotes) {
+    value = value.slice(1, -1).trim();
+  }
+
+  return value;
+}
+
+const databaseUrl = normalizeDatabaseUrl(process.env.DATABASE_URL);
+
 if (!databaseUrl) {
   throw new Error("DATABASE_URL est requis pour déployer les migrations Prisma.");
 }
+
+if (!/^postgres(?:ql)?:\/\//i.test(databaseUrl)) {
+  throw new Error(
+    "DATABASE_URL est invalide dans Vercel : renseignez uniquement l’URL PostgreSQL, commençant par postgresql:// ou postgres://.",
+  );
+}
+
+try {
+  new URL(databaseUrl);
+} catch {
+  throw new Error(
+    "DATABASE_URL n’est pas une URL PostgreSQL valide. Vérifiez notamment les guillemets et les caractères spéciaux du mot de passe dans Vercel.",
+  );
+}
+
+// Tous les sous-processus Prisma et Next utilisent exactement la valeur
+// normalisée qui vient d'être contrôlée.
+process.env.DATABASE_URL = databaseUrl;
 
 function runPrisma(...args) {
   execFileSync("npx", ["--no-install", "prisma", ...args], {
@@ -173,3 +212,9 @@ async function deploy() {
 }
 
 await deploy();
+
+runPrisma("generate");
+execFileSync("npx", ["--no-install", "next", "build"], {
+  env: process.env,
+  stdio: "inherit",
+});

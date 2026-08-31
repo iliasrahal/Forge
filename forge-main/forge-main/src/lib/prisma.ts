@@ -14,13 +14,18 @@ if (!databaseUrl) {
 
 }
 
+const databaseConnectionUrl = new URL(databaseUrl);
+
+if (!databaseConnectionUrl.searchParams.has("connection_limit")) {
+  databaseConnectionUrl.searchParams.set("connection_limit", "5");
+}
 
 
 const adapter =
   new PrismaPg({
 
     connectionString:
-      `${databaseUrl}?connection_limit=5`,
+      databaseConnectionUrl.toString(),
 
   });
 

@@ -100,7 +100,7 @@ export async function sendTeamInvitationEmail(
     subject: `Invitation à rejoindre ${organizationName} sur Forge`,
     text: `Vous êtes invité à rejoindre l’équipe Forge de ${organizationName}.\n\nRejoignez l’équipe avec ce lien :\n${invitationUrl}\n\nCe lien est personnel et valable pendant 7 jours.`,
     html: renderEmailLayout(
-      `<p>Vous êtes invité à rejoindre l’équipe Forge de <strong>${escapeHtml(organizationName)}</strong>.</p><p>Créez votre compte pour rejoindre automatiquement l’espace existant de votre équipe.</p>{{ACTION}}<p>Ce lien est personnel et valable pendant 7 jours.</p><p>Cordialement,<br/><strong>L’équipe Forge</strong></p>`,
+      `<p>Vous êtes invité à rejoindre l’équipe Forge de <strong>${escapeHtml(organizationName)}</strong>.</p><p>Connectez-vous avec votre compte Forge ou créez-en un pour rejoindre cet espace.</p>{{ACTION}}<p>Ce lien est personnel et valable pendant 7 jours.</p><p>Cordialement,<br/><strong>L’équipe Forge</strong></p>`,
       { label: "Rejoindre l’équipe Forge", url: invitationUrl },
       true,
     ),

@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         await sendTeamInvitationEmail(
           email,
           context.workspace.name,
-          `${appUrl}/register?invitation=${rawToken}`,
+          `${appUrl}/invite?token=${rawToken}`,
         );
       }),
     );
