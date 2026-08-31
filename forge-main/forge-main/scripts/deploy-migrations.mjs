@@ -6,10 +6,23 @@ import pg from "pg";
 
 const { Client } = pg;
 
-// Les migrations (DDL) doivent passer par une connexion « session » ou directe.
-// Le pooler transaction (port 6543) utilisé par l'app au runtime ne supporte
-// pas certaines commandes de migration. On privilégie donc DIRECT_URL.
-const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+// Les migrations (DDL + verrou d'avis) exigent une connexion « session » ou
+// directe. Le pooler transaction (port 6543) utilisé par l'app au runtime
+// casse `prisma migrate deploy`. On privilégie donc DIRECT_URL.
+function cleanConnectionString(value) {
+  if (typeof value !== "string") return "";
+
+  // Tolère un collage depuis un extrait .env : guillemets, espaces, préfixe.
+  return value
+    .trim()
+    .replace(/^(?:DIRECT_URL|DATABASE_URL)\s*=\s*/i, "")
+    .replace(/^['"]|['"]$/g, "")
+    .trim();
+}
+
+const databaseUrl =
+  cleanConnectionString(process.env.DIRECT_URL) ||
+  cleanConnectionString(process.env.DATABASE_URL);
 const migrationsDirectory = resolve(process.cwd(), "prisma/migrations");
 const pendingWorkspaceMigrations = new Set([
   "20260831120001_workspace_roles",
@@ -19,6 +32,19 @@ const pendingWorkspaceMigrations = new Set([
 if (!databaseUrl) {
   throw new Error(
     "DIRECT_URL ou DATABASE_URL est requis pour déployer les migrations Prisma.",
+  );
+}
+
+try {
+  const parsed = new URL(databaseUrl);
+  if (!/^postgres(ql)?:$/.test(parsed.protocol)) {
+    throw new Error(`protocole inattendu : ${parsed.protocol}`);
+  }
+} catch (error) {
+  throw new Error(
+    "URL de migration invalide (DIRECT_URL / DATABASE_URL). Elle doit commencer " +
+      "par postgresql:// , sans guillemets, sans retour à la ligne et sans " +
+      `[YOUR-PASSWORD] non remplacé. Détail : ${error.message}`,
   );
 }
 
