@@ -2,19 +2,18 @@
 
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import HomeContent from "@/components/HomeContent";
+import UpcomingCalendar from "@/components/UpcomingCalendar";
 import {
   getAppointmentDateLabel,
   getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
-import { groupFutureInterventions } from "@/src/lib/intervention-periods";
 
 type HomeState =
   | "finished"
@@ -95,7 +94,6 @@ const [
       appointment.status === "inProgress",
   )?.id ??
   todayAppointments?.[0]?.id ??
-  upcomingAppointments?.[0]?.id ??
   null
 );
 
@@ -106,8 +104,10 @@ const [
 
   const [showGreeting, setShowGreeting] =
     useState(false);
-const [openUpcomingGroups, setOpenUpcomingGroups] =
-  useState<Record<string, boolean>>({});
+const [showUpcomingCalendar, setShowUpcomingCalendar] =
+  useState(false);
+const [calendarFocusDate, setCalendarFocusDate] =
+  useState<string | null>(null);
 const [actionMode, setActionMode] =
   useState<"edit" | null>(null);
 const [actionClientName, setActionClientName] = useState("");
@@ -157,20 +157,6 @@ const currentAppointment = [
     appointment.id === selectedAppointmentId,
 );
 
-const upcomingAppointmentGroups = useMemo(
-  () =>
-    groupFutureInterventions(
-      upcomingAppointmentsList,
-      todayDateKey,
-    ),
-  [upcomingAppointmentsList, todayDateKey],
-);
-
-const hasOpenUpcomingGroup = Object.values(
-  openUpcomingGroups,
-).some(Boolean);
-
-
 useEffect(() => {
 
   setAppointmentsList(todayAppointments ?? []);
@@ -206,9 +192,6 @@ useEffect(() => {
       )?.id ??
 
       todayAppointments[0]?.id ??
-
-      upcomingAppointments[0]?.id ??
-
       null
     );
 
@@ -247,19 +230,13 @@ const newInterventionExists =
     setReportError("");
     setHomeState("intervention");
 
-    const futureGroup = upcomingAppointmentGroups.find(
-      (group) =>
-        group.appointments.some(
-          (appointment) =>
-            appointment.id === newInterventionId,
-        ),
+    const futureAppointment = upcomingAppointments.find(
+      (appointment) => appointment.id === newInterventionId,
     );
 
-    if (futureGroup) {
-      setOpenUpcomingGroups((currentGroups) => ({
-        ...currentGroups,
-        [futureGroup.key]: true,
-      }));
+    if (futureAppointment) {
+      setCalendarFocusDate(futureAppointment.date);
+      setShowUpcomingCalendar(true);
     }
 
     const interventionId =
@@ -283,8 +260,8 @@ const newInterventionExists =
     return () => window.clearTimeout(timer);
   }, [
     todayAppointments,
+    upcomingAppointments,
     newInterventionId,
-    upcomingAppointmentGroups,
   ]);
 
   useEffect(() => {
@@ -710,11 +687,21 @@ const handleSaveNotes = async (notes: string) => {
   const handleSelectAppointment = (
     appointmentId: string,
   ) => {
+    setShowUpcomingCalendar(false);
     setIsInitialWelcomeActive(false);
     setSelectedAppointmentId(appointmentId);
     setReport(null);
     setReportError("");
     setHomeState("intervention");
+  };
+
+  const handleCloseUpcomingCalendar = () => {
+    setShowUpcomingCalendar(false);
+    setSelectedAppointmentId(
+      appointmentsList.find(
+        (appointment) => appointment.status === "inProgress",
+      )?.id ?? appointmentsList[0]?.id ?? null,
+    );
   };
 
   const openInterventionAction = () => {
@@ -758,6 +745,12 @@ const handleSaveNotes = async (notes: string) => {
       }
 
       setActionMode(null);
+      if (actionDate > todayDateKey) {
+        setCalendarFocusDate(actionDate);
+        setShowUpcomingCalendar(true);
+      } else {
+        setShowUpcomingCalendar(false);
+      }
       router.refresh();
     } catch (error) {
       setActionError(
@@ -801,7 +794,7 @@ const handleSaveNotes = async (notes: string) => {
       setAppointmentsList(remainingToday);
       setUpcomingAppointmentsList(remainingUpcoming);
       setSelectedAppointmentId(
-        remainingToday[0]?.id ?? remainingUpcoming[0]?.id ?? null,
+        remainingToday[0]?.id ?? null,
       );
       router.refresh();
     } catch (error) {
@@ -849,7 +842,6 @@ const handleSaveNotes = async (notes: string) => {
 
         return (
           remainingToday[0]?.id ??
-          remainingUpcoming[0]?.id ??
           null
         );
       },
@@ -1140,22 +1132,23 @@ const handleCreateInvoice = async () => {
       className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
         showGreeting
           ? "pt-8 sm:pt-12"
-          : hasOpenUpcomingGroup
+          : showUpcomingCalendar
             ? "pt-2 sm:pt-3"
             : "pt-4 sm:pt-6"
       }`}
     >
-      <div className="mx-auto flex min-h-0 w-full max-w-xl flex-1 flex-col pb-4">
+      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : "max-w-xl"}`}>
 
-  <div className={`${hasOpenUpcomingGroup ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
+  <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
     <UserMenu showLogout={homeState === "intervention"} />
   </div>
 
 
   {homeState === "intervention" &&
+    !showUpcomingCalendar &&
     appointmentsList.length > 0 && (
 
-      <section className={`${hasOpenUpcomingGroup ? "mb-1.5" : "mb-3"} min-w-0 shrink-0`}>
+      <section className="mb-3 min-w-0 shrink-0">
 
         <div
           ref={appointmentsContainerRef}
@@ -1231,94 +1224,48 @@ const handleCreateInvoice = async () => {
 
 
 
-  {homeState === "intervention" &&
-    upcomingAppointmentsList.length > 0 && (
+  {homeState === "intervention" && (
 
-      <section className="mb-1.5 min-w-0 shrink-0">
-        <div className="flex w-full gap-4 overflow-x-auto pb-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1">
-          {upcomingAppointmentGroups.map((group) => {
-            const isOpen = Boolean(
-              openUpcomingGroups[group.key],
+      <section className="mb-3 min-w-0 shrink-0 text-center">
+        <button
+          type="button"
+          aria-expanded={showUpcomingCalendar}
+          onClick={() => {
+            if (showUpcomingCalendar) {
+              handleCloseUpcomingCalendar();
+              return;
+            }
+
+            setCalendarFocusDate(
+              upcomingAppointmentsList[0]?.date ?? todayDateKey,
             );
-
-            return (
-              <button
-                key={group.key}
-                type="button"
-                aria-expanded={isOpen}
-                onClick={() =>
-                  setOpenUpcomingGroups(
-                    (currentGroups) => ({
-                      ...currentGroups,
-                      [group.key]: !isOpen,
-                    }),
-                  )
-                }
-                className="flex shrink-0 items-center justify-center whitespace-nowrap py-1 text-base font-semibold text-blue-700 dark:text-blue-400"
-              >
-                <span>
-                  {group.label} ({group.appointments.length})
-                </span>
-
-                <span className="ml-3 text-sm text-blue-500 dark:text-blue-400">
-                  {isOpen ? "▲" : "▼"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {upcomingAppointmentGroups.map((group) =>
-          openUpcomingGroups[group.key] ? (
-            <div
-              key={group.key}
-              className="mt-1 flex gap-2 overflow-x-auto pb-1"
-            >
-              {group.appointments.map((appointment) => (
-                <button
-                  id={`appointment-${appointment.id}`}
-                  key={appointment.id}
-                  type="button"
-                  onClick={() =>
-                    handleSelectAppointment(
-                      appointment.id,
-                    )
-                  }
-                  className="min-w-36 shrink-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
-                >
-                  <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
-                    {getAppointmentDateLabel(
-                      appointment.date,
-                    )}
-                  </span>
-
-                  {appointment.time && (
-                    <span className="mt-0.5 block text-sm font-semibold">
-                      {appointment.time}
-                    </span>
-                  )}
-
-                  {(getAppointmentSubject(
-                    appointment,
-                  ) || appointment.client) && (
-                    <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
-                      {getAppointmentSubject(
-                        appointment,
-                      ) || appointment.client}
-                    </span>
-                  )}
-
-                  <span className="mt-1.5 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[0.7rem] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    À venir
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : null,
-        )}
+            setShowUpcomingCalendar(true);
+          }}
+          className={`inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-semibold transition sm:text-base ${
+            showUpcomingCalendar
+              ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+              : "border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700"
+          }`}
+        >
+          Prochainement ({upcomingAppointmentsList.length})
+        </button>
       </section>
 
     )}
+
+  {homeState === "intervention" && showUpcomingCalendar && (
+    <UpcomingCalendar
+      key={calendarFocusDate ?? todayDateKey}
+      appointments={[
+        ...appointmentsList,
+        ...upcomingAppointmentsList,
+      ]}
+      todayDateKey={todayDateKey}
+      focusDate={calendarFocusDate}
+      onClose={handleCloseUpcomingCalendar}
+      onSelectAppointment={handleSelectAppointment}
+    />
+  )}
 
 
   {showAddClientModal && currentAppointment && (
@@ -1520,6 +1467,8 @@ const handleCreateInvoice = async () => {
   <HomeContent
 
     state={homeState}
+
+    hideMainContent={showUpcomingCalendar}
 
     currentAppointment={
       currentAppointment

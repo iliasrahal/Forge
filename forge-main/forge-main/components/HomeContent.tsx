@@ -63,6 +63,7 @@ type UserJob =
 type HomeContentProps = {
   state: HomeState;
   currentAppointment?: Appointment;
+  hideMainContent?: boolean;
   report?: InterventionReport | null;
   error?: string;
   isValidatingReport?: boolean;
@@ -97,6 +98,7 @@ type HomeContentProps = {
 export default function HomeContent({
   state,
   currentAppointment,
+  hideMainContent = false,
   report,
   error,
   isValidatingReport = false,
@@ -687,9 +689,9 @@ export default function HomeContent({
 
   if (!currentAppointment) {
     return (
-      <section className="flex min-h-[32rem] flex-1 flex-col items-center justify-center px-2 pb-32 pt-12 sm:px-4 sm:pb-36">
+      <section className={`flex flex-1 flex-col items-center justify-center px-2 sm:px-4 ${hideMainContent ? "min-h-0 pb-0 pt-0" : "min-h-[32rem] pb-32 pt-12 sm:pb-36"}`}>
         <div className="w-full max-w-2xl">
-          {replyStatus === "idle" && (
+          {replyStatus === "idle" && !hideMainContent && (
             <div className="text-center">
               <h2 className="text-4xl font-bold tracking-[-0.04em] text-blue-600 dark:text-blue-400 sm:text-5xl">
                 Salut{firstName ? ` ${firstName}` : ""},
@@ -802,7 +804,7 @@ export default function HomeContent({
       className="flex min-h-0 shrink-0 flex-col items-center px-2 pb-3 pt-1 sm:px-4"
     >
       <div className="w-full max-w-2xl">
-       {replyStatus === "idle" && (
+       {replyStatus === "idle" && !hideMainContent && (
   <CurrentInterventionCard
   appointment={currentAppointment}
   isInProgress={currentAppointment.status === "inProgress"}

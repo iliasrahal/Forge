@@ -5,6 +5,7 @@ import type {
 } from "@/data/appointments";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { splitAppointmentsByDate } from "@/src/lib/intervention-calendar";
 
 const PARIS_TIME_ZONE = "Europe/Paris";
 
@@ -124,27 +125,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     },
   });
 
-  const todayAppointments: Appointment[] = [];
-  const upcomingAppointments: Appointment[] = [];
-
-  for (const intervention of interventions) {
-    const appointment =
-      mapIntervention(intervention);
-    const isScheduledToday =
-      appointment.date === todayKey;
-
-    if (isScheduledToday) {
-      todayAppointments.push(appointment);
-      continue;
-    }
-
-    if (
-      intervention.status === "PLANIFIEE" &&
-      appointment.date > todayKey
-    ) {
-      upcomingAppointments.push(appointment);
-    }
-  }
+  const appointments = interventions.map(mapIntervention);
+  const {
+    today: todayAppointments,
+    upcoming: upcomingAppointments,
+  } = splitAppointmentsByDate(appointments, todayKey);
 
   return (
     <HomeClient
