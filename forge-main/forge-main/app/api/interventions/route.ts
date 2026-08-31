@@ -154,6 +154,11 @@ export async function POST(request: Request) {
         ? body.clientName.trim()
         : "";
 
+    const requestedClientId =
+      typeof body.clientId === "string"
+        ? body.clientId.trim()
+        : "";
+
     const title =
       typeof body.title === "string"
         ? body.title.trim()
@@ -201,7 +206,24 @@ export async function POST(request: Request) {
       );
     }
 
-    const clients = clientName
+    let client = requestedClientId
+      ? await prisma.client.findFirst({
+          where: {
+            id: requestedClientId,
+            userId: currentUser.id,
+            archived: false,
+          },
+        })
+      : undefined;
+
+    if (requestedClientId && !client) {
+      return NextResponse.json(
+        { error: "Le client sélectionné est introuvable." },
+        { status: 404 },
+      );
+    }
+
+    const clients = !requestedClientId && clientName
       ? await prisma.client.findMany({
           where: {
             userId: currentUser.id,
@@ -230,11 +252,11 @@ export async function POST(request: Request) {
       );
     }
 
-    let client = matchingClients[0];
+    client = client ?? matchingClients[0];
     let clientCreated = false;
     let clientUpdated = false;
 
-    if (clientName && !client) {
+    if (!requestedClientId && clientName && !client) {
       const { firstName, lastName } = splitClientName(clientName);
 
     client = await prisma.client.create({

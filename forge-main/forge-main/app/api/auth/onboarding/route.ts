@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { createTrialPeriod } from "@/src/lib/subscription-access";
 
 
 type UserJob =
@@ -188,9 +189,19 @@ export async function PATCH(
           });
 
         if (!existingMembership) {
+          const trial =
+            session.user.trialStartedAt && session.user.trialEndsAt
+              ? {
+                  trialStartedAt: session.user.trialStartedAt,
+                  trialEndsAt: session.user.trialEndsAt,
+                }
+              : createTrialPeriod(session.user.createdAt);
           const organization = await transaction.organization.create({
             data: {
               name: organizationName,
+              trialStartedAt: trial.trialStartedAt,
+              trialEndsAt: trial.trialEndsAt,
+              subscriptionStatus: session.user.subscriptionStatus,
               members: {
                 create: {
                   userId: session.userId,

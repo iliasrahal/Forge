@@ -107,23 +107,36 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const { newIntervention } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
-  const interventions = await prisma.intervention.findMany({
-    where: {
-      OR: [
-        { userId: currentUser.id },
-        { client: { userId: currentUser.id } },
-      ],
-      status: {
-        in: ["PLANIFIEE", "EN_COURS"],
+  const [interventions, clients] = await Promise.all([
+    prisma.intervention.findMany({
+      where: {
+        OR: [
+          { userId: currentUser.id },
+          { client: { userId: currentUser.id } },
+        ],
+        status: {
+          in: ["PLANIFIEE", "EN_COURS"],
+        },
       },
-    },
-    include: {
-      client: true,
-    },
-    orderBy: {
-      scheduledAt: "asc",
-    },
-  });
+      include: {
+        client: true,
+      },
+      orderBy: {
+        scheduledAt: "asc",
+      },
+    }),
+    prisma.client.findMany({
+      where: {
+        userId: currentUser.id,
+        archived: false,
+      },
+      orderBy: [
+        { companyName: "asc" },
+        { lastName: "asc" },
+        { firstName: "asc" },
+      ],
+    }),
+  ]);
 
   const appointments = interventions.map(mapIntervention);
   const {
@@ -136,6 +149,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       todayAppointments={todayAppointments}
       upcomingAppointments={upcomingAppointments}
       todayDateKey={todayKey}
+      planningClients={clients.map((client) => ({
+        id: client.id,
+        name:
+          client.type === "PROFESSIONNEL"
+            ? client.companyName ?? "Client professionnel"
+            : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() ||
+              "Client",
+      }))}
       newInterventionId={newIntervention ?? null}
     />
   );

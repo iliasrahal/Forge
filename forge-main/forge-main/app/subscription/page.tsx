@@ -1,26 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import ForgeLogo from "@/components/ForgeLogo";
+import LogoutButton from "@/components/LogoutButton";
 import CancelSubscriptionControls from "@/components/subscription/CancelSubscriptionControls";
 import { getCurrentUser } from "@/src/lib/auth";
 import { getForgePlan } from "@/src/lib/pricing";
+import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 
 export default async function SubscriptionPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const plan = getForgePlan(user.workMode);
+  const access = await getSubscriptionAccessForUser(user.id);
 
   return (
     <main className="min-h-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
 
       <section className="mx-auto max-w-xl">
 
-        <Link
-          href="/app"
-          className="forge-back-link text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-          Retour
-        </Link>
+        {access.hasAccess && (
+          <Link
+            href="/app"
+            className="forge-back-link text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Retour
+          </Link>
+        )}
 
 
         <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -40,9 +45,19 @@ export default async function SubscriptionPage() {
 
 
           <p className="mt-4 text-slate-600 dark:text-slate-400">
-            Ton mois d&apos;essai est terminé.
-            <br />
-            Continue à gagner du temps dans ton activité.
+            {access.hasActiveSubscription ? (
+              <>Ton abonnement Forge est actif.</>
+            ) : access.isTrialActive ? (
+              <>
+                {access.daysRemaining} jour{access.daysRemaining > 1 ? "s" : ""} restant{access.daysRemaining > 1 ? "s" : ""} dans ton essai gratuit.
+              </>
+            ) : (
+              <>
+                Votre période d&apos;essai gratuite est terminée.
+                <br />
+                Activez votre abonnement pour retrouver votre espace Forge.
+              </>
+            )}
           </p>
 
 
@@ -88,6 +103,10 @@ export default async function SubscriptionPage() {
 
 
           <CancelSubscriptionControls />
+
+          <div className="mt-5 flex justify-center">
+            <LogoutButton />
+          </div>
 
 
 

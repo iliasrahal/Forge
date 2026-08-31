@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
 import { getPhoneSearchVariants } from "@/src/lib/phone";
+import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 
 type LoginBody = {
   identifier?: string;
@@ -130,7 +131,11 @@ export async function POST(request: Request) {
       },
     );
 
+    const subscriptionAccess =
+      await getSubscriptionAccessForUser(user.id);
+
 return NextResponse.json({
+  subscriptionRequired: !subscriptionAccess.hasAccess,
   user: {
     id: user.id,
     firstName: user.firstName,

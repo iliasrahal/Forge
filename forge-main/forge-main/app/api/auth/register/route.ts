@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { sendActivationEmail } from "@/src/lib/email";
 import { getPhoneSearchVariants, normalizePhone } from "@/src/lib/phone";
+import { createTrialPeriod } from "@/src/lib/subscription-access";
 
 
 type RegisterBody = {
@@ -198,6 +199,8 @@ export async function POST(
         12,
       );
 
+    const trial = createTrialPeriod();
+
 
 
 
@@ -218,11 +221,15 @@ export async function POST(
 
           passwordHash,
 
-            trialEndsAt: new Date(
-    Date.now() + 14 * 24 * 60 * 60 * 1000,
-  ),
-
-  subscriptionStatus: "TRIAL",
+          trialStartedAt: invitation
+            ? null
+            : trial.trialStartedAt,
+          trialEndsAt: invitation
+            ? null
+            : trial.trialEndsAt,
+          subscriptionStatus: invitation
+            ? "ORGANIZATION"
+            : "TRIAL",
 
 
 

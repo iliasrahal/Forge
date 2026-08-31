@@ -8,7 +8,9 @@ import {
 import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import HomeContent from "@/components/HomeContent";
-import UpcomingCalendar from "@/components/UpcomingCalendar";
+import UpcomingCalendar, {
+  type PlanningClient,
+} from "@/components/UpcomingCalendar";
 import {
   getAppointmentDateLabel,
   getAppointmentSubject,
@@ -44,6 +46,7 @@ type CompleteInterventionResponse = {
 type HomeClientProps = {
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
+  planningClients: PlanningClient[];
   todayDateKey: string;
   newInterventionId?: string | null;
 };
@@ -51,6 +54,7 @@ type HomeClientProps = {
 export default function HomeClient({
   todayAppointments,
   upcomingAppointments,
+  planningClients,
   todayDateKey,
   newInterventionId: initialNewInterventionId = null,
 }: HomeClientProps) {
@@ -857,6 +861,17 @@ const handleSaveNotes = async (notes: string) => {
     );
   };
 
+  const handlePlanningInterventionCreated = (
+    interventionId: string,
+    scheduledDate: string,
+  ) => {
+    setIsInitialWelcomeActive(false);
+    setNewInterventionId(interventionId);
+    setCalendarFocusDate(scheduledDate);
+    setShowUpcomingCalendar(true);
+    router.refresh();
+  };
+
   const handleStartProcessing = () => {
     setReport(null);
     setReportError("");
@@ -1260,10 +1275,12 @@ const handleCreateInvoice = async () => {
         ...appointmentsList,
         ...upcomingAppointmentsList,
       ]}
+      clients={planningClients}
       todayDateKey={todayDateKey}
       focusDate={calendarFocusDate}
       onClose={handleCloseUpcomingCalendar}
       onSelectAppointment={handleSelectAppointment}
+      onInterventionCreated={handlePlanningInterventionCreated}
     />
   )}
 

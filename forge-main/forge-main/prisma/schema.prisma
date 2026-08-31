@@ -76,6 +76,8 @@ model User {
 
   passwordHash String
 
+  trialStartedAt DateTime?
+
   trialEndsAt DateTime?
 
   subscriptionStatus String @default("TRIAL")
@@ -116,6 +118,9 @@ model User {
 model Organization {
   id            String               @id @default(cuid())
   name          String
+  trialStartedAt DateTime?
+  trialEndsAt    DateTime?
+  subscriptionStatus String          @default("TRIAL")
   members       OrganizationMember[]
   invitations   TeamInvitation[]
   clients       Client[]

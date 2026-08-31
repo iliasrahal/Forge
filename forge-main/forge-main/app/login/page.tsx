@@ -17,6 +17,7 @@ type UserJob =
 type WorkMode = "SOLO" | "TEAM";
 
 type LoginResponse = {
+  subscriptionRequired?: boolean;
   user?: {
     id: string;
     firstName: string;
@@ -112,7 +113,9 @@ export default function LoginPage() {
         );
       }
 
-      if (data.user.onboardingCompleted) {
+      if (data.subscriptionRequired) {
+        router.push("/subscription?reason=trial-ended");
+      } else if (data.user.onboardingCompleted) {
         localStorage.setItem(
           "forgeOnboardingCompleted",
           "true",
