@@ -20,16 +20,16 @@ export default function AuthShell({
   bare = true,
 }: AuthShellProps) {
   return (
-    <main className="relative isolate flex min-h-dvh overflow-hidden bg-slate-50 px-5 py-8 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-8 sm:py-12">
+    <main className="relative isolate flex min-h-dvh overflow-hidden bg-[#f6f7f9] px-5 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white sm:px-8 sm:py-12">
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.10),transparent_30%),radial-gradient(circle_at_86%_88%,rgba(14,165,233,0.08),transparent_28%)] dark:bg-[radial-gradient(circle_at_18%_10%,rgba(59,130,246,0.13),transparent_30%),radial-gradient(circle_at_86%_88%,rgba(14,165,233,0.08),transparent_28%)]"
+        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(46rem_24rem_at_82%_-6%,rgba(59,130,246,0.08),transparent_70%),radial-gradient(40rem_22rem_at_-6%_2%,rgba(99,102,241,0.06),transparent_70%)] dark:bg-[radial-gradient(46rem_24rem_at_82%_-6%,rgba(37,99,235,0.16),transparent_70%),radial-gradient(40rem_22rem_at_-6%_2%,rgba(79,70,229,0.12),transparent_70%)]"
       />
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 opacity-40 [background-image:linear-gradient(rgba(148,163,184,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.08)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)] dark:opacity-20"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-50 [background-image:linear-gradient(rgba(148,163,184,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.06)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)] dark:opacity-25"
       />
 
 
