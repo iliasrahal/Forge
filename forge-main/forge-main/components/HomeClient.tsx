@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
+import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 import HomeContent from "@/components/HomeContent";
 import UpcomingCalendar, {
   type PlanningClient,
@@ -1154,7 +1155,8 @@ const handleCreateInvoice = async () => {
     >
       <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : "max-w-xl"}`}>
 
-  <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 justify-end`}>
+  <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 flex-col items-end gap-2`}>
+    <WorkspaceSwitcher />
     <UserMenu showLogout={homeState === "intervention"} />
   </div>
 
