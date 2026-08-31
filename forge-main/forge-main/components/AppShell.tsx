@@ -62,19 +62,19 @@ export default function AppShell({
               mx-auto
               w-full
               max-w-md
-              rounded-3xl
+              rounded-[1.75rem]
               border
-              border-slate-200/80
-              bg-white/90
+              border-slate-200/70
+              bg-white/95
               px-1.5
               py-1.5
-              shadow-[0_1px_2px_rgba(15,23,42,0.04),0_16px_44px_-26px_rgba(15,23,42,0.3)]
-              backdrop-blur-md
+              shadow-[0_8px_20px_-10px_rgba(15,23,42,0.15),0_28px_50px_-24px_rgba(76,110,245,0.4)]
+              backdrop-blur-xl
               dark:border-slate-700/70
-              dark:bg-slate-900/85
-              dark:shadow-[0_1px_2px_rgba(0,0,0,0.4),0_18px_44px_-26px_rgba(0,0,0,0.7)]
-              sm:px-4
-              sm:py-2.5
+              dark:bg-slate-900/90
+              dark:shadow-[0_8px_20px_-10px_rgba(0,0,0,0.5),0_28px_55px_-24px_rgba(0,0,0,0.7)]
+              sm:px-2
+              sm:py-2
             "
           >
 

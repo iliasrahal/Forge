@@ -20,11 +20,11 @@ export default function AuthShell({
   bare = true,
 }: AuthShellProps) {
   return (
-    <main className="relative isolate flex min-h-dvh overflow-hidden bg-[#f6f7f9] px-5 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white sm:px-8 sm:py-12">
+    <main className="relative isolate flex min-h-dvh overflow-hidden bg-[#f4f6fb] px-5 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white sm:px-8 sm:py-12">
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(46rem_24rem_at_82%_-6%,rgba(59,130,246,0.08),transparent_70%),radial-gradient(40rem_22rem_at_-6%_2%,rgba(99,102,241,0.06),transparent_70%)] dark:bg-[radial-gradient(46rem_24rem_at_82%_-6%,rgba(37,99,235,0.16),transparent_70%),radial-gradient(40rem_22rem_at_-6%_2%,rgba(79,70,229,0.12),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(76,110,245,0.16),transparent_66%),radial-gradient(42rem_28rem_at_112%_-4%,rgba(129,140,248,0.12),transparent_58%),radial-gradient(38rem_28rem_at_-10%_4%,rgba(99,102,241,0.08),transparent_60%)] dark:bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(37,99,235,0.26),transparent_66%),radial-gradient(42rem_28rem_at_112%_-4%,rgba(79,70,229,0.2),transparent_58%),radial-gradient(38rem_28rem_at_-10%_4%,rgba(79,70,229,0.16),transparent_60%)]"
       />
 
       <div
@@ -44,11 +44,17 @@ export default function AuthShell({
           <Link
             href="/"
             aria-label="Retour à l’accueil Forge"
-            className="group inline-flex items-center rounded-2xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
+            className="group inline-flex items-center rounded-[1.75rem] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 dark:focus-visible:ring-blue-900"
           >
 
-            <span className="transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
-              <ForgeLogo size={82} />
+            <span className="relative transition duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.03]">
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 scale-125 rounded-full bg-blue-500/20 blur-2xl"
+              />
+              <span className="inline-flex rounded-[1.6rem] border border-slate-200/80 bg-white p-3 shadow-[0_24px_60px_-24px_rgba(37,99,235,0.45)] dark:border-slate-700/80 dark:bg-slate-900">
+                <ForgeLogo size={72} />
+              </span>
             </span>
 
           </Link>

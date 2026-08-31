@@ -33,7 +33,7 @@ export default function BottomNavigation() {
   };
 
   return (
-    <nav className="grid grid-cols-4 gap-1 text-center">
+    <nav className="grid grid-cols-4 gap-1">
       {ITEMS.map(({ href, label, icon: Icon }) => {
         const active = activeFor(href);
 
@@ -42,16 +42,21 @@ export default function BottomNavigation() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.7rem] font-medium transition sm:min-h-16 sm:rounded-2xl sm:text-sm ${
+            className={`group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.7rem] font-semibold transition-all duration-200 sm:min-h-16 sm:text-[0.78rem] ${
               active
-                ? "bg-blue-50 font-semibold text-blue-600 dark:bg-blue-500/12 dark:text-blue-300"
-                : "text-slate-400 hover:bg-slate-100/70 hover:text-slate-600 dark:text-slate-500 dark:hover:bg-slate-800/60 dark:hover:text-slate-300"
+                ? "bg-blue-600 text-white shadow-[0_10px_24px_-10px_rgba(37,99,235,0.65)]"
+                : "text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800/70 dark:hover:text-slate-200"
             }`}
           >
-            {active ? (
-              <span className="absolute top-1 h-1 w-6 rounded-full bg-blue-600 dark:bg-blue-400" />
-            ) : null}
-            <Icon size={22} strokeWidth={active ? 2.4 : 2} />
+            <Icon
+              size={22}
+              strokeWidth={active ? 2.5 : 2}
+              className={
+                active
+                  ? ""
+                  : "transition-transform group-hover:-translate-y-0.5"
+              }
+            />
             <span className="leading-tight">{label}</span>
           </Link>
         );

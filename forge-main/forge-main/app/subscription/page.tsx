@@ -14,7 +14,12 @@ export default async function SubscriptionPage() {
   const access = await getSubscriptionAccessForUser(user.id);
 
   return (
-    <main className="min-h-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
+    <main className="relative isolate min-h-dvh overflow-hidden bg-[#f4f6fb] px-6 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white">
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(76,110,245,0.16),transparent_66%),radial-gradient(40rem_28rem_at_112%_0%,rgba(129,140,248,0.12),transparent_58%)] dark:bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(37,99,235,0.26),transparent_66%),radial-gradient(40rem_28rem_at_112%_0%,rgba(79,70,229,0.2),transparent_58%)]"
+      />
 
       <section className="mx-auto max-w-xl">
 
@@ -28,12 +33,14 @@ export default async function SubscriptionPage() {
         )}
 
 
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="mt-6 rounded-3xl border border-slate-200/90 bg-white p-8 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_30px_60px_-32px_rgba(76,110,245,0.4)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[0_1px_2px_rgba(0,0,0,0.4),0_24px_50px_-28px_rgba(0,0,0,0.7)]">
 
 
           {/* Logo centré */}
           <div className="flex justify-center">
-            <ForgeLogo size={80} />
+            <span className="inline-flex rounded-[1.6rem] border border-slate-200/80 bg-white p-3 shadow-[0_24px_60px_-24px_rgba(37,99,235,0.4)] dark:border-slate-700/80 dark:bg-slate-950">
+              <ForgeLogo size={68} />
+            </span>
           </div>
 
 
