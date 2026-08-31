@@ -57,7 +57,7 @@ export function subscriptionSummary(
   );
 
   if (access.hasActiveSubscription) {
-    return { label: "Abonné", tone: "green" as const };
+    return { label: "Abonné", tone: "emerald" as const };
   }
 
   if (access.isTrialActive) {

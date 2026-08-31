@@ -227,6 +227,132 @@ html.dark body {
   background-color: rgb(15 23 42 / 0.56);
 }
 
+/* ------------------------------------------------------------------ */
+/* Back-office /admin — console dense, nette, contrastée               */
+/* ------------------------------------------------------------------ */
+.forge-admin {
+  --admin-bg: #f6f7f9;
+  --admin-panel: #ffffff;
+  --admin-border: rgb(226 232 240 / 0.9);
+  --admin-muted: #64748b;
+  min-height: 100dvh;
+  background:
+    radial-gradient(60rem 30rem at 78% -8%, rgb(59 130 246 / 0.07), transparent 70%),
+    radial-gradient(50rem 26rem at -6% 4%, rgb(99 102 241 / 0.06), transparent 70%),
+    var(--admin-bg);
+  color: #0f172a;
+  letter-spacing: -0.011em;
+}
+
+.dark .forge-admin {
+  --admin-bg: #0a0f1c;
+  --admin-panel: #0f172a;
+  --admin-border: rgb(51 65 85 / 0.7);
+  --admin-muted: #94a3b8;
+  color: #e2e8f0;
+  background:
+    radial-gradient(60rem 30rem at 78% -8%, rgb(37 99 235 / 0.16), transparent 70%),
+    radial-gradient(50rem 26rem at -6% 4%, rgb(79 70 229 / 0.12), transparent 70%),
+    var(--admin-bg);
+}
+
+.forge-admin :is(h1, h2, h3) {
+  letter-spacing: -0.025em;
+}
+
+.forge-admin ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.forge-admin ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: rgb(148 163 184 / 0.45);
+}
+
+.forge-admin ::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(148 163 184 / 0.7);
+}
+
+.admin-card {
+  border: 1px solid var(--admin-border);
+  border-radius: 0.875rem;
+  background: var(--admin-panel);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 8px 24px -18px rgb(15 23 42 / 0.15);
+}
+
+.dark .admin-card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 12px 30px -20px rgb(0 0 0 / 0.6);
+}
+
+.admin-card-hover {
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgb(59 130 246 / 0.5);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.05),
+    0 18px 40px -22px rgb(37 99 235 / 0.35);
+}
+
+.admin-nav-link {
+  position: relative;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.admin-nav-link[data-active="true"]::before {
+  position: absolute;
+  left: -0.6rem;
+  top: 50%;
+  height: 1.1rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: #2563eb;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.forge-admin table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.forge-admin tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.forge-admin main > * {
+  animation: forge-admin-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes forge-admin-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-admin main > *,
+  .admin-card-hover {
+    animation: none;
+    transition: none;
+  }
+}
+
 .forge-back-link {
   display: inline-flex;
   align-items: center;

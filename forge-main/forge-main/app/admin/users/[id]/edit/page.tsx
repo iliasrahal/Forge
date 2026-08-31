@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { PageHeader } from "../../../_components/ui";
 import EditUserForm from "./_components/EditUserForm";
 
 export const dynamic = "force-dynamic";
@@ -20,14 +20,13 @@ export default async function AdminUserEditPage({
   if (!user) notFound();
 
   return (
-    <div className="mx-auto max-w-lg space-y-6">
-      <Link
-        href={`/admin/users/${user.id}`}
-        className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
-      >
-        ← Retour à la fiche
-      </Link>
-      <h1 className="text-2xl font-bold">Modifier le compte</h1>
+    <div className="mx-auto max-w-xl">
+      <PageHeader
+        title="Modifier le compte"
+        subtitle={user.email}
+        backHref={`/admin/users/${user.id}`}
+        backLabel="Retour à la fiche"
+      />
       <EditUserForm
         userId={user.id}
         initial={{
