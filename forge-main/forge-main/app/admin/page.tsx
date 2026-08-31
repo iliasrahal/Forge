@@ -11,15 +11,18 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { requireStaff } from "@/src/lib/admin-auth";
+import { requireStaff, roleAtLeast } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { runTeamCleanup } from "./_actions";
+import AsyncButton from "./_components/AsyncButton";
 import { Card, PageHeader, Stat } from "./_components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  await requireStaff("SUPPORT");
+  const { staff } = await requireStaff("SUPPORT");
+  const canRunCleanup = roleAtLeast(staff.role, "ADMIN");
 
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -43,7 +46,7 @@ export default async function AdminDashboardPage() {
     prisma.user.count({ where: { trialEndsAt: { gt: now } } }),
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.user.count({
-      where: { subscriptionStatus: { in: ["ACTIVE", "PAID"] } },
+      where: { subscriptionStatus: { in: ["ACTIVE", "ACTIVE_PRO"] } },
     }),
     prisma.client.count(),
     prisma.intervention.count(),
@@ -55,6 +58,10 @@ export default async function AdminDashboardPage() {
       orderBy: { subscriptionStatus: "asc" },
     }),
   ]);
+
+  const teamsInGrace = await prisma.organization.count({
+    where: { type: "TEAM", graceExpiresAt: { not: null } },
+  });
 
   const maxStatus = Math.max(
     1,
@@ -112,7 +119,25 @@ export default async function AdminDashboardPage() {
         <Stat label="Factures" value={invoices} icon={ReceiptText} />
       </div>
 
-      <Card className="mt-8 p-6">
+      <Card className="mt-8 flex flex-wrap items-center justify-between gap-4 p-6">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+            Équipes en sursis
+          </h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            {teamsInGrace === 0
+              ? "Aucune équipe en attente de suppression."
+              : `${teamsInGrace} équipe(s) sans aucun membre abonné. Elles sont supprimées automatiquement après 14 jours.`}
+          </p>
+        </div>
+        {canRunCleanup ? (
+          <AsyncButton action={runTeamCleanup}>
+            Lancer le nettoyage maintenant
+          </AsyncButton>
+        ) : null}
+      </Card>
+
+      <Card className="mt-4 p-6">
         <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
           Répartition par statut d'abonnement
         </h2>

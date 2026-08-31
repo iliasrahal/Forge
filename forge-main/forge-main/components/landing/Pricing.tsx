@@ -7,7 +7,7 @@ import {
 import ForgeSymbol from "@/components/ForgeSymbol";
 import { FORGE_PRICING } from "@/src/lib/pricing";
 
-const forgeOffer = FORGE_PRICING.SOLO;
+const forgeOffer = FORGE_PRICING.STANDARD;
 
 export default function Pricing() {
   return (

@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { isProSubscription } from "@/src/lib/subscription-policy";
+import { countUserTeams, teamMemberLimit } from "@/src/lib/team-access";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -92,6 +94,45 @@ export async function POST(request: Request) {
         workspaceName: invitation.organization.name,
         alreadyMember: true,
       });
+    }
+
+    // Quota : hors Pro, on ne peut appartenir qu'à une seule équipe.
+    if (!isProSubscription(context.user.subscriptionStatus)) {
+      const otherTeams = await countUserTeams(
+        context.user.id,
+        invitation.organizationId,
+      );
+      if (otherTeams >= 1) {
+        return NextResponse.json(
+          {
+            error:
+              "Tu fais déjà partie d’une équipe. Passe à l’abonnement Pro (49,99 €) pour en rejoindre plusieurs.",
+            code: "TEAM_LIMIT_REACHED",
+          },
+          { status: 403 },
+        );
+      }
+    }
+
+    // Plafond de membres de l'équipe (selon l'abonnement du propriétaire).
+    const owner = await prisma.organizationMember.findFirst({
+      where: { organizationId: invitation.organizationId, role: "OWNER" },
+      select: { user: { select: { subscriptionStatus: true } } },
+    });
+    const limit = teamMemberLimit(owner?.user.subscriptionStatus);
+    if (Number.isFinite(limit)) {
+      const memberCount = await prisma.organizationMember.count({
+        where: { organizationId: invitation.organizationId },
+      });
+      if (memberCount >= limit) {
+        return NextResponse.json(
+          {
+            error: `Cette équipe est complète (${limit} personnes maximum).`,
+            code: "TEAM_FULL",
+          },
+          { status: 403 },
+        );
+      }
     }
 
     await prisma.$transaction([

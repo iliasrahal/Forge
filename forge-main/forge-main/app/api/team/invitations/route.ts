@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { sendTeamInvitationEmail } from "@/src/lib/email";
 import { prisma } from "@/src/lib/prisma";
+import { teamMemberLimit } from "@/src/lib/team-access";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -39,6 +40,33 @@ export async function POST(request: Request) {
         { error: "Ajoute au moins une adresse e-mail valide." },
         { status: 400 },
       );
+    }
+
+    // Plafond de membres (illimité si le propriétaire est Pro).
+    const limit = teamMemberLimit(context.user.subscriptionStatus);
+    if (Number.isFinite(limit)) {
+      const [memberCount, pendingCount] = await Promise.all([
+        prisma.organizationMember.count({
+          where: { organizationId: context.workspace.id },
+        }),
+        prisma.teamInvitation.count({
+          where: {
+            organizationId: context.workspace.id,
+            status: "PENDING",
+            expiresAt: { gt: new Date() },
+          },
+        }),
+      ]);
+
+      if (memberCount + pendingCount + emails.length > limit) {
+        return NextResponse.json(
+          {
+            error: `Une équipe est limitée à ${limit} personnes (abonnement Standard). Passe au Pro (49,99 €) pour une équipe plus grande.`,
+            code: "TEAM_MEMBER_LIMIT",
+          },
+          { status: 403 },
+        );
+      }
     }
 
     const appUrl = (

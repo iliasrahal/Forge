@@ -13,14 +13,7 @@ import {
 } from "@/app/admin/_actions";
 import AsyncButton from "@/app/admin/_components/AsyncButton";
 
-const SUBSCRIPTION_STATUSES = [
-  "TRIAL",
-  "ACTIVE",
-  "PAID",
-  "ORGANIZATION",
-  "CANCELED",
-  "EXPIRED",
-];
+const SUBSCRIPTION_STATUSES = ["TRIAL", "ACTIVE", "ACTIVE_PRO", "FREE"];
 
 function Panel({
   title,

@@ -183,6 +183,9 @@ model Organization {
   trialStartedAt     DateTime?
   trialEndsAt        DateTime?
   subscriptionStatus String               @default("TRIAL")
+  // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
+  // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
+  graceExpiresAt     DateTime?
   members            OrganizationMember[]
   invitations        TeamInvitation[]
   clients            Client[]

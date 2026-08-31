@@ -13,6 +13,7 @@ import { recordAdminAction } from "@/src/lib/admin-audit";
 import { sendPasswordResetEmail } from "@/src/lib/email";
 import { normalizePhone } from "@/src/lib/phone";
 import { prisma } from "@/src/lib/prisma";
+import { cleanupExpiredTeams } from "@/src/lib/team-access";
 import type { StaffRole } from "@/src/generated/prisma/client";
 
 type ActionResult =
@@ -21,6 +22,7 @@ type ActionResult =
       tempPassword?: string;
       filename?: string;
       json?: string;
+      deletedCount?: number;
     }
   | { ok: false; error: string };
 
@@ -393,6 +395,28 @@ export async function changeStaffRole(
     revalidatePath("/admin/staff");
 
     return { ok: true };
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Maintenance                                                         */
+/* ------------------------------------------------------------------ */
+
+export async function runTeamCleanup(): Promise<ActionResult> {
+  return withStaff("ADMIN", async (actorId) => {
+    const deletedCount = await cleanupExpiredTeams();
+
+    if (deletedCount > 0) {
+      await recordAdminAction({
+        actorId,
+        action: "USER_UPDATED",
+        targetType: "User",
+        targetId: "system",
+        summary: `Nettoyage : ${deletedCount} équipe(s) supprimée(s) (sursis écoulé)`,
+      });
+    }
+
+    return { ok: true, deletedCount };
   });
 }
 

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/src/lib/prisma";
+import { resolveEffectiveStatus } from "@/src/lib/subscription-policy";
 
 
 export async function getCurrentUser() {
@@ -55,6 +56,22 @@ export async function getCurrentUser() {
 
 
     return null;
+  }
+
+
+
+  // Bascule paresseuse : un essai terminé sans abonnement passe en FREE.
+  const effectiveStatus = resolveEffectiveStatus(
+    session.user.subscriptionStatus,
+    session.user.trialEndsAt,
+  );
+
+  if (effectiveStatus !== session.user.subscriptionStatus) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { subscriptionStatus: effectiveStatus },
+    });
+    session.user.subscriptionStatus = effectiveStatus;
   }
 
 

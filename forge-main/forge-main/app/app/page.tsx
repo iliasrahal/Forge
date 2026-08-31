@@ -1,4 +1,5 @@
 import HomeClient from "@/components/HomeClient";
+import TeamGraceBanner from "@/components/TeamGraceBanner";
 import type {
   Appointment,
   AppointmentStatus,
@@ -144,7 +145,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   } = splitAppointmentsByDate(appointments, todayKey);
 
   return (
-    <HomeClient
+    <>
+      {workspaceContext.workspace.type === "TEAM" ? (
+        <TeamGraceBanner
+          workspaceName={workspaceContext.workspace.name}
+          graceExpiresAt={workspaceContext.workspace.graceExpiresAt}
+        />
+      ) : null}
+      <HomeClient
       todayAppointments={todayAppointments}
       upcomingAppointments={upcomingAppointments}
       todayDateKey={todayKey}
@@ -157,6 +165,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               "Client",
       }))}
       newInterventionId={newIntervention ?? null}
-    />
+      />
+    </>
   );
 }
