@@ -127,7 +127,7 @@ export default function DeleteAccountPage() {
 
 
 
-          <label className="mt-6 flex items-center gap-3 text-sm text-red-700 dark:text-red-300">
+          <label className="mx-auto mt-6 flex w-fit max-w-full items-center justify-center gap-3 text-sm text-red-700 dark:text-red-300">
 
 
 
@@ -139,7 +139,7 @@ export default function DeleteAccountPage() {
                   event.target.checked,
                 )
               }
-              className="h-5 w-5"
+              className="h-5 w-5 shrink-0"
             />
 
 
