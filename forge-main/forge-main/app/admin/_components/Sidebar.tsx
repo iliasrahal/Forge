@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
+  Building2,
   ScrollText,
   ShieldCheck,
   ExternalLink,
@@ -15,6 +16,7 @@ import { Avatar } from "./ui";
 const NAV = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard, exact: true, minRank: 1 },
   { href: "/admin/users", label: "Utilisateurs", icon: Users, minRank: 1 },
+  { href: "/admin/teams", label: "Équipes", icon: Building2, minRank: 1 },
   { href: "/admin/audit", label: "Journal d'audit", icon: ScrollText, minRank: 2 },
   { href: "/admin/staff", label: "Staff", icon: ShieldCheck, minRank: 3 },
 ];

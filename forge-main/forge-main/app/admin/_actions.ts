@@ -409,14 +409,49 @@ export async function runTeamCleanup(): Promise<ActionResult> {
     if (deletedCount > 0) {
       await recordAdminAction({
         actorId,
-        action: "USER_UPDATED",
-        targetType: "User",
-        targetId: "system",
+        action: "TEAMS_CLEANED",
+        targetType: "System",
+        targetId: "team-cleanup",
         summary: `Nettoyage : ${deletedCount} équipe(s) supprimée(s) (sursis écoulé)`,
       });
     }
 
     return { ok: true, deletedCount };
+  });
+}
+
+export async function deleteTeam(
+  organizationId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  return withStaff("SUPER_ADMIN", async (actorId) => {
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { id: true, name: true, type: true, _count: { select: { members: true } } },
+    });
+    if (!org) return fail("Équipe introuvable.");
+    if (org.type !== "TEAM") {
+      return fail("Un espace personnel ne peut pas être supprimé ici.");
+    }
+
+    const confirmation = String(formData.get("confirmName") ?? "").trim();
+    if (confirmation !== org.name) {
+      return fail("Le nom de l’équipe ne correspond pas.");
+    }
+
+    await recordAdminAction({
+      actorId,
+      action: "TEAM_DELETED",
+      targetType: "Organization",
+      targetId: org.id,
+      summary: `Équipe « ${org.name} » supprimée (${org._count.members} membre(s))`,
+    });
+
+    await prisma.organization.delete({ where: { id: org.id } });
+
+    revalidatePath("/admin/teams");
+
+    return { ok: true };
   });
 }
 
