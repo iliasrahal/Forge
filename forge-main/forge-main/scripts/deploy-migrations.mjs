@@ -6,8 +6,6 @@ import pg from "pg";
 
 const { Client } = pg;
 
-<<<<<<< HEAD
-=======
 // Les migrations (DDL + verrou d'avis) exigent une connexion « session » ou
 // directe. Le pooler transaction (port 6543) utilisé par l'app au runtime
 // casse `prisma migrate deploy`. On privilégie donc DIRECT_URL.
@@ -18,41 +16,19 @@ function cleanConnectionString(value) {
   return value
     .trim()
     .replace(/^(?:DIRECT_URL|DATABASE_URL)\s*=\s*/i, "")
-    .replace(/^['"]|['"]$/g, "")
+    .replace(/^(['"])(.*)\1$/s, "$2")
     .trim();
 }
 
+const runtimeDatabaseUrl = cleanConnectionString(process.env.DATABASE_URL);
 const databaseUrl =
   cleanConnectionString(process.env.DIRECT_URL) ||
-  cleanConnectionString(process.env.DATABASE_URL);
->>>>>>> be5838b779b61a69f1936934843a79b263ae8cf9
+  runtimeDatabaseUrl;
 const migrationsDirectory = resolve(process.cwd(), "prisma/migrations");
 const pendingWorkspaceMigrations = new Set([
   "20260831120001_workspace_roles",
   "20260831120002_workspace_foundation",
 ]);
-
-function normalizeDatabaseUrl(rawValue) {
-  if (!rawValue) return "";
-
-  let value = rawValue.trim();
-
-  // Vercel doit normalement contenir uniquement l'URL, mais cette forme est
-  // parfois copiée directement depuis un fichier .env.
-  value = value.replace(/^DATABASE_URL\s*=\s*/i, "").trim();
-
-  const hasMatchingQuotes =
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"));
-
-  if (hasMatchingQuotes) {
-    value = value.slice(1, -1).trim();
-  }
-
-  return value;
-}
-
-const databaseUrl = normalizeDatabaseUrl(process.env.DATABASE_URL);
 
 if (!databaseUrl) {
   throw new Error(
@@ -104,9 +80,9 @@ try {
   );
 }
 
-// Tous les sous-processus Prisma et Next utilisent exactement la valeur
-// normalisée qui vient d'être contrôlée.
-process.env.DATABASE_URL = databaseUrl;
+// Next utilise l'URL runtime normalisée. Si seule DIRECT_URL est configurée,
+// elle constitue aussi une URL runtime PostgreSQL valide.
+process.env.DATABASE_URL = runtimeDatabaseUrl || databaseUrl;
 
 function runPrisma(...args) {
   execFileSync("npx", ["--no-install", "prisma", ...args], {

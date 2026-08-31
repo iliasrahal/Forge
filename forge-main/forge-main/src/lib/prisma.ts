@@ -31,16 +31,9 @@ const globalForPrisma = globalThis as unknown as {
 const adapter =
   globalForPrisma.prismaAdapter ??
   new PrismaPg({
-<<<<<<< HEAD
-
-    connectionString:
-      databaseConnectionUrl.toString(),
-
-=======
-    connectionString: databaseUrl,
+    connectionString: databaseConnectionUrl.toString(),
     max: 3,
     idleTimeoutMillis: 10_000,
->>>>>>> be5838b779b61a69f1936934843a79b263ae8cf9
   });
 
 
@@ -55,14 +48,5 @@ export const prisma =
   });
 
 
-<<<<<<< HEAD
-
-if (process.env.NODE_ENV !== "production") {
-
-  globalForPrisma.prisma = prisma;
-
-}
-=======
 globalForPrisma.prisma = prisma;
 globalForPrisma.prismaAdapter = adapter;
->>>>>>> be5838b779b61a69f1936934843a79b263ae8cf9
