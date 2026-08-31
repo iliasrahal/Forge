@@ -35,10 +35,27 @@ if (!databaseUrl) {
   );
 }
 
+let migrationUrl = databaseUrl;
 try {
   const parsed = new URL(databaseUrl);
   if (!/^postgres(ql)?:$/.test(parsed.protocol)) {
     throw new Error(`protocole inattendu : ${parsed.protocol}`);
+  }
+
+  // Filet de sécurité : si la migration part sur un pooler transaction
+  // (port 6543 / pgbouncer), `migrate deploy` reste bloqué sur le verrou
+  // d'avis. On borne l'attente pour échouer en quelques secondes plutôt
+  // que de consommer tout le budget de build.
+  if (!parsed.searchParams.has("connect_timeout")) {
+    parsed.searchParams.set("connect_timeout", "15");
+  }
+  migrationUrl = parsed.toString();
+
+  if (parsed.port === "6543" || parsed.searchParams.get("pgbouncer") === "true") {
+    console.warn(
+      "[deploy-migrations] Attention : l'URL de migration ressemble à un pooler " +
+        "transaction (6543). Les migrations exigent DIRECT_URL en mode session (5432).",
+    );
   }
 } catch (error) {
   throw new Error(
@@ -50,7 +67,12 @@ try {
 
 function runPrisma(...args) {
   execFileSync("npx", ["--no-install", "prisma", ...args], {
-    env: { ...process.env, DATABASE_URL: databaseUrl },
+    env: {
+      ...process.env,
+      DATABASE_URL: migrationUrl,
+      // Ne pas rester bloqué indéfiniment sur un verrou Postgres.
+      PGOPTIONS: "-c lock_timeout=15000 -c statement_timeout=120000",
+    },
     stdio: "inherit",
   });
 }
@@ -176,7 +198,11 @@ async function deploy() {
     );
   }
 
-  const client = new Client({ connectionString: databaseUrl });
+  const client = new Client({
+    connectionString: migrationUrl,
+    connectionTimeoutMillis: 15000,
+    statement_timeout: 30000,
+  });
   await client.connect();
 
   let needsBaseline;
