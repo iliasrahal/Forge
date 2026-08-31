@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Check,
   ShieldCheck,
 } from "lucide-react";
 
@@ -9,15 +8,6 @@ import ForgeSymbol from "@/components/ForgeSymbol";
 import { FORGE_PRICING } from "@/src/lib/pricing";
 
 const forgeOffer = FORGE_PRICING.SOLO;
-
-const includedFeatures = [
-  "Assistant IA pour vos interventions",
-  "Création automatique de comptes rendus",
-  "Gestion des clients",
-  "Création de devis et factures",
-  "Réponses clients professionnelles",
-  "Utilisable à l’écrit ou à la voix",
-];
 
 export default function Pricing() {
   return (
@@ -63,23 +53,9 @@ export default function Pricing() {
             </div>
 
             <div className="px-6 py-7 sm:px-8 sm:py-8">
-              <div className="grid gap-4">
-                {includedFeatures.map((feature) => (
-                  <div
-                    key={feature}
-                    className="flex items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-200 sm:text-base"
-                  >
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                      <Check size={15} />
-                    </span>
-                    {feature}
-                  </div>
-                ))}
-              </div>
-
               <Link
                 href="/register"
-                className="group mt-8 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-blue-600 px-6 py-4 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30"
+                className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-blue-600 px-6 py-4 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30"
               >
                 Commencer gratuitement
                 <ArrowRight
