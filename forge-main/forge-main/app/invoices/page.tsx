@@ -3,6 +3,7 @@ import Link from "next/link";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 function formatAmount(amountCents: number) {
@@ -30,15 +31,8 @@ function formatStatus(status: string) {
 export default async function InvoicesPage() {
 
 
-  const currentUser =
-    await requireCurrentUser();
-
-
-
-  console.log(
-    "AVANT RECHERCHE FACTURES",
-    currentUser.id,
-  );
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -46,9 +40,7 @@ export default async function InvoicesPage() {
     await prisma.invoice.findMany({
 
       where: {
-        client: {
-          userId: currentUser.id,
-        },
+        organizationId: workspaceContext.workspace.id,
       },
 
       orderBy: {
@@ -56,13 +48,6 @@ export default async function InvoicesPage() {
       },
 
     });
-
-
-
-  console.log(
-    "FACTURES TROUVEES :",
-    invoices.length,
-  );
 
 
 

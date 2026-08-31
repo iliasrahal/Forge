@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import DeleteClientButton from "@/components/clients/DeleteClientButton";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { clientService } from "@/src/services/client.service";
 
 
@@ -59,7 +60,8 @@ export default async function ClientPage({
   params,
 }: ClientPageProps) {
 
-  const currentUser = await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
   const { id } = await params;
 
@@ -71,7 +73,7 @@ export default async function ClientPage({
 
   const client = await clientService.getById(
     id,
-    currentUser.id,
+    workspaceContext.workspace.id,
   );
 
 

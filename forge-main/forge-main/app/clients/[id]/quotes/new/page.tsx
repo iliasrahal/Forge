@@ -8,6 +8,7 @@ import {
 import QuoteLinesForm from "@/components/QuoteLinesForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 type NewQuotePageProps = {
@@ -27,8 +28,8 @@ export default async function NewQuotePage({
 }: NewQuotePageProps) {
 
 
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -45,7 +46,7 @@ export default async function NewQuotePage({
     await prisma.client.findFirst({
       where: {
         id,
-        userId: currentUser.id,
+        organizationId: workspaceContext.workspace.id,
       },
     });
 
@@ -72,16 +73,15 @@ export default async function NewQuotePage({
   ) {
     "use server";
 
-    const connectedUser =
-      await requireCurrentUser();
+    await requireCurrentUser();
+    const writeContext = await requireWorkspaceContext("write");
 
 
     const ownedClient =
       await prisma.client.findFirst({
         where: {
           id,
-          userId:
-            connectedUser.id,
+          organizationId: writeContext.workspace.id,
         },
         select: {
           id: true,
@@ -194,6 +194,7 @@ export default async function NewQuotePage({
             "BROUILLON",
           clientId:
             ownedClient.id,
+          organizationId: writeContext.workspace.id,
 
           lines: {
             create:

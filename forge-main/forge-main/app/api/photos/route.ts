@@ -13,6 +13,7 @@ import {
   fileToDataUrl,
   isImage,
 } from "@/src/lib/photoFiles.server";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,6 +29,7 @@ function cleanJsonOutput(output: string) {
 
 export async function POST(request: Request) {
   try {
+    await requireWorkspaceContext("useForge");
     const formData =
       await request.formData();
 
@@ -201,6 +203,8 @@ export async function POST(request: Request) {
       description: null,
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
     console.error(
       "Erreur lors de l’analyse des photos :",
       error,

@@ -556,9 +556,9 @@ const handleAddClientAndStart = async () => {
 
   if (
     startClientType === "PARTICULIER" &&
-    (!startClientFirstName.trim() || !startClientLastName.trim())
+    !startClientFirstName.trim()
   ) {
-    setStartClientError("Le prénom et le nom du client sont obligatoires.");
+    setStartClientError("Le prénom du client est obligatoire.");
     return;
   }
 
@@ -1329,7 +1329,6 @@ const handleCreateInvoice = async () => {
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Nom
                 <input
-                  required
                   value={startClientLastName}
                   onChange={(event) =>
                     setStartClientLastName(

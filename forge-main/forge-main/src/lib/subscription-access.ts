@@ -12,25 +12,6 @@ export async function getSubscriptionAccessForUser(
   userId: string,
   now = new Date(),
 ) {
-  const membership = await prisma.organizationMember.findFirst({
-    where: { userId },
-    include: { organization: true },
-    orderBy: { createdAt: "asc" },
-  });
-
-  if (membership) {
-    return {
-      ...evaluateSubscriptionAccess(
-        membership.organization.subscriptionStatus,
-        membership.organization.trialEndsAt,
-        now,
-      ),
-      source: "organization" as const,
-      organizationId: membership.organizationId,
-      organizationName: membership.organization.name,
-    };
-  }
-
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -46,7 +27,5 @@ export async function getSubscriptionAccessForUser(
       now,
     ),
     source: "user" as const,
-    organizationId: null,
-    organizationName: null,
   };
 }

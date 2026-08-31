@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import ClientForm from "@/components/clients/ClientForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 async function createClient(formData: FormData) {
   "use server";
 
-  const currentUser =
-    await requireCurrentUser();
+  const currentUser = await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("write");
 
   const rawType = String(
     formData.get("type") ?? "",
@@ -61,10 +62,10 @@ async function createClient(formData: FormData) {
 
   if (
     type === "PARTICULIER" &&
-    (!firstName || !lastName)
+    !firstName
   ) {
     throw new Error(
-      "Le prénom et le nom sont obligatoires.",
+      "Le prénom est obligatoire.",
     );
   }
 
@@ -106,6 +107,7 @@ async function createClient(formData: FormData) {
         city: city || null,
 
         userId: currentUser.id,
+        organizationId: workspaceContext.workspace.id,
       },
     });
 

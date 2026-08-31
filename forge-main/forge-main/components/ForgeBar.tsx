@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Camera,
   LoaderCircle,
@@ -281,6 +282,7 @@ export default function ForgeBar({
 
   const [isListening, setIsListening] =
     useState(false);
+  const [isWorkspaceLocked, setIsWorkspaceLocked] = useState(false);
 
   const recognitionRef =
     useRef<SpeechRecognitionInstance | null>(
@@ -299,6 +301,18 @@ export default function ForgeBar({
     () => placeholders[context],
     [context],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/workspaces", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled) setIsWorkspaceLocked(data.permissions?.canUseForge === false);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     setPlaceholderIndex(0);
@@ -1604,7 +1618,7 @@ export default function ForgeBar({
   }
 
   function handleVoiceInput() {
-    if (isLoading) {
+    if (isLoading || isWorkspaceLocked) {
       return;
     }
 
@@ -1739,10 +1753,12 @@ export default function ForgeBar({
     setMessage(event.target.value)
   }
   onKeyDown={handleKeyDown}
-  disabled={isLoading || isListening}
+  disabled={isLoading || isListening || isWorkspaceLocked}
   placeholder={
     isListening
       ? "Je t'écoute..."
+      : isWorkspaceLocked
+        ? "Forge est en lecture seule"
       : isLoading
         ? "Analyse de ta demande..."
         : currentPlaceholders[
@@ -1759,7 +1775,7 @@ export default function ForgeBar({
   }
   aria-label="Ajouter des photos"
   title="Ajouter des photos"
-  disabled={isLoading}
+  disabled={isLoading || isWorkspaceLocked}
   className={`flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full transition disabled:opacity-50 ${
     selectedPhotos.length > 0
       ? "bg-blue-600 text-white"
@@ -1786,7 +1802,7 @@ export default function ForgeBar({
           ? "Arrêter l’écoute"
           : "Parler à Forge"
       }
-      disabled={isLoading}
+      disabled={isLoading || isWorkspaceLocked}
       className={`flex h-12 w-12 shrink-0 touch-manipulation items-center justify-center rounded-full border transition disabled:opacity-50 ${
         isListening
           ? "border-blue-600 bg-blue-600 text-white"
@@ -1814,7 +1830,7 @@ export default function ForgeBar({
         void handleSubmit()
       }
       disabled={
-        !message.trim() || isLoading
+        !message.trim() || isLoading || isWorkspaceLocked
       }
       aria-label="Envoyer à Forge"
       title="Envoyer"
@@ -1834,6 +1850,12 @@ export default function ForgeBar({
       )}
     </button>
   </div>
+
+  {isWorkspaceLocked && (
+    <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
+      Consultation disponible. <Link href="/subscription" className="font-semibold text-blue-600 dark:text-blue-400">Activer Forge</Link>
+    </p>
+  )}
 
 
   {assistantMessage && (

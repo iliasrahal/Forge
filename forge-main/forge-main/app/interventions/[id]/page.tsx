@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 
 
 import { prisma } from "@/src/lib/prisma";
+import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import AssignmentSelect from "@/components/team/AssignmentSelect";
 
 
 type InterventionPageProps = {
@@ -63,6 +66,8 @@ export default async function InterventionPage({
   params,
 }: InterventionPageProps) {
   const { id } = await params;
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
   if (!id) {
@@ -71,9 +76,10 @@ export default async function InterventionPage({
 
 
   const intervention =
-    await prisma.intervention.findUnique({
+    await prisma.intervention.findFirst({
       where: {
         id,
+        organizationId: workspaceContext.workspace.id,
       },
       include: {
         client: true,
@@ -84,6 +90,14 @@ export default async function InterventionPage({
   if (!intervention) {
     notFound();
   }
+
+  const teamMembers = workspaceContext.workspace.type === "TEAM"
+    ? await prisma.organizationMember.findMany({
+        where: { organizationId: workspaceContext.workspace.id },
+        include: { user: { select: { firstName: true, lastName: true } } },
+        orderBy: { createdAt: "asc" },
+      })
+    : [];
 
 
   const clientName = !intervention.client
@@ -146,6 +160,18 @@ export default async function InterventionPage({
           )}
 
         </div>
+
+        {teamMembers.length > 0 && (
+          <AssignmentSelect
+            interventionId={intervention.id}
+            initialUserId={intervention.assignedToId}
+            disabled={!workspaceContext.permissions.canWrite}
+            members={teamMembers.map((member) => ({
+              id: member.userId,
+              name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim(),
+            }))}
+          />
+        )}
 
 
 

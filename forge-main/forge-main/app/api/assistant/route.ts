@@ -1,5 +1,9 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -214,6 +218,7 @@ function requestsDeleteAllInterventions(
 
 export async function POST(request: Request) {
   try {
+    await requireWorkspaceContext("useForge");
     const body = await request.json();
 
     const message =
@@ -795,6 +800,10 @@ if (
       notes,
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur lors de l’analyse de la demande :",
       error,

@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 export async function GET(
   request: Request,
 ) {
 
-  const currentUser =
-    await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
   const { searchParams } =
@@ -26,9 +25,7 @@ export async function GET(
     await prisma.quote.findMany({
 
       where: {
-        client: {
-          userId: currentUser.id,
-        },
+        organizationId: workspaceContext.workspace.id,
 
         createdAt: {
           gte: new Date(`${year}-01-01`),

@@ -10,6 +10,7 @@ import {
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 
@@ -60,8 +61,8 @@ export default async function InvoicePage({
 }: InvoicePageProps) {
 
 
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -77,9 +78,7 @@ export default async function InvoicePage({
 
         id,
 
-        client: {
-          userId: currentUser.id,
-        },
+        organizationId: workspaceContext.workspace.id,
 
       },
 

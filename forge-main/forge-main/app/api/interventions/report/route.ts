@@ -10,6 +10,10 @@ import {
   isImage,
 } from "@/src/lib/photoFiles.server";
 import { PHOTO_SAFETY_RULES } from "@/src/lib/photoPrompts";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -24,6 +28,7 @@ type InterventionReport = {
 
 export async function POST(request: Request) {
   try {
+    await requireWorkspaceContext("useForge");
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
         {
@@ -181,6 +186,10 @@ Format attendu :
 
     return Response.json(report);
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return Response.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur pendant la génération du compte rendu :",
       error,

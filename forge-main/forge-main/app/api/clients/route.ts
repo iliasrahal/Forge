@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 
 function normalize(value: string) {
@@ -44,6 +47,7 @@ function getClientDisplayName(client: {
 
 export async function PATCH(request: Request) {
   try {
+    const workspaceContext = await requireWorkspaceContext("write");
     const body = await request.json();
 
 
@@ -63,9 +67,10 @@ export async function PATCH(request: Request) {
 
 
     if (clientId) {
-      client = await prisma.client.findUnique({
+      client = await prisma.client.findFirst({
         where: {
           id: clientId,
+          organizationId: workspaceContext.workspace.id,
         },
       });
     }
@@ -93,7 +98,9 @@ export async function PATCH(request: Request) {
 
 
       const clients =
-        await prisma.client.findMany();
+        await prisma.client.findMany({
+          where: { organizationId: workspaceContext.workspace.id },
+        });
 
 
       const normalizedClientName =
@@ -240,6 +247,11 @@ export async function PATCH(request: Request) {
 
   } catch (error) {
 
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
+
     console.error(
       "Erreur lors de la mise à jour du client :",
       error,
@@ -264,8 +276,7 @@ export async function PATCH(request: Request) {
 // Suppression uniquement des clients temporaires créés par Forge
 export async function DELETE(request: Request) {
   try {
-    const currentUser =
-      await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("write");
 
     const body = await request.json();
 
@@ -291,7 +302,7 @@ export async function DELETE(request: Request) {
       await prisma.client.findFirst({
         where: {
           id: clientId,
-          userId: currentUser.id,
+          organizationId: workspaceContext.workspace.id,
         },
       });
 
@@ -334,6 +345,11 @@ export async function DELETE(request: Request) {
 
 
   } catch (error) {
+
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
 
     console.error(
       "Erreur suppression client temporaire :",

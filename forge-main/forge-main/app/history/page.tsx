@@ -4,13 +4,14 @@ import Link from "next/link";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 
 
 export default async function HistoryPage() {
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -18,10 +19,7 @@ export default async function HistoryPage() {
   const interventions =
     await prisma.intervention.findMany({
       where: {
-        OR: [
-          { userId: currentUser.id },
-          { client: { userId: currentUser.id } },
-        ],
+        organizationId: workspaceContext.workspace.id,
         status: "TERMINEE",
       },
 

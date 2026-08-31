@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 
 
 
@@ -178,6 +179,8 @@ export default function UserMenu({
             dark:bg-slate-900
           "
         >
+
+          <WorkspaceSwitcher />
 
 
 

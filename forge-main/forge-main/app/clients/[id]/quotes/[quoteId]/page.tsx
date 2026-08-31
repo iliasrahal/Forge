@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 type QuotePageProps = {
@@ -50,8 +51,8 @@ export default async function QuotePage({
 }: QuotePageProps) {
 
 
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -66,9 +67,7 @@ export default async function QuotePage({
         id: quoteId,
         clientId: id,
 
-        client: {
-          userId: currentUser.id,
-        },
+        organizationId: workspaceContext.workspace.id,
       },
       include: {
         client: true,

@@ -1,44 +1,11 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { splitPersonalClientName } from "@/src/lib/client-name";
 import { prisma } from "@/src/lib/prisma";
-
-async function getCurrentUser() {
-  const cookieStore = await cookies();
-
-  const sessionToken =
-    cookieStore.get("forgeSession")?.value;
-
-  if (!sessionToken) {
-    return null;
-  }
-
-  const session =
-    await prisma.session.findUnique({
-      where: {
-        token: sessionToken,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-  if (!session) {
-    return null;
-  }
-
-  if (session.expiresAt <= new Date()) {
-    await prisma.session.delete({
-      where: {
-        id: session.id,
-      },
-    });
-
-    return null;
-  }
-
-  return session.user;
-}
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 type InterventionOperation =
   | "reschedule"
@@ -57,31 +24,6 @@ function normalize(value: string) {
     .replace(/\b(mme|monsieur|madame|mr|m)\b\.?/g, "")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function cleanClientName(value: string) {
-  return value
-    .replace(/\b(mme|monsieur|madame|mr|m)\b\.?/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function splitClientName(value: string) {
-  const cleanedName = cleanClientName(value);
-  const parts = cleanedName.split(" ").filter(Boolean);
-
-  if (parts.length === 0) {
-    return { firstName: null, lastName: "Client" };
-  }
-
-  if (parts.length === 1) {
-    return { firstName: null, lastName: parts[0] };
-  }
-
-  return {
-    firstName: parts.slice(0, -1).join(" "),
-    lastName: parts.at(-1) ?? "Client",
-  };
 }
 
 function cleanOptionalString(value: unknown) {
@@ -132,20 +74,8 @@ function getDayBounds(date: string) {
 
 export async function POST(request: Request) {
   try {
-    const currentUser =
-      await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        {
-          error:
-            "Tu dois être connecté pour créer une intervention.",
-        },
-        {
-          status: 401,
-        },
-      );
-    }
+    const workspaceContext = await requireWorkspaceContext("write");
+    const currentUser = workspaceContext.user;
 
     const body = await request.json();
 
@@ -210,7 +140,7 @@ export async function POST(request: Request) {
       ? await prisma.client.findFirst({
           where: {
             id: requestedClientId,
-            userId: currentUser.id,
+            organizationId: workspaceContext.workspace.id,
             archived: false,
           },
         })
@@ -226,7 +156,7 @@ export async function POST(request: Request) {
     const clients = !requestedClientId && clientName
       ? await prisma.client.findMany({
           where: {
-            userId: currentUser.id,
+            organizationId: workspaceContext.workspace.id,
           },
         })
       : [];
@@ -257,7 +187,7 @@ export async function POST(request: Request) {
     let clientUpdated = false;
 
     if (!requestedClientId && clientName && !client) {
-      const { firstName, lastName } = splitClientName(clientName);
+      const { firstName, lastName } = splitPersonalClientName(clientName);
 
     client = await prisma.client.create({
   data: {
@@ -273,6 +203,7 @@ export async function POST(request: Request) {
     isTemporary: true,
 
     userId: currentUser.id,
+    organizationId: workspaceContext.workspace.id,
   },
 });
 
@@ -305,6 +236,7 @@ export async function POST(request: Request) {
     const intervention = await prisma.intervention.create({
       data: {
         userId: currentUser.id,
+        organizationId: workspaceContext.workspace.id,
         clientId: client?.id,
         title: title || description || "Intervention",
         description: description || null,
@@ -330,6 +262,10 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur lors de la création de l’intervention :",
       error,
@@ -344,20 +280,8 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const currentUser =
-      await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        {
-          error:
-            "Tu dois être connecté pour modifier une intervention.",
-        },
-        {
-          status: 401,
-        },
-      );
-    }
+    const workspaceContext = await requireWorkspaceContext("write");
+    const currentUser = workspaceContext.user;
 
     const body = await request.json();
 
@@ -396,10 +320,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            OR: [
-              { userId: currentUser.id },
-              { client: { userId: currentUser.id } },
-            ],
+            organizationId: workspaceContext.workspace.id,
           },
           include: { client: true },
         });
@@ -456,7 +377,7 @@ export async function PATCH(request: Request) {
       const clientData =
         existingIntervention.client.type === "PROFESSIONNEL"
           ? { companyName: clientName }
-          : splitClientName(clientName);
+          : splitPersonalClientName(clientName);
 
       const [, updatedIntervention] =
         await prisma.$transaction([
@@ -495,10 +416,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            OR: [
-              { userId: currentUser.id },
-              { client: { userId: currentUser.id } },
-            ],
+            organizationId: workspaceContext.workspace.id,
           },
           include: {
             client: true,
@@ -544,7 +462,7 @@ export async function PATCH(request: Request) {
 
           if (
             (clientType === "PARTICULIER" &&
-              (!firstName || !lastName)) ||
+              !firstName) ||
             (clientType === "PROFESSIONNEL" && !companyName)
           ) {
             return NextResponse.json(
@@ -578,6 +496,7 @@ export async function PATCH(request: Request) {
                   street,
                   isTemporary: true,
                   userId: currentUser.id,
+                  organizationId: workspaceContext.workspace.id,
                 },
               });
 
@@ -685,10 +604,7 @@ export async function PATCH(request: Request) {
         await prisma.intervention.findFirst({
           where: {
             id: interventionId,
-            OR: [
-              { userId: currentUser.id },
-              { client: { userId: currentUser.id } },
-            ],
+            organizationId: workspaceContext.workspace.id,
           },
         });
 
@@ -765,7 +681,7 @@ export async function PATCH(request: Request) {
     const clients =
       await prisma.client.findMany({
         where: {
-          userId: currentUser.id,
+          organizationId: workspaceContext.workspace.id,
         },
       });
     const normalizedClientName = normalize(clientName);
@@ -914,6 +830,10 @@ export async function PATCH(request: Request) {
       message: `L’intervention de ${clientName} a été reportée.`,
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur lors de la modification de l’intervention :",
       error,
@@ -928,14 +848,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: "Tu dois être connecté pour supprimer une intervention." },
-        { status: 401 },
-      );
-    }
+    const workspaceContext = await requireWorkspaceContext("write");
 
     const body = await request.json();
 
@@ -969,14 +882,7 @@ export async function DELETE(request: Request) {
           gte: startOfDay,
           lt: endOfDay,
         },
-        OR: [
-          { userId: currentUser.id },
-          {
-            client: {
-              userId: currentUser.id,
-            },
-          },
-        ],
+        organizationId: workspaceContext.workspace.id,
       };
 
       const count =
@@ -1011,10 +917,7 @@ export async function DELETE(request: Request) {
       await prisma.intervention.findFirst({
         where: {
           id: interventionId,
-          OR: [
-            { userId: currentUser.id },
-            { client: { userId: currentUser.id } },
-          ],
+          organizationId: workspaceContext.workspace.id,
         },
         select: { id: true },
       });
@@ -1032,6 +935,10 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur lors de la suppression de l’intervention :",
       error,

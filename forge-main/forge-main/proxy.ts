@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/src/lib/prisma";
-import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 
 const PUBLIC_PAGE_PREFIXES = [
   "/login",
@@ -11,13 +9,6 @@ const PUBLIC_PAGE_PREFIXES = [
   "/activate-account",
   "/conditions-generales-utilisation",
   "/politique-confidentialite",
-];
-
-const ACCESS_RECOVERY_PREFIXES = [
-  "/subscription",
-  "/api/subscription",
-  "/api/auth/logout",
-  "/api/auth/delete-account",
 ];
 
 function isPublicPath(pathname: string) {
@@ -35,44 +26,14 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
-    isPublicPath(pathname) ||
-    ACCESS_RECOVERY_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+    isPublicPath(pathname)
   ) {
     return NextResponse.next();
   }
 
-  const sessionToken = request.cookies.get("forgeSession")?.value;
-  if (!sessionToken) return NextResponse.next();
-
-  const session = await prisma.session.findUnique({
-    where: { token: sessionToken },
-    select: {
-      userId: true,
-      expiresAt: true,
-    },
-  });
-
-  if (!session || session.expiresAt <= new Date()) {
-    return NextResponse.next();
-  }
-
-  const access = await getSubscriptionAccessForUser(session.userId);
-  if (access.hasAccess) return NextResponse.next();
-
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.json(
-      {
-        error: "Votre période d’essai gratuite est terminée.",
-        code: "SUBSCRIPTION_REQUIRED",
-      },
-      { status: 402 },
-    );
-  }
-
-  const subscriptionUrl = request.nextUrl.clone();
-  subscriptionUrl.pathname = "/subscription";
-  subscriptionUrl.search = "?reason=trial-ended";
-  return NextResponse.redirect(subscriptionUrl);
+  // L'expiration ne bloque plus l'application. Les permissions en lecture ou
+  // écriture sont évaluées côté serveur par le contexte du workspace actif.
+  return NextResponse.next();
 }
 
 export const config = {

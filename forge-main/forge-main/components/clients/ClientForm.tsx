@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { splitPersonalClientName } from "@/src/lib/client-name";
+
 type ClientType = "PARTICULIER" | "PROFESSIONNEL";
 
 type ClientFormValues = {
@@ -34,18 +36,18 @@ export default function ClientForm({
 }: ClientFormProps) {
 
 
-  const nameParts =
-    initialValues?.name?.trim().split(" ") ?? [];
+  const parsedName = splitPersonalClientName(initialValues?.name ?? "");
 
 
   const initialFirstName =
     initialValues?.firstName ??
-    nameParts.slice(0, -1).join(" ");
+    parsedName.firstName ??
+    "";
 
 
   const initialLastName =
     initialValues?.lastName ??
-    nameParts[nameParts.length - 1] ??
+    parsedName.lastName ??
     "";
 
 
@@ -169,7 +171,6 @@ export default function ClientForm({
               id="lastName"
               name="lastName"
               type="text"
-              required
               defaultValue={initialLastName}
               className={inputClassName}
             />

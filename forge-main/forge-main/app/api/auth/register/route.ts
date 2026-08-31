@@ -7,6 +7,7 @@ import { prisma } from "@/src/lib/prisma";
 import { sendActivationEmail } from "@/src/lib/email";
 import { getPhoneSearchVariants, normalizePhone } from "@/src/lib/phone";
 import { createTrialPeriod } from "@/src/lib/subscription-access";
+import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
 
 
 type RegisterBody = {
@@ -172,6 +173,16 @@ export async function POST(
 
     if (existingUser) {
 
+      if (invitation) {
+        return NextResponse.json(
+          {
+            error: "Un compte Forge existe déjà avec cette adresse. Connecte-toi depuis le lien d’invitation pour rejoindre l’équipe.",
+            loginUrl: `/login?invitation=${encodeURIComponent(invitationToken)}`,
+          },
+          { status: 409 },
+        );
+      }
+
       const message =
         existingUser.email === email
           ? "Cette adresse e-mail est déjà utilisée."
@@ -221,15 +232,9 @@ export async function POST(
 
           passwordHash,
 
-          trialStartedAt: invitation
-            ? null
-            : trial.trialStartedAt,
-          trialEndsAt: invitation
-            ? null
-            : trial.trialEndsAt,
-          subscriptionStatus: invitation
-            ? "ORGANIZATION"
-            : "TRIAL",
+          trialStartedAt: trial.trialStartedAt,
+          trialEndsAt: trial.trialEndsAt,
+          subscriptionStatus: "TRIAL",
 
 
 
@@ -256,6 +261,8 @@ export async function POST(
 
       });
 
+    await ensurePersonalWorkspaceForUser(user.id);
+
     if (invitation) {
       await prisma.$transaction([
         prisma.organizationMember.create({
@@ -271,7 +278,7 @@ export async function POST(
         }),
         prisma.user.update({
           where: { id: user.id },
-          data: { workMode: "TEAM", onboardingCompleted: true },
+          data: { onboardingCompleted: true },
         }),
       ]);
     }

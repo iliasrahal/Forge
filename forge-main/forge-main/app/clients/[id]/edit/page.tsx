@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import ClientForm from "@/components/clients/ClientForm";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type EditClientPageProps = {
   params: Promise<{
@@ -14,10 +15,12 @@ export default async function EditClientPage({
   params,
 }: EditClientPageProps) {
   const { id } = await params;
+  const workspaceContext = await requireWorkspaceContext("read");
 
-  const client = await prisma.client.findUnique({
+  const client = await prisma.client.findFirst({
     where: {
       id,
+      organizationId: workspaceContext.workspace.id,
     },
   });
 
@@ -27,6 +30,8 @@ export default async function EditClientPage({
 
   async function updateClient(formData: FormData) {
     "use server";
+
+    const writeContext = await requireWorkspaceContext("write");
 
     const rawType = String(formData.get("type") ?? "");
 
@@ -76,10 +81,10 @@ export default async function EditClientPage({
 
     if (
       rawType === "PARTICULIER" &&
-      (!firstName || !lastName)
+      !firstName
     ) {
       throw new Error(
-        "Le prénom et le nom sont obligatoires.",
+        "Le prénom est obligatoire.",
       );
     }
 
@@ -92,9 +97,10 @@ export default async function EditClientPage({
       );
     }
 
-    await prisma.client.update({
+    const updated = await prisma.client.updateMany({
       where: {
         id,
+        organizationId: writeContext.workspace.id,
       },
       data: {
         type: rawType,
@@ -115,6 +121,8 @@ export default async function EditClientPage({
         city: city || null,
       },
     });
+
+    if (updated.count !== 1) notFound();
 
     redirect(`/clients/${id}`);
   }

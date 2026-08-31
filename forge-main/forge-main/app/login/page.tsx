@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AuthShell from "@/components/auth/AuthShell";
 
@@ -42,6 +42,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+  const [invitationToken, setInvitationToken] = useState("");
+
+  useEffect(() => {
+    setInvitationToken(new URLSearchParams(window.location.search).get("invitation") || "");
+  }, []);
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
@@ -90,6 +95,18 @@ export default function LoginPage() {
         );
       }
 
+      if (invitationToken) {
+        const invitationResponse = await fetch("/api/team/invitations/accept", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: invitationToken }),
+        });
+        if (!invitationResponse.ok) {
+          const invitationData = await invitationResponse.json();
+          throw new Error(invitationData.error || "Impossible de rejoindre l’équipe.");
+        }
+      }
+
       localStorage.setItem(
         "forgeUserFirstName",
         data.user.firstName,
@@ -113,9 +130,7 @@ export default function LoginPage() {
         );
       }
 
-      if (data.subscriptionRequired) {
-        router.push("/subscription?reason=trial-ended");
-      } else if (data.user.onboardingCompleted) {
+      if (data.user.onboardingCompleted) {
         localStorage.setItem(
           "forgeOnboardingCompleted",
           "true",

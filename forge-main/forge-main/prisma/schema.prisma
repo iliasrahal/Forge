@@ -47,8 +47,17 @@ enum WorkMode {
   TEAM
 }
 
+enum OrganizationType {
+  PERSONAL
+  TEAM
+}
+
 enum TeamRole {
   OWNER
+  ADMIN
+  READ_ONLY
+  // Rôles historiques conservés tant que leur présence en production
+  // n'a pas pu être auditée.
   MANAGER
   TECHNICIAN
 }
@@ -106,6 +115,8 @@ model User {
 
   memberships OrganizationMember[]
 
+  personalOrganization Organization? @relation("PersonalOrganizationOwner")
+
   assignedInterventions Intervention[] @relation("AssignedInterventions")
 
   sentTeamInvitations TeamInvitation[] @relation("InvitationSender")
@@ -116,19 +127,23 @@ model User {
 }
 
 model Organization {
-  id            String               @id @default(cuid())
-  name          String
-  trialStartedAt DateTime?
-  trialEndsAt    DateTime?
-  subscriptionStatus String          @default("TRIAL")
-  members       OrganizationMember[]
-  invitations   TeamInvitation[]
-  clients       Client[]
-  interventions Intervention[]
-  quotes        Quote[]
-  invoices      Invoice[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id                 String               @id @default(cuid())
+  name               String
+  type               OrganizationType     @default(TEAM)
+  personalOwnerId    String?              @unique
+  personalOwner      User?                @relation("PersonalOrganizationOwner", fields: [personalOwnerId], references: [id], onDelete: Cascade)
+  trialStartedAt     DateTime?
+  trialEndsAt        DateTime?
+  subscriptionStatus String               @default("TRIAL")
+  members            OrganizationMember[]
+  invitations        TeamInvitation[]
+  clients            Client[]
+  interventions      Intervention[]
+  quotes             Quote[]
+  invoices           Invoice[]
+  activeSessions     Session[]            @relation("ActiveOrganization")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 }
 
 model OrganizationMember {
@@ -176,9 +191,14 @@ model Session {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  activeOrganizationId String?
+
+  activeOrganization Organization? @relation("ActiveOrganization", fields: [activeOrganizationId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@index([activeOrganizationId])
 }
 
 model PasswordResetToken {
@@ -251,9 +271,11 @@ model Client {
   // true = supprimé de l'affichage mais gardé en base
   archived Boolean @default(false)
 
-  userId String
+  // Auteur historique conservé pour l'audit. Les données appartiennent à
+  // l'organisation et survivent au départ d'un membre d'équipe.
+  userId String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   organizationId String?
 
@@ -306,7 +328,7 @@ model Intervention {
 
   userId String?
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   organizationId String?
 

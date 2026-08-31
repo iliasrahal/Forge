@@ -1,5 +1,9 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,6 +11,7 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
+    await requireWorkspaceContext("useForge");
     const body = await request.json();
     const message = body.message?.trim();
 
@@ -71,6 +76,10 @@ Règles :
       reply,
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error(
       "Erreur lors de la génération de la réponse :",
       error,

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { sendQuoteEmail } from "@/src/lib/email";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 export async function POST(
@@ -12,6 +13,7 @@ export async function POST(
 
     const currentUser =
       await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("write");
 
 
     const body =
@@ -43,9 +45,7 @@ export async function POST(
         where: {
           id: quoteId,
 
-          client: {
-            userId: currentUser.id,
-          },
+          organizationId: workspaceContext.workspace.id,
         },
 
         include: {
@@ -101,6 +101,7 @@ export async function POST(
     const pdfResponse =
       await fetch(
         `${origin}/api/quotes/${quote.id}/pdf`,
+        { headers: { cookie: request.headers.get("cookie") ?? "" } },
       );
 
 
@@ -180,6 +181,9 @@ export async function POST(
 
 
   } catch (error) {
+
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
 
 
     console.error(

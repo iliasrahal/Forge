@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/src/lib/prisma";
-import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 
 
 export async function getCurrentUser() {
@@ -75,15 +74,6 @@ export async function requireCurrentUser() {
 
   if (!user) {
     redirect("/login");
-  }
-
-
-
-  const subscriptionAccess =
-    await getSubscriptionAccessForUser(user.id);
-
-  if (!subscriptionAccess.hasAccess) {
-    redirect("/subscription");
   }
 
 

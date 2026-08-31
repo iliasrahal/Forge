@@ -6,12 +6,12 @@ import {
   rgb,
 } from "pdf-lib";
 
-import { requireCurrentUser } from "@/src/lib/auth";
 import {
   buildInvoiceDescriptionSections,
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type PdfRouteProps = {
   params: Promise<{ id: string }>;
@@ -87,13 +87,13 @@ export async function GET(
   { params }: PdfRouteProps,
 ) {
   try {
-    const currentUser = await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("read");
     const { id } = await params;
 
     const invoice = await prisma.invoice.findFirst({
       where: {
         id,
-        client: { userId: currentUser.id },
+        organizationId: workspaceContext.workspace.id,
       },
       include: {
         client: true,
@@ -381,9 +381,9 @@ export async function GET(
     currentY -= amountBoxHeight + 22;
 
     const artisanDetails = [
-      currentUser.firstName?.trim(),
-      currentUser.email?.trim(),
-      currentUser.phone?.trim(),
+      workspaceContext.user.firstName?.trim(),
+      workspaceContext.user.email?.trim(),
+      workspaceContext.user.phone?.trim(),
     ].filter((value): value is string => Boolean(value));
 
     if (artisanDetails.length > 0) {
@@ -446,6 +446,8 @@ export async function GET(
       },
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return Response.json(accessError.body, { status: accessError.status });
     console.error("ERREUR PDF FACTURE :", error);
 
     return new Response(

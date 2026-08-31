@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { sendInvoiceEmail } from "@/src/lib/email";
 import {
   buildInvoiceDescriptionSections,
@@ -17,6 +18,7 @@ export async function POST(
 
     const currentUser =
       await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("write");
 
 
     const body =
@@ -51,9 +53,7 @@ export async function POST(
 
           id: invoiceId,
 
-          client: {
-            userId: currentUser.id,
-          },
+          organizationId: workspaceContext.workspace.id,
 
         },
 
@@ -205,6 +205,9 @@ export async function POST(
 
 
   } catch (error) {
+
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
 
 
     console.error(

@@ -1,10 +1,10 @@
 import { prisma } from "@/src/lib/prisma";
 
 export const clientService = {
-  async getAll(userId: string) {
+  async getAll(organizationId: string) {
     return prisma.client.findMany({
       where: {
-        userId,
+        organizationId,
         archived: false,
       },
 
@@ -16,29 +16,32 @@ export const clientService = {
 
   async getById(
     id: string,
-    userId: string,
+    organizationId: string,
   ) {
     return prisma.client.findFirst({
       where: {
         id,
-        userId,
+        organizationId,
         archived: false,
       },
 
       include: {
         interventions: {
+          where: { organizationId },
           orderBy: {
             scheduledAt: "desc",
           },
         },
 
         quotes: {
+          where: { organizationId },
           orderBy: {
             createdAt: "desc",
           },
         },
 
         invoices: {
+          where: { organizationId },
           orderBy: {
             createdAt: "desc",
           },

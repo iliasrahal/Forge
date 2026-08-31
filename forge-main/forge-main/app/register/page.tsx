@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 import AuthShell from "@/components/auth/AuthShell";
 
@@ -16,6 +17,7 @@ type RegisterResponse = {
   };
   error?: string;
   activationRequired?: boolean;
+  loginUrl?: string;
 };
 
 export default function RegisterPage() {
@@ -42,6 +44,7 @@ export default function RegisterPage() {
 
   const [activationSent, setActivationSent] = useState(false);
   const [invitationToken, setInvitationToken] = useState("");
+  const [invitationLoginUrl, setInvitationLoginUrl] = useState("");
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() =>
@@ -170,6 +173,7 @@ export default function RegisterPage() {
 
 
       if (!response.ok) {
+        setInvitationLoginUrl(data.loginUrl ?? "");
         throw new Error(
           data.error ||
           "Impossible de créer le compte.",
@@ -329,9 +333,14 @@ export default function RegisterPage() {
 
 
           {error && (
-            <p className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
-              {error}
-            </p>
+            <div className="rounded-2xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
+              <p>{error}</p>
+              {invitationLoginUrl && (
+                <Link href={invitationLoginUrl} className="mt-2 inline-block underline underline-offset-4">
+                  Se connecter et rejoindre l’équipe
+                </Link>
+              )}
+            </div>
           )}
 
 

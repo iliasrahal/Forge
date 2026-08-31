@@ -4,6 +4,8 @@ import { notFound, redirect } from "next/navigation";
 
 import { prisma } from "@/src/lib/prisma";
 import { QuoteStatus } from "@/src/generated/prisma/client";
+import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 type EditQuotePageProps = {
@@ -19,12 +21,15 @@ export default async function EditQuotePage({
   params,
 }: EditQuotePageProps) {
   const { id, quoteId } = await params;
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
   const quote = await prisma.quote.findFirst({
     where: {
       id: quoteId,
       clientId: id,
+      organizationId: workspaceContext.workspace.id,
     },
     include: {
       client: true,
@@ -48,6 +53,8 @@ export default async function EditQuotePage({
 
   async function updateQuote(formData: FormData) {
     "use server";
+
+    const writeContext = await requireWorkspaceContext("write");
 
 
     const title = formData
@@ -114,9 +121,11 @@ export default async function EditQuotePage({
 
 
 
-    await prisma.quote.update({
+    const updated = await prisma.quote.updateMany({
       where: {
         id: quoteId,
+        clientId: id,
+        organizationId: writeContext.workspace.id,
       },
       data: {
         title,
@@ -125,6 +134,8 @@ export default async function EditQuotePage({
         status: quoteStatus,
       },
     });
+
+    if (updated.count !== 1) notFound();
 
 
 

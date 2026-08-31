@@ -1,35 +1,27 @@
 import { createHash, randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { sendTeamInvitationEmail } from "@/src/lib/email";
 import { prisma } from "@/src/lib/prisma";
-import { createTrialPeriod } from "@/src/lib/subscription-access";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 type InvitationBody = {
   emails?: string[];
-  organizationName?: string;
+  role?: "ADMIN" | "READ_ONLY";
 };
 
 export async function POST(request: Request) {
   try {
-    const token = (await cookies()).get("forgeSession")?.value;
-    const session = token
-      ? await prisma.session.findUnique({
-          where: { token },
-          include: { user: true },
-        })
-      : null;
-
-    if (!session || session.expiresAt <= new Date()) {
-      return NextResponse.json(
-        { error: "Ta session a expiré. Reconnecte-toi." },
-        { status: 401 },
-      );
+    const context = await requireWorkspaceContext("manageTeam");
+    if (context.workspace.type !== "TEAM") {
+      return NextResponse.json({ error: "Active d’abord un espace d’équipe." }, { status: 409 });
     }
 
     const body = (await request.json()) as InvitationBody;
-    const organizationName = body.organizationName?.trim() ?? "";
+    const role = body.role === "ADMIN" ? "ADMIN" : "READ_ONLY";
     const emails = [
       ...new Set(
         (body.emails ?? []).map((email) =>
@@ -39,53 +31,13 @@ export async function POST(request: Request) {
     ].filter(
       (email) =>
         email.includes("@") &&
-        email !== session.user.email.toLowerCase(),
+        email !== context.user.email.toLowerCase(),
     );
 
-    if (!organizationName || emails.length === 0) {
+    if (emails.length === 0) {
       return NextResponse.json(
         { error: "Ajoute au moins une adresse e-mail valide." },
         { status: 400 },
-      );
-    }
-
-    let membership = await prisma.organizationMember.findFirst({
-      where: { userId: session.userId },
-      include: { organization: true },
-    });
-
-    if (!membership) {
-      const trial =
-        session.user.trialStartedAt && session.user.trialEndsAt
-          ? {
-              trialStartedAt: session.user.trialStartedAt,
-              trialEndsAt: session.user.trialEndsAt,
-            }
-          : createTrialPeriod(session.user.createdAt);
-      const organization = await prisma.organization.create({
-        data: {
-          name: organizationName,
-          trialStartedAt: trial.trialStartedAt,
-          trialEndsAt: trial.trialEndsAt,
-          subscriptionStatus: session.user.subscriptionStatus,
-          members: {
-            create: { userId: session.userId, role: "OWNER" },
-          },
-        },
-      });
-      membership = await prisma.organizationMember.findFirstOrThrow({
-        where: {
-          userId: session.userId,
-          organizationId: organization.id,
-        },
-        include: { organization: true },
-      });
-    }
-
-    if (membership.role === "TECHNICIAN") {
-      return NextResponse.json(
-        { error: "Tu n’as pas accès à la gestion de l’équipe." },
-        { status: 403 },
       );
     }
 
@@ -103,19 +55,19 @@ export async function POST(request: Request) {
         await prisma.teamInvitation.create({
           data: {
             email,
-            role: "TECHNICIAN",
+            role,
             tokenHash,
             expiresAt: new Date(
               Date.now() + 7 * 24 * 60 * 60 * 1000,
             ),
-            organizationId: membership.organizationId,
-            invitedById: session.userId,
+            organizationId: context.workspace.id,
+            invitedById: context.user.id,
           },
         });
 
         await sendTeamInvitationEmail(
           email,
-          membership.organization.name,
+          context.workspace.name,
           `${appUrl}/register?invitation=${rawToken}`,
         );
       }),
@@ -123,6 +75,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ count: emails.length });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
     console.error("Erreur invitations équipe :", error);
     return NextResponse.json(
       { error: "Impossible d’envoyer les invitations. Réessaie dans un instant." },

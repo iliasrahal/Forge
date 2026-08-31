@@ -7,6 +7,7 @@ import {
 } from "pdf-lib";
 
 import { prisma } from "@/src/lib/prisma";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type PdfRouteProps = {
   params: Promise<{ quoteId: string }>;
@@ -122,9 +123,10 @@ export async function GET(
   { params }: PdfRouteProps,
 ) {
   try {
+    const workspaceContext = await requireWorkspaceContext("read");
     const { quoteId } = await params;
-    const quote = await prisma.quote.findUnique({
-      where: { id: quoteId },
+    const quote = await prisma.quote.findFirst({
+      where: { id: quoteId, organizationId: workspaceContext.workspace.id },
       include: {
         client: {
           include: {
@@ -496,9 +498,9 @@ export async function GET(
     });
 
     const artisanDetails = [
-      usefulText(quote.client.user.firstName),
-      usefulText(quote.client.user.email),
-      usefulText(quote.client.user.phone),
+      usefulText(workspaceContext.user.firstName),
+      usefulText(workspaceContext.user.email),
+      usefulText(workspaceContext.user.phone),
     ].filter(Boolean);
     if (artisanDetails.length > 0) {
       y -= 34;
@@ -563,7 +565,7 @@ export async function GET(
 
     // Comportement historique conservé : le téléchargement
     // marque un brouillon comme envoyé.
-    if (quote.status === "BROUILLON") {
+    if (quote.status === "BROUILLON" && workspaceContext.permissions.canWrite) {
       await prisma.quote.update({
         where: { id: quote.id },
         data: { status: "ENVOYE" },
@@ -585,6 +587,8 @@ export async function GET(
       },
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return Response.json(accessError.body, { status: accessError.status });
     console.error("ERREUR GENERATION PDF :", error);
 
     return new Response(

@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { getPhoneSearchVariants } from "@/src/lib/phone";
 import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
+import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
 
 type LoginBody = {
   identifier?: string;
@@ -105,12 +106,15 @@ export async function POST(request: Request) {
       sessionExpiresAt.getDate() + 30,
     );
 
+    const personalWorkspace = await ensurePersonalWorkspaceForUser(user.id);
+
     await prisma.session.create({
       data: {
         token: sessionToken,
         expiresAt:
           sessionExpiresAt,
         userId: user.id,
+        activeOrganizationId: personalWorkspace.id,
       },
     });
 

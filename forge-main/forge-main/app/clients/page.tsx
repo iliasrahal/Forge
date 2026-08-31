@@ -4,6 +4,7 @@ import Link from "next/link";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import ClientCard from "@/components/clients/ClientCard";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { clientService } from "@/src/services/client.service";
 
 
@@ -12,8 +13,8 @@ import { clientService } from "@/src/services/client.service";
 
 
 export default async function ClientsPage() {
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -22,7 +23,7 @@ export default async function ClientsPage() {
 
   const clients =
     await clientService.getAll(
-      currentUser.id,
+      workspaceContext.workspace.id,
     );
 
 

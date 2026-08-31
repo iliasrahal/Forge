@@ -4,6 +4,7 @@ import type {
   AppointmentStatus,
 } from "@/data/appointments";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { prisma } from "@/src/lib/prisma";
 import { splitAppointmentsByDate } from "@/src/lib/intervention-calendar";
 
@@ -103,17 +104,15 @@ function mapIntervention(intervention: any): Appointment {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const currentUser = await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
   const { newIntervention } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
   const [interventions, clients] = await Promise.all([
     prisma.intervention.findMany({
       where: {
-        OR: [
-          { userId: currentUser.id },
-          { client: { userId: currentUser.id } },
-        ],
+        organizationId: workspaceContext.workspace.id,
         status: {
           in: ["PLANIFIEE", "EN_COURS"],
         },
@@ -127,7 +126,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     }),
     prisma.client.findMany({
       where: {
-        userId: currentUser.id,
+        organizationId: workspaceContext.workspace.id,
         archived: false,
       },
       orderBy: [

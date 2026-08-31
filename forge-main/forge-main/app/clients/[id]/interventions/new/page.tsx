@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { clientService } from "@/src/services/client.service";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type NewInterventionPageProps = {
   params: Promise<{ id: string }>;
@@ -25,12 +26,13 @@ export default async function NewInterventionPage({
 
   const currentUser =
     await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
   const client =
     await clientService.getById(
       id,
-      currentUser.id,
+      workspaceContext.workspace.id,
     );
 
 
@@ -54,6 +56,13 @@ export default async function NewInterventionPage({
   ) {
 
     "use server";
+
+    const writeContext = await requireWorkspaceContext("write");
+    const workspaceClient = await prisma.client.findFirst({
+      where: { id, organizationId: writeContext.workspace.id },
+      select: { id: true },
+    });
+    if (!workspaceClient) notFound();
 
 
     const date =
@@ -152,11 +161,12 @@ export default async function NewInterventionPage({
       await prisma.intervention.create({
         data: {
           userId: currentUser.id,
+          organizationId: writeContext.workspace.id,
           title: cleanTitle,
           description:
             cleanDescription || null,
           scheduledAt,
-          clientId: id,
+          clientId: workspaceClient.id,
         },
       });
 

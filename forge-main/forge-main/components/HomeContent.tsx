@@ -231,7 +231,7 @@ export default function HomeContent({
 
   const getInterventionExample = () => {
 
-    return "J’ai une intervention demain à 10h chez Charles Xavier";
+    return "J’ai une intervention demain à 10h chez Charles";
 
   };
 

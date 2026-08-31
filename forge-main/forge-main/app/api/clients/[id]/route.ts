@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 
 
@@ -17,17 +21,19 @@ export async function PATCH(
 
 
   try {
+    const workspaceContext = await requireWorkspaceContext("write");
 
     const body =
       await request.json();
 
 
 
-    const client =
-      await prisma.client.update({
+    const result =
+      await prisma.client.updateMany({
 
         where: {
           id,
+          organizationId: workspaceContext.workspace.id,
         },
 
 
@@ -41,6 +47,14 @@ export async function PATCH(
 
       });
 
+    if (result.count !== 1) {
+      return NextResponse.json({ error: "Client introuvable." }, { status: 404 });
+    }
+
+    const client = await prisma.client.findFirst({
+      where: { id, organizationId: workspaceContext.workspace.id },
+    });
+
 
 
     return NextResponse.json({
@@ -51,6 +65,11 @@ export async function PATCH(
 
 
   } catch (error) {
+
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
 
 
     console.error(
@@ -92,6 +111,16 @@ export async function DELETE(
 
   try {
 
+    const workspaceContext = await requireWorkspaceContext("write");
+    const client = await prisma.client.findFirst({
+      where: { id, organizationId: workspaceContext.workspace.id },
+      select: { id: true },
+    });
+
+    if (!client) {
+      return NextResponse.json({ error: "Client introuvable." }, { status: 404 });
+    }
+
 
     await prisma.$transaction([
 
@@ -101,6 +130,7 @@ export async function DELETE(
 
         where: {
           clientId: id,
+          organizationId: workspaceContext.workspace.id,
         },
 
       }),
@@ -112,6 +142,7 @@ export async function DELETE(
 
         where: {
           clientId: id,
+          organizationId: workspaceContext.workspace.id,
         },
 
       }),
@@ -123,6 +154,7 @@ export async function DELETE(
 
         where: {
           clientId: id,
+          organizationId: workspaceContext.workspace.id,
         },
 
       }),
@@ -130,10 +162,11 @@ export async function DELETE(
 
 
       // Supprimer le client
-      prisma.client.delete({
+      prisma.client.deleteMany({
 
         where: {
           id,
+          organizationId: workspaceContext.workspace.id,
         },
 
       }),
@@ -150,6 +183,11 @@ export async function DELETE(
 
 
   } catch (error) {
+
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
 
 
     console.error(

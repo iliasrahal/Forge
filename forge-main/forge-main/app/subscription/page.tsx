@@ -55,7 +55,7 @@ export default async function SubscriptionPage() {
               <>
                 Votre période d&apos;essai gratuite est terminée.
                 <br />
-                Activez votre abonnement pour retrouver votre espace Forge.
+                Ton espace reste consultable en lecture seule. Active ton abonnement pour créer, modifier et utiliser l’assistant Forge.
               </>
             )}
           </p>
@@ -69,12 +69,6 @@ export default async function SubscriptionPage() {
             <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
               Forge Pro
             </h2>
-
-            <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">
-              {plan.label}
-            </p>
-
-
 
             <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
               {plan.monthlyLabel}

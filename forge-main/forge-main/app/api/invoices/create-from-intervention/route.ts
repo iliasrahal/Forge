@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { requireCurrentUser } from "@/src/lib/auth";
 import { buildInvoiceDescription } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 function generateInvoiceReference() {
   return `FAC-${Date.now()}`;
@@ -10,7 +10,7 @@ function generateInvoiceReference() {
 
 export async function POST(request: Request) {
   try {
-    const currentUser = await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("write");
     const body = await request.json();
     const interventionId =
       typeof body.interventionId === "string"
@@ -28,10 +28,7 @@ export async function POST(request: Request) {
       where: {
         id: interventionId,
         status: "TERMINEE",
-        OR: [
-          { userId: currentUser.id },
-          { client: { userId: currentUser.id } },
-        ],
+        organizationId: workspaceContext.workspace.id,
       },
     });
 
@@ -50,7 +47,7 @@ export async function POST(request: Request) {
     }
 
     const existingInvoice = await prisma.invoice.findFirst({
-      where: { interventionId },
+      where: { interventionId, organizationId: workspaceContext.workspace.id },
     });
 
     if (existingInvoice) {
@@ -70,11 +67,14 @@ export async function POST(request: Request) {
         status: "BROUILLON",
         interventionId: intervention.id,
         clientId: intervention.clientId,
+        organizationId: workspaceContext.workspace.id,
       },
     });
 
     return NextResponse.json({ invoice }, { status: 201 });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
     console.error("CREATE INVOICE FROM INTERVENTION ERROR", error);
 
     return NextResponse.json(

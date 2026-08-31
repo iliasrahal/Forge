@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 type NewQuotePageProps = {
@@ -18,8 +19,8 @@ type NewQuotePageProps = {
 export default async function NewQuotePage({
   searchParams,
 }: NewQuotePageProps) {
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
   const {
@@ -45,7 +46,7 @@ export default async function NewQuotePage({
   const allClients =
     await prisma.client.findMany({
       where: {
-        userId: currentUser.id,
+        organizationId: workspaceContext.workspace.id,
         archived: false,
       },
       orderBy: {

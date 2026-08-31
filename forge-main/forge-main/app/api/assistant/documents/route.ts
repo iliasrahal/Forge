@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import {
+  getWorkspaceErrorResponse,
+  requireWorkspaceContext,
+} from "@/src/lib/workspace-access";
 
 type DocumentKind =
   | "quote"
@@ -29,7 +32,7 @@ function getClientName(client: {
 
 export async function POST(request: Request) {
   try {
-    const currentUser = await requireCurrentUser();
+    const workspaceContext = await requireWorkspaceContext("useForge");
     const body = await request.json();
     const kind: DocumentKind | null =
       body.kind === "quote" ||
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
 
       const clients = await prisma.client.findMany({
         where: {
-          userId: currentUser.id,
+          organizationId: workspaceContext.workspace.id,
           archived: false,
         },
       });
@@ -89,10 +92,7 @@ export async function POST(request: Request) {
             clientId,
             status: "TERMINEE",
             invoices: { none: {} },
-            OR: [
-              { userId: currentUser.id },
-              { client: { userId: currentUser.id } },
-            ],
+            organizationId: workspaceContext.workspace.id,
           },
           orderBy: { finishedAt: "desc" },
         });
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
           clientId,
           status: { not: "REFUSE" },
           invoices: { none: {} },
-          client: { userId: currentUser.id },
+          organizationId: workspaceContext.workspace.id,
         },
         orderBy: { createdAt: "desc" },
       });
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
       kind === "quote"
         ? await prisma.quote.findMany({
             where: {
-              client: { userId: currentUser.id },
+              organizationId: workspaceContext.workspace.id,
             },
             include: { client: true },
             orderBy: { createdAt: "desc" },
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
           })
         : await prisma.invoice.findMany({
             where: {
-              client: { userId: currentUser.id },
+              organizationId: workspaceContext.workspace.id,
             },
             include: { client: true },
             orderBy: { createdAt: "desc" },
@@ -198,6 +198,10 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
     console.error("ASSISTANT DOCUMENT RESOLUTION ERROR", error);
 
     return NextResponse.json(

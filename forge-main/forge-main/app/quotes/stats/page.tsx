@@ -4,6 +4,7 @@ import FixedForgeBar from "@/components/FixedForgeBar";
 import QuoteStatsSelector from "@/components/QuoteStatsSelector";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
 const months = [
@@ -25,8 +26,8 @@ const months = [
 
 export default async function QuoteStatsPage() {
 
-  const currentUser =
-    await requireCurrentUser();
+  await requireCurrentUser();
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
@@ -34,9 +35,7 @@ export default async function QuoteStatsPage() {
     await prisma.quote.findMany({
 
       where: {
-        client: {
-          userId: currentUser.id,
-        },
+        organizationId: workspaceContext.workspace.id,
       },
 
 
