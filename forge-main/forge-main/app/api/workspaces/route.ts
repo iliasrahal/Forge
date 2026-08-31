@@ -85,3 +85,47 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Impossible de créer l’équipe." }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const context = await requireWorkspaceContext("read");
+    const body = await request.json().catch(() => ({}));
+    const confirmName =
+      typeof body.confirmName === "string" ? body.confirmName.trim() : "";
+
+    if (context.workspace.type !== "TEAM") {
+      return NextResponse.json(
+        { error: "Un espace personnel ne peut pas être supprimé." },
+        { status: 409 },
+      );
+    }
+
+    if (context.membership.role !== "OWNER") {
+      return NextResponse.json(
+        { error: "Seul le propriétaire de l’équipe peut la supprimer." },
+        { status: 403 },
+      );
+    }
+
+    if (confirmName !== context.workspace.name) {
+      return NextResponse.json(
+        { error: "Le nom de l’équipe ne correspond pas." },
+        { status: 400 },
+      );
+    }
+
+    // La suppression de l'organisation cascade (membres, clients, interventions,
+    // devis, factures, invitations) ; activeOrganizationId repasse à null.
+    await prisma.organization.delete({ where: { id: context.workspace.id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
+    console.error("Erreur suppression équipe :", error);
+    return NextResponse.json(
+      { error: "Impossible de supprimer l’équipe." },
+      { status: 500 },
+    );
+  }
+}
