@@ -13,25 +13,26 @@ import {
 
 const workModes = [
   {
-    title: "Vous travaillez seul",
+    title: "Votre espace personnel",
     description:
-      "Forge vous accompagne au quotidien pour gérer vos clients, interventions, devis et factures depuis un seul espace.",
+      "Chaque compte Forge dispose de son propre espace Personnel, séparé des espaces partagés. Vous pouvez continuer à travailler seul, sans créer d’équipe.",
     icon: UserRound,
     benefits: [
-      "Gestion simple de vos interventions",
-      "Création automatique de vos documents",
-      "Assistant disponible à l’écrit ou à la voix",
+      "Vos interventions, clients et planning au même endroit",
+      "Vos devis et factures restent dans votre espace",
+      "Un espace personnel qui vous appartient",
     ],
   },
   {
-    title: "Vous travaillez en équipe",
+    title: "Travaillez aussi en équipe",
     description:
-      "Invitez vos collaborateurs dans votre espace Forge et choisissez leur niveau d’accès. Ces rôles ne sont pas des offres distinctes.",
+      "Créez un espace partagé pour votre entreprise ou rejoignez une équipe sur invitation, puis passez facilement de votre espace Personnel à vos espaces Équipe.",
     icon: UsersRound,
     benefits: [
-      "Lecture seule · Gratuit — consultation du planning, des fiches clients, des devis et des factures, sans création, modification ni suppression",
-      "Admin · 29,99 € / mois — accès complet pour créer, modifier et gérer l’activité avec toutes les fonctionnalités Forge",
-      "Chaque Admin utilise son propre abonnement ; les accès en lecture seule restent gratuits",
+      "Créez votre espace partagé et devenez propriétaire de l’équipe",
+      "Invitez vos collaborateurs par e-mail dans leur propre compte Forge",
+      "Lecture seule gratuite pour consulter les informations de l’équipe",
+      "Accès complet avec un abonnement Forge personnel à 29,99 € / mois après le mois d’essai",
     ],
   },
 ];
@@ -89,12 +90,12 @@ export default function WorkModes() {
             07 · Votre organisation
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-            Travaillez seul ou avec votre équipe
+            Commencez seul. Travaillez en équipe quand vous en avez besoin.
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Le travail en équipe fonctionne sur invitation. La lecture seule
-            est gratuite et réservée à la consultation ; chaque Admin dispose
-            d’un accès complet avec son propre abonnement Forge à 29,99 € / mois.
+            Retrouvez toujours votre espace Personnel, puis créez ou rejoignez
+            des espaces Équipe pour partager clients, interventions, documents
+            et planning avec vos collaborateurs.
           </p>
         </div>
 
