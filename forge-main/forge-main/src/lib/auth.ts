@@ -78,5 +78,14 @@ export async function requireCurrentUser() {
 
 
 
+  // Mot de passe temporaire attribué par un admin : on force le changement
+  // avant tout accès à l'application. La page de changement n'appelle pas
+  // requireCurrentUser, donc pas de boucle.
+  if (user.mustChangePassword) {
+    redirect("/settings/security/password");
+  }
+
+
+
   return user;
 }

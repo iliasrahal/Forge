@@ -14,6 +14,7 @@ import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
+import { checkRateLimit } from "@/src/lib/rate-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,7 +29,19 @@ type InterventionReport = {
 
 export async function POST(request: Request) {
   try {
-    await requireWorkspaceContext("useForge");
+    const { user } = await requireWorkspaceContext("useForge");
+
+    const limit = checkRateLimit(`report:${user.id}`, 8, 60_000);
+    if (!limit.allowed) {
+      return Response.json(
+        { error: "Trop de comptes rendus rapprochés. Réessaie dans un instant." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        },
+      );
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       return Response.json(
         {

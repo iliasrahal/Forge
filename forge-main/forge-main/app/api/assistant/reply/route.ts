@@ -4,6 +4,7 @@ import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
+import { checkRateLimit } from "@/src/lib/rate-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,7 +12,19 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    await requireWorkspaceContext("useForge");
+    const { user } = await requireWorkspaceContext("useForge");
+
+    const limit = checkRateLimit(`assistant-reply:${user.id}`, 30, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de demandes rapprochées. Réessaie dans un instant." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        },
+      );
+    }
+
     const body = await request.json();
     const message = body.message?.trim();
 

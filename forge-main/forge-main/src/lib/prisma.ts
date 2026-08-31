@@ -7,11 +7,9 @@ const databaseUrl = process.env.DATABASE_URL;
 
 
 if (!databaseUrl) {
-
   throw new Error(
-    "La variable DATABASE_URL est absente du fichier .env.",
+    "La variable DATABASE_URL est absente de l'environnement.",
   );
-
 }
 
 const databaseConnectionUrl = new URL(databaseUrl);
@@ -20,45 +18,51 @@ if (!databaseConnectionUrl.searchParams.has("connection_limit")) {
   databaseConnectionUrl.searchParams.set("connection_limit", "5");
 }
 
+// Sur Vercel, chaque fonction serverless instancie ce module. Derrière le
+// pooler Supabase (limité en nombre de clients), on garde un pool minuscule
+// et on le réutilise entre invocations « à chaud » via globalThis — sinon
+// quelques lambdas suffisent à saturer le pooler (erreur EMAXCONNSESSION).
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaAdapter?: PrismaPg;
+};
+
 
 const adapter =
+  globalForPrisma.prismaAdapter ??
   new PrismaPg({
+<<<<<<< HEAD
 
     connectionString:
       databaseConnectionUrl.toString(),
 
+=======
+    connectionString: databaseUrl,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+>>>>>>> be5838b779b61a69f1936934843a79b263ae8cf9
   });
-
-
-
-const globalForPrisma =
-  globalThis as unknown as {
-    prisma?: PrismaClient;
-  };
-
 
 
 export const prisma =
-
   globalForPrisma.prisma ??
-
   new PrismaClient({
-
     adapter,
-
     log:
       process.env.NODE_ENV === "development"
-
         ? ["error", "warn"]
-
         : ["error"],
-
   });
 
 
+<<<<<<< HEAD
 
 if (process.env.NODE_ENV !== "production") {
 
   globalForPrisma.prisma = prisma;
 
 }
+=======
+globalForPrisma.prisma = prisma;
+globalForPrisma.prismaAdapter = adapter;
+>>>>>>> be5838b779b61a69f1936934843a79b263ae8cf9

@@ -23,6 +23,7 @@ export default function AppShell({
 
   const hideNavigation =
     pathname === "/" ||
+    pathname.startsWith("/admin") ||
     pathname.startsWith("/register") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/forgot-password") ||
