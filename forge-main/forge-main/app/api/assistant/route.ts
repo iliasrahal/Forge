@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+
+import { checkRateLimit } from "@/src/lib/rate-limit";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -218,7 +220,19 @@ function requestsDeleteAllInterventions(
 
 export async function POST(request: Request) {
   try {
-    await requireWorkspaceContext("useForge");
+    const { user } = await requireWorkspaceContext("useForge");
+
+    const limit = checkRateLimit(`assistant:${user.id}`, 30, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Trop de demandes rapprochées. Réessaie dans un instant." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        },
+      );
+    }
+
     const body = await request.json();
 
     const message =
