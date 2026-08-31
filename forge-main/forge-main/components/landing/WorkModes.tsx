@@ -26,12 +26,12 @@ const workModes = [
   {
     title: "Vous travaillez en équipe",
     description:
-      "Invitez vos collaborateurs et partagez les interventions pour travailler ensemble plus efficacement.",
+      "Invitez vos collaborateurs dans votre espace Forge et choisissez leur niveau d’accès. Ces rôles ne sont pas des offres distinctes.",
     icon: UsersRound,
     benefits: [
-      "Invitation des membres par email",
-      "Attribution des interventions aux collaborateurs",
-      "Suivi des comptes rendus et de l’activité de l’équipe",
+      "Lecture seule · Gratuit — consultation du planning, des fiches clients, des devis et des factures, sans création, modification ni suppression",
+      "Admin · 29,99 € / mois — accès complet pour créer, modifier et gérer l’activité avec toutes les fonctionnalités Forge",
+      "Chaque Admin utilise son propre abonnement ; les accès en lecture seule restent gratuits",
     ],
   },
 ];
@@ -89,10 +89,12 @@ export default function WorkModes() {
             07 · Votre organisation
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-            Une méthode adaptée à votre façon de travailler
+            Travaillez seul ou avec votre équipe
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Que vous soyez seul ou en équipe, Forge s’adapte à votre organisation.
+            Le travail en équipe fonctionne sur invitation. La lecture seule
+            est gratuite et réservée à la consultation ; chaque Admin dispose
+            d’un accès complet avec son propre abonnement Forge à 29,99 € / mois.
           </p>
         </div>
 
