@@ -14,6 +14,7 @@ import {
   isImage,
 } from "@/src/lib/photoFiles.server";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { checkRateLimit } from "@/src/lib/rate-limit";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -29,7 +30,19 @@ function cleanJsonOutput(output: string) {
 
 export async function POST(request: Request) {
   try {
-    await requireWorkspaceContext("useForge");
+    const { user } = await requireWorkspaceContext("useForge");
+
+    const limit = checkRateLimit(`photos:${user.id}`, 10, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Trop d'analyses photo rapprochées. Réessaie dans un instant." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        },
+      );
+    }
+
     const formData =
       await request.formData();
 
