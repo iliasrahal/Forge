@@ -20,7 +20,7 @@ export default function Pricing() {
             08 · Tarifs Forge
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-            Un assistant IA professionnel accessible
+            Un assistant professionnel accessible
           </h2>
           <p className="mt-6 text-xl font-semibold text-blue-700 dark:text-blue-300">
             1 mois offert pour découvrir Forge

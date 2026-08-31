@@ -46,7 +46,7 @@ const features = [
     eyebrow: "Jusqu’au règlement",
   },
   {
-    title: "Assistant IA",
+    title: "Assistant Forge",
     description:
       "Parler ou écrire naturellement à Forge.",
     eyebrow: "Une interaction naturelle",
