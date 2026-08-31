@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import CTA from "@/components/landing/CTA";
 import ClientCreation from "@/components/landing/ClientCreation";
 import CustomerReply from "@/components/landing/CustomerReply";
@@ -9,8 +11,15 @@ import Pricing from "@/components/landing/Pricing";
 import ProductDemo from "@/components/landing/ProductDemo";
 import Workflow from "@/components/landing/Workflow";
 import WorkModes from "@/components/landing/WorkModes";
+import { getCurrentUser } from "@/src/lib/auth";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const user = await getCurrentUser();
+
+  if (user) {
+    redirect(user.onboardingCompleted ? "/app" : "/onboarding");
+  }
+
   return (
     <main className="min-h-svh overflow-x-clip bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
       <Hero />

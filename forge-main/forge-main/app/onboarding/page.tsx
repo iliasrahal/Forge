@@ -74,7 +74,7 @@ export default function OnboardingPage() {
       localStorage.setItem("forgeShowInitialWelcome", "true");
       sessionStorage.removeItem("forgeOnboardingTermsAccepted");
 
-      router.push("/app");
+      router.replace("/app");
       router.refresh();
     } catch (finishError) {
       setError(

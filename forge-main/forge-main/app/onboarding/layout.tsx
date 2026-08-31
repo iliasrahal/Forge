@@ -1,12 +1,24 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import ForgeLogo from "@/components/ForgeLogo";
+import { getCurrentUser } from "@/src/lib/auth";
 
-export default function OnboardingLayout({
+export default async function OnboardingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user.onboardingCompleted) {
+    redirect("/app");
+  }
+
   return (
     <div className="relative min-h-dvh">
       <div className="pointer-events-none absolute inset-x-0 top-5 z-30 flex justify-center sm:top-7">

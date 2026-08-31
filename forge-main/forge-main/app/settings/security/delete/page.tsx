@@ -50,7 +50,7 @@ export default function DeleteAccountPage() {
       }
 
       localStorage.clear();
-      router.push("/login");
+      router.replace("/login");
       router.refresh();
     } catch (error) {
       setMessage(

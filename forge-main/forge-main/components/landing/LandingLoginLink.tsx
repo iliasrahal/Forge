@@ -64,7 +64,7 @@ export default function LandingLoginLink({
     ).matches;
 
     if (reduceMotion) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -76,7 +76,7 @@ export default function LandingLoginLink({
       );
 
     timerRef.current = window.setTimeout(() => {
-      router.push("/login");
+      router.replace("/login");
     }, 440);
   }
 

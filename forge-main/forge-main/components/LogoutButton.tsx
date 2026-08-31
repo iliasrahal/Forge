@@ -37,7 +37,7 @@ export default function LogoutButton() {
         "forgeLastGreetingDate",
       );
 
-      router.push("/login");
+      router.replace("/login");
       router.refresh();
     }
   }

@@ -20,7 +20,7 @@ export default async function TeamSettingsPage() {
   return (
     <main className="min-h-dvh px-4 py-8 text-slate-950 dark:text-white sm:px-6">
       <section className="mx-auto max-w-xl rounded-[2rem] border border-white/70 bg-white/70 p-6 shadow-xl shadow-slate-200/40 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-900/70 dark:shadow-black/20 sm:p-8">
-        <Link href="/settings" className="forge-back-link font-semibold text-blue-600 dark:text-blue-400">Retour</Link>
+        <Link href="/app" className="forge-back-link font-semibold text-blue-600 dark:text-blue-400">Retour</Link>
         <p className="mt-8 text-center text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">Mon équipe</p>
         <h1 className="mt-3 text-center text-3xl font-bold">{context.workspace.type === "TEAM" ? context.workspace.name : "Créez votre équipe"}</h1>
         {members.length > 0 && (

@@ -107,7 +107,7 @@ export default function UserMenu({
 
 
 
-    router.push("/login");
+    router.replace("/login");
     router.refresh();
 
 

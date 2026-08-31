@@ -136,13 +136,13 @@ export default function LoginPage() {
           "true",
         );
 
-        router.push("/app");
+        router.replace("/app");
       } else {
         localStorage.removeItem(
           "forgeOnboardingCompleted",
         );
 
-        router.push("/onboarding");
+        router.replace("/onboarding");
       }
 
       router.refresh();
