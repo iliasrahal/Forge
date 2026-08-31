@@ -92,7 +92,15 @@ const sections = [
   },
 ];
 
-export default function PrivacyPage() {
+type PrivacyPageProps = {
+  searchParams: Promise<{ returnTo?: string }>;
+};
+
+export default async function PrivacyPage({
+  searchParams,
+}: PrivacyPageProps) {
+  const { returnTo } = await searchParams;
+
   return (
     <LegalPageShell
       eyebrow="Protection des données"
@@ -100,6 +108,7 @@ export default function PrivacyPage() {
       introduction="Une présentation transparente de la manière dont Forge protège et utilise les informations nécessaires au service."
       updatedAt="27 août 2026"
       sections={sections}
+      returnHref={returnTo === "/onboarding" ? "/onboarding" : "/"}
     />
   );
 }

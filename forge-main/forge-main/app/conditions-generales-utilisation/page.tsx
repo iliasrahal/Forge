@@ -78,7 +78,13 @@ const sections = [
   },
 ];
 
-export default function TermsPage() {
+type TermsPageProps = {
+  searchParams: Promise<{ returnTo?: string }>;
+};
+
+export default async function TermsPage({ searchParams }: TermsPageProps) {
+  const { returnTo } = await searchParams;
+
   return (
     <LegalPageShell
       eyebrow="Cadre d’utilisation"
@@ -86,6 +92,7 @@ export default function TermsPage() {
       introduction="Les règles essentielles pour utiliser Forge de manière claire, responsable et sécurisée."
       updatedAt="27 août 2026"
       sections={sections}
+      returnHref={returnTo === "/onboarding" ? "/onboarding" : "/"}
     />
   );
 }

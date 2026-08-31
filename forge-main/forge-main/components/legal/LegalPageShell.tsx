@@ -14,6 +14,7 @@ type LegalPageShellProps = {
   introduction: string;
   updatedAt: string;
   sections: LegalSection[];
+  returnHref?: string;
 };
 
 export default function LegalPageShell({
@@ -22,6 +23,7 @@ export default function LegalPageShell({
   introduction,
   updatedAt,
   sections,
+  returnHref = "/",
 }: LegalPageShellProps) {
   return (
     <main className="relative isolate min-h-dvh overflow-hidden bg-slate-50 px-5 py-8 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-8 sm:py-12">
@@ -47,7 +49,7 @@ export default function LegalPageShell({
           </Link>
 
           <Link
-            href="/"
+            href={returnHref}
             className="forge-back-link rounded-full border border-blue-200/80 bg-white/70 px-4 py-2 text-sm font-semibold text-blue-600 shadow-sm backdrop-blur transition hover:border-blue-400 hover:text-blue-700 dark:border-blue-900 dark:bg-slate-900/70 dark:text-blue-400 dark:hover:border-blue-700 dark:hover:text-blue-300"
           >
             Retour

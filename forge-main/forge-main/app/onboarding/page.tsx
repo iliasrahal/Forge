@@ -24,6 +24,9 @@ export default function OnboardingPage() {
     const savedFirstName = localStorage.getItem("forgeUserFirstName");
     const frame = window.requestAnimationFrame(() => {
       setFirstName(savedFirstName?.trim() || "");
+      setAcceptedTerms(
+        sessionStorage.getItem("forgeOnboardingTermsAccepted") === "true",
+      );
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -69,6 +72,7 @@ export default function OnboardingPage() {
         }),
       );
       localStorage.setItem("forgeShowInitialWelcome", "true");
+      sessionStorage.removeItem("forgeOnboardingTermsAccepted");
 
       router.push("/app");
       router.refresh();
@@ -108,25 +112,28 @@ export default function OnboardingPage() {
           <input
             type="checkbox"
             checked={acceptedTerms}
-            onChange={(event) => setAcceptedTerms(event.target.checked)}
+            onChange={(event) => {
+              const isAccepted = event.target.checked;
+              setAcceptedTerms(isAccepted);
+              sessionStorage.setItem(
+                "forgeOnboardingTermsAccepted",
+                String(isAccepted),
+              );
+            }}
             className="mt-1 h-5 w-5 rounded border-slate-300"
           />
 
           <p className="text-sm text-slate-600 dark:text-slate-300">
             J&apos;accepte les{" "}
             <Link
-              href="/conditions-generales-utilisation"
-              target="_blank"
-              rel="noreferrer"
+              href="/conditions-generales-utilisation?returnTo=/onboarding"
               className="font-semibold text-blue-700 underline decoration-blue-200 underline-offset-4 transition hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-800 dark:hover:text-blue-300"
             >
               Conditions Générales d&apos;Utilisation
             </Link>{" "}
             et la{" "}
             <Link
-              href="/politique-confidentialite"
-              target="_blank"
-              rel="noreferrer"
+              href="/politique-confidentialite?returnTo=/onboarding"
               className="font-semibold text-blue-700 underline decoration-blue-200 underline-offset-4 transition hover:text-blue-800 dark:text-blue-400 dark:decoration-blue-800 dark:hover:text-blue-300"
             >
               Politique de confidentialité

@@ -53,13 +53,6 @@ type ReplyStatus =
   | "notice"
   | "error";
 
-type UserJob =
-  | "PLOMBIER_CHAUFFAGISTE"
-  | "ELECTRICIEN"
-  | "PEINTRE_BATIMENT"
-  | "MENUISIER"
-  | "AUTRE";
-
 type HomeContentProps = {
   state: HomeState;
   currentAppointment?: Appointment;
@@ -189,10 +182,6 @@ export default function HomeContent({
   const [firstName, setFirstName] =
     useState("");
 
-  const [job, setJob] =
-    useState<UserJob>("AUTRE");
-
-
   const resetReply = () => {
     setClientReply("");
     setClientReplyError("");
@@ -214,37 +203,6 @@ export default function HomeContent({
       savedFirstName?.trim() || "",
     );
 
-
-    const savedProfile =
-      localStorage.getItem(
-        "forgeUserProfile",
-      );
-
-
-    if (!savedProfile) {
-      return;
-    }
-
-
-    try {
-
-      const parsedProfile = JSON.parse(
-        savedProfile,
-      ) as {
-        job?: UserJob;
-      };
-
-
-      setJob(
-        parsedProfile.job || "AUTRE",
-      );
-
-
-    } catch {
-
-      setJob("AUTRE");
-
-    }
 
   }, []);
 
@@ -273,28 +231,7 @@ export default function HomeContent({
 
   const getInterventionExample = () => {
 
-    switch (job) {
-
-      case "PLOMBIER_CHAUFFAGISTE":
-        return "demain à 10h chez Charles Xavier pour une fuite d’eau";
-
-
-      case "ELECTRICIEN":
-        return "demain à 10h chez Charles Xavier pour une panne électrique";
-
-
-      case "PEINTRE_BATIMENT":
-        return "demain à 10h chez Charles Xavier pour repeindre un salon";
-
-
-      case "MENUISIER":
-        return "demain à 10h chez Charles Xavier pour remplacer une porte";
-
-
-      default:
-        return "demain à 10h chez Charles Xavier pour une intervention";
-
-    }
+    return "J’ai une intervention demain à 10h chez Charles Xavier";
 
   };
 
