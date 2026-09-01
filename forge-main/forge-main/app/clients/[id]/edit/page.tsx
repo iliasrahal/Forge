@@ -15,7 +15,7 @@ export default async function EditClientPage({
   params,
 }: EditClientPageProps) {
   const { id } = await params;
-  const workspaceContext = await requireWorkspaceContext("read");
+  const workspaceContext = await requireWorkspaceContext("write");
 
   const client = await prisma.client.findFirst({
     where: {

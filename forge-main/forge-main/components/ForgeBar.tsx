@@ -283,6 +283,7 @@ export default function ForgeBar({
   const [isListening, setIsListening] =
     useState(false);
   const [isWorkspaceLocked, setIsWorkspaceLocked] = useState(false);
+  const [isExplicitReadOnly, setIsExplicitReadOnly] = useState(false);
 
   const recognitionRef =
     useRef<SpeechRecognitionInstance | null>(
@@ -304,14 +305,27 @@ export default function ForgeBar({
 
   useEffect(() => {
     let cancelled = false;
-    void fetch("/api/workspaces", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!cancelled) setIsWorkspaceLocked(data.permissions?.canUseForge === false);
-      })
-      .catch(() => undefined);
-    return () => { cancelled = true; };
+
+    const loadWorkspaceAccess = () => {
+      void fetch("/api/workspaces", { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) return;
+          const data = await response.json();
+          if (!cancelled) {
+            setIsWorkspaceLocked(data.permissions?.canUseForge === false);
+            setIsExplicitReadOnly(data.activeRole === "READ_ONLY");
+          }
+        })
+        .catch(() => undefined);
+    };
+
+    loadWorkspaceAccess();
+    window.addEventListener("forge-workspace-changed", loadWorkspaceAccess);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("forge-workspace-changed", loadWorkspaceAccess);
+    };
   }, []);
 
   useEffect(() => {
@@ -1732,6 +1746,7 @@ export default function ForgeBar({
       <input
         ref={photoInputRef}
         type="file"
+        disabled={isWorkspaceLocked}
         accept="image/*"
         capture="environment"
         multiple
@@ -1740,7 +1755,8 @@ export default function ForgeBar({
       />
 
      <div
-       className={`flex h-20 w-full items-center gap-3 px-1 sm:px-2 ${
+       aria-disabled={isWorkspaceLocked}
+       className={`flex h-20 w-full items-center gap-3 px-1 transition sm:px-2 ${isWorkspaceLocked ? "pointer-events-none opacity-60" : ""} ${
          variant === "floating"
            ? "forge-bar rounded-3xl border px-5 backdrop-blur-xl"
            : "h-16 gap-2 bg-transparent [&_button]:!h-10 [&_button]:!w-10 [&_button_svg]:!h-5 [&_button_svg]:!w-5 sm:h-20 sm:gap-3 sm:[&_button]:!h-12 sm:[&_button]:!w-12 sm:[&_button_svg]:!h-auto sm:[&_button_svg]:!w-auto"
@@ -1853,7 +1869,16 @@ export default function ForgeBar({
 
   {isWorkspaceLocked && (
     <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
-      Consultation disponible. <Link href="/subscription" className="font-semibold text-blue-600 dark:text-blue-400">Activer Forge</Link>
+      {isExplicitReadOnly ? (
+        "Vous êtes en lecture seule"
+      ) : (
+        <>
+          Consultation disponible.{" "}
+          <Link href="/subscription" className="font-semibold text-blue-600 dark:text-blue-400">
+            Activer Forge
+          </Link>
+        </>
+      )}
     </p>
   )}
 

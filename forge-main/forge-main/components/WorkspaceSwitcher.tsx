@@ -101,6 +101,7 @@ export default function WorkspaceSwitcher() {
 
       setActiveId(workspaceId);
       setIsOpen(false);
+      window.dispatchEvent(new Event("forge-workspace-changed"));
       router.push("/app");
       router.refresh();
     } catch (switchError) {

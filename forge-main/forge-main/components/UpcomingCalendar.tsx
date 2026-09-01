@@ -24,6 +24,7 @@ type UpcomingCalendarProps = {
     interventionId: string,
     scheduledDate: string,
   ) => void;
+  canWrite: boolean;
 };
 
 export type PlanningClient = {
@@ -49,6 +50,7 @@ export default function UpcomingCalendar({
   onClose,
   onSelectAppointment,
   onInterventionCreated,
+  canWrite,
 }: UpcomingCalendarProps) {
   const initialDateKey = focusDate || appointments[0]?.date || todayDateKey;
   const initialDate = parseDateKey(initialDateKey);
@@ -191,14 +193,14 @@ export default function UpcomingCalendar({
             </p>
             <h1 className="mt-1 text-xl font-bold capitalize sm:text-2xl">{monthLabel}</h1>
           </div>
-          <button
+          {canWrite ? (<button
             type="button"
             onClick={onClose}
             aria-label="Fermer le planning"
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-600 dark:hover:text-blue-300"
           >
             <X size={19} />
-          </button>
+          </button>) : null}
         </div>
 
         <div className="mt-5 grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
@@ -313,7 +315,7 @@ export default function UpcomingCalendar({
         )}
       </div>
 
-      {showCreationForm && (
+      {canWrite && showCreationForm && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
           <form
             onSubmit={createIntervention}

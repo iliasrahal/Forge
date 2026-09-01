@@ -50,6 +50,7 @@ type HomeClientProps = {
   planningClients: PlanningClient[];
   todayDateKey: string;
   newInterventionId?: string | null;
+  canWrite: boolean;
 };
 
 export default function HomeClient({
@@ -57,6 +58,7 @@ export default function HomeClient({
   upcomingAppointments,
   planningClients,
   todayDateKey,
+  canWrite,
   newInterventionId: initialNewInterventionId = null,
 }: HomeClientProps) {
   const router = useRouter();
@@ -1286,6 +1288,7 @@ const handleCreateInvoice = async () => {
       onClose={handleCloseUpcomingCalendar}
       onSelectAppointment={handleSelectAppointment}
       onInterventionCreated={handlePlanningInterventionCreated}
+      canWrite={canWrite}
     />
   )}
 
@@ -1488,6 +1491,7 @@ const handleCreateInvoice = async () => {
   <HomeContent
 
     state={homeState}
+    canWrite={canWrite}
 
     hideMainContent={showUpcomingCalendar}
 

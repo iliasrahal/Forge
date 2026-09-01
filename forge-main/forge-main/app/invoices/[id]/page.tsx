@@ -188,7 +188,7 @@ export default async function InvoicePage({
         <InvoiceAmountForm
           invoiceId={invoice.id}
           amountCents={invoice.amountCents}
-          editable={invoice.status === "BROUILLON"}
+          editable={workspaceContext.permissions.canWrite && invoice.status === "BROUILLON"}
         />
 
 
@@ -276,10 +276,12 @@ export default async function InvoicePage({
         <div className="mt-6 space-y-4 pt-5">
 
 
-          <SendInvoiceButton
-            invoiceId={invoice.id}
-            clientId={invoice.clientId}
-          />
+          {workspaceContext.permissions.canWrite ? (
+            <SendInvoiceButton
+              invoiceId={invoice.id}
+              clientId={invoice.clientId}
+            />
+          ) : null}
 
 
 

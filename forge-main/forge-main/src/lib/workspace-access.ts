@@ -9,12 +9,12 @@ import {
   maybeSweepExpiredTeams,
   recomputeTeamGrace,
 } from "@/src/lib/team-access";
+import {
+  getWorkspacePermissions,
+  type EffectiveWorkspaceRole,
+} from "@/src/lib/workspace-permissions";
 
-export type EffectiveWorkspaceRole =
-  | "OWNER"
-  | "ADMIN"
-  | "READ_ONLY"
-  | "LEGACY_TECHNICIAN";
+export type { EffectiveWorkspaceRole } from "@/src/lib/workspace-permissions";
 export type WorkspacePermission =
   | "read"
   | "write"
@@ -43,22 +43,6 @@ function normalizeRole(role: string): EffectiveWorkspaceRole {
   // Aucun TECHNICIAN historique n'est remappé sans audit de la base réelle.
   if (role === "TECHNICIAN") return "LEGACY_TECHNICIAN";
   return "READ_ONLY";
-}
-
-function getPermissions(
-  role: EffectiveWorkspaceRole,
-  hasBillingAccess: boolean,
-) {
-  const roleAllowsWrite =
-    role === "OWNER" || role === "ADMIN" || role === "LEGACY_TECHNICIAN";
-  const hasFullAccess = roleAllowsWrite && hasBillingAccess;
-
-  return {
-    canRead: true,
-    canWrite: hasFullAccess,
-    canUseForge: hasFullAccess,
-    canManageTeam: role === "OWNER" && hasBillingAccess,
-  };
 }
 
 export async function ensurePersonalWorkspaceForUser(userId: string) {
@@ -203,7 +187,7 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
       storedRole: membership.role,
     },
     subscription,
-    permissions: getPermissions(role, subscription.hasAccess),
+    permissions: getWorkspacePermissions(role, subscription.hasAccess),
   };
 }
 

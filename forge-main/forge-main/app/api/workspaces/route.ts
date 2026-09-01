@@ -19,6 +19,7 @@ export async function GET() {
 
     return NextResponse.json({
       activeWorkspaceId: context.workspace.id,
+      activeRole: context.membership.role,
       permissions: context.permissions,
       workspaces: memberships.map((membership) => ({
         id: membership.organization.id,

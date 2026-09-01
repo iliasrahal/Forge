@@ -130,6 +130,7 @@ export default async function NewClientPage({
   }>;
 }) {
   await requireCurrentUser();
+  await requireWorkspaceContext("write");
 
   const params = await searchParams;
 

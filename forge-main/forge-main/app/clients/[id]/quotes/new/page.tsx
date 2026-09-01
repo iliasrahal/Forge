@@ -29,7 +29,7 @@ export default async function NewQuotePage({
 
 
   await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const workspaceContext = await requireWorkspaceContext("write");
 
 
 

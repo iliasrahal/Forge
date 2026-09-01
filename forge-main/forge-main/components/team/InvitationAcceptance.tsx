@@ -18,12 +18,12 @@ type AcceptanceResponse = {
   workspaceId?: string;
   workspaceName?: string;
   alreadyMember?: boolean;
+  adminDowngraded?: boolean;
   error?: string;
 };
 
 export default function InvitationAcceptance({
   token,
-  workspaceName,
   invitedEmail,
   currentUserEmail,
   role,
@@ -59,12 +59,12 @@ export default function InvitationAcceptance({
       }
 
       setWorkspaceId(data.workspaceId);
-      setMessage(
-        data.alreadyMember
-          ? "Vous faites déjà partie de cette équipe."
-          : `Vous avez rejoint ${data.workspaceName || workspaceName}.`,
+      router.replace(
+        data.adminDowngraded
+          ? "/app?invitationAccess=read-only"
+          : "/app",
       );
-      setStatus("accepted");
+      router.refresh();
     } catch (acceptanceError) {
       setMessage(
         acceptanceError instanceof Error

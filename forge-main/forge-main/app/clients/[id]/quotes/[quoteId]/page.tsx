@@ -230,14 +230,16 @@ export default async function QuotePage({
 <div className="mt-6 flex flex-col gap-3">
 
 
-  <DownloadQuotePdf
-    clientId={id}
-    quoteId={quoteId}
-  />
+  {workspaceContext.permissions.canWrite ? (
+    <DownloadQuotePdf
+      clientId={id}
+      quoteId={quoteId}
+    />
+  ) : null}
 
 
 
-  <Link
+  {workspaceContext.permissions.canWrite ? (<Link
     href={{
       pathname: `/clients/${id}/interventions/new`,
       query: {
@@ -253,15 +255,15 @@ export default async function QuotePage({
     className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
   >
     Créer une intervention
-  </Link>
+  </Link>) : null}
 
 
-  <Link
+  {workspaceContext.permissions.canWrite ? (<Link
     href={`/clients/${id}/quotes/${quoteId}/edit`}
     className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
   >
     Modifier le devis
-  </Link>
+  </Link>) : null}
 
 
   <a

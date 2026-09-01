@@ -26,7 +26,7 @@ export default async function NewInterventionPage({
 
   const currentUser =
     await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const workspaceContext = await requireWorkspaceContext("write");
 
 
   const client =

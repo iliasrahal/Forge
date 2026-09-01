@@ -18,6 +18,7 @@ type WorkMode = "SOLO" | "TEAM";
 
 type LoginResponse = {
   subscriptionRequired?: boolean;
+  invitation?: { adminDowngraded?: boolean } | null;
   user?: {
     id: string;
     firstName: string;
@@ -28,11 +29,6 @@ type LoginResponse = {
     onboardingCompleted: boolean;
     themePreference: "light" | "dark" | null;
   };
-  error?: string;
-};
-
-type InvitationResponse = {
-  workspaceId?: string;
   error?: string;
 };
 
@@ -111,32 +107,6 @@ export default function LoginPage() {
         );
       }
 
-      if (activeInvitationToken) {
-        const invitationResponse = await fetch("/api/team/invitations/accept", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: activeInvitationToken }),
-        });
-        const invitationData =
-          (await invitationResponse.json()) as InvitationResponse;
-
-        if (!invitationResponse.ok || !invitationData.workspaceId) {
-          throw new Error(invitationData.error || "Impossible de rejoindre l’équipe.");
-        }
-
-        if (data.user.onboardingCompleted) {
-          const workspaceResponse = await fetch("/api/workspaces/active", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ workspaceId: invitationData.workspaceId }),
-          });
-
-          if (!workspaceResponse.ok) {
-            throw new Error("L’équipe a été rejointe, mais elle ne peut pas être ouverte.");
-          }
-        }
-      }
-
       localStorage.setItem(
         "forgeUserFirstName",
         data.user.firstName,
@@ -166,7 +136,11 @@ export default function LoginPage() {
           "true",
         );
 
-        router.replace("/app");
+        router.replace(
+          data.invitation?.adminDowngraded
+            ? "/app?invitationAccess=read-only"
+            : "/app",
+        );
       } else {
         localStorage.removeItem(
           "forgeOnboardingCompleted",

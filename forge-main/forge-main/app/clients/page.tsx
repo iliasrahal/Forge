@@ -38,18 +38,20 @@ export default async function ClientsPage() {
 
 
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2">
+      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "sm:grid-cols-2" : ""}`}>
 
 
 
 
 
-        <Link
-          href="/clients/new"
-          className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-6"
-        >
-          + Nouveau client
-        </Link>
+        {workspaceContext.permissions.canWrite ? (
+          <Link
+            href="/clients/new"
+            className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-6"
+          >
+            + Nouveau client
+          </Link>
+        ) : null}
 
 
 

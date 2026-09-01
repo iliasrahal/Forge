@@ -55,6 +55,7 @@ type ReplyStatus =
 
 type HomeContentProps = {
   state: HomeState;
+  canWrite: boolean;
   currentAppointment?: Appointment;
   hideMainContent?: boolean;
   report?: InterventionReport | null;
@@ -90,6 +91,7 @@ type HomeContentProps = {
 
 export default function HomeContent({
   state,
+  canWrite,
   currentAppointment,
   hideMainContent = false,
   report,
@@ -753,6 +755,7 @@ export default function HomeContent({
   onStart={onStartIntervention}
   onEdit={onEditIntervention}
   onDelete={onDeleteIntervention}
+  canWrite={canWrite}
 />
 )}
 

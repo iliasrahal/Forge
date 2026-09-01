@@ -6,6 +6,10 @@ import InvitationAcceptance from "@/components/team/InvitationAcceptance";
 import { getCurrentUser } from "@/src/lib/auth";
 import { normalizeEmail } from "@/src/lib/email-normalization";
 import { prisma } from "@/src/lib/prisma";
+import {
+  EXPIRED_INVITATION_MESSAGE,
+  isTeamInvitationExpired,
+} from "@/src/lib/team-invitations";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +18,22 @@ type InvitePageProps = {
 };
 
 function InvitationMessage({ message }: { message: string }) {
+  const alreadySuggestsNewInvitation = message.includes(
+    "envoyer une nouvelle invitation",
+  );
+
   return (
     <AuthShell
       eyebrow="Invitation Forge"
       title="Impossible de rejoindre cette équipe."
       description={message}
     >
-      <p className="text-center text-sm text-slate-500 dark:text-slate-400">
-        Demandez au responsable de l’équipe de vous envoyer une nouvelle
-        invitation si nécessaire.
-      </p>
+      {!alreadySuggestsNewInvitation ? (
+        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+          Demandez au responsable de l’équipe de vous envoyer une nouvelle
+          invitation si nécessaire.
+        </p>
+      ) : null}
     </AuthShell>
   );
 }
@@ -49,8 +59,8 @@ export default async function InvitePage({ searchParams }: InvitePageProps) {
     return <InvitationMessage message="Le lien d’invitation est invalide." />;
   }
 
-  if (invitation.expiresAt <= new Date()) {
-    return <InvitationMessage message="Cette invitation a expiré." />;
+  if (isTeamInvitationExpired(invitation)) {
+    return <InvitationMessage message={EXPIRED_INVITATION_MESSAGE} />;
   }
 
   const [currentUser, invitedUser] = await Promise.all([

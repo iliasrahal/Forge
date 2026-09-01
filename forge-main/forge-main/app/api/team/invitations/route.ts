@@ -5,6 +5,7 @@ import { sendTeamInvitationEmail } from "@/src/lib/email";
 import { normalizeEmail } from "@/src/lib/email-normalization";
 import { prisma } from "@/src/lib/prisma";
 import { teamMemberLimit } from "@/src/lib/team-access";
+import { TEAM_INVITATION_TTL_MS } from "@/src/lib/team-invitations";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -86,9 +87,7 @@ export async function POST(request: Request) {
             email,
             role,
             tokenHash,
-            expiresAt: new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000,
-            ),
+            expiresAt: new Date(Date.now() + TEAM_INVITATION_TTL_MS),
             organizationId: context.workspace.id,
             invitedById: context.user.id,
           },

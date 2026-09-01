@@ -9,6 +9,11 @@ import { sendActivationEmail } from "@/src/lib/email";
 import { getPhoneSearchVariants, normalizePhone } from "@/src/lib/phone";
 import { createTrialPeriod } from "@/src/lib/subscription-access";
 import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
+import {
+  acceptTeamInvitation,
+  hashTeamInvitationToken,
+  isTeamInvitationExpired,
+} from "@/src/lib/team-invitations";
 
 
 type RegisterBody = {
@@ -62,9 +67,7 @@ export async function POST(
     const invitation = invitationToken
       ? await prisma.teamInvitation.findUnique({
           where: {
-            tokenHash: createHash("sha256")
-              .update(invitationToken)
-              .digest("hex"),
+            tokenHash: hashTeamInvitationToken(invitationToken),
           },
         })
       : null;
@@ -73,7 +76,7 @@ export async function POST(
       invitationToken &&
       (!invitation ||
         invitation.status !== "PENDING" ||
-        invitation.expiresAt <= new Date() ||
+        isTeamInvitationExpired(invitation) ||
         normalizeEmail(invitation.email) !== email)
     ) {
       return NextResponse.json(
@@ -268,23 +271,15 @@ export async function POST(
     await ensurePersonalWorkspaceForUser(user.id);
 
     if (invitation) {
-      await prisma.$transaction([
-        prisma.organizationMember.create({
-          data: {
-            userId: user.id,
-            organizationId: invitation.organizationId,
-            role: invitation.role,
-          },
-        }),
-        prisma.teamInvitation.update({
-          where: { id: invitation.id },
-          data: { status: "ACCEPTED" },
-        }),
-        prisma.user.update({
-          where: { id: user.id },
-          data: { onboardingCompleted: true },
-        }),
-      ]);
+      await acceptTeamInvitation({
+        token: invitationToken,
+        userId: user.id,
+        userEmail: user.email,
+      });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { onboardingCompleted: true },
+      });
     }
 
 

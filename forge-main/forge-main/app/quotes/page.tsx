@@ -70,16 +70,18 @@ export default async function QuotesPage() {
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 dark:bg-slate-950 sm:px-6 sm:py-6">
 
 
-      <div className="mb-6 grid gap-3 min-[380px]:grid-cols-2">
+      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "min-[380px]:grid-cols-2" : ""}`}>
 
 
 
-        <Link
-          href="/quotes/new"
-          className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-5"
-        >
-          + Nouveau devis
-        </Link>
+        {workspaceContext.permissions.canWrite ? (
+          <Link
+            href="/quotes/new"
+            className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-5"
+          >
+            + Nouveau devis
+          </Link>
+        ) : null}
 
 
 

@@ -282,6 +282,7 @@ export default async function ClientPage({
 
 
 
+          {workspaceContext.permissions.canWrite ? (
           <div className="mt-6">
 
             <div className="grid gap-3 sm:grid-cols-2">
@@ -320,6 +321,7 @@ export default async function ClientPage({
 
 
           </div>
+          ) : null}
 
 
         </div>

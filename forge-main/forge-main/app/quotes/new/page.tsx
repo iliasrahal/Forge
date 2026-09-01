@@ -20,7 +20,7 @@ export default async function NewQuotePage({
   searchParams,
 }: NewQuotePageProps) {
   await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const workspaceContext = await requireWorkspaceContext("write");
 
 
   const {

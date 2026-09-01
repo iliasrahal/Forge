@@ -161,11 +161,11 @@ export default async function InterventionPage({
 
         </div>
 
-        {teamMembers.length > 0 && (
+        {workspaceContext.permissions.canWrite && teamMembers.length > 0 && (
           <AssignmentSelect
             interventionId={intervention.id}
             initialUserId={intervention.assignedToId}
-            disabled={!workspaceContext.permissions.canWrite}
+            disabled={false}
             members={teamMembers.map((member) => ({
               id: member.userId,
               name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim(),

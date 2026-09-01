@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   getAppointmentDateLabel,
   getAppointmentSubject,
@@ -10,6 +12,7 @@ type CurrentInterventionCardProps = {
   onStart: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  canWrite: boolean;
 };
 
 
@@ -20,6 +23,7 @@ export default function CurrentInterventionCard({
   onStart,
   onEdit,
   onDelete,
+  canWrite,
 }: CurrentInterventionCardProps) {
   const subject =
     getAppointmentSubject(appointment);
@@ -84,7 +88,7 @@ export default function CurrentInterventionCard({
 
       </div>
 
-      <button
+      {canWrite ? (<button
         type="button"
         onClick={onStart}
         className="mt-4 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:w-auto sm:px-6 sm:text-base"
@@ -92,9 +96,9 @@ export default function CurrentInterventionCard({
         {isInProgress
           ? "Continuer l'intervention"
           : "Commencer l'intervention"}
-      </button>
+      </button>) : null}
 
-      <div className="mx-auto mt-2.5 grid max-w-xs grid-cols-2 gap-2">
+      {canWrite ? (<div className="mx-auto mt-2.5 grid max-w-xs grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onEdit}
@@ -109,7 +113,14 @@ export default function CurrentInterventionCard({
         >
           Supprimer
         </button>
-      </div>
+      </div>) : (
+        <Link
+          href={`/interventions/${appointment.id}`}
+          className="mx-auto mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl border border-blue-200 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950"
+        >
+          Consulter l’intervention
+        </Link>
+      )}
       </div>
 
     </article>

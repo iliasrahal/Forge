@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import AuthShell from "@/components/auth/AuthShell";
 
 export default function ActivateAccountPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
@@ -18,12 +19,17 @@ export default function ActivateAccountPage() {
       body: JSON.stringify({ token }),
     })
       .then(async (response) => {
-        const data = (await response.json()) as { error?: string };
+        const data = (await response.json()) as {
+          error?: string;
+          redirectTo?: string;
+        };
         if (!response.ok) {
           throw new Error(data.error || "Impossible d’activer le compte.");
         }
         setStatus("success");
-        setMessage("Ton compte est activé. Tu peux maintenant te connecter.");
+        setMessage("Ton compte est activé.");
+        router.replace(data.redirectTo || "/app");
+        router.refresh();
       })
       .catch((error: unknown) => {
         setStatus("error");
@@ -33,7 +39,7 @@ export default function ActivateAccountPage() {
             : "Impossible d’activer le compte.",
         );
       });
-  }, []);
+  }, [router]);
 
   return (
     <AuthShell
@@ -45,13 +51,13 @@ export default function ActivateAccountPage() {
         {status === "loading" && (
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400" />
         )}
-        {status !== "loading" && (
-          <Link
+        {status === "error" && (
+          <a
             href="/login"
             className="mt-8 inline-block rounded-2xl bg-blue-600 px-6 py-4 font-semibold text-white hover:bg-blue-700"
           >
             Aller à la connexion
-          </Link>
+          </a>
         )}
       </div>
     </AuthShell>

@@ -1,7 +1,9 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
 
 export async function POST(request: Request) {
   try {
@@ -47,12 +49,79 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: activationToken.userId },
       data: { emailVerifiedAt: new Date() },
+      select: { id: true, email: true },
     });
 
-    return NextResponse.json({ message: "Compte activé." });
+    const personalWorkspace = await ensurePersonalWorkspaceForUser(user.id);
+    const invitedMembership = await prisma.organizationMember.findFirst({
+      where: {
+        userId: user.id,
+        organization: {
+          type: "TEAM",
+          invitations: {
+            some: {
+              email: { equals: user.email, mode: "insensitive" },
+              status: "ACCEPTED",
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        organizationId: true,
+        role: true,
+        organization: {
+          select: {
+            invitations: {
+              where: {
+                email: { equals: user.email, mode: "insensitive" },
+                status: "ACCEPTED",
+              },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+              select: { role: true },
+            },
+          },
+        },
+      },
+    });
+    const sessionToken = randomBytes(32).toString("hex");
+    const sessionExpiresAt = new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000,
+    );
+
+    await prisma.session.create({
+      data: {
+        token: sessionToken,
+        expiresAt: sessionExpiresAt,
+        userId: user.id,
+        activeOrganizationId:
+          invitedMembership?.organizationId ?? personalWorkspace.id,
+      },
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set("forgeSession", sessionToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      expires: sessionExpiresAt,
+    });
+
+    const invitationWasDowngraded =
+      invitedMembership?.role === "READ_ONLY" &&
+      invitedMembership.organization.invitations[0]?.role === "ADMIN";
+
+    return NextResponse.json({
+      message: "Compte activé.",
+      redirectTo: invitationWasDowngraded
+        ? "/app?invitationAccess=read-only"
+        : "/app",
+    });
   } catch (error) {
     console.error("Erreur activation compte :", error);
     return NextResponse.json(

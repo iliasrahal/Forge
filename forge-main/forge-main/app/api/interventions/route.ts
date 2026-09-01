@@ -735,6 +735,7 @@ export async function PATCH(request: Request) {
       await prisma.intervention.findMany({
         where: {
           clientId: client.id,
+          organizationId: workspaceContext.workspace.id,
           status: {
             in: ["PLANIFIEE", "EN_COURS"],
           },

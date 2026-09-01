@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { compare } from "bcryptjs";
 import { cookies } from "next/headers";
@@ -9,6 +9,10 @@ import { normalizeEmail } from "@/src/lib/email-normalization";
 import { getPhoneSearchVariants } from "@/src/lib/phone";
 import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
+import {
+  acceptTeamInvitation,
+  TeamInvitationError,
+} from "@/src/lib/team-invitations";
 
 type LoginBody = {
   identifier?: string;
@@ -95,45 +99,6 @@ export async function POST(request: Request) {
       );
     }
 
-    if (invitationToken) {
-      const invitation = await prisma.teamInvitation.findUnique({
-        where: {
-          tokenHash: createHash("sha256")
-            .update(invitationToken)
-            .digest("hex"),
-        },
-        select: {
-          email: true,
-          expiresAt: true,
-          status: true,
-        },
-      });
-
-      if (!invitation || invitation.status === "REVOKED") {
-        return NextResponse.json(
-          { error: "Le lien d’invitation est invalide." },
-          { status: 400 },
-        );
-      }
-
-      if (invitation.expiresAt <= new Date()) {
-        return NextResponse.json(
-          { error: "Cette invitation a expiré." },
-          { status: 410 },
-        );
-      }
-
-      if (normalizeEmail(invitation.email) !== normalizeEmail(user.email)) {
-        return NextResponse.json(
-          {
-            error:
-              "Cette invitation a été envoyée à une autre adresse e-mail.",
-          },
-          { status: 403 },
-        );
-      }
-    }
-
     await prisma.session.deleteMany({
       where: {
         userId: user.id,
@@ -154,6 +119,13 @@ export async function POST(request: Request) {
     );
 
     const personalWorkspace = await ensurePersonalWorkspaceForUser(user.id);
+    const invitationResult = invitationToken
+      ? await acceptTeamInvitation({
+          token: invitationToken,
+          userId: user.id,
+          userEmail: user.email,
+        })
+      : null;
 
     await prisma.session.create({
       data: {
@@ -161,7 +133,8 @@ export async function POST(request: Request) {
         expiresAt:
           sessionExpiresAt,
         userId: user.id,
-        activeOrganizationId: personalWorkspace.id,
+        activeOrganizationId:
+          invitationResult?.workspaceId ?? personalWorkspace.id,
       },
     });
 
@@ -187,6 +160,7 @@ export async function POST(request: Request) {
 
 return NextResponse.json({
   subscriptionRequired: !subscriptionAccess.hasAccess,
+  invitation: invitationResult,
   user: {
     id: user.id,
     firstName: user.firstName,
@@ -201,6 +175,12 @@ return NextResponse.json({
   },
 });
   } catch (error) {
+    if (error instanceof TeamInvitationError) {
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: error.status },
+      );
+    }
     console.error(
       "Erreur connexion :",
       error,

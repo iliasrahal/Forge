@@ -26,6 +26,7 @@ export const revalidate = 0;
 type HomePageProps = {
   searchParams: Promise<{
     newIntervention?: string;
+    invitationAccess?: string;
   }>;
 };
 
@@ -107,7 +108,7 @@ function mapIntervention(intervention: any): Appointment {
 export default async function HomePage({ searchParams }: HomePageProps) {
   await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
-  const { newIntervention } = await searchParams;
+  const { newIntervention, invitationAccess } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
   const [interventions, clients] = await Promise.all([
@@ -146,6 +147,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <>
+      {invitationAccess === "read-only" ? (
+        <div className="mx-auto mb-4 max-w-2xl rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+          Vous avez rejoint l’équipe en lecture seule. Un abonnement Forge actif
+          est requis pour obtenir le rôle Admin.
+        </div>
+      ) : null}
       {workspaceContext.workspace.type === "TEAM" ? (
         <TeamGraceBanner
           workspaceName={workspaceContext.workspace.name}
@@ -164,6 +171,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim() ||
               "Client",
       }))}
+      canWrite={workspaceContext.permissions.canWrite}
       newInterventionId={newIntervention ?? null}
       />
     </>

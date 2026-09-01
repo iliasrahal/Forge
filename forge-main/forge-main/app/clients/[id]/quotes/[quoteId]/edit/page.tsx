@@ -22,7 +22,7 @@ export default async function EditQuotePage({
 }: EditQuotePageProps) {
   const { id, quoteId } = await params;
   await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const workspaceContext = await requireWorkspaceContext("write");
 
 
   const quote = await prisma.quote.findFirst({
