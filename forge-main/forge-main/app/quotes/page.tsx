@@ -67,7 +67,7 @@ export default async function QuotesPage() {
 
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 dark:bg-slate-950 sm:px-6 sm:py-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 sm:px-6 sm:py-6">
 
 
       <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "min-[380px]:grid-cols-2" : ""}`}>

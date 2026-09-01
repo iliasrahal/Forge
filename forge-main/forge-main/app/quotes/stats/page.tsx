@@ -120,7 +120,7 @@ export default async function QuoteStatsPage() {
 
   return (
 
-    <main className="min-h-screen pb-32 dark:bg-slate-950">
+    <main className="min-h-screen pb-32">
 
 
       <div className="mx-auto max-w-2xl">
