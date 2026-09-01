@@ -256,6 +256,83 @@ html.dark body {
   letter-spacing: -0.01em;
 }
 
+/* ================================================================== */
+/* Couverture large : l'ancien vocabulaire slate/blue de toute l'app   */
+/* authentifiee (clients, devis, factures, reglages, historique...)    */
+/* ramene dans le monde Cyclorama sans toucher au JSX.                 */
+/* ================================================================== */
+
+/* Encre : plus de gris froid, l'encre du monde (teintee), qui suit le theme. */
+.forge-app-shell [class*="text-slate-9"],
+.forge-app-shell [class*="text-slate-8"] { color: var(--ink) !important; }
+.forge-app-shell [class*="text-slate-7"],
+.forge-app-shell [class*="text-slate-6"] { color: var(--ink-2) !important; }
+.forge-app-shell [class*="text-slate-5"],
+.forge-app-shell [class*="text-slate-4"],
+.forge-app-shell [class*="text-slate-3"] { color: var(--ink-3) !important; }
+
+/* Bleus de texte : cobalt, sur tous les elements. */
+.forge-app-shell [class*="text-blue-"] { color: var(--cobalt-lit) !important; }
+
+/* Filets : slate -> le file du monde (bordures + separateurs de liste). */
+.forge-app-shell [class*="border-slate-1"],
+.forge-app-shell [class*="border-slate-2"],
+.forge-app-shell [class*="border-slate-3"],
+.forge-app-shell [class*="border-slate-7"],
+.forge-app-shell [class*="border-slate-8"],
+.forge-app-shell [class*="divide-slate-"] > * { border-color: var(--line) !important; }
+
+/* Fonds : sections claires ramenees, panneaux sombres ramenes. */
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-50"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-100"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-200"] {
+  background-color: color-mix(in srgb, var(--panel-2) 70%, transparent) !important;
+}
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-800"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-900"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-950"] {
+  background-color: var(--panel) !important;
+}
+
+/* Verre decoratif : panneau franc, plus de flou de facade. */
+.forge-app-shell :is(section, article, div, form, a, header, nav)[class*="bg-white/"] {
+  background-color: var(--panel) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Ombres portees : le monde n'a pas de cartes qui levitent. */
+.forge-app-shell [class*="shadow-sm"],
+.forge-app-shell [class*="shadow-md"],
+.forge-app-shell [class*="shadow-lg"],
+.forge-app-shell [class*="shadow-xl"],
+.forge-app-shell [class*="shadow-2xl"],
+.forge-app-shell [class*="shadow-["] { box-shadow: none !important; }
+
+/* Panneaux sombres arrondis (bg-slate-800/900/950) : meme arete d'aube
+   que les panneaux clairs. */
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-8"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-8"] {
+  position: relative;
+  border-color: var(--line) !important;
+  border-top: 2px solid var(--cobalt) !important;
+  background-color: var(--panel) !important;
+  box-shadow:
+    inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--cobalt) 22%, transparent) !important;
+}
+
+/* Gradients bleus decoratifs : neutralises (aucun degrade de facade). */
+.forge-app-shell :is(div, section, span, a)[class*="from-blue-"],
+.forge-app-shell :is(div, section, span, a)[class*="via-blue-"],
+.forge-app-shell :is(div, section, span, a)[class*="to-blue-"] {
+  background-image: none !important;
+  background-color: color-mix(in srgb, var(--cobalt) 12%, var(--panel)) !important;
+}
+
 /* Surfaces de la landing repeintes : le domaine "bg-white/slate-900". */
 .forge-app-shell ::selection {
   background: color-mix(in srgb, var(--cobalt) 34%, transparent);
