@@ -69,6 +69,10 @@ export default function LoginPage() {
     }
 
     const cleanIdentifier = identifier.trim();
+    const activeInvitationToken =
+      invitationToken ||
+      new URLSearchParams(window.location.search).get("invitation")?.trim() ||
+      "";
 
     if (!cleanIdentifier || !password) {
       setError(
@@ -92,7 +96,7 @@ export default function LoginPage() {
           body: JSON.stringify({
             identifier: cleanIdentifier,
             password,
-            invitationToken: invitationToken || undefined,
+            invitationToken: activeInvitationToken || undefined,
           }),
         },
       );
@@ -107,11 +111,11 @@ export default function LoginPage() {
         );
       }
 
-      if (invitationToken) {
+      if (activeInvitationToken) {
         const invitationResponse = await fetch("/api/team/invitations/accept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: invitationToken }),
+          body: JSON.stringify({ token: activeInvitationToken }),
         });
         const invitationData =
           (await invitationResponse.json()) as InvitationResponse;

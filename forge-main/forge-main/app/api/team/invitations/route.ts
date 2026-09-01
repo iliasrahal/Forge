@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { sendTeamInvitationEmail } from "@/src/lib/email";
+import { normalizeEmail } from "@/src/lib/email-normalization";
 import { prisma } from "@/src/lib/prisma";
 import {
   getWorkspaceErrorResponse,
@@ -25,13 +26,13 @@ export async function POST(request: Request) {
     const emails = [
       ...new Set(
         (body.emails ?? []).map((email) =>
-          email.trim().toLowerCase(),
+          normalizeEmail(email),
         ),
       ),
     ].filter(
       (email) =>
         email.includes("@") &&
-        email !== context.user.email.toLowerCase(),
+        email !== normalizeEmail(context.user.email),
     );
 
     if (emails.length === 0) {

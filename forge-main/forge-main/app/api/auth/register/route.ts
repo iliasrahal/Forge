@@ -4,6 +4,7 @@ import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { normalizeEmail } from "@/src/lib/email-normalization";
 import { sendActivationEmail } from "@/src/lib/email";
 import { getPhoneSearchVariants, normalizePhone } from "@/src/lib/phone";
 import { createTrialPeriod } from "@/src/lib/subscription-access";
@@ -45,7 +46,7 @@ export async function POST(
 
 
     const email =
-      body.email?.trim().toLowerCase() ?? "";
+      normalizeEmail(body.email);
 
 
     const phone =
@@ -73,7 +74,7 @@ export async function POST(
       (!invitation ||
         invitation.status !== "PENDING" ||
         invitation.expiresAt <= new Date() ||
-        invitation.email.toLowerCase() !== email)
+        normalizeEmail(invitation.email) !== email)
     ) {
       return NextResponse.json(
         { error: "Cette invitation est invalide, expirée ou ne correspond pas à cette adresse e-mail." },
@@ -149,7 +150,10 @@ export async function POST(
           OR: [
 
             {
-              email,
+              email: {
+                equals: email,
+                mode: "insensitive",
+              },
             },
 
             { phone: { in: getPhoneSearchVariants(body.phone ?? "") } },

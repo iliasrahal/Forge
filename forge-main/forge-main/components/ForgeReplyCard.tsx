@@ -29,13 +29,13 @@ export default function ForgeReplyCard({
   }
 
   return (
-    <div className="flex max-h-[calc(100dvh-18rem)] w-full flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
-      <h2 className="shrink-0 text-center text-2xl font-bold text-blue-700">
+    <div className="flex max-h-[calc(100dvh-18rem)] w-full flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
+      <h2 className="shrink-0 text-center text-2xl font-bold text-blue-700 dark:text-blue-400">
         Ta réponse est prête
       </h2>
 
-      <div className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl bg-slate-50 p-5">
-        <p className="whitespace-pre-wrap text-base leading-8 text-slate-700">
+      <div className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl bg-slate-50 p-5 dark:bg-slate-800/80">
+        <p className="whitespace-pre-wrap text-base leading-8 text-slate-700 dark:text-slate-200">
           {reply}
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function ForgeReplyCard({
         <button
           type="button"
           onClick={onEdit}
-          className="rounded-xl border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50"
+          className="rounded-xl border-2 border-blue-600 px-6 py-3 font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
         >
           Modifier
         </button>

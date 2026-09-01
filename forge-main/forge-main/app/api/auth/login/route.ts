@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { normalizeEmail } from "@/src/lib/email-normalization";
 import { getPhoneSearchVariants } from "@/src/lib/phone";
 import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 import { ensurePersonalWorkspaceForUser } from "@/src/lib/workspace-access";
@@ -41,7 +42,12 @@ export async function POST(request: Request) {
     const isEmail = identifier.includes("@");
     const users = await prisma.user.findMany({
       where: isEmail
-        ? { email: identifier.toLowerCase() }
+        ? {
+            email: {
+              equals: normalizeEmail(identifier),
+              mode: "insensitive",
+            },
+          }
         : { phone: { in: getPhoneSearchVariants(identifier) } },
       take: 2,
     });
@@ -117,7 +123,7 @@ export async function POST(request: Request) {
         );
       }
 
-      if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
+      if (normalizeEmail(invitation.email) !== normalizeEmail(user.email)) {
         return NextResponse.json(
           {
             error:

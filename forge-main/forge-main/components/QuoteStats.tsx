@@ -58,11 +58,11 @@ export default function QuoteStats({
 
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
       <div className="flex items-center justify-between">
 
-        <h2 className="text-xl font-bold text-blue-700">
+        <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Statistiques devis
         </h2>
 
@@ -74,7 +74,7 @@ export default function QuoteStats({
               Number(e.target.value),
             )
           }
-          className="rounded-xl border border-slate-300 px-3 py-2"
+          className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
         >
           <option value={2026}>
             2026
@@ -91,11 +91,11 @@ export default function QuoteStats({
 
       <div className="mt-6">
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Total année
         </p>
 
-        <p className="text-3xl font-bold text-blue-700">
+        <p className="text-3xl font-bold text-blue-700 dark:text-blue-400">
           {(totalYear / 100).toFixed(2)} €
         </p>
 
@@ -127,15 +127,15 @@ export default function QuoteStats({
           return (
             <div
               key={month}
-              className="flex justify-between rounded-2xl bg-slate-50 p-4"
+              className="flex justify-between rounded-2xl bg-slate-50 p-4 dark:bg-slate-800"
             >
 
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-slate-700 dark:text-slate-200">
                 {month}
               </span>
 
 
-              <span className="font-semibold text-blue-700">
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
                 {(totalMonth / 100).toFixed(2)} €
               </span>
 

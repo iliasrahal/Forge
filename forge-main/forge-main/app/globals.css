@@ -6,6 +6,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --forge-floating-surface: rgb(255 255 255 / 0.86);
+  --forge-floating-border: rgb(226 232 240 / 0.9);
+  --forge-floating-shadow: 0 22px 60px -28px rgb(15 23 42 / 0.45);
 }
 
 html {
@@ -14,6 +17,10 @@ html {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+html:not(.dark) {
+  color-scheme: light;
 }
 
 
@@ -63,6 +70,9 @@ html.dark {
 
   --background: #0f172a;
   --foreground: #f8fafc;
+  --forge-floating-surface: rgb(15 23 42 / 0.86);
+  --forge-floating-border: rgb(51 65 85 / 0.82);
+  --forge-floating-shadow: 0 22px 60px -28px rgb(0 0 0 / 0.72);
 }
 
 
@@ -70,6 +80,16 @@ html.dark {
 html.dark body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Surface commune aux éléments flottants persistants (ForgeBar/navigation). */
+.forge-floating-surface {
+  border-color: var(--forge-floating-border);
+  background-color: var(--forge-floating-surface);
+  box-shadow: var(--forge-floating-shadow);
+  color: var(--foreground);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 /* Identité premium commune à toute l'application authentifiée. */

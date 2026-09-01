@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
+import { normalizeEmail } from "@/src/lib/email-normalization";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     if (
-      invitation.email.toLowerCase() !== context.user.email.toLowerCase()
+      normalizeEmail(invitation.email) !== normalizeEmail(context.user.email)
     ) {
       return NextResponse.json(
         {

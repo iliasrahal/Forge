@@ -20,6 +20,16 @@ function AuthenticatedThemeSync() {
 
     async function synchronizeTheme() {
       try {
+        // Une préférence explicitement choisie sur cet appareil est la source
+        // la plus récente. Cela évite qu'une réponse serveur plus ancienne ne
+        // réapplique le thème précédent pendant une navigation.
+        const localTheme = window.localStorage.getItem("theme");
+
+        if (isForgeTheme(localTheme)) {
+          setTheme(localTheme);
+          return;
+        }
+
         const response = await fetch("/api/settings/theme", {
           cache: "no-store",
           signal: controller.signal,

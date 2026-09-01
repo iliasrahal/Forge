@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import AuthShell from "@/components/auth/AuthShell";
 import InvitationAcceptance from "@/components/team/InvitationAcceptance";
 import { getCurrentUser } from "@/src/lib/auth";
+import { normalizeEmail } from "@/src/lib/email-normalization";
 import { prisma } from "@/src/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -54,8 +55,13 @@ export default async function InvitePage({ searchParams }: InvitePageProps) {
 
   const [currentUser, invitedUser] = await Promise.all([
     getCurrentUser(),
-    prisma.user.findUnique({
-      where: { email: invitation.email.toLowerCase() },
+    prisma.user.findFirst({
+      where: {
+        email: {
+          equals: normalizeEmail(invitation.email),
+          mode: "insensitive",
+        },
+      },
       select: { id: true },
     }),
   ]);
@@ -66,7 +72,7 @@ export default async function InvitePage({ searchParams }: InvitePageProps) {
   }
 
   const emailMismatch =
-    currentUser.email.toLowerCase() !== invitation.email.toLowerCase();
+    normalizeEmail(currentUser.email) !== normalizeEmail(invitation.email);
   const membership = emailMismatch
     ? null
     : await prisma.organizationMember.findUnique({

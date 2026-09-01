@@ -1,6 +1,6 @@
 export default function CurrentJobCard() {
   return (
-    <section className="mt-8 w-full rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
+    <section className="mt-8 w-full rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
 
       <h2 className="text-center text-4xl font-bold">
         Mme Martin
@@ -17,7 +17,7 @@ export default function CurrentJobCard() {
       <button
         className="mt-10 w-full rounded-2xl bg-blue-600 py-5 text-2xl font-semibold text-white transition hover:bg-blue-700"
       >
-        C'est parti
+        C&apos;est parti
       </button>
 
     </section>

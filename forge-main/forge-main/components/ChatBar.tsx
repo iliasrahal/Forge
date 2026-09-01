@@ -100,7 +100,7 @@ export default function ChatBar({
 
   return (
     <div className="mt-12 w-full">
-      <div className="flex min-h-24 w-full items-center gap-3 rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-lg shadow-slate-200/60">
+      <div className="flex min-h-24 w-full items-center gap-3 rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
         <input
           type="text"
           value={message}
@@ -111,14 +111,14 @@ export default function ChatBar({
           disabled={isLoading}
           placeholder="Parle ou écris..."
           aria-label="Écrire à Forge"
-          className="min-w-0 flex-1 bg-transparent text-lg outline-none placeholder:text-slate-400 disabled:text-slate-400"
+          className="min-w-0 flex-1 bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400 disabled:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
         />
 
         <button
           type="button"
           aria-label="Ajouter une photo"
           title="Ajouter une photo"
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition hover:bg-blue-100"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition hover:bg-blue-100 dark:bg-slate-800 dark:text-blue-400 dark:hover:bg-slate-700"
         >
           <Camera size={27} strokeWidth={2.2} />
         </button>
@@ -127,7 +127,7 @@ export default function ChatBar({
           type="button"
           aria-label="Parler à Forge"
           title="Parler à Forge"
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-blue-600 bg-white text-blue-600 transition hover:bg-blue-50"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-blue-600 bg-white text-blue-600 transition hover:bg-blue-50 dark:bg-slate-900 dark:text-blue-400 dark:hover:bg-slate-800"
         >
           <Mic size={27} strokeWidth={2.2} />
         </button>
@@ -138,7 +138,7 @@ export default function ChatBar({
           disabled={!message.trim() || isLoading}
           aria-label="Envoyer à Forge"
           title="Envoyer"
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-700"
         >
           {isLoading ? (
             <LoaderCircle

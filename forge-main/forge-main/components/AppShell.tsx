@@ -64,15 +64,9 @@ export default function AppShell({
               max-w-md
               rounded-3xl
               border
-              border-white/80
-              bg-white/80
+              forge-floating-surface
               px-1.5
               py-1.5
-              shadow-[0_22px_60px_-28px_rgba(15,23,42,0.45)]
-              backdrop-blur-xl
-              dark:border-slate-700/80
-              dark:bg-slate-900/80
-              dark:shadow-black/40
               sm:px-5
               sm:py-3
             "
