@@ -64,7 +64,6 @@ export default function AppShell({
               max-w-md
               rounded-[1.75rem]
               border
-forge-floating-surface
 border-slate-200/70
 bg-white/95
 px-1.5

@@ -286,7 +286,7 @@ useState(false);
                   Intervention réalisée
                 </h3>
 
-                <p className="mt-2 whitespace-pre-line text-slate-700 dark:text-slate-200">
+                <p className="mt-2 whitespace-pre-line text-slate-700">
                   {report.intervention}
                 </p>
               </section>
@@ -296,7 +296,7 @@ useState(false);
                   Diagnostic
                 </h3>
 
-                <p className="mt-2 whitespace-pre-line text-slate-700 dark:text-slate-200">
+                <p className="mt-2 whitespace-pre-line text-slate-700">
                   {report.diagnostic}
                 </p>
               </section>
@@ -306,7 +306,7 @@ useState(false);
                   Travaux effectués
                 </h3>
 
-                <p className="mt-2 whitespace-pre-line text-slate-700 dark:text-slate-200">
+                <p className="mt-2 whitespace-pre-line text-slate-700">
                   {report.travaux}
                 </p>
               </section>
@@ -316,7 +316,7 @@ useState(false);
                   Recommandation
                 </h3>
 
-                <p className="mt-2 whitespace-pre-line text-slate-700 dark:text-slate-200">
+                <p className="mt-2 whitespace-pre-line text-slate-700">
                   {report.recommandation}
                 </p>
               </section>

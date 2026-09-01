@@ -21,18 +21,18 @@ export default function NextAppointments() {
         {appointments.map((appointment) => (
           <article
             key={appointment.id}
-            className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
           >
             <div className="min-w-16 text-lg font-bold text-blue-600">
               {appointment.time}
             </div>
 
             <div>
-              <h3 className="font-semibold text-slate-950 dark:text-white">
+              <h3 className="font-semibold text-slate-950">
                 {appointment.client}
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-slate-500">
                 {appointment.job}
               </p>
             </div>

@@ -645,7 +645,7 @@ export default function HomeContent({
           )}
 
           {replyStatus === "processing" && (
-            <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
+            <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
               <LoaderCircle
                 size={48}
                 strokeWidth={2}
@@ -656,27 +656,27 @@ export default function HomeContent({
                 Forge s’occupe de ta demande...
               </h2>
 
-              <p className="mt-2 text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-slate-500">
                 Cela ne prendra que quelques secondes.
               </p>
             </div>
           )}
 
           {replyStatus === "notice" && (
-            <div className="w-full rounded-3xl border border-blue-200 bg-blue-50 p-8 text-center shadow-lg shadow-blue-100/50 dark:border-blue-900 dark:bg-blue-950 dark:shadow-black/20">
-              <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+            <div className="w-full rounded-3xl border border-blue-200 bg-blue-50 p-8 text-center shadow-lg shadow-blue-100/50">
+              <h2 className="text-2xl font-bold text-blue-700">
                 C&apos;est fait !
               </h2>
 
-              <p className="mt-3 text-blue-700 dark:text-blue-300">
+              <p className="mt-3 text-blue-700">
                 {assistantNotice}
               </p>
             </div>
           )}
 
           {replyStatus === "error" && (
-            <div className="w-full rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-lg dark:border-red-900 dark:bg-red-950">
-              <p className="font-medium text-red-700 dark:text-red-300">
+            <div className="w-full rounded-3xl border border-red-200 bg-red-50 p-8 text-center shadow-lg">
+              <p className="font-medium text-red-700">
                 {clientReplyError ||
                   "Impossible de traiter la demande."}
               </p>
@@ -752,7 +752,7 @@ export default function HomeContent({
 )}
 
         {replyStatus === "processing" && (
-          <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
+          <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
             <LoaderCircle
               size={48}
               strokeWidth={2}
@@ -763,7 +763,7 @@ export default function HomeContent({
               Je prépare ta réponse...
             </h2>
 
-            <p className="mt-2 text-slate-500 dark:text-slate-400">
+            <p className="mt-2 text-slate-500">
               Cela ne prendra que quelques secondes.
             </p>
           </div>
