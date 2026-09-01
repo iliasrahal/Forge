@@ -1,10 +1,19 @@
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { Badge, EmptyRow, Td, Th } from "../../../_components/ui";
 import { formatAmount, formatDate } from "../../../_lib/display";
 import SubViewShell from "../_components/SubViewShell";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_TONE = {
+  BROUILLON: "slate",
+  ENVOYEE: "blue",
+  PAYEE: "emerald",
+  EN_RETARD: "red",
+  ANNULEE: "slate",
+} as const;
 
 export default async function AdminUserInvoicesPage({
   params,
@@ -31,49 +40,55 @@ export default async function AdminUserInvoicesPage({
 
   return (
     <SubViewShell userId={id} title="Factures" count={count}>
-      <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
+      <thead>
         <tr>
-          <th className="px-4 py-3">Référence</th>
-          <th className="px-4 py-3">Titre</th>
-          <th className="px-4 py-3">Client</th>
-          <th className="px-4 py-3">Statut</th>
-          <th className="px-4 py-3 text-right">Montant</th>
-          <th className="px-4 py-3">Créée</th>
+          <Th>Référence</Th>
+          <Th>Titre</Th>
+          <Th>Client</Th>
+          <Th>Statut</Th>
+          <Th className="text-right">Montant</Th>
+          <Th>Créée</Th>
         </tr>
       </thead>
       <tbody>
-        {invoices.map((invoice) => (
-          <tr
-            key={invoice.id}
-            className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-          >
-            <td className="px-4 py-3 font-mono text-xs">{invoice.reference}</td>
-            <td className="px-4 py-3 font-medium">{invoice.title}</td>
-            <td className="px-4 py-3 text-slate-500">
-              {[
-                invoice.client.firstName,
-                invoice.client.lastName,
-                invoice.client.companyName,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            </td>
-            <td className="px-4 py-3 text-slate-500">{invoice.status}</td>
-            <td className="px-4 py-3 text-right tabular-nums">
-              {formatAmount(invoice.amountCents)}
-            </td>
-            <td className="px-4 py-3 text-slate-500">
-              {formatDate(invoice.createdAt)}
-            </td>
-          </tr>
-        ))}
         {invoices.length === 0 ? (
-          <tr>
-            <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
-              Aucune facture.
-            </td>
-          </tr>
-        ) : null}
+          <EmptyRow colSpan={6} label="Aucune facture." />
+        ) : (
+          invoices.map((invoice) => (
+            <tr
+              key={invoice.id}
+              className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
+            >
+              <Td className="font-mono text-xs">{invoice.reference}</Td>
+              <Td className="font-medium">{invoice.title}</Td>
+              <Td className="text-slate-500">
+                {[
+                  invoice.client.firstName,
+                  invoice.client.lastName,
+                  invoice.client.companyName,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              </Td>
+              <Td>
+                <Badge
+                  tone={
+                    STATUS_TONE[invoice.status as keyof typeof STATUS_TONE] ??
+                    "slate"
+                  }
+                >
+                  {invoice.status}
+                </Badge>
+              </Td>
+              <Td className="text-right font-medium tabular-nums">
+                {formatAmount(invoice.amountCents)}
+              </Td>
+              <Td className="whitespace-nowrap text-slate-500">
+                {formatDate(invoice.createdAt)}
+              </Td>
+            </tr>
+          ))
+        )}
       </tbody>
     </SubViewShell>
   );

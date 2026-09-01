@@ -62,13 +62,21 @@ export default function AppShell({
               mx-auto
               w-full
               max-w-md
-              rounded-3xl
+              rounded-[1.75rem]
               border
-              forge-floating-surface
-              px-1.5
-              py-1.5
-              sm:px-5
-              sm:py-3
+forge-floating-surface
+border-slate-200/70
+bg-white/95
+px-1.5
+py-1.5
+shadow-[0_8px_20px_-10px_rgba(15,23,42,0.15),0_28px_50px_-24px_rgba(76,110,245,0.4)]
+backdrop-blur-xl
+dark:border-slate-700/70
+dark:bg-slate-900/90
+dark:shadow-[0_8px_20px_-10px_rgba(0,0,0,0.5),0_28px_55px_-24px_rgba(0,0,0,0.7)]
+sm:px-5
+sm:py-3
+
             "
           >
 

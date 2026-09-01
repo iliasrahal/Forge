@@ -2,7 +2,10 @@
 
 import { useState, useTransition } from "react";
 
-type Result = { ok: true } | { ok: false; error: string } | Record<string, unknown>;
+type Result =
+  | { ok: true }
+  | { ok: false; error: string }
+  | Record<string, unknown>;
 
 export default function AsyncButton({
   action,
@@ -25,10 +28,10 @@ export default function AsyncButton({
   >(null);
 
   const base =
-    "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition disabled:opacity-50";
   const variants = {
     default:
-      "border border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800",
+      "border border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800",
     primary: "bg-blue-600 text-white hover:bg-blue-700",
     danger: "bg-red-600 text-white hover:bg-red-700",
   };

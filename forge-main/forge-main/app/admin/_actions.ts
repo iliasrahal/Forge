@@ -13,6 +13,7 @@ import { recordAdminAction } from "@/src/lib/admin-audit";
 import { sendPasswordResetEmail } from "@/src/lib/email";
 import { normalizePhone } from "@/src/lib/phone";
 import { prisma } from "@/src/lib/prisma";
+import { cleanupExpiredTeams } from "@/src/lib/team-access";
 import type { StaffRole } from "@/src/generated/prisma/client";
 
 type ActionResult =
@@ -21,6 +22,7 @@ type ActionResult =
       tempPassword?: string;
       filename?: string;
       json?: string;
+      deletedCount?: number;
     }
   | { ok: false; error: string };
 
@@ -391,6 +393,63 @@ export async function changeStaffRole(
     });
 
     revalidatePath("/admin/staff");
+
+    return { ok: true };
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Maintenance                                                         */
+/* ------------------------------------------------------------------ */
+
+export async function runTeamCleanup(): Promise<ActionResult> {
+  return withStaff("ADMIN", async (actorId) => {
+    const deletedCount = await cleanupExpiredTeams();
+
+    if (deletedCount > 0) {
+      await recordAdminAction({
+        actorId,
+        action: "TEAMS_CLEANED",
+        targetType: "System",
+        targetId: "team-cleanup",
+        summary: `Nettoyage : ${deletedCount} équipe(s) supprimée(s) (sursis écoulé)`,
+      });
+    }
+
+    return { ok: true, deletedCount };
+  });
+}
+
+export async function deleteTeam(
+  organizationId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  return withStaff("SUPER_ADMIN", async (actorId) => {
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { id: true, name: true, type: true, _count: { select: { members: true } } },
+    });
+    if (!org) return fail("Équipe introuvable.");
+    if (org.type !== "TEAM") {
+      return fail("Un espace personnel ne peut pas être supprimé ici.");
+    }
+
+    const confirmation = String(formData.get("confirmName") ?? "").trim();
+    if (confirmation !== org.name) {
+      return fail("Le nom de l’équipe ne correspond pas.");
+    }
+
+    await recordAdminAction({
+      actorId,
+      action: "TEAM_DELETED",
+      targetType: "Organization",
+      targetId: org.id,
+      summary: `Équipe « ${org.name} » supprimée (${org._count.members} membre(s))`,
+    });
+
+    await prisma.organization.delete({ where: { id: org.id } });
+
+    revalidatePath("/admin/teams");
 
     return { ok: true };
   });

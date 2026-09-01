@@ -1,10 +1,18 @@
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { Badge, EmptyRow, Td, Th } from "../../../_components/ui";
 import { formatAmount, formatDate } from "../../../_lib/display";
 import SubViewShell from "../_components/SubViewShell";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_TONE = {
+  BROUILLON: "slate",
+  ENVOYE: "blue",
+  ACCEPTE: "emerald",
+  REFUSE: "red",
+} as const;
 
 export default async function AdminUserQuotesPage({
   params,
@@ -31,49 +39,55 @@ export default async function AdminUserQuotesPage({
 
   return (
     <SubViewShell userId={id} title="Devis" count={count}>
-      <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
+      <thead>
         <tr>
-          <th className="px-4 py-3">Référence</th>
-          <th className="px-4 py-3">Titre</th>
-          <th className="px-4 py-3">Client</th>
-          <th className="px-4 py-3">Statut</th>
-          <th className="px-4 py-3 text-right">Montant</th>
-          <th className="px-4 py-3">Créé</th>
+          <Th>Référence</Th>
+          <Th>Titre</Th>
+          <Th>Client</Th>
+          <Th>Statut</Th>
+          <Th className="text-right">Montant</Th>
+          <Th>Créé</Th>
         </tr>
       </thead>
       <tbody>
-        {quotes.map((quote) => (
-          <tr
-            key={quote.id}
-            className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-          >
-            <td className="px-4 py-3 font-mono text-xs">{quote.reference}</td>
-            <td className="px-4 py-3 font-medium">{quote.title}</td>
-            <td className="px-4 py-3 text-slate-500">
-              {[
-                quote.client.firstName,
-                quote.client.lastName,
-                quote.client.companyName,
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            </td>
-            <td className="px-4 py-3 text-slate-500">{quote.status}</td>
-            <td className="px-4 py-3 text-right tabular-nums">
-              {formatAmount(quote.amountCents)}
-            </td>
-            <td className="px-4 py-3 text-slate-500">
-              {formatDate(quote.createdAt)}
-            </td>
-          </tr>
-        ))}
         {quotes.length === 0 ? (
-          <tr>
-            <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
-              Aucun devis.
-            </td>
-          </tr>
-        ) : null}
+          <EmptyRow colSpan={6} label="Aucun devis." />
+        ) : (
+          quotes.map((quote) => (
+            <tr
+              key={quote.id}
+              className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
+            >
+              <Td className="font-mono text-xs">{quote.reference}</Td>
+              <Td className="font-medium">{quote.title}</Td>
+              <Td className="text-slate-500">
+                {[
+                  quote.client.firstName,
+                  quote.client.lastName,
+                  quote.client.companyName,
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              </Td>
+              <Td>
+                <Badge
+                  tone={
+                    STATUS_TONE[quote.status as keyof typeof STATUS_TONE] ??
+                    "slate"
+                  }
+                >
+                  {quote.status}
+                </Badge>
+              </Td>
+              <Td className="text-right font-medium tabular-nums">
+                {formatAmount(quote.amountCents)}
+              </Td>
+              <Td className="whitespace-nowrap text-slate-500">
+                {formatDate(quote.createdAt)}
+              </Td>
+            </tr>
+          ))
+        )}
       </tbody>
     </SubViewShell>
   );

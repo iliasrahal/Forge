@@ -82,6 +82,12 @@ html.dark body {
   color: var(--foreground);
 }
 
+/* ================================================================== */
+/* Identité de l'application connectée — vive, moderne, "produit".      */
+/* Aligne l'app authentifiée sur la landing : fond lumineux, halo bleu  */
+/* de marque, grille fine, cartes qui respirent.                        */
+/* ================================================================== */
+
 /* Surface commune aux éléments flottants persistants (ForgeBar/navigation). */
 .forge-floating-surface {
   border-color: var(--forge-floating-border);
@@ -93,20 +99,20 @@ html.dark body {
 }
 
 /* Identité premium commune à toute l'application authentifiée. */
+
 .forge-app-shell {
+  --forge-brand: #4c6ef5;
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
   overflow-x: clip;
-  background:
-    radial-gradient(circle at 8% 2%, rgb(219 234 254 / 0.72), transparent 28rem),
-    radial-gradient(circle at 92% 28%, rgb(224 242 254 / 0.55), transparent 30rem),
-    #f8fafc;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
 }
 
 .forge-app-shell main {
   width: 100%;
   min-width: 0;
+  background-color: transparent !important;
 }
 
 .forge-app-shell :is(section, article, form, div) {
@@ -118,133 +124,283 @@ html.dark body {
   min-width: 0;
 }
 
+/* Halo de marque + grille fine, fixés au viewport (comme le hero). */
 .forge-app-shell::before {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   content: "";
-  opacity: 0.38;
   background-image:
-    linear-gradient(rgb(148 163 184 / 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(148 163 184 / 0.08) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: linear-gradient(to bottom, black, transparent 82%);
+    radial-gradient(60rem 32rem at 50% -14%, rgb(76 110 245 / 0.16), transparent 66%),
+    radial-gradient(44rem 32rem at 114% -6%, rgb(129 140 248 / 0.13), transparent 58%),
+    radial-gradient(40rem 30rem at -12% 4%, rgb(99 102 241 / 0.09), transparent 60%),
+    linear-gradient(to right, rgb(226 232 240 / 0.65) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(226 232 240 / 0.65) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
+  mask-image: linear-gradient(to bottom, black 38%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to bottom, black 38%, transparent 92%);
 }
 
 .dark .forge-app-shell {
-  background:
-    radial-gradient(circle at 8% 2%, rgb(30 64 175 / 0.2), transparent 28rem),
-    radial-gradient(circle at 92% 28%, rgb(14 116 144 / 0.12), transparent 30rem),
-    #020617;
+  background: linear-gradient(180deg, #0b1120 0%, #0a0f1c 100%);
 }
 
 .dark .forge-app-shell::before {
-  opacity: 0.22;
   background-image:
-    linear-gradient(rgb(51 65 85 / 0.45) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(51 65 85 / 0.45) 1px, transparent 1px);
-}
-
-.forge-app-shell main {
-  background-color: transparent !important;
+    radial-gradient(60rem 32rem at 50% -14%, rgb(37 99 235 / 0.26), transparent 66%),
+    radial-gradient(44rem 32rem at 114% -6%, rgb(79 70 229 / 0.2), transparent 58%),
+    radial-gradient(40rem 30rem at -12% 4%, rgb(79 70 229 / 0.16), transparent 60%),
+    linear-gradient(to right, rgb(51 65 85 / 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(51 65 85 / 0.4) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
 }
 
 .forge-app-shell :is(h1, h2, h3) {
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
+.forge-app-shell ::selection {
+  background: rgb(76 110 245 / 0.22);
+}
+
+.forge-app-shell ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.forge-app-shell ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: rgb(76 110 245 / 0.28);
+}
+
+.forge-app-shell ::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(76 110 245 / 0.5);
+}
+
+/* Champs : blanc franc, anneau de focus couleur de marque. */
 .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
   border-color: rgb(203 213 225 / 0.9);
-  background-color: rgb(255 255 255 / 0.78);
-  box-shadow: 0 14px 35px -28px rgb(15 23 42 / 0.55);
-  backdrop-filter: blur(12px);
-  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
 .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select):focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 4px rgb(59 130 246 / 0.11), 0 18px 40px -28px rgb(37 99 235 / 0.5);
+  border-color: var(--forge-brand);
+  box-shadow: 0 0 0 4px rgb(76 110 245 / 0.16);
 }
 
 .dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
-  border-color: rgb(51 65 85 / 0.95);
-  background-color: rgb(15 23 42 / 0.78);
-  box-shadow: 0 14px 35px -28px rgb(0 0 0 / 0.9);
+  border-color: rgb(51 65 85 / 0.9);
+  background-color: rgb(15 23 42 / 0.85);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
-.forge-app-shell :is(section, article, form)[class*="rounded-3xl"][class*="bg-white"],
-.forge-app-shell div[class*="rounded-3xl"][class*="bg-white"] {
-  border-color: rgb(226 232 240 / 0.85) !important;
-  background-color: rgb(255 255 255 / 0.8) !important;
-  box-shadow: 0 24px 70px -42px rgb(15 23 42 / 0.48) !important;
-  backdrop-filter: blur(18px);
+.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select):focus {
+  border-color: var(--forge-brand);
+  box-shadow: 0 0 0 4px rgb(76 110 245 / 0.24);
 }
 
-.dark .forge-app-shell :is(section, article, form)[class*="rounded-3xl"][class*="bg-white"],
-.dark .forge-app-shell div[class*="rounded-3xl"][class*="bg-white"] {
-  border-color: rgb(51 65 85 / 0.82) !important;
-  background-color: rgb(15 23 42 / 0.8) !important;
-  box-shadow: 0 24px 70px -42px rgb(0 0 0 / 0.9) !important;
+/* Cartes : blanc franc, filet fin, ombre profonde légèrement bleutée
+   — la même respiration que les cartes de la landing. */
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"] {
+  border-color: rgb(226 232 240 / 0.9) !important;
+  background-color: #ffffff !important;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 10px 24px -14px rgb(15 23 42 / 0.12),
+    0 34px 60px -42px rgb(76 110 245 / 0.32) !important;
 }
 
-.forge-app-shell :is(section, article, form, a)[class*="rounded-2xl"][class*="bg-white"],
-.forge-app-shell div[class*="rounded-2xl"][class*="bg-white"] {
-  border-color: rgb(226 232 240 / 0.82) !important;
-  background-color: rgb(255 255 255 / 0.74) !important;
-  box-shadow: 0 18px 50px -38px rgb(15 23 42 / 0.5) !important;
-  backdrop-filter: blur(14px);
+.dark .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
+.dark .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"] {
+  border-color: rgb(51 65 85 / 0.7) !important;
+  background-color: rgb(15 23 42 / 0.92) !important;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 18px 44px -26px rgb(0 0 0 / 0.7) !important;
 }
 
-.dark .forge-app-shell :is(section, article, form, a)[class*="rounded-2xl"][class*="bg-white"],
-.dark .forge-app-shell div[class*="rounded-2xl"][class*="bg-white"] {
-  border-color: rgb(51 65 85 / 0.78) !important;
-  background-color: rgb(15 23 42 / 0.74) !important;
-  box-shadow: 0 18px 50px -38px rgb(0 0 0 / 0.9) !important;
-}
-
-.forge-app-shell :is(a, article)[class*="rounded-2xl"]:hover,
-.forge-app-shell :is(a, article)[class*="rounded-3xl"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 52px -34px rgb(37 99 235 / 0.35) !important;
+/* Cartes cliquables : léger décollage au survol. */
+.forge-app-shell :is(a, article)[class*="rounded-2xl"][class*="bg-white"]:hover,
+.forge-app-shell :is(a, article)[class*="rounded-3xl"][class*="bg-white"]:hover {
+  transform: translateY(-3px);
+  border-color: rgb(76 110 245 / 0.55) !important;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.05),
+    0 20px 40px -20px rgb(76 110 245 / 0.42) !important;
 }
 
 .forge-app-shell button,
 .forge-app-shell a {
-  transition-duration: 200ms;
+  transition-duration: 180ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.forge-app-shell button[class*="bg-blue-600"]:not(:disabled):hover,
-.forge-app-shell a[class*="bg-blue-600"]:hover {
+/* Boutons primaires : halo bleu franc permanent, relief au survol. */
+.forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled) {
+  box-shadow: 0 12px 26px -12px rgb(37 99 235 / 0.45);
+}
+
+.forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 32px -20px rgb(37 99 235 / 0.75);
+  box-shadow: 0 18px 34px -12px rgb(37 99 235 / 0.6);
 }
 
-.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-black"] {
-  backdrop-filter: blur(8px);
-  background-color: rgb(2 6 23 / 0.48) !important;
-}
-
+/* Voile de modale : sombre + léger flou. */
+.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-black"],
 .forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-950"] {
   backdrop-filter: blur(8px);
-  background-color: rgb(2 6 23 / 0.48) !important;
+  background-color: rgb(2 6 23 / 0.5) !important;
 }
 
+/* Encarts info / succès / alerte. */
 .forge-app-shell :is(div, p)[class*="bg-red-50"],
 .forge-app-shell :is(div, p)[class*="bg-green-50"],
-.forge-app-shell :is(div, p)[class*="bg-blue-50"] {
-  border: 1px solid rgb(226 232 240 / 0.7);
-  box-shadow: 0 14px 36px -30px rgb(15 23 42 / 0.45);
+.forge-app-shell :is(div, p)[class*="bg-blue-50"],
+.forge-app-shell :is(div, p)[class*="bg-amber-50"] {
+  box-shadow: 0 14px 34px -28px rgb(15 23 42 / 0.4);
 }
 
+/* Zones « à compléter » en pointillés. */
 .forge-app-shell [class*="border-dashed"] {
-  background-color: rgb(248 250 252 / 0.62);
-  backdrop-filter: blur(10px);
+  background-color: rgb(248 250 252 / 0.7);
 }
 
 .dark .forge-app-shell [class*="border-dashed"] {
-  background-color: rgb(15 23 42 / 0.56);
+  background-color: rgb(15 23 42 / 0.5);
+}
+
+/* ------------------------------------------------------------------ */
+/* Back-office /admin — console dense, nette, contrastée               */
+/* ------------------------------------------------------------------ */
+.forge-admin {
+  --admin-bg: #f6f7f9;
+  --admin-panel: #ffffff;
+  --admin-border: rgb(226 232 240 / 0.9);
+  --admin-muted: #64748b;
+  min-height: 100dvh;
+  background:
+    radial-gradient(60rem 30rem at 78% -8%, rgb(59 130 246 / 0.07), transparent 70%),
+    radial-gradient(50rem 26rem at -6% 4%, rgb(99 102 241 / 0.06), transparent 70%),
+    var(--admin-bg);
+  color: #0f172a;
+  letter-spacing: -0.011em;
+}
+
+.dark .forge-admin {
+  --admin-bg: #0a0f1c;
+  --admin-panel: #0f172a;
+  --admin-border: rgb(51 65 85 / 0.7);
+  --admin-muted: #94a3b8;
+  color: #e2e8f0;
+  background:
+    radial-gradient(60rem 30rem at 78% -8%, rgb(37 99 235 / 0.16), transparent 70%),
+    radial-gradient(50rem 26rem at -6% 4%, rgb(79 70 229 / 0.12), transparent 70%),
+    var(--admin-bg);
+}
+
+.forge-admin :is(h1, h2, h3) {
+  letter-spacing: -0.025em;
+}
+
+.forge-admin ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.forge-admin ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: rgb(148 163 184 / 0.45);
+}
+
+.forge-admin ::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(148 163 184 / 0.7);
+}
+
+.admin-card {
+  border: 1px solid var(--admin-border);
+  border-radius: 0.875rem;
+  background: var(--admin-panel);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 8px 24px -18px rgb(15 23 42 / 0.15);
+}
+
+.dark .admin-card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 12px 30px -20px rgb(0 0 0 / 0.6);
+}
+
+.admin-card-hover {
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgb(59 130 246 / 0.5);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.05),
+    0 18px 40px -22px rgb(37 99 235 / 0.35);
+}
+
+.admin-nav-link {
+  position: relative;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.admin-nav-link[data-active="true"]::before {
+  position: absolute;
+  left: -0.6rem;
+  top: 50%;
+  height: 1.1rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: #2563eb;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.forge-admin table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.forge-admin tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.forge-admin main > * {
+  animation: forge-admin-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes forge-admin-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-admin main > *,
+  .admin-card-hover {
+    animation: none;
+    transition: none;
+  }
 }
 
 .forge-back-link {
@@ -255,32 +411,33 @@ html.dark body {
 
 .forge-back-link::before {
   display: grid;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.6rem;
+  height: 1.6rem;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgb(147 197 253 / 0.8);
-  border-radius: 9999px;
-  background: rgb(239 246 255 / 0.8);
-  color: #2563eb;
+  border: 1px solid rgb(203 213 225 / 0.9);
+  border-radius: 0.6rem;
+  background: #ffffff;
+  color: #475569;
   content: "←";
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1;
-  box-shadow: 0 8px 20px -12px rgb(37 99 235 / 0.7);
-  transition: transform 180ms ease, border-color 180ms ease,
-    background-color 180ms ease;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  transition: transform 160ms ease, border-color 160ms ease,
+    background-color 160ms ease, color 160ms ease;
 }
 
 .forge-back-link:hover::before {
   transform: translateX(-2px);
-  border-color: #60a5fa;
-  background: #dbeafe;
+  border-color: rgb(59 130 246 / 0.6);
+  background: rgb(239 246 255 / 0.9);
+  color: #2563eb;
 }
 
 .dark .forge-back-link::before {
-  border-color: rgb(30 64 175 / 0.9);
-  background: rgb(30 58 138 / 0.35);
-  color: #60a5fa;
+  border-color: rgb(51 65 85 / 0.9);
+  background: rgb(15 23 42 / 0.8);
+  color: #94a3b8;
 }
 
 .forge-app-shell main > :first-child {

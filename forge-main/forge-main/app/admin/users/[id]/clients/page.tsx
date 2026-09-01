@@ -1,6 +1,7 @@
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { Badge, EmptyRow, Td, Th } from "../../../_components/ui";
 import { formatDate } from "../../../_lib/display";
 import SubViewShell from "../_components/SubViewShell";
 
@@ -25,54 +26,54 @@ export default async function AdminUserClientsPage({
 
   return (
     <SubViewShell userId={id} title="Clients" count={count}>
-      <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
+      <thead>
         <tr>
-          <th className="px-4 py-3">Nom / Société</th>
-          <th className="px-4 py-3">Type</th>
-          <th className="px-4 py-3">Contact</th>
-          <th className="px-4 py-3">Ville</th>
-          <th className="px-4 py-3">Créé</th>
+          <Th>Nom / Société</Th>
+          <Th>Type</Th>
+          <Th>Contact</Th>
+          <Th>Ville</Th>
+          <Th>Créé</Th>
         </tr>
       </thead>
       <tbody>
-        {clients.map((client) => (
-          <tr
-            key={client.id}
-            className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-          >
-            <td className="px-4 py-3 font-medium">
-              {client.type === "PROFESSIONNEL"
-                ? client.companyName
-                : [client.firstName, client.lastName]
-                    .filter(Boolean)
-                    .join(" ")}
-              {client.archived ? (
-                <span className="ml-2 text-xs text-slate-400">archivé</span>
-              ) : null}
-              {client.isTemporary ? (
-                <span className="ml-2 text-xs text-slate-400">temporaire</span>
-              ) : null}
-            </td>
-            <td className="px-4 py-3 text-slate-500">{client.type}</td>
-            <td className="px-4 py-3 text-slate-500">
-              <div>{client.phone || "—"}</div>
-              <div className="text-xs">{client.email || ""}</div>
-            </td>
-            <td className="px-4 py-3 text-slate-500">
-              {[client.postalCode, client.city].filter(Boolean).join(" ") || "—"}
-            </td>
-            <td className="px-4 py-3 text-slate-500">
-              {formatDate(client.createdAt)}
-            </td>
-          </tr>
-        ))}
         {clients.length === 0 ? (
-          <tr>
-            <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
-              Aucun client.
-            </td>
-          </tr>
-        ) : null}
+          <EmptyRow colSpan={5} label="Aucun client." />
+        ) : (
+          clients.map((client) => (
+            <tr
+              key={client.id}
+              className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
+            >
+              <Td className="font-medium">
+                {client.type === "PROFESSIONNEL"
+                  ? client.companyName
+                  : [client.firstName, client.lastName]
+                      .filter(Boolean)
+                      .join(" ")}
+                <span className="ml-2 inline-flex gap-1">
+                  {client.archived ? (
+                    <Badge tone="slate">archivé</Badge>
+                  ) : null}
+                  {client.isTemporary ? (
+                    <Badge tone="amber">temporaire</Badge>
+                  ) : null}
+                </span>
+              </Td>
+              <Td className="text-slate-500">{client.type}</Td>
+              <Td className="text-slate-500">
+                <div>{client.phone || "—"}</div>
+                <div className="text-xs">{client.email || ""}</div>
+              </Td>
+              <Td className="text-slate-500">
+                {[client.postalCode, client.city].filter(Boolean).join(" ") ||
+                  "—"}
+              </Td>
+              <Td className="whitespace-nowrap text-slate-500">
+                {formatDate(client.createdAt)}
+              </Td>
+            </tr>
+          ))
+        )}
       </tbody>
     </SubViewShell>
   );

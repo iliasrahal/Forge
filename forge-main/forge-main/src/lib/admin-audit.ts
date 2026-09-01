@@ -11,12 +11,14 @@ export type AdminAction =
   | "SUBSCRIPTION_CHANGED"
   | "STAFF_GRANTED"
   | "STAFF_ROLE_CHANGED"
-  | "STAFF_REVOKED";
+  | "STAFF_REVOKED"
+  | "TEAM_DELETED"
+  | "TEAMS_CLEANED";
 
 type RecordInput = {
   actorId: string;
   action: AdminAction;
-  targetType: "User" | "StaffMember";
+  targetType: "User" | "StaffMember" | "Organization" | "System";
   targetId: string;
   summary?: string;
   metadata?: Record<string, unknown>;

@@ -38,25 +38,22 @@ export default function EditUserForm({
         setError(null);
         startTransition(async () => {
           const result = await updateUser(userId, formData);
-          if (result.ok) {
-            router.push(`/admin/users/${userId}`);
-          } else {
-            setError(result.error);
-          }
+          if (result.ok) router.push(`/admin/users/${userId}`);
+          else setError(result.error);
         });
       }}
-      className="space-y-4"
+      className="admin-card space-y-4 p-6"
     >
       {FIELDS.map((field) => (
         <label key={field.name} className="block text-sm">
-          <span className="text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {field.label}
           </span>
           <input
             name={field.name}
             type={field.type ?? "text"}
             defaultValue={initial[field.name]}
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-950"
+            className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-800 dark:bg-slate-950"
           />
         </label>
       ))}
@@ -65,18 +62,18 @@ export default function EditUserForm({
         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
       ) : null}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 pt-1">
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
         >
           {pending ? "…" : "Enregistrer"}
         </button>
         <button
           type="button"
           onClick={() => router.push(`/admin/users/${userId}`)}
-          className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+          className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
         >
           Annuler
         </button>

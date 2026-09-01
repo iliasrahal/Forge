@@ -1,9 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  Pencil,
+  FolderKanban,
+  Wrench,
+  FileText,
+  ReceiptText,
+  MailWarning,
+  KeyRound,
+  ChevronRight,
+} from "lucide-react";
 
 import { requireStaff, roleAtLeast } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import {
+  Avatar,
+  Badge,
+  Card,
+  PageHeader,
+} from "../../_components/ui";
 import {
   formatDate,
   formatDateTime,
@@ -18,8 +34,10 @@ export const dynamic = "force-dynamic";
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase text-slate-400">{label}</dt>
-      <dd className="mt-0.5 font-medium">{value || "—"}</dd>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm font-medium">{value || "—"}</dd>
     </div>
   );
 }
@@ -40,12 +58,7 @@ export default async function AdminUserDetailPage({
         include: { organization: { select: { name: true, type: true } } },
         orderBy: { createdAt: "asc" },
       },
-      _count: {
-        select: {
-          clients: true,
-          interventions: true,
-        },
-      },
+      _count: { select: { clients: true, interventions: true } },
     },
   });
 
@@ -63,6 +76,7 @@ export default async function AdminUserDetailPage({
   ]);
 
   const sub = subscriptionSummary(user);
+  const name = userDisplayName(user);
   const canManage = roleAtLeast(staff.role, "ADMIN");
   const canDelete = roleAtLeast(staff.role, "SUPER_ADMIN");
   const canManageStaff = roleAtLeast(staff.role, "SUPER_ADMIN");
@@ -71,124 +85,141 @@ export default async function AdminUserDetailPage({
     : null;
 
   const subViews = [
-    { href: "clients", label: "Clients", count: user._count.clients },
-    {
-      href: "interventions",
-      label: "Interventions",
-      count: user._count.interventions,
-    },
-    { href: "quotes", label: "Devis", count: quoteCount },
-    { href: "invoices", label: "Factures", count: invoiceCount },
+    { href: "clients", label: "Clients", count: user._count.clients, icon: FolderKanban },
+    { href: "interventions", label: "Interventions", count: user._count.interventions, icon: Wrench },
+    { href: "quotes", label: "Devis", count: quoteCount, icon: FileText },
+    { href: "invoices", label: "Factures", count: invoiceCount, icon: ReceiptText },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Link
-          href="/admin/users"
-          className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
-        >
-          ← Utilisateurs
-        </Link>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{userDisplayName(user)}</h1>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold dark:bg-slate-800">
-            {sub.label}
-          </span>
-          {user.staffMembership ? (
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
-              staff · {user.staffMembership.role}
-            </span>
-          ) : null}
-          {!user.emailVerifiedAt ? (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-              e-mail non vérifié
-            </span>
-          ) : null}
-          {user.mustChangePassword ? (
-            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-500/15 dark:text-red-300">
-              changement de mot de passe requis
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-start justify-between">
-          <dl className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Field label="E-mail" value={user.email} />
-            <Field label="Téléphone" value={user.phone} />
-            <Field label="Société" value={user.companyName} />
-            <Field label="Métier" value={user.job} />
-            <Field label="Mode" value={user.workMode} />
-            <Field label="Statut brut" value={user.subscriptionStatus} />
-            <Field
-              label="Essai jusqu'au"
-              value={formatDate(user.trialEndsAt)}
-            />
-            <Field label="Inscrit le" value={formatDateTime(user.createdAt)} />
-            <Field
-              label="E-mail vérifié le"
-              value={formatDateTime(user.emailVerifiedAt)}
-            />
-          </dl>
-          {canManage ? (
+    <div>
+      <PageHeader
+        title={name}
+        backHref="/admin/users"
+        backLabel="Utilisateurs"
+        action={
+          canManage ? (
             <Link
               href={`/admin/users/${user.id}/edit`}
-              className="ml-4 shrink-0 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold shadow-sm transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
             >
+              <Pencil className="h-4 w-4" />
               Modifier
             </Link>
-          ) : null}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {subViews.map((view) => (
-          <Link
-            key={view.href}
-            href={`/admin/users/${user.id}/${view.href}`}
-            className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-blue-400 dark:border-slate-800 dark:bg-slate-900"
-          >
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {view.label}
+      {/* Identité */}
+      <Card className="p-6">
+        <div className="flex flex-wrap items-start gap-4">
+          <Avatar name={name} size={56} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-lg font-semibold tracking-tight">{name}</h2>
+              <Badge tone={sub.tone}>{sub.label}</Badge>
+              {user.staffMembership ? (
+                <Badge tone="blue">
+                  <KeyRound className="h-3 w-3" />
+                  staff · {user.staffMembership.role}
+                </Badge>
+              ) : null}
+              {!user.emailVerifiedAt ? (
+                <Badge tone="amber">
+                  <MailWarning className="h-3 w-3" />
+                  non vérifié
+                </Badge>
+              ) : null}
+              {user.mustChangePassword ? (
+                <Badge tone="red">changement de MDP requis</Badge>
+              ) : null}
+            </div>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {user.email} · {user.phone}
             </p>
-            <p className="mt-1 text-xl font-bold">{view.count}</p>
-          </Link>
-        ))}
+          </div>
+        </div>
+
+        <dl className="mt-6 grid gap-5 border-t border-slate-100 pt-5 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800">
+          <Field label="Société" value={user.companyName} />
+          <Field label="Métier" value={user.job} />
+          <Field label="Mode de travail" value={user.workMode} />
+          <Field label="Statut brut" value={user.subscriptionStatus} />
+          <Field label="Essai jusqu'au" value={formatDate(user.trialEndsAt)} />
+          <Field label="Inscrit le" value={formatDateTime(user.createdAt)} />
+          <Field
+            label="E-mail vérifié le"
+            value={formatDateTime(user.emailVerifiedAt)}
+          />
+        </dl>
+      </Card>
+
+      {/* Données */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {subViews.map((view) => {
+          const Icon = view.icon;
+
+          return (
+            <Card
+              key={view.href}
+              as="a"
+              href={`/admin/users/${user.id}/${view.href}`}
+              hover
+              className="flex items-center gap-4 p-4"
+            >
+              <span className="grid h-10 w-10 place-items-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                <Icon className="h-5 w-5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm text-slate-500 dark:text-slate-400">
+                  {view.label}
+                </span>
+                <span className="block text-xl font-semibold tabular-nums">
+                  {view.count}
+                </span>
+              </span>
+              <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600" />
+            </Card>
+          );
+        })}
       </div>
 
       {user.memberships.length > 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <Card className="mt-4 p-6">
           <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
             Espaces de travail
           </h3>
-          <ul className="mt-2 space-y-1 text-sm">
+          <ul className="mt-3 divide-y divide-slate-100 text-sm dark:divide-slate-800">
             {user.memberships.map((membership) => (
-              <li key={membership.id} className="flex justify-between">
-                <span>
-                  {membership.organization.name}{" "}
-                  <span className="text-xs text-slate-400">
-                    ({membership.organization.type})
-                  </span>
+              <li
+                key={membership.id}
+                className="flex items-center justify-between py-2"
+              >
+                <span className="flex items-center gap-2">
+                  {membership.organization.name}
+                  <Badge tone="slate">{membership.organization.type}</Badge>
                 </span>
-                <span className="font-semibold">{membership.role}</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-300">
+                  {membership.role}
+                </span>
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
       ) : null}
 
       {canManageStaff ? (
-        <StaffToggle
-          userId={user.id}
-          currentRole={user.staffMembership?.role ?? null}
-          isSelf={user.id === viewer.id}
-        />
+        <div className="mt-4">
+          <StaffToggle
+            userId={user.id}
+            currentRole={user.staffMembership?.role ?? null}
+            isSelf={user.id === viewer.id}
+          />
+        </div>
       ) : null}
 
-      <section>
-        <h2 className="mb-3 text-lg font-bold">Actions</h2>
+      <section className="mt-8">
+        <h2 className="mb-3 text-base font-semibold tracking-tight">Actions</h2>
         <UserAdminPanel
           userId={user.id}
           email={user.email}
@@ -199,33 +230,35 @@ export default async function AdminUserDetailPage({
         />
       </section>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <Card className="mt-8 p-6">
         <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
           Historique admin sur ce compte
         </h3>
         {auditLogs.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-400">Aucune action enregistrée.</p>
+          <p className="mt-3 text-sm text-slate-400">
+            Aucune action enregistrée.
+          </p>
         ) : (
-          <ul className="mt-2 space-y-1 text-sm">
+          <ol className="mt-4 space-y-3">
             {auditLogs.map((log) => (
-              <li
-                key={log.id}
-                className="flex flex-wrap justify-between gap-2 border-b border-slate-100 py-1 last:border-0 dark:border-slate-800"
-              >
-                <span>
-                  <span className="font-mono text-xs text-slate-400">
-                    {log.action}
-                  </span>{" "}
-                  {log.summary}
-                </span>
-                <span className="text-xs text-slate-400">
-                  {log.actor.email} · {formatDateTime(log.createdAt)}
-                </span>
+              <li key={log.id} className="flex gap-3 text-sm">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
+                <div className="min-w-0 flex-1">
+                  <p>
+                    <span className="font-mono text-xs text-slate-400">
+                      {log.action}
+                    </span>{" "}
+                    {log.summary}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {log.actor.email} · {formatDateTime(log.createdAt)}
+                  </p>
+                </div>
               </li>
             ))}
-          </ul>
+          </ol>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

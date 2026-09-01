@@ -1,10 +1,18 @@
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import { Badge, EmptyRow, Td, Th } from "../../../_components/ui";
 import { formatDateTime } from "../../../_lib/display";
 import SubViewShell from "../_components/SubViewShell";
 
 export const dynamic = "force-dynamic";
+
+const STATUS_TONE = {
+  PLANIFIEE: "blue",
+  EN_COURS: "amber",
+  TERMINEE: "emerald",
+  ANNULEE: "red",
+} as const;
 
 export default async function AdminUserInterventionsPage({
   params,
@@ -30,45 +38,52 @@ export default async function AdminUserInterventionsPage({
 
   return (
     <SubViewShell userId={id} title="Interventions" count={count}>
-      <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
+      <thead>
         <tr>
-          <th className="px-4 py-3">Titre</th>
-          <th className="px-4 py-3">Client</th>
-          <th className="px-4 py-3">Statut</th>
-          <th className="px-4 py-3">Prévue</th>
+          <Th>Titre</Th>
+          <Th>Client</Th>
+          <Th>Statut</Th>
+          <Th>Prévue</Th>
         </tr>
       </thead>
       <tbody>
-        {interventions.map((intervention) => (
-          <tr
-            key={intervention.id}
-            className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-          >
-            <td className="px-4 py-3 font-medium">{intervention.title}</td>
-            <td className="px-4 py-3 text-slate-500">
-              {intervention.client
-                ? [
-                    intervention.client.firstName,
-                    intervention.client.lastName,
-                    intervention.client.companyName,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")
-                : "—"}
-            </td>
-            <td className="px-4 py-3 text-slate-500">{intervention.status}</td>
-            <td className="px-4 py-3 text-slate-500">
-              {formatDateTime(intervention.scheduledAt)}
-            </td>
-          </tr>
-        ))}
         {interventions.length === 0 ? (
-          <tr>
-            <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
-              Aucune intervention.
-            </td>
-          </tr>
-        ) : null}
+          <EmptyRow colSpan={4} label="Aucune intervention." />
+        ) : (
+          interventions.map((intervention) => (
+            <tr
+              key={intervention.id}
+              className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
+            >
+              <Td className="font-medium">{intervention.title}</Td>
+              <Td className="text-slate-500">
+                {intervention.client
+                  ? [
+                      intervention.client.firstName,
+                      intervention.client.lastName,
+                      intervention.client.companyName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  : "—"}
+              </Td>
+              <Td>
+                <Badge
+                  tone={
+                    STATUS_TONE[
+                      intervention.status as keyof typeof STATUS_TONE
+                    ] ?? "slate"
+                  }
+                >
+                  {intervention.status}
+                </Badge>
+              </Td>
+              <Td className="whitespace-nowrap text-slate-500">
+                {formatDateTime(intervention.scheduledAt)}
+              </Td>
+            </tr>
+          ))
+        )}
       </tbody>
     </SubViewShell>
   );

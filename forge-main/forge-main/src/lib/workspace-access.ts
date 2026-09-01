@@ -1,7 +1,14 @@
 import { cookies } from "next/headers";
 
 import { prisma } from "@/src/lib/prisma";
-import { evaluateSubscriptionAccess } from "@/src/lib/subscription-policy";
+import {
+  evaluateSubscriptionAccess,
+  resolveEffectiveStatus,
+} from "@/src/lib/subscription-policy";
+import {
+  maybeSweepExpiredTeams,
+  recomputeTeamGrace,
+} from "@/src/lib/team-access";
 
 export type EffectiveWorkspaceRole =
   | "OWNER"
@@ -115,6 +122,23 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
 
   if (!session || session.expiresAt <= now) return null;
 
+  // Bascule paresseuse : essai terminé sans abonnement -> FREE.
+  const effectiveStatus = resolveEffectiveStatus(
+    session.user.subscriptionStatus,
+    session.user.trialEndsAt,
+    now,
+  );
+  if (effectiveStatus !== session.user.subscriptionStatus) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { subscriptionStatus: effectiveStatus },
+    });
+    session.user.subscriptionStatus = effectiveStatus;
+  }
+
+  // Balayage opportuniste des équipes 100 % gratuites dont le sursis est écoulé.
+  await maybeSweepExpiredTeams(now);
+
   let membership = session.activeOrganizationId
     ? await prisma.organizationMember.findUnique({
         where: {
@@ -147,6 +171,15 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
       "Aucun espace de travail n’est associé à ce compte.",
       409,
       "WORKSPACE_REQUIRED",
+    );
+  }
+
+  // Équipe : (re)calcule le sursis de suppression et rafraîchit la valeur
+  // renvoyée pour que le bandeau d'alerte soit à jour.
+  if (membership.organization.type === "TEAM") {
+    membership.organization.graceExpiresAt = await recomputeTeamGrace(
+      membership.organizationId,
+      now,
     );
   }
 

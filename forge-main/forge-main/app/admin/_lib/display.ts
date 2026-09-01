@@ -57,7 +57,10 @@ export function subscriptionSummary(
   );
 
   if (access.hasActiveSubscription) {
-    return { label: "Abonné", tone: "green" as const };
+    return {
+      label: access.isPro ? "Abonné Pro" : "Abonné",
+      tone: "emerald" as const,
+    };
   }
 
   if (access.isTrialActive) {
@@ -67,14 +70,5 @@ export function subscriptionSummary(
     };
   }
 
-  return { label: "Essai expiré", tone: "red" as const };
+  return { label: "Gratuit", tone: "slate" as const };
 }
-
-export const SUBSCRIPTION_STATUSES = [
-  "TRIAL",
-  "ACTIVE",
-  "PAID",
-  "ORGANIZATION",
-  "CANCELED",
-  "EXPIRED",
-] as const;

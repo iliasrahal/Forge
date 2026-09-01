@@ -1,13 +1,35 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { requireStaff } from "@/src/lib/admin-auth";
 import { prisma } from "@/src/lib/prisma";
 
+import {
+  Badge,
+  EmptyRow,
+  PageHeader,
+  TableCard,
+  Td,
+  Th,
+} from "../_components/ui";
 import { formatDateTime } from "../_lib/display";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 50;
+
+const ACTION_TONE: Record<string, "blue" | "amber" | "red" | "emerald" | "slate"> =
+  {
+    USER_DELETED: "red",
+    STAFF_REVOKED: "red",
+    USER_TEMP_PASSWORD_SET: "amber",
+    SUBSCRIPTION_CHANGED: "amber",
+    STAFF_GRANTED: "emerald",
+    STAFF_ROLE_CHANGED: "blue",
+    USER_UPDATED: "blue",
+    USER_PASSWORD_RESET_EMAIL: "blue",
+    USER_DATA_EXPORTED: "slate",
+  };
 
 export default async function AdminAuditPage({
   searchParams,
@@ -31,39 +53,43 @@ export default async function AdminAuditPage({
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Journal d'audit</h1>
-        <span className="text-sm text-slate-500 dark:text-slate-400">
-          {total} entrées
-        </span>
-      </div>
+    <div>
+      <PageHeader
+        title="Journal d'audit"
+        subtitle={`${total} entrée${total > 1 ? "s" : ""} — chaque action admin est tracée.`}
+      />
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
-            <tr>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Admin</th>
-              <th className="px-4 py-3">Action</th>
-              <th className="px-4 py-3">Détail</th>
-              <th className="px-4 py-3">Cible</th>
-              <th className="px-4 py-3">IP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((log) => (
+      <TableCard>
+        <thead>
+          <tr>
+            <Th>Date</Th>
+            <Th>Admin</Th>
+            <Th>Action</Th>
+            <Th>Détail</Th>
+            <Th>Cible</Th>
+            <Th>IP</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.length === 0 ? (
+            <EmptyRow colSpan={6} label="Aucune action enregistrée." />
+          ) : (
+            logs.map((log) => (
               <tr
                 key={log.id}
-                className="border-b border-slate-100 last:border-0 dark:border-slate-800"
+                className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30"
               >
-                <td className="whitespace-nowrap px-4 py-3 text-slate-500">
+                <Td className="whitespace-nowrap text-slate-500">
                   {formatDateTime(log.createdAt)}
-                </td>
-                <td className="px-4 py-3 text-slate-500">{log.actor.email}</td>
-                <td className="px-4 py-3 font-mono text-xs">{log.action}</td>
-                <td className="px-4 py-3">{log.summary ?? "—"}</td>
-                <td className="px-4 py-3">
+                </Td>
+                <Td className="text-slate-500">{log.actor.email}</Td>
+                <Td>
+                  <Badge tone={ACTION_TONE[log.action] ?? "slate"}>
+                    {log.action}
+                  </Badge>
+                </Td>
+                <Td>{log.summary ?? "—"}</Td>
+                <Td>
                   {log.targetType === "User" ? (
                     <Link
                       href={`/admin/users/${log.targetId}`}
@@ -74,33 +100,29 @@ export default async function AdminAuditPage({
                   ) : (
                     <span className="text-slate-500">{log.targetType}</span>
                   )}
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-400">
+                </Td>
+                <Td className="text-xs text-slate-400">
                   {log.ipAddress ?? "—"}
-                </td>
+                </Td>
               </tr>
-            ))}
-            {logs.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
-                  Aucune action enregistrée.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </TableCard>
 
       {pageCount > 1 ? (
-        <div className="flex items-center justify-between text-sm">
+        <div className="mt-4 flex items-center justify-between text-sm">
           <Link
             href={`/admin/audit?page=${page - 1}`}
             aria-disabled={page <= 1}
-            className={`rounded-lg border border-slate-300 px-3 py-1.5 dark:border-slate-700 ${
-              page <= 1 ? "pointer-events-none opacity-40" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+            className={`inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900 ${
+              page <= 1
+                ? "pointer-events-none opacity-40"
+                : "hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
-            ← Précédent
+            <ChevronLeft className="h-4 w-4" />
+            Précédent
           </Link>
           <span className="text-slate-500 dark:text-slate-400">
             Page {page} / {pageCount}
@@ -108,11 +130,14 @@ export default async function AdminAuditPage({
           <Link
             href={`/admin/audit?page=${page + 1}`}
             aria-disabled={page >= pageCount}
-            className={`rounded-lg border border-slate-300 px-3 py-1.5 dark:border-slate-700 ${
-              page >= pageCount ? "pointer-events-none opacity-40" : "hover:bg-slate-100 dark:hover:bg-slate-800"
+            className={`inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-800 dark:bg-slate-900 ${
+              page >= pageCount
+                ? "pointer-events-none opacity-40"
+                : "hover:bg-slate-50 dark:hover:bg-slate-800"
             }`}
           >
-            Suivant →
+            Suivant
+            <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
       ) : null}

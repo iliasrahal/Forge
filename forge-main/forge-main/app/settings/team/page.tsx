@@ -34,7 +34,15 @@ export default async function TeamSettingsPage() {
             ))}
           </div>
         )}
-        <TeamSettingsClient isTeam={context.workspace.type === "TEAM"} canManage={context.permissions.canManageTeam} />
+        <TeamSettingsClient
+          isTeam={context.workspace.type === "TEAM"}
+          canManage={context.permissions.canManageTeam}
+          isOwner={
+            context.workspace.type === "TEAM" &&
+            context.membership.role === "OWNER"
+          }
+          teamName={context.workspace.name}
+        />
       </section>
     </main>
   );
