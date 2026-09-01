@@ -6,16 +6,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --forge-surface: #e7ecfb;
-  --forge-surface-elevated: #f0f3fd;
-  --forge-surface-secondary: #dce4fa;
-  --forge-surface-strong: #d2ddf8;
-  --forge-surface-hover: #d7e1fb;
-  --forge-modal-background: rgb(235 240 253 / 0.96);
+  --forge-surface: rgb(218 227 249 / 0.72);
+  --forge-surface-elevated: rgb(232 237 252 / 0.84);
+  --forge-surface-secondary: rgb(205 218 248 / 0.64);
+  --forge-surface-strong: rgb(195 211 246 / 0.78);
+  --forge-surface-hover: rgb(205 219 249 / 0.82);
+  --forge-modal-background: rgb(222 231 251 / 0.9);
   --forge-background-accent: #d6ddf3;
-  --forge-input-background: rgb(240 243 253 / 0.9);
-  --forge-navigation-background: rgb(225 232 250 / 0.94);
-  --forge-forgebar-background: rgb(229 235 251 / 0.95);
+  --forge-input-background: rgb(235 240 252 / 0.88);
+  --forge-navigation-background: rgb(210 221 247 / 0.88);
+  --forge-forgebar-background: rgb(215 225 249 / 0.9);
   --forge-text-primary: #0a1230;
   --forge-text-secondary: #363f6d;
   --forge-text-muted: #4a5486;
@@ -86,16 +86,16 @@ html.dark {
 
   --background: #0f172a;
   --foreground: #f8fafc;
-  --forge-surface: #0c1024;
-  --forge-surface-elevated: #101631;
-  --forge-surface-secondary: #121838;
-  --forge-surface-strong: #192149;
-  --forge-surface-hover: #182047;
-  --forge-modal-background: rgb(13 18 43 / 0.97);
+  --forge-surface: rgb(12 16 36 / 0.82);
+  --forge-surface-elevated: rgb(16 22 49 / 0.9);
+  --forge-surface-secondary: rgb(18 24 56 / 0.76);
+  --forge-surface-strong: rgb(25 33 73 / 0.88);
+  --forge-surface-hover: rgb(24 32 71 / 0.9);
+  --forge-modal-background: rgb(13 18 43 / 0.93);
   --forge-background-accent: #06070f;
-  --forge-input-background: rgb(18 24 56 / 0.9);
-  --forge-navigation-background: rgb(12 16 36 / 0.92);
-  --forge-forgebar-background: rgb(12 16 36 / 0.92);
+  --forge-input-background: rgb(18 24 56 / 0.86);
+  --forge-navigation-background: rgb(12 16 36 / 0.88);
+  --forge-forgebar-background: rgb(12 16 36 / 0.9);
   --forge-text-primary: #eef1fa;
   --forge-text-secondary: #b3bcd8;
   --forge-text-muted: #8b95bd;
@@ -286,14 +286,7 @@ html.dark body {
 }
 
 .landing-cyclorama::after {
-  position: absolute;
-  inset: 38rem 0 auto;
-  z-index: -1;
-  height: 2px;
-  pointer-events: none;
-  content: "";
-  background: linear-gradient(90deg, transparent, var(--forge-accent-blue) 8%, var(--forge-accent-pink) 92%, transparent);
-  box-shadow: 0 0 34px color-mix(in srgb, var(--forge-accent-blue) 38%, transparent);
+  content: none;
 }
 
 .landing-cyclorama > section,
@@ -393,7 +386,6 @@ html.dark body {
 }
 
 @media (max-width: 640px) {
-  .landing-cyclorama::after { top: 32rem; }
   .landing-cyclorama > section:nth-of-type(even) {
     background-color: color-mix(in srgb, var(--forge-surface-secondary) 24%, transparent) !important;
   }
@@ -470,35 +462,10 @@ html.dark body {
   background-blend-mode: overlay, normal, normal;
 }
 
-/* La regle d'horizon : la seule division structurante du monde.
-   Un trait de cobalt, sa lueur d'aube, cale au viewport. */
+/* Le cyclorama conserve sa lumière sans ligne artificielle traversant le
+   viewport. L'ancien pseudo-élément d'horizon est volontairement neutralisé. */
 .forge-app-shell::after {
-  position: fixed;
-  left: 0;
-  right: 0;
-  top: var(--horizon-y);
-  z-index: -1;
-  pointer-events: none;
-  content: "";
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--cobalt) 7%,
-    var(--cobalt) 93%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 1px 0 var(--cobalt),
-    0 0 34px 2px color-mix(in srgb, var(--cobalt) 42%, transparent),
-    0 26px 70px 0 color-mix(in srgb, var(--sky-horizon) 42%, transparent);
-  opacity: 0.95;
-  animation: forge-horizon-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes forge-horizon-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 0.9; transform: none; }
+  content: none;
 }
 
 .forge-app-shell main {
@@ -879,45 +846,21 @@ html.dark body {
   }
 }
 
-/* La couture locale : un trait de cobalt qui balaie ~14px vers le haut
-   quand la section de contenu entre — et qui remonte a chaque changement
-   d'etat, React remontant la section. Portee au seul bloc de contenu. */
+/* L'ancienne couture locale a également été retirée : les séparateurs utiles
+   restent ceux des composants, jamais une ligne décorative de page. */
 .forge-app-shell main > section:last-of-type {
   position: relative;
 }
 .forge-app-shell main > section:last-of-type::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--cobalt) 20%, var(--cobalt) 80%, transparent);
-  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--cobalt) 55%, transparent);
-  transform-origin: center;
-  animation: forge-seam-sweep 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  pointer-events: none;
-}
-
-@keyframes forge-seam-sweep {
-  0% { opacity: 0; transform: translateY(14px) scaleX(0.6); }
-  40% { opacity: 0.9; }
-  100% { opacity: 0; transform: translateY(0) scaleX(1); }
+  content: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .forge-app-shell::after {
-    animation: none !important;
-  }
   .forge-app-shell main > * {
     animation: none !important;
     transform: none !important;
     filter: none !important;
     opacity: 1 !important;
-  }
-  .forge-app-shell main > section:last-of-type::before {
-    animation: none !important;
-    opacity: 0 !important;
   }
 }
 
