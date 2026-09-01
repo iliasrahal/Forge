@@ -2,8 +2,7 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type ForgeTheme = "light" | "dark";
 
@@ -12,11 +11,17 @@ function isForgeTheme(value: unknown): value is ForgeTheme {
 }
 
 function AuthenticatedThemeSync() {
-  const pathname = usePathname();
   const { setTheme } = useTheme();
+  const userSelectedTheme = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    const handleThemeSelection = () => {
+      userSelectedTheme.current = true;
+      controller.abort();
+    };
+
+    window.addEventListener("forge-theme-selected", handleThemeSelection);
 
     async function synchronizeTheme() {
       try {
@@ -33,7 +38,10 @@ function AuthenticatedThemeSync() {
           themePreference?: unknown;
         };
 
-        if (isForgeTheme(data.themePreference)) {
+        if (
+          !userSelectedTheme.current &&
+          isForgeTheme(data.themePreference)
+        ) {
           setTheme(data.themePreference);
         }
       } catch (error) {
@@ -45,8 +53,11 @@ function AuthenticatedThemeSync() {
 
     void synchronizeTheme();
 
-    return () => controller.abort();
-  }, [pathname, setTheme]);
+    return () => {
+      controller.abort();
+      window.removeEventListener("forge-theme-selected", handleThemeSelection);
+    };
+  }, [setTheme]);
 
   return null;
 }
@@ -54,13 +65,15 @@ function AuthenticatedThemeSync() {
 
 export default function ThemeProvider({
   children,
+  initialTheme = "dark",
 }: {
   children: React.ReactNode;
+  initialTheme?: ForgeTheme;
 }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="dark"
+      defaultTheme={initialTheme}
       enableSystem={false}
       enableColorScheme
       disableTransitionOnChange

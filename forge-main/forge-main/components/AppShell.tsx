@@ -43,7 +43,7 @@ export default function AppShell({
       <div
         className={
           hideNavigation
-            ? "forge-public-shell min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white"
+            ? "forge-public-shell min-h-screen text-slate-950 dark:text-white"
             : "forge-app-shell min-h-dvh pb-[calc(7.5rem+env(safe-area-inset-bottom))]"
         }
       >

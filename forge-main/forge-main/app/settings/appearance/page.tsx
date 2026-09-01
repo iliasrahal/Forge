@@ -3,32 +3,43 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const subscribeToHydration = () => () => undefined;
 
 
 
 export default function AppearancePage() {
 
 
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
 
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
-
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  function selectTheme(nextTheme: "light" | "dark") {
+  async function selectTheme(nextTheme: "light" | "dark") {
+    window.dispatchEvent(
+      new Event("forge-theme-selected"),
+    );
     setTheme(nextTheme);
 
-    void fetch("/api/settings/theme", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme: nextTheme }),
-    });
+    try {
+      const response = await fetch("/api/settings/theme", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ theme: nextTheme }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Impossible d’enregistrer le thème.");
+      }
+    } catch {
+      console.error("Impossible d’enregistrer le thème.");
+    }
   }
 
 
@@ -42,7 +53,7 @@ export default function AppearancePage() {
 
 
   return (
-    <main className="min-h-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
+    <main className="min-h-dvh px-6 py-8 text-slate-950 dark:text-white">
 
 
       <section className="mx-auto max-w-xl">
@@ -67,7 +78,7 @@ export default function AppearancePage() {
 
 
         <p className="mt-3 text-slate-500 dark:text-slate-400">
-          Choisis l'apparence de Forge.
+          Choisis l&apos;apparence de Forge.
         </p>
 
 
@@ -81,7 +92,7 @@ export default function AppearancePage() {
             type="button"
             onClick={() => selectTheme("light")}
             className={`w-full rounded-2xl border px-5 py-4 text-left font-semibold transition ${
-              theme === "light"
+              resolvedTheme === "light"
                 ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                 : "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
             }`}
@@ -96,7 +107,7 @@ export default function AppearancePage() {
             type="button"
             onClick={() => selectTheme("dark")}
             className={`w-full rounded-2xl border px-5 py-4 text-left font-semibold transition ${
-              theme === "dark"
+              resolvedTheme === "dark"
                 ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
                 : "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
             }`}

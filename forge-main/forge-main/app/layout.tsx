@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
 
 import {
@@ -75,11 +76,14 @@ const DAYPART_SCRIPT = `(function(){try{var h=new Date().getHours();document.doc
 
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeCookie = (await cookies()).get("forgeTheme")?.value;
+  const initialTheme = themeCookie === "light" ? "light" : "dark";
+
   return (
     <html
       lang="fr"
@@ -114,7 +118,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: DAYPART_SCRIPT }} />
 
 
-        <ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme}>
 
 
           <AppShell>

@@ -202,7 +202,7 @@ useState(false);
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950">
+    <main className="min-h-screen px-4 py-8">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/interventions"

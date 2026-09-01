@@ -10,6 +10,10 @@
   --forge-surface-elevated: #ffffff;
   --forge-surface-secondary: #eef1fc;
   --forge-surface-hover: #e7ecff;
+  --forge-background-accent: #d6ddf3;
+  --forge-input-background: rgb(238 241 252 / 0.88);
+  --forge-navigation-background: rgb(247 248 255 / 0.92);
+  --forge-forgebar-background: rgb(247 248 255 / 0.92);
   --forge-text-primary: #0a1230;
   --forge-text-secondary: #363f6d;
   --forge-text-muted: #4a5486;
@@ -84,6 +88,10 @@ html.dark {
   --forge-surface-elevated: #101631;
   --forge-surface-secondary: #121838;
   --forge-surface-hover: #182047;
+  --forge-background-accent: #06070f;
+  --forge-input-background: rgb(18 24 56 / 0.9);
+  --forge-navigation-background: rgb(12 16 36 / 0.92);
+  --forge-forgebar-background: rgb(12 16 36 / 0.92);
   --forge-text-primary: #eef1fa;
   --forge-text-secondary: #b3bcd8;
   --forge-text-muted: #8b95bd;
@@ -121,8 +129,8 @@ html.dark body {
   --sky-top: #94a9e7;
   --sky-horizon: #ffc6da;
   --sky-low: #d6ddf3;
-  --panel: #ffffff;
-  --panel-2: #eef1fc;
+  --panel: rgb(250 251 255 / 0.84);
+  --panel-2: rgb(238 241 252 / 0.78);
   --ink: #0a1230;
   --ink-2: #363f6d;
   --ink-3: #4a5486;
@@ -175,6 +183,37 @@ html.dark body {
   border-color: var(--forge-border) !important;
   background: color-mix(in srgb, var(--forge-surface-secondary) 86%, transparent) !important;
   color: var(--forge-text-secondary);
+}
+
+/* Les parcours publics partagent le même ciel que le produit. Le contenu de
+   chaque écran reste inchangé ; seuls les anciens fonds opaques de page sont
+   neutralisés pour éviter la rupture Landing -> Auth -> Onboarding. */
+.forge-public-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  overflow-x: clip;
+  color: var(--forge-text-primary);
+  background:
+    radial-gradient(72rem 34rem at 92% 8%, color-mix(in srgb, var(--forge-accent-pink) 22%, transparent), transparent 68%),
+    radial-gradient(82rem 38rem at 10% 20%, color-mix(in srgb, var(--forge-accent-blue) 28%, transparent), transparent 70%),
+    linear-gradient(180deg, #a9b9ea 0%, #d8dff6 38%, #ffd0df 62%, #f2f4fc 100%);
+}
+
+.dark .forge-public-shell {
+  background:
+    radial-gradient(72rem 34rem at 92% 8%, color-mix(in srgb, var(--forge-accent-pink) 15%, transparent), transparent 68%),
+    radial-gradient(82rem 38rem at 10% 20%, color-mix(in srgb, var(--forge-accent-blue) 24%, transparent), transparent 70%),
+    linear-gradient(180deg, #04050a 0%, #101943 42%, #293f9e 64%, #06070f 100%);
+}
+
+.forge-public-shell > :not(.landing-cyclorama) :is(main, section)[class*="min-h-"][class*="bg-white"],
+.forge-public-shell > :not(.landing-cyclorama) :is(main, section)[class*="min-h-"][class*="bg-slate-50"],
+.forge-public-shell > :not(.landing-cyclorama) :is(main, section)[class*="min-h-"][class*="bg-slate-950"],
+.forge-public-shell > main[class*="min-h-"][class*="bg-white"],
+.forge-public-shell > main[class*="min-h-"][class*="bg-slate-50"],
+.forge-public-shell > main[class*="min-h-"][class*="bg-slate-950"] {
+  background-color: transparent !important;
 }
 
 /* ================================================================== */
@@ -336,8 +375,8 @@ html.dark body {
   --sky-top: #04050a;
   --sky-horizon: #1b2d69;
   --sky-low: #06070f;
-  --panel: #0c1024;
-  --panel-2: #121838;
+  --panel: rgb(12 16 36 / 0.86);
+  --panel-2: rgb(18 24 56 / 0.82);
   --sky-mid: #13214f;
   --ink: #eef1fa;
   --ink-2: #b3bcd8;
@@ -437,6 +476,23 @@ html.dark body {
   width: 100%;
   min-width: 0;
   background-color: transparent !important;
+}
+
+/* La coque réserve déjà l’espace de la navigation fixe. Une page courte
+   occupe donc uniquement l’espace restant au lieu d’ajouter un second 100dvh
+   et de créer un scroll vide. */
+.forge-app-shell > main {
+  min-height: calc(100dvh - 7.5rem - env(safe-area-inset-bottom)) !important;
+}
+
+/* Les wrappers de page ne doivent jamais masquer le cyclorama. Les cartes
+   conservent leur fonction, mais toute surface pleine hauteur reste ouverte
+   sur le fond du produit. */
+.forge-app-shell :is(main, section)[class*="min-h-"][class*="bg-white"],
+.forge-app-shell :is(main, section)[class*="min-dvh"][class*="bg-white"],
+.forge-app-shell :is(main, section)[class*="min-h-"][class*="bg-slate-50"],
+.forge-app-shell :is(main, section)[class*="min-dvh"][class*="bg-slate-50"] {
+  background: transparent !important;
 }
 
 .forge-app-shell :is(section, article, form, div) {
@@ -580,7 +636,7 @@ html.dark body {
 /* Champs : panneau sombre, curseur et anneau de focus cobalt. */
 .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
   border-color: var(--line-strong);
-  background-color: var(--panel-2);
+  background-color: var(--forge-input-background);
   color: var(--ink);
   caret-color: var(--cobalt);
   box-shadow: none;
@@ -833,7 +889,7 @@ html.dark body {
    qui traverse. Portee hors de la coque (portal), stylee au niveau racine. */
 .forge-bar {
   border-color: color-mix(in srgb, var(--forge-accent-blue) 42%, var(--forge-border));
-  background-color: var(--forge-dock-background);
+  background-color: var(--forge-forgebar-background);
   box-shadow:
     inset 0 1px 0 0 color-mix(in srgb, var(--forge-accent-blue) 48%, transparent),
     var(--forge-shadow);
@@ -872,7 +928,7 @@ html.dark body {
 /* Barre de navigation basse : file fin cobalt, posee bas dans le cadre. */
 .forge-navbar {
   border-color: color-mix(in srgb, var(--forge-accent-blue) 38%, var(--forge-border));
-  background-color: var(--forge-dock-background);
+  background-color: var(--forge-navigation-background);
   box-shadow:
     inset 0 1px 0 0 color-mix(in srgb, var(--forge-accent-blue) 42%, transparent),
     var(--forge-shadow);

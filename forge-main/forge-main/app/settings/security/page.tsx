@@ -9,7 +9,7 @@ export default function SecurityPage() {
 
 
   return (
-    <main className="min-dvh bg-white px-6 py-8 text-slate-950 dark:bg-slate-950 dark:text-white">
+    <main className="min-dvh px-6 py-8 text-slate-950 dark:text-white">
 
 
       <section className="mx-auto max-w-xl">

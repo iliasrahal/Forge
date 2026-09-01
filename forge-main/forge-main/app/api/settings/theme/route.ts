@@ -21,9 +21,21 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     themePreference: currentUser.themePreference,
   });
+
+  if (isTheme(currentUser.themePreference)) {
+    response.cookies.set("forgeTheme", currentUser.themePreference, {
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+
+  return response;
 }
 
 export async function PATCH(request: Request) {
@@ -52,7 +64,17 @@ export async function PATCH(request: Request) {
     data: { themePreference: body.theme },
   });
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     themePreference: body.theme,
   });
+
+  response.cookies.set("forgeTheme", body.theme, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+
+  return response;
 }

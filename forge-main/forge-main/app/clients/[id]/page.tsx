@@ -158,7 +158,7 @@ export default async function ClientPage({
 
 
   return (
-    <main className="min-h-dvh bg-white px-4 py-6 pb-36 dark:bg-slate-950 sm:px-6 sm:py-10">
+    <main className="min-h-dvh px-4 py-6 pb-36 sm:px-6 sm:py-10">
 
 
       <section className="mx-auto max-w-3xl">

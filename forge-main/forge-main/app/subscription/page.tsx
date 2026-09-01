@@ -14,7 +14,7 @@ export default async function SubscriptionPage() {
   const access = await getSubscriptionAccessForUser(user.id);
 
   return (
-    <main className="relative isolate min-h-dvh overflow-hidden bg-[#f4f6fb] px-6 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white">
+    <main className="relative isolate min-h-dvh overflow-hidden bg-transparent px-6 py-8 text-slate-950 dark:text-white">
 
       <div
         aria-hidden="true"
