@@ -277,7 +277,7 @@ export default function HomeContent({
       <section className="flex flex-1 flex-col items-center justify-center px-6">
 
 
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+        <div className="forge-surface w-full max-w-2xl rounded-3xl border border-slate-100 bg-white p-5 text-center shadow-lg shadow-slate-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
 
 
 
@@ -421,7 +421,7 @@ export default function HomeContent({
       <section className="flex flex-1 flex-col items-center justify-center px-6">
 
 
-        <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
+        <div className="forge-surface w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
 
 
           <h2 className="text-3xl font-bold text-green-700">
@@ -493,7 +493,7 @@ export default function HomeContent({
   if (state === "saved") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
- <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
+ <div className="forge-surface w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
 
     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
       <Check size={30} strokeWidth={2.4} />
@@ -546,7 +546,7 @@ export default function HomeContent({
   if (state === "clientChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+        <div className="forge-surface w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
           <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Client temporaire</h2>
 
           <p className="mt-4 text-slate-600 dark:text-slate-300">Ce client a été créé uniquement pour cette intervention.</p>
@@ -585,7 +585,7 @@ export default function HomeContent({
   if (state === "invoiceChoice") {
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
-        <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
+        <div className="forge-surface w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
           <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Compte rendu enregistré</h2>
 
           <p className="mt-4 text-slate-700 dark:text-slate-300">
@@ -652,7 +652,7 @@ export default function HomeContent({
           )}
 
           {replyStatus === "processing" && (
-            <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
+            <div className="forge-surface flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
               <LoaderCircle
                 size={48}
                 strokeWidth={2}
@@ -760,7 +760,7 @@ export default function HomeContent({
 )}
 
         {replyStatus === "processing" && (
-          <div className="flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
+          <div className="forge-surface flex w-full flex-col items-center rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-lg shadow-slate-200/60">
             <LoaderCircle
               size={48}
               strokeWidth={2}

@@ -194,7 +194,7 @@ export default async function ClientPage({
 
 
 
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
+        <div className="forge-surface mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
 
           <div className="rounded-2xl bg-slate-50 p-4 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -375,7 +375,7 @@ export default async function ClientPage({
                         ? `/invoices/${item.itemId}`
                         : `/interventions/${item.itemId}`
                   }
-                  className="block rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.5)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_55px_-36px_rgba(37,99,235,0.35)] dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30 dark:hover:border-blue-700"
+                  className="forge-surface-subtle block rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.5)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_55px_-36px_rgba(37,99,235,0.35)] dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30 dark:hover:border-blue-700"
                 >
 
 

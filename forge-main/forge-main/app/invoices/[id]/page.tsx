@@ -132,7 +132,7 @@ export default async function InvoicePage({
     <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
 
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 
         <Link
@@ -233,7 +233,7 @@ export default async function InvoicePage({
                 ({ label, content }) => (
                   <section
                     key={label}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                    className="forge-surface-subtle rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
                   >
                     <h2 className="text-sm font-bold text-blue-700 dark:text-blue-400">
                       {label}

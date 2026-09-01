@@ -1295,7 +1295,7 @@ const handleCreateInvoice = async () => {
 
   {showAddClientModal && currentAppointment && (
     <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
-      <section className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
+      <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Informations client
         </h2>
@@ -1409,7 +1409,7 @@ const handleCreateInvoice = async () => {
 
   {actionMode && currentAppointment && (
     <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
-      <section className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
+      <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Modifier l’intervention
         </h2>
@@ -1591,7 +1591,7 @@ const handleCreateInvoice = async () => {
 
     <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
 
-      <div className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
+      <div className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
 
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
           Prolonger l'intervention

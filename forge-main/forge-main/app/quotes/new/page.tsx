@@ -137,7 +137,7 @@ export default async function NewQuotePage({
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6 dark:bg-slate-950">
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 
         <div>

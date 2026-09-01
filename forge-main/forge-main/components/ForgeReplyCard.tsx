@@ -29,7 +29,7 @@ export default function ForgeReplyCard({
   }
 
   return (
-    <div className="flex max-h-[calc(100dvh-18rem)] w-full flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
+    <div className="forge-surface flex max-h-[calc(100dvh-18rem)] w-full flex-col rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
       <h2 className="shrink-0 text-center text-2xl font-bold text-blue-700">
         Ta réponse est prête
       </h2>

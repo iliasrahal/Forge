@@ -591,7 +591,7 @@ export default function ForgeListenCard({
 
 
 
-      <div className="mt-8 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-md shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
+      <div className="forge-bar mt-8 flex min-h-20 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 shadow-md shadow-slate-200/50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
 
         <input
           ref={photoCaptureInputRef}

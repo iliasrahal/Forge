@@ -22,7 +22,7 @@ export default function ForgeReportCard({
   error = "",
 }: ForgeReportCardProps) {
   return (
-    <div className="w-full max-w-3xl rounded-3xl bg-white p-6 sm:p-10 shadow-lg dark:bg-slate-900 dark:shadow-black/20">
+    <div className="forge-surface w-full max-w-3xl rounded-3xl bg-white p-6 sm:p-10 shadow-lg dark:bg-slate-900 dark:shadow-black/20">
 
       <div className="mb-6 sm:mb-8">
         <h2 className="text-center text-2xl font-bold text-blue-700 dark:text-blue-400">

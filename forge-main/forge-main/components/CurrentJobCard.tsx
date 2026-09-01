@@ -1,6 +1,6 @@
 export default function CurrentJobCard() {
   return (
-    <section className="mt-8 w-full rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
+    <section className="forge-surface mt-8 w-full rounded-3xl border border-slate-100 bg-white p-6 shadow-lg shadow-slate-200/60">
 
       <h2 className="text-center text-4xl font-bold">
         Mme Martin

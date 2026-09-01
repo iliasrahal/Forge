@@ -133,7 +133,7 @@ export default async function QuotesPage() {
                 <Link
                   key={quote.id}
                   href={`/clients/${quote.clientId}/quotes/${quote.id}`}
-                  className="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950"
+                  className="forge-surface block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950"
                 >
 
 

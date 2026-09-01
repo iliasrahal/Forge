@@ -62,7 +62,7 @@ export default async function InvoicesPage() {
         {invoices.length === 0 ? (
 
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 
             <p className="text-slate-500 dark:text-slate-400">
@@ -84,7 +84,7 @@ export default async function InvoicesPage() {
               key={invoice.id}
               href={`/invoices/${invoice.id}`}
               aria-label={`Ouvrir la facture ${invoice.reference}`}
-              className="block min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 sm:p-6"
+              className="forge-surface block min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 sm:p-6"
             >
 
 

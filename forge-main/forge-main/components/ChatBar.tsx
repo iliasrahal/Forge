@@ -100,7 +100,7 @@ export default function ChatBar({
 
   return (
     <div className="mt-12 w-full">
-      <div className="flex min-h-24 w-full items-center gap-3 rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-lg shadow-slate-200/60">
+      <div className="forge-bar flex min-h-24 w-full items-center gap-3 rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-lg shadow-slate-200/60">
         <input
           type="text"
           value={message}
