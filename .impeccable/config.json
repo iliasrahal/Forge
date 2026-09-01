@@ -27,6 +27,30 @@
         "value": "arial",
         "createdAt": "2026-09-01T07:03:16.463Z",
         "reason": "pre-existing body FOUT fallback stack, preserved verbatim from incumbent code; design faces are Anton (display) + Geist (body) via next/font; Arial never renders on a working page"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#ff6fa5",
+        "createdAt": "2026-09-01T07:16:56.604Z",
+        "reason": "portalled chrome (.forge-navbar/.forge-bar/.forge-navlink) hardcodes the dawn-rose outside .forge-app-shell token scope; documented in design.json notCanonized"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#c7cef0",
+        "createdAt": "2026-09-01T07:16:56.658Z",
+        "reason": "nav hover ink in .forge-navlink (portalled chrome, outside token scope)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.9rem",
+        "createdAt": "2026-09-01T07:16:56.712Z",
+        "reason": "documented responsive step: primary-button label tightening below 430px, recorded intent"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgb(59 130 246 / 0.07)",
+        "createdAt": "2026-09-01T07:16:56.768Z",
+        "reason": "belongs to the separate untouched .forge-admin back-office system, not the Cyclorama world"
       }
     ]
   }
