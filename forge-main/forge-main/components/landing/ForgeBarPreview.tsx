@@ -12,7 +12,7 @@ export default function ForgeBarPreview({
   text,
 }: ForgeBarPreviewProps) {
   return (
-    <div className="flex min-h-20 w-full items-center gap-2 rounded-3xl border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:gap-3 sm:px-5">
+    <div className="forge-bar flex min-h-20 w-full items-center gap-2 rounded-3xl border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:gap-3 sm:px-5">
       <p className="min-w-0 flex-1 truncate text-sm text-slate-500 dark:text-slate-300 sm:text-base">
         {text}
       </p>

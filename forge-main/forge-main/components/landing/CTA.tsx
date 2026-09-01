@@ -12,7 +12,7 @@ export default function CTA() {
     <section className="relative overflow-hidden bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-950">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-[radial-gradient(circle_at_bottom,#dbeafe,transparent_68%)] dark:bg-[radial-gradient(circle_at_bottom,#172554,transparent_68%)]" />
 
-      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] border border-blue-400/20 bg-[linear-gradient(135deg,#172554_0%,#1d4ed8_52%,#2563eb_100%)] px-6 py-16 text-center text-white shadow-[0_35px_100px_-35px_rgba(37,99,235,0.65)] sm:px-12 sm:py-20 lg:px-20 lg:py-24 dark:border-blue-500/20 dark:bg-[linear-gradient(135deg,#020617_0%,#172554_48%,#1e40af_100%)]">
+      <div className="landing-cyclorama-cta relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] border border-blue-400/20 bg-[linear-gradient(135deg,#172554_0%,#1d4ed8_52%,#2563eb_100%)] px-6 py-16 text-center text-white shadow-[0_35px_100px_-35px_rgba(37,99,235,0.65)] sm:px-12 sm:py-20 lg:px-20 lg:py-24 dark:border-blue-500/20 dark:bg-[linear-gradient(135deg,#020617_0%,#172554_48%,#1e40af_100%)]">
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.08)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(circle_at_center,black,transparent_78%)]" />
         <div className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-blue-200/20 blur-3xl" />

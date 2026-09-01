@@ -31,7 +31,7 @@ export default function CurrentInterventionCard({
     appointment.client || subject;
 
   return (
-    <article className="w-full overflow-hidden rounded-[2.25rem] border border-white/85 bg-white/80 shadow-[0_32px_100px_-44px_rgba(15,23,42,0.5)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/45">
+    <article className="forge-surface w-full overflow-hidden rounded-[2.25rem] border border-t-2">
       <div className="px-4 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
 
 
@@ -73,7 +73,7 @@ export default function CurrentInterventionCard({
 
       <div className="mx-auto mt-4 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
         {appointment.date && (
-          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/65 px-3.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
+          <span className="forge-surface-subtle inline-flex items-center rounded-full border px-3.5 py-1.5">
             <span className="capitalize">
               {getAppointmentDateLabel(appointment.date)}
             </span>
@@ -81,7 +81,7 @@ export default function CurrentInterventionCard({
         )}
 
         {appointment.time && (
-          <span className="inline-flex items-center rounded-full border border-slate-200/80 bg-white/65 px-3.5 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
+          <span className="forge-surface-subtle inline-flex items-center rounded-full border px-3.5 py-1.5">
             {appointment.time}
           </span>
         )}

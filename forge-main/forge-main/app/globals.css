@@ -6,6 +6,22 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --forge-surface: #f7f8ff;
+  --forge-surface-elevated: #ffffff;
+  --forge-surface-secondary: #eef1fc;
+  --forge-surface-hover: #e7ecff;
+  --forge-text-primary: #0a1230;
+  --forge-text-secondary: #363f6d;
+  --forge-text-muted: #4a5486;
+  --forge-border: rgb(28 40 100 / 0.16);
+  --forge-border-strong: rgb(28 40 100 / 0.3);
+  --forge-accent-blue: #4c6ef5;
+  --forge-accent-blue-lit: #3346c4;
+  --forge-accent-pink: #ff5f9e;
+  --forge-dock-background: rgb(247 248 255 / 0.92);
+  --forge-dock-text: #363f6d;
+  --forge-dock-muted: #66709b;
+  --forge-shadow: 0 20px 60px -38px rgb(36 48 143 / 0.38);
 }
 
 html {
@@ -64,6 +80,22 @@ html.dark {
 
   --background: #0f172a;
   --foreground: #f8fafc;
+  --forge-surface: #0c1024;
+  --forge-surface-elevated: #101631;
+  --forge-surface-secondary: #121838;
+  --forge-surface-hover: #182047;
+  --forge-text-primary: #eef1fa;
+  --forge-text-secondary: #b3bcd8;
+  --forge-text-muted: #8b95bd;
+  --forge-border: rgb(124 144 226 / 0.22);
+  --forge-border-strong: rgb(124 144 226 / 0.42);
+  --forge-accent-blue: #4c6ef5;
+  --forge-accent-blue-lit: #93a8ff;
+  --forge-accent-pink: #ff7db0;
+  --forge-dock-background: rgb(12 16 36 / 0.92);
+  --forge-dock-text: #eef1fa;
+  --forge-dock-muted: #8b95bd;
+  --forge-shadow: 0 24px 70px -38px rgb(0 0 0 / 0.78);
 }
 
 
@@ -106,6 +138,17 @@ html.dark body {
   --amber: #c67c12;
   --horizon-y: 40vh;
   --panel-lift: 0;
+  --surface: var(--forge-surface);
+  --surface-elevated: var(--forge-surface-elevated);
+  --surface-secondary: var(--forge-surface-secondary);
+  --surface-hover: var(--forge-surface-hover);
+  --text-primary: var(--forge-text-primary);
+  --text-secondary: var(--forge-text-secondary);
+  --text-muted: var(--forge-text-muted);
+  --border-subtle: var(--forge-border);
+  --border-strong: var(--forge-border-strong);
+  --accent-blue: var(--forge-accent-blue);
+  --accent-pink: var(--forge-accent-pink);
 
   position: relative;
   isolation: isolate;
@@ -114,6 +157,178 @@ html.dark body {
   color: var(--ink);
   background: var(--sky-low);
   font-feature-settings: "cv05", "ss01";
+}
+
+/* Surface Cyclorama explicite pour les nouveaux composants. Les anciennes
+   classes Tailwind restent couvertes plus bas pour assurer la transition. */
+.forge-surface {
+  border-color: var(--forge-border) !important;
+  border-top-color: var(--forge-accent-blue) !important;
+  background: color-mix(in srgb, var(--forge-surface-elevated) 94%, transparent) !important;
+  color: var(--forge-text-primary);
+  box-shadow:
+    inset 0 10px 30px -20px color-mix(in srgb, var(--forge-accent-blue) 34%, transparent),
+    var(--forge-shadow) !important;
+}
+
+.forge-surface-subtle {
+  border-color: var(--forge-border) !important;
+  background: color-mix(in srgb, var(--forge-surface-secondary) 86%, transparent) !important;
+  color: var(--forge-text-secondary);
+}
+
+/* ================================================================== */
+/* LANDING CYCLORAMA — même horizon, rythme marketing inchangé.        */
+/* Cette couche est volontairement limitée à la page d'accueil.        */
+/* ================================================================== */
+.landing-cyclorama {
+  --landing-sky-top: #a9b9ea;
+  --landing-sky-mid: #d8dff6;
+  --landing-horizon: #ffd0df;
+  --landing-low: #f2f4fc;
+  --landing-panel: color-mix(in srgb, var(--forge-surface-elevated) 91%, transparent);
+  --landing-panel-soft: color-mix(in srgb, var(--forge-surface-secondary) 76%, transparent);
+
+  position: relative;
+  isolation: isolate;
+  color: var(--forge-text-primary);
+  background: var(--landing-low) !important;
+  font-feature-settings: "cv05", "ss01";
+}
+
+.dark .landing-cyclorama {
+  --landing-sky-top: #04050a;
+  --landing-sky-mid: #101943;
+  --landing-horizon: #293f9e;
+  --landing-low: #06070f;
+}
+
+.landing-cyclorama::before {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  content: "";
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(105vw 38rem at 50% 22rem, color-mix(in srgb, var(--landing-horizon) 76%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--landing-sky-top), var(--landing-sky-mid) 24rem, var(--landing-horizon) 38rem, var(--landing-low) 58rem);
+  background-size: 160px 160px, 100% 100%, 100% 100%;
+  background-blend-mode: overlay, normal, normal;
+}
+
+.landing-cyclorama::after {
+  position: absolute;
+  inset: 38rem 0 auto;
+  z-index: -1;
+  height: 2px;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(90deg, transparent, var(--forge-accent-blue) 8%, var(--forge-accent-pink) 92%, transparent);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--forge-accent-blue) 38%, transparent);
+}
+
+.landing-cyclorama > section,
+.landing-cyclorama > footer {
+  position: relative;
+  border-color: var(--forge-border) !important;
+  background-color: transparent !important;
+  color: var(--forge-text-primary) !important;
+}
+
+.landing-cyclorama > section:nth-of-type(even) {
+  background-color: color-mix(in srgb, var(--forge-surface-secondary) 30%, transparent) !important;
+}
+
+.landing-cyclorama :is(h1, h2) {
+  color: var(--forge-text-primary) !important;
+  font-family: var(--font-display), "Arial Narrow", system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.005em !important;
+  line-height: 1.03;
+}
+
+.landing-cyclorama :is(h3, h4) {
+  color: var(--forge-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.landing-cyclorama [class*="text-slate-9"],
+.landing-cyclorama [class*="text-slate-8"] { color: var(--forge-text-primary) !important; }
+.landing-cyclorama [class*="text-slate-7"],
+.landing-cyclorama [class*="text-slate-6"] { color: var(--forge-text-secondary) !important; }
+.landing-cyclorama [class*="text-slate-5"],
+.landing-cyclorama [class*="text-slate-4"] { color: var(--forge-text-muted) !important; }
+.landing-cyclorama [class*="text-blue-"] { color: var(--forge-accent-blue-lit) !important; }
+
+.landing-cyclorama :is(article, div, aside, form)[class*="border-slate-"][class*="rounded-"],
+.landing-cyclorama :is(article, div, aside, form)[class*="border-blue-"][class*="rounded-"] {
+  border-color: var(--forge-border) !important;
+}
+
+.landing-cyclorama :is(article, div, aside, form)[class*="bg-white"][class*="rounded-"],
+.landing-cyclorama :is(article, div, aside, form)[class*="bg-slate-9"][class*="rounded-"] {
+  border-top-color: var(--forge-accent-blue) !important;
+  background-color: var(--landing-panel) !important;
+  background-image: none !important;
+  box-shadow:
+    inset 0 12px 34px -24px color-mix(in srgb, var(--forge-accent-blue) 42%, transparent),
+    var(--forge-shadow) !important;
+}
+
+.landing-cyclorama :is(div, aside)[class*="bg-slate-50"][class*="rounded-"],
+.landing-cyclorama :is(div, aside)[class*="bg-slate-100"][class*="rounded-"] {
+  background-color: var(--landing-panel-soft) !important;
+}
+
+.landing-cyclorama :is(button, a)[class*="bg-blue-600"] {
+  border-color: transparent !important;
+  background-color: var(--forge-accent-blue) !important;
+  background-image: linear-gradient(90deg, var(--forge-accent-blue-lit), var(--forge-accent-blue) 48%, var(--forge-accent-pink)) !important;
+  color: #fff !important;
+  box-shadow: 0 16px 34px -18px color-mix(in srgb, var(--forge-accent-blue) 72%, transparent) !important;
+}
+
+.landing-cyclorama :is(button, a)[class*="bg-blue-600"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 20px 42px -18px color-mix(in srgb, var(--forge-accent-blue) 82%, transparent) !important;
+}
+
+.landing-cyclorama :is(span, div)[class*="bg-blue-50"],
+.landing-cyclorama :is(span, div)[class*="bg-blue-100"],
+.landing-cyclorama :is(span, div)[class*="bg-blue-950"] {
+  background-color: color-mix(in srgb, var(--forge-accent-blue) 14%, transparent) !important;
+}
+
+.landing-cyclorama .landing-cyclorama-cta {
+  border-color: color-mix(in srgb, var(--forge-accent-blue) 62%, transparent) !important;
+  background:
+    radial-gradient(42rem 24rem at 88% 110%, color-mix(in srgb, var(--forge-accent-pink) 52%, transparent), transparent 70%),
+    linear-gradient(135deg, #111a4b 0%, var(--forge-accent-blue) 58%, #26359c 100%) !important;
+  box-shadow: 0 34px 90px -38px color-mix(in srgb, var(--forge-accent-blue) 74%, transparent) !important;
+}
+
+.landing-cyclorama .landing-cyclorama-cta :is(h2, p, span) {
+  color: #fff !important;
+}
+
+.landing-cyclorama .landing-cyclorama-cta > div > p,
+.landing-cyclorama .landing-cyclorama-cta [class*="text-blue-100"] {
+  color: #dbe4ff !important;
+}
+
+.dark .landing-cyclorama .landing-cyclorama-cta {
+  background:
+    radial-gradient(42rem 24rem at 88% 110%, color-mix(in srgb, var(--forge-accent-pink) 34%, transparent), transparent 70%),
+    linear-gradient(135deg, #070918 0%, #172354 56%, #263a9b 100%) !important;
+}
+
+@media (max-width: 640px) {
+  .landing-cyclorama::after { top: 32rem; }
+  .landing-cyclorama > section:nth-of-type(even) {
+    background-color: color-mix(in srgb, var(--forge-surface-secondary) 24%, transparent) !important;
+  }
 }
 
 .dark .forge-app-shell {
@@ -386,6 +601,7 @@ html.dark body {
    un file fin, aucune ombre portee — le monde n'a pas de cartes qui levitent. */
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-xl"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-[2"][class*="bg-white"] {
   position: relative;
   border-color: var(--line) !important;
@@ -616,26 +832,25 @@ html.dark body {
 /* La barre Forge : posee sur l'horizon. Arete haute cobalt = la ligne
    qui traverse. Portee hors de la coque (portal), stylee au niveau racine. */
 .forge-bar {
-  border-color: rgb(76 110 245 / 0.38);
-  background-color: rgb(18 22 52 / 0.9);
+  border-color: color-mix(in srgb, var(--forge-accent-blue) 42%, var(--forge-border));
+  background-color: var(--forge-dock-background);
   box-shadow:
-    inset 0 1px 0 0 rgb(76 110 245 / 0.5),
-    0 -16px 50px -26px rgb(76 110 245 / 0.35),
-    0 26px 70px -30px rgb(3 6 20 / 0.85);
+    inset 0 1px 0 0 color-mix(in srgb, var(--forge-accent-blue) 48%, transparent),
+    var(--forge-shadow);
 }
 
 .forge-bar input {
-  color: #eef1fa;
-  caret-color: #4c6ef5;
+  color: var(--forge-text-primary);
+  caret-color: var(--forge-accent-blue);
 }
 
 .forge-bar input::placeholder {
-  color: #7f89ad;
+  color: var(--forge-dock-muted);
 }
 
 .forge-bar button[class*="bg-blue-600"] {
-  background-color: #4c6ef5 !important;
-  background-image: linear-gradient(90deg, #93a8ff 0%, #4c6ef5 42%, #ff6fa5 100%) !important;
+  background-color: var(--forge-accent-blue) !important;
+  background-image: linear-gradient(90deg, var(--forge-accent-blue-lit) 0%, var(--forge-accent-blue) 42%, var(--forge-accent-pink) 100%) !important;
   color: #fff !important;
   box-shadow: 0 12px 28px -12px rgb(76 110 245 / 0.7) !important;
 }
@@ -643,36 +858,36 @@ html.dark body {
 .forge-bar button[class*="bg-blue-50"],
 .forge-bar button[class*="bg-white/70"] {
   background: transparent !important;
-  border-color: rgb(76 110 245 / 0.5) !important;
-  color: #93a8ff !important;
+  border-color: color-mix(in srgb, var(--forge-accent-blue) 50%, transparent) !important;
+  color: var(--forge-accent-blue-lit) !important;
   box-shadow: none !important;
   --tw-ring-color: transparent !important;
 }
 
 .forge-bar button[class*="bg-blue-50"]:hover,
 .forge-bar button[class*="bg-white/70"]:hover {
-  background: rgb(76 110 245 / 0.12) !important;
+  background: color-mix(in srgb, var(--forge-accent-blue) 12%, transparent) !important;
 }
 
 /* Barre de navigation basse : file fin cobalt, posee bas dans le cadre. */
 .forge-navbar {
-  border-color: rgb(76 110 245 / 0.34);
-  background-color: rgb(18 22 52 / 0.92);
+  border-color: color-mix(in srgb, var(--forge-accent-blue) 38%, var(--forge-border));
+  background-color: var(--forge-dock-background);
   box-shadow:
-    inset 0 1px 0 0 rgb(76 110 245 / 0.4),
-    0 24px 60px -30px rgb(3 6 20 / 0.85);
+    inset 0 1px 0 0 color-mix(in srgb, var(--forge-accent-blue) 42%, transparent),
+    var(--forge-shadow);
 }
 
 .forge-navlink {
-  color: #7f89ad;
+  color: var(--forge-dock-muted);
 }
 
 .forge-navlink:hover {
-  color: #c7cef0;
+  color: var(--forge-dock-text);
 }
 
 .forge-navlink[data-active="true"] {
-  color: #eef1fa;
+  color: var(--forge-dock-text);
 }
 
 /* L'onglet actif : une courte couture d'aube sous lui, sans halo. */
@@ -688,7 +903,7 @@ html.dark body {
 }
 
 .forge-navlink[data-active="true"] svg {
-  color: #93a8ff;
+  color: var(--forge-accent-blue-lit);
 }
 
 /* ------------------------------------------------------------------ */

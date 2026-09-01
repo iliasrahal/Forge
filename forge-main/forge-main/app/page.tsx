@@ -21,7 +21,7 @@ export default async function LandingPage() {
   }
 
   return (
-    <main className="min-h-svh overflow-x-clip bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
+    <main className="landing-cyclorama min-h-svh overflow-x-clip bg-white text-slate-950 dark:bg-slate-950 dark:text-white">
       <Hero />
       <ProductDemo />
       <Problem />
