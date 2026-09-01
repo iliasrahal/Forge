@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-01T00:00:00.000Z",
+  "title": "Design System: Forge",
+  "extensions": {
+    "colorMeta": {
+      "cobalt": {
+        "role": "primary",
+        "displayName": "Cobalt",
+        "canonical": "#4c6ef5",
+        "note": "Structure and the active line: horizon rule, 2px panel top edge, focus ring, caret, primary-action base, selection. Same value in light and dark renditions.",
+        "tonalRamp": ["#10163a", "#1a246e", "#26389f", "#3450c9", "#4c6ef5", "#7b93f8", "#a9b9fb", "#d8e0fd"]
+      },
+      "cobalt-lit": {
+        "role": "primary",
+        "displayName": "Cobalt Lit",
+        "canonical": "#93a8ff",
+        "note": "Cobalt raised into the type layer for dark backgrounds: secondary-button label, inline links, the COMPTE RENDU heading, active nav icon. Light rendition uses #3346c4.",
+        "tonalRamp": ["#1a246e", "#26389f", "#3450c9", "#4c6ef5", "#7b93f8", "#93a8ff", "#bcc9ff", "#e3e9ff"]
+      },
+      "rose-dawn": {
+        "role": "secondary",
+        "displayName": "Dawn Rose",
+        "canonical": "#ff7db0",
+        "note": "Arrival / attention / in-progress. Far end of the primary gradient. Direction contract names #FF6FA5; light rendition #ff5f9e; portalled chrome hardcodes #ff6fa5. Never drifts toward violet.",
+        "tonalRamp": ["#40121f", "#6e1f38", "#9c2d54", "#cf4a7e", "#ff7db0", "#ff9ec6", "#ffbfda", "#ffe0ee"]
+      },
+      "jade": {
+        "role": "tertiary",
+        "displayName": "Jade",
+        "canonical": "#34d9a6",
+        "note": "Done / success (Terminée). Light rendition #0f9d8f.",
+        "tonalRamp": ["#062a20", "#0b4636", "#12654e", "#1c8e6f", "#34d9a6", "#67e4bd", "#9aefd4", "#cdf9ea"]
+      },
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Amber",
+        "canonical": "#f0b24a",
+        "note": "Postponed / caution (Reportée, warning notices). Light rendition #c67c12.",
+        "tonalRamp": ["#2e1e05", "#4d340a", "#6f4e12", "#a5751d", "#d99a30", "#f0b24a", "#f6cd85", "#fbe7c2"]
+      },
+      "ember": {
+        "role": "tertiary",
+        "displayName": "Ember",
+        "canonical": "#ff7a4d",
+        "note": "Cancelled / error / destructive text (Annulée). Light rendition #e8590c.",
+        "tonalRamp": ["#331103", "#571d06", "#7d2f0e", "#b0491b", "#e0602c", "#ff7a4d", "#ffa484", "#ffd0bd"]
+      },
+      "sky-top": {
+        "role": "neutral",
+        "displayName": "Sky Top",
+        "canonical": "#04050a",
+        "note": "Top stop of the fixed cyclorama gradient. Light rendition #94a9e7.",
+        "tonalRamp": ["#04050a", "#06070f", "#0c1024", "#121838", "#13214f", "#1b2d69", "#8b95bd", "#eef1fa"]
+      },
+      "sky-horizon": {
+        "role": "neutral",
+        "displayName": "Sky Horizon",
+        "canonical": "#1b2d69",
+        "note": "Where the light gathers on the gradient. HOUR-VARIABLE: overridden to #2b46b8 (aube), #3f5fe0 (jour), #b5527a (crepuscule); the horizon line also rises 60vh to 30vh across the dayparts. Light rendition #ffc6da and warmer.",
+        "tonalRamp": ["#080c1c", "#0f1936", "#152354", "#1b2d69", "#264088", "#3f5fe0", "#8ea3ef", "#d6ddf3"]
+      },
+      "sky-low": {
+        "role": "neutral",
+        "displayName": "Sky Low",
+        "canonical": "#06070f",
+        "note": "Foot of the gradient and the shell background-color. Light rendition #d6ddf3.",
+        "tonalRamp": ["#04050a", "#06070f", "#0a0d1c", "#0f1430", "#131b44", "#1b2860", "#8b95bd", "#eef1fa"]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "canonical": "#0c1024",
+        "note": "Resting surface of every card, sheet and rail chip. Light rendition #ffffff.",
+        "tonalRamp": ["#05060f", "#0c1024", "#121838", "#1a244f", "#243266", "#3a4a86", "#8b95bd", "#eef1fa"]
+      },
+      "panel-raised": {
+        "role": "neutral",
+        "displayName": "Panel Raised",
+        "canonical": "#121838",
+        "note": "Inputs, dashed to-complete zones, faint fill behind an enlarged rail chip. Light rendition #eef1fc.",
+        "tonalRamp": ["#070a1c", "#0c1024", "#121838", "#1c2653", "#28356f", "#3f4f92", "#8b95bd", "#eef1fa"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#eef1fa",
+        "note": "Headings and primary text. Light rendition #0a1230.",
+        "tonalRamp": ["#0a1230", "#242c52", "#3f4870", "#5c6591", "#8b95bd", "#b3bcd8", "#d5dbec", "#eef1fa"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "#b3bcd8",
+        "note": "Body copy. Light rendition #363f6d.",
+        "tonalRamp": ["#1b2242", "#2f3960", "#454f82", "#6672a4", "#8b95bd", "#b3bcd8", "#d0d6e8", "#eaeef7"]
+      },
+      "ink-faint": {
+        "role": "neutral",
+        "displayName": "Ink Faint",
+        "canonical": "#8b95bd",
+        "note": "Metadata, placeholders, dates. Light rendition #4a5486.",
+        "tonalRamp": ["#1b2242", "#2b345a", "#3d4776", "#5b6699", "#7a85b0", "#8b95bd", "#b8c0da", "#e2e6f3"]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgb(124 144 226 / 0.22)",
+        "note": "Every 1px border and the rail bottom edge. Translucent periwinkle, never a grey line. Light rendition rgb(28 40 100 / 0.16).",
+        "tonalRamp": ["#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2"]
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Hairline Strong",
+        "canonical": "rgb(124 144 226 / 0.42)",
+        "note": "Input borders and dashed-zone borders. Light rendition rgb(28 40 100 / 0.30).",
+        "tonalRamp": ["#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2", "#7c90e2"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Anton uppercase for h1/h2 — the hour greeting and every panel title. Introduced by a short cobalt tick. Hero greeting steps 2.25rem to ~3rem at >=640px." },
+      "eyebrow": { "displayName": "Eyebrow", "purpose": "Anton uppercase, wide-tracked, 0.75rem — section kickers such as RAIL DU JOUR, always preceded by a ~24x2px cobalt tick." },
+      "title": { "displayName": "Title", "purpose": "Geist 700, negative tracking — h3/h4 and card names; tightens to -0.04em at hero size." },
+      "body": { "displayName": "Body", "purpose": "Geist 400 with cv05/ss01, set in Ink Muted; measure ~60-70ch in the max-w-xl column." },
+      "numeric": { "displayName": "Numeric", "purpose": "Geist Mono tabular-nums for every time, euro amount and document reference." },
+      "label": { "displayName": "Label", "purpose": "Geist 600 uppercase 0.06em — bottom-nav labels; the primary-action label is the same at weight ~650 / 0.02em." }
+    },
+    "shadows": [
+      { "name": "daybreak-cast", "value": "0 14px 30px -14px color-mix(in srgb, #4c6ef5 65%, transparent)", "purpose": "Primary action ONLY. Deepens to 78% and the button rises 1px on hover. The single cast shadow allowed on a content element." },
+      { "name": "panel-lift", "value": "inset 0 10px 30px -18px color-mix(in srgb, #4c6ef5 40%, transparent), 0 1px 0 0 color-mix(in srgb, #4c6ef5 22%, transparent)", "purpose": "Default resting panel — an inset dawn glow plus a 1px cobalt bottom hairline, never a projected shadow." },
+      { "name": "panel-lift-hover", "value": "inset 0 12px 34px -18px color-mix(in srgb, #4c6ef5 52%, transparent), 0 1px 0 0 color-mix(in srgb, #4c6ef5 30%, transparent)", "purpose": "Clickable panel on hover — inset glow strengthens, top edge goes full cobalt. No halo." },
+      { "name": "horizon-rule-glow", "value": "0 0 1px 0 #4c6ef5, 0 0 34px 2px color-mix(in srgb, #4c6ef5 42%, transparent), 0 26px 70px 0 color-mix(in srgb, var(--sky-horizon) 42%, transparent)", "purpose": "The fixed 2px cobalt horizon rule (.forge-app-shell::after)." },
+      { "name": "chrome-float", "value": "inset 0 1px 0 0 rgb(76 110 245 / 0.5), 0 -16px 50px -26px rgb(76 110 245 / 0.35), 0 26px 70px -30px rgb(3 6 20 / 0.85)", "purpose": "Portalled Forge bar and bottom nav ONLY, so they read as resting on the horizon above the page. Not for in-page surfaces." },
+      { "name": "focus-ring", "value": "0 0 0 3px color-mix(in srgb, #4c6ef5 24%, transparent)", "purpose": "Input focus — a crisp cobalt ring plus a cobalt border, not a blur glow." }
+    ],
+    "motion": [
+      { "name": "ease-rise", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Exponential ease-out for entrances: horizon rise, content lever, seam sweep, rail-chip scale." },
+      { "name": "ease-control", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Button and link state transitions (180ms)." },
+      { "name": "horizon-rise", "value": "forge-horizon-rise 900ms ease-rise both", "purpose": "The cobalt horizon rule lifts in once on load (translateY 12px + fade)." },
+      { "name": "lever", "value": "forge-lever 460ms ease-rise both; stagger 60/120/180/240ms", "purpose": "Each main > child rises 8px with a brief brightness(0.82)/saturate(0.85) dip, orchestrated not simultaneous." },
+      { "name": "seam-sweep", "value": "forge-seam-sweep 620ms ease-rise both", "purpose": "A local cobalt hairline on the last content section runs up ~14px (scaleX 0.6 to 1) and back to opacity 0 when the section (re)mounts on a state change." },
+      { "name": "input-transition", "value": "160ms ease", "purpose": "Input border-color / box-shadow / background-color." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "All of the above collapse to opacity-only; the seam is forced to opacity 0; no transforms or filters." }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "360px" },
+      { "name": "phone-lg", "value": "430px" },
+      { "name": "mobile-max", "value": "480px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "767px" }
+    ],
+    "renditions": {
+      "note": "Dark-first: ThemeProvider defaultTheme is 'dark' and enableSystem is false. The values above are the .dark .forge-app-shell rendition (the shipped default). A full light rendition ('jour') is carried by the same token names on the base .forge-app-shell selector; see each colorMeta note. The /admin back-office (.forge-admin) is a separate, older, untouched system and is not part of this world.",
+      "horizonY": { "nuit": "60vh", "aube": "44vh", "jour": "30vh", "crepuscule": "48vh", "default": "40vh" }
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one gradient action: cobalt to dawn-rose, uppercase, the only content element with a cast shadow. Full-width on phones.",
+      "html": "<button class=\"ds-btn-primary\">Terminer l'intervention</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 1rem; padding: 1rem 1.5rem; color: #fff; text-transform: uppercase; letter-spacing: 0.02em; font-weight: 650; font-family: Geist, system-ui, sans-serif; font-size: 1rem; text-wrap: balance; overflow-wrap: normal; word-break: normal; hyphens: none; background-color: #4c6ef5; background-image: linear-gradient(90deg, #93a8ff 0%, #4c6ef5 44%, #ff7db0 100%); box-shadow: 0 14px 30px -14px color-mix(in srgb, #4c6ef5 65%, transparent); transition: transform 180ms cubic-bezier(0.22,1,0.36,1), box-shadow 180ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 20px 40px -14px color-mix(in srgb, #4c6ef5 78%, transparent); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, #4c6ef5 40%, transparent), 0 14px 30px -14px color-mix(in srgb, #4c6ef5 65%, transparent); } .ds-btn-primary:disabled { background-image: none; background-color: #1c2653; color: #8b95bd; box-shadow: none; cursor: not-allowed; } @media (max-width: 430px) { .ds-btn-primary { letter-spacing: 0.005em; font-size: 0.9rem; } }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ghost action: cobalt hairline, Cobalt Lit label, no fill, no shadow. Prolonger, Modifier.",
+      "html": "<button class=\"ds-btn-secondary\">Prolonger</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; border: 1px solid color-mix(in srgb, #4c6ef5 70%, transparent); border-radius: 1rem; padding: 1rem 1.5rem; background: transparent; color: #93a8ff; font-family: Geist, system-ui, sans-serif; font-weight: 600; font-size: 1rem; transition: border-color 180ms cubic-bezier(0.22,1,0.36,1), background-color 180ms cubic-bezier(0.22,1,0.36,1); } .ds-btn-secondary:hover { background-color: color-mix(in srgb, #4c6ef5 12%, transparent); border-color: #4c6ef5; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, #4c6ef5 24%, transparent); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The resting surface: deep blue-night, flat, 2px cobalt top edge, 1px periwinkle hairline, inset dawn glow. Never a drop shadow.",
+      "html": "<section class=\"ds-panel\"><span class=\"ds-panel-tick\" aria-hidden=\"true\"></span><h2 class=\"ds-panel-title\">Compte rendu</h2><p class=\"ds-panel-body\">Remplacement du robinet d'arret sous evier suite a une fuite constatee.</p></section>",
+      "css": ".ds-panel { position: relative; border: 1px solid rgb(124 144 226 / 0.22); border-top: 2px solid #4c6ef5; border-radius: 1.5rem; padding: 1rem; background-color: #0c1024; background-image: none; color: #eef1fa; box-shadow: inset 0 10px 30px -18px color-mix(in srgb, #4c6ef5 40%, transparent), 0 1px 0 0 color-mix(in srgb, #4c6ef5 22%, transparent); } @media (min-width: 640px) { .ds-panel { padding: 1.5rem; } } .ds-panel-tick { display: block; height: 3px; width: 2.25rem; border-radius: 9999px; background: #4c6ef5; } .ds-panel-title { margin: 0.75rem 0 0; font-family: Anton, 'Arial Narrow', system-ui, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: 0.005em; line-height: 1.03; font-size: 1.75rem; color: #93a8ff; } .ds-panel-body { margin: 0.5rem 0 0; font-family: Geist, system-ui, sans-serif; font-size: 1rem; line-height: 1.5; color: #b3bcd8; } a.ds-panel:hover, button.ds-panel:hover { border-color: color-mix(in srgb, #4c6ef5 40%, rgb(124 144 226 / 0.22)); border-top-color: #4c6ef5; box-shadow: inset 0 12px 34px -18px color-mix(in srgb, #4c6ef5 52%, transparent), 0 1px 0 0 color-mix(in srgb, #4c6ef5 30%, transparent); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Raised panel fill, periwinkle hairline, cobalt caret; focus is a crisp cobalt ring plus a cobalt border, not a glow.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"14 rue des Lilas, Lyon\" />",
+      "css": ".ds-input { width: 100%; border: 1px solid rgb(124 144 226 / 0.42); border-radius: 1rem; padding: 0.75rem 1rem; background-color: #121838; color: #eef1fa; caret-color: #4c6ef5; font-family: Geist, system-ui, sans-serif; font-size: 1rem; box-shadow: none; transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease; } .ds-input::placeholder { color: #8b95bd; } .ds-input:focus { outline: none; border-color: #4c6ef5; box-shadow: 0 0 0 3px color-mix(in srgb, #4c6ef5 24%, transparent); } @media (max-width: 480px) { .ds-input { font-size: 16px; } }"
+    },
+    {
+      "name": "Day Rail Chip",
+      "kind": "custom",
+      "refersTo": "rail-chip",
+      "description": "One intervention resting on the horizon line. Upcoming = sober; done = dimmed behind the line (opacity 0.46); in progress = rose top edge, scaled up.",
+      "html": "<div class=\"ds-rail\"><button class=\"ds-rail-chip\"><span class=\"ds-rail-when\">Aujourd'hui</span><span class=\"ds-rail-time\">08:30</span><span class=\"ds-rail-subject\">Dupont &mdash; chaudiere</span><span class=\"ds-pill ds-pill-done\">Terminee</span></button><button class=\"ds-rail-chip\" data-selected=\"true\"><span class=\"ds-rail-when\">Aujourd'hui</span><span class=\"ds-rail-time\">10:00</span><span class=\"ds-rail-subject\">Charles Xavier</span><span class=\"ds-pill ds-pill-progress\">En cours</span></button></div>",
+      "css": ".ds-rail { display: flex; align-items: stretch; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; border-bottom: 1px solid color-mix(in srgb, #4c6ef5 32%, rgb(124 144 226 / 0.22)); -webkit-mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%); mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%); } .ds-rail-chip { display: flex; flex-direction: column; gap: 0.125rem; min-width: 7rem; flex-shrink: 0; text-align: left; border: 1px solid rgb(124 144 226 / 0.22); border-top: 2px solid color-mix(in srgb, #4c6ef5 40%, rgb(124 144 226 / 0.22)); border-radius: 1rem; padding: 0.5rem 0.75rem; background-color: color-mix(in srgb, #0c1024 72%, transparent); color: #b3bcd8; transition: transform 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms ease, opacity 180ms ease; } .ds-rail-chip:hover { border-top-color: #4c6ef5; } .ds-rail-chip[data-state=\"completed\"], .ds-rail-chip[data-state=\"cancelled\"] { opacity: 0.46; border-top-color: rgb(124 144 226 / 0.22); } .ds-rail-chip[data-selected=\"true\"] { opacity: 1; border-color: color-mix(in srgb, #ff7db0 55%, rgb(124 144 226 / 0.22)); border-top: 2px solid #ff7db0; background-color: color-mix(in srgb, #4c6ef5 12%, #0c1024); transform-origin: bottom center; transform: scale(1.04); } .ds-rail-when { font-size: 0.75rem; font-weight: 500; text-transform: capitalize; color: #8b95bd; } .ds-rail-time { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; font-size: 0.875rem; font-weight: 600; color: #eef1fa; } .ds-rail-subject { font-size: 0.8125rem; font-weight: 500; color: #b3bcd8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Never grey. The status is one of five world colours, each as a ~16% wash under saturated text with a currentColor hairline.",
+      "html": "<span class=\"ds-pill ds-pill-done\">Terminee</span> <span class=\"ds-pill ds-pill-progress\">En cours</span> <span class=\"ds-pill ds-pill-info\">A faire</span> <span class=\"ds-pill ds-pill-warn\">Reportee</span> <span class=\"ds-pill ds-pill-error\">Annulee</span>",
+      "css": ".ds-pill { display: inline-flex; align-items: center; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); border-radius: 9999px; padding: 0.125rem 0.5rem; font-family: Geist, system-ui, sans-serif; font-size: 0.7rem; font-weight: 600; } .ds-pill-done { color: #34d9a6; background-color: color-mix(in srgb, #34d9a6 16%, transparent); } .ds-pill-progress { color: color-mix(in srgb, #ff7db0 78%, #eef1fa); background-color: color-mix(in srgb, #ff7db0 18%, transparent); } .ds-pill-info { color: #93a8ff; background-color: color-mix(in srgb, #4c6ef5 15%, transparent); } .ds-pill-warn { color: #f0b24a; background-color: color-mix(in srgb, #f0b24a 16%, transparent); } .ds-pill-error { color: #ff7a4d; background-color: color-mix(in srgb, #ff7a4d 14%, transparent); }"
+    },
+    {
+      "name": "Bottom Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Item in the portalled bottom capsule: uppercase micro-label under a Lucide icon; active gets Ink text, a cobalt icon, and a short cobalt-to-rose underline seam.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-navlink\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10.5 12 3l9 7.5\"/><path d=\"M5 9.5V21h14V9.5\"/></svg><span>Accueil</span></a><a class=\"ds-navlink\" href=\"#\" data-active=\"true\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3\"/><path d=\"M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6\"/><circle cx=\"17\" cy=\"9\" r=\"2.4\"/></svg><span>Clients</span></a></nav>",
+      "css": ".ds-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; max-width: 28rem; border: 1px solid rgb(76 110 245 / 0.34); border-radius: 1.75rem; padding: 0.375rem; background-color: rgb(18 22 52 / 0.92); backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 0 rgb(76 110 245 / 0.4), 0 24px 60px -30px rgb(3 6 20 / 0.85); } .ds-navlink { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; min-height: 3.5rem; padding: 0 0.25rem; border-radius: 1rem; color: #7f89ad; font-family: Geist, system-ui, sans-serif; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; text-decoration: none; transition: color 200ms ease; } .ds-navlink:hover { color: #c7cef0; } .ds-navlink[data-active=\"true\"] { color: #eef1fa; } .ds-navlink[data-active=\"true\"] svg { color: #93a8ff; } .ds-navlink[data-active=\"true\"]::after { content: \"\"; position: absolute; left: 28%; right: 28%; bottom: 0.35rem; height: 2px; border-radius: 9999px; background: linear-gradient(90deg, #4c6ef5, #ff6fa5); }"
+    },
+    {
+      "name": "Forge Bar",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The always-present assistant input, portalled and fixed above the nav: borderless field with a rotating placeholder, cobalt ghost camera/mic circles, and a cobalt-to-rose gradient send circle. Deep-indigo, hardcoded in both themes.",
+      "html": "<div class=\"ds-forgebar\"><input class=\"ds-forgebar-input\" type=\"text\" placeholder=\"Dites ce que vous avez fait…\" aria-label=\"Écrire à Forge\" /><button class=\"ds-forgebar-ghost\" aria-label=\"Ajouter des photos\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 8h3l2-2h6l2 2h3v11H4z\"/><circle cx=\"12\" cy=\"13\" r=\"3.2\"/></svg></button><button class=\"ds-forgebar-ghost\" aria-label=\"Parler à Forge\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M6 11a6 6 0 0 0 12 0M12 17v4\"/></svg></button><button class=\"ds-forgebar-send\" aria-label=\"Envoyer à Forge\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m3 11 18-8-8 18-2-8z\"/></svg></button></div>",
+      "css": ".ds-forgebar { display: flex; align-items: center; gap: 0.75rem; height: 5rem; max-width: 32rem; padding: 0 1.25rem; border: 1px solid rgb(76 110 245 / 0.38); border-radius: 1.5rem; background-color: rgb(18 22 52 / 0.9); backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 0 rgb(76 110 245 / 0.5), 0 -16px 50px -26px rgb(76 110 245 / 0.35), 0 26px 70px -30px rgb(3 6 20 / 0.85); } .ds-forgebar-input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: #eef1fa; caret-color: #4c6ef5; font-family: Geist, system-ui, sans-serif; font-size: 1.125rem; } .ds-forgebar-input::placeholder { color: #7f89ad; } .ds-forgebar-ghost { display: inline-flex; align-items: center; justify-content: center; height: 3rem; width: 3rem; flex-shrink: 0; border: 1px solid rgb(76 110 245 / 0.5); border-radius: 9999px; background: transparent; color: #93a8ff; transition: background-color 180ms cubic-bezier(0.22,1,0.36,1), transform 180ms cubic-bezier(0.22,1,0.36,1); } .ds-forgebar-ghost:hover { background: rgb(76 110 245 / 0.12); transform: translateY(-2px); } .ds-forgebar-send { display: inline-flex; align-items: center; justify-content: center; height: 3rem; width: 3rem; flex-shrink: 0; border: 0; border-radius: 9999px; color: #fff; background-image: linear-gradient(90deg, #93a8ff 0%, #4c6ef5 42%, #ff6fa5 100%); box-shadow: 0 12px 28px -12px rgb(76 110 245 / 0.7); transition: transform 180ms cubic-bezier(0.22,1,0.36,1); } .ds-forgebar-send:hover { transform: translateY(-2px); } .ds-forgebar-send:disabled { background-image: none; background-color: #1c2653; color: #8b95bd; box-shadow: none; cursor: not-allowed; }"
+    },
+    {
+      "name": "Horizon & Sky",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The world backdrop: a fixed night-to-cobalt-to-dawn vertical gradient with fine grain, and one 2px cobalt horizon rule with a soft glow that rises in once on load. Position tracks the hour via --horizon-y (60vh nuit to 30vh jour).",
+      "html": "<div class=\"ds-cyclorama\"><div class=\"ds-sky\" aria-hidden=\"true\"></div><div class=\"ds-horizon\" aria-hidden=\"true\"></div><div class=\"ds-cyclorama-content\">…page…</div></div>",
+      "css": ".ds-cyclorama { --horizon-y: 40vh; --sky-top: #04050a; --sky-mid: #13214f; --sky-horizon: #1b2d69; --sky-low: #06070f; position: relative; isolation: isolate; min-height: 100dvh; overflow-x: clip; color: #eef1fa; background: #06070f; font-feature-settings: \"cv05\", \"ss01\"; } .ds-sky { position: fixed; inset: 0; z-index: -2; pointer-events: none; background-image: radial-gradient(140vw 52vh at 50% var(--horizon-y), color-mix(in srgb, var(--sky-horizon) 92%, transparent) 0%, transparent 62%), linear-gradient(180deg, var(--sky-top) 0%, var(--sky-top) calc(var(--horizon-y) - 30vh), var(--sky-mid) calc(var(--horizon-y) - 9vh), var(--sky-horizon) var(--horizon-y), var(--sky-mid) calc(var(--horizon-y) + 7vh), var(--sky-low) calc(var(--horizon-y) + 24vh), var(--sky-low) 100%); } .ds-horizon { position: fixed; left: 0; right: 0; top: var(--horizon-y); z-index: -1; height: 2px; pointer-events: none; opacity: 0.95; background: linear-gradient(90deg, transparent 0%, #4c6ef5 7%, #4c6ef5 93%, transparent 100%); box-shadow: 0 0 1px 0 #4c6ef5, 0 0 34px 2px color-mix(in srgb, #4c6ef5 42%, transparent), 0 26px 70px 0 color-mix(in srgb, var(--sky-horizon) 42%, transparent); animation: ds-horizon-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both; } @keyframes ds-horizon-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 0.9; transform: none; } } .ds-cyclorama-content > * { animation: ds-lever 460ms cubic-bezier(0.16, 1, 0.3, 1) both; } .ds-cyclorama-content > :nth-child(2) { animation-delay: 60ms; } .ds-cyclorama-content > :nth-child(3) { animation-delay: 120ms; } .ds-cyclorama-content > :nth-child(4) { animation-delay: 180ms; } .ds-cyclorama-content > :nth-child(n + 5) { animation-delay: 240ms; } @keyframes ds-lever { from { opacity: 0; transform: translateY(8px); filter: brightness(0.82) saturate(0.85); } to { opacity: 1; transform: none; filter: none; } } @media (prefers-reduced-motion: reduce) { .ds-horizon, .ds-cyclorama-content > * { animation: none !important; transform: none !important; filter: none !important; opacity: 1 !important; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cyclorama at Dawn",
+    "overview": "The authenticated Forge app is a matte theatre cyclorama lit from night toward day. The background is one continuous vertical gradient - near-black sky at the top, a cobalt band where the light gathers, cold dawn below - and it tracks the real hour of day (nuit / aube / jour / crepuscule). A single cobalt horizon rule crosses the full width and is the only structural division in the entire world. The artisan reads the working day along that line: behind it the finished work sits dim, on the line the in-progress job is lit, ahead toward the light is what is still to come.\n\nThe world is dark-first (the theme provider ships dark by default and does not follow the OS); a complete light rendition - periwinkle sky, warm dawn seam, white panels - is carried by the same token names and appears only when a member has explicitly chosen light. The personality is calm, spatial and a little cinematic: deep blue-night surfaces that sit flat on the sky rather than floating, hairline structure, condensed all-caps display type cut by a short cobalt tick, and one decisive gradient action. It deliberately rejects the SaaS dashboard: no grid of tinted cards, no side rail, no stat tiles, no blue accent halo.\n\nThis system covers the app shell, the /app home dashboard, and the CSS world layer (.forge-app-shell) that re-skins every authenticated screen by re-mapping the older utility classes underneath it. Deeper screens inherit the layer and were not individually rebuilt. The /admin back-office is a separate, older, untouched system and is out of scope here.",
+    "keyCharacteristics": [
+      "One hour-tracking cyclorama gradient behind everything; one cobalt horizon rule as the only divider.",
+      "Deep blue-night panels, flat, with a 2px cobalt top edge and a 1px periwinkle hairline - never a drop shadow.",
+      "Anton uppercase display over a short cobalt tick; Geist body; Geist Mono tabular for every time, amount and reference.",
+      "Cobalt is structure and the active line; rose is arrival / attention; jade is done.",
+      "Primary action is the only cobalt-to-rose gradient in the UI, uppercase, and the only content element allowed a cast shadow.",
+      "Motion happens once on entry (horizon rises, content lifts toward the light) and again on state change (a local cobalt seam sweeps); full prefers-reduced-motion fallback."
+    ],
+    "rules": [
+      { "name": "The Single Horizon Rule", "body": "Exactly one full-width cobalt rule divides the world, and it is fixed to the viewport behind the content. No other full-width dividers, no boxed sections, no ruled tables. Everything else is separated by space alone.", "section": "colors" },
+      { "name": "The World-Colour Status Rule", "body": "A status is never grey. It is jade (done), rose (in progress / waiting on you), cobalt (informational), amber (postponed), or ember (cancelled / error). Grey status chips from the older code are re-mapped to muted ink on sight.", "section": "colors" },
+      { "name": "The No Second Accent Rule", "body": "The signal axis is cobalt to dawn-rose and nothing else. No third accent, no blue glow halo, and no violet midpoint between cobalt and rose - the gradient passes through lit cobalt, not purple.", "section": "colors" },
+      { "name": "The Anton Caps Rule", "body": "Display copy - page and panel headings, section eyebrows - is Anton uppercase and is introduced by a short cobalt tick (a rounded-full bar ~36x3px above a heading, ~24x2px before an eyebrow). Titles and body stay Geist; numerals stay Geist Mono. Nothing else is set in Anton.", "section": "typography" },
+      { "name": "The Tabular Numerals Rule", "body": "Any hour, euro amount or reference renders in Geist Mono with font-variant-numeric: tabular-nums so columns of figures stay aligned.", "section": "typography" },
+      { "name": "The One Column Rule", "body": "Content is a single centred column on the cyclorama. No side rail, no multi-column card grid, no stat-tile row - the day rail is the only horizontal structure, and it scrolls.", "section": "layout" },
+      { "name": "The No-Float Rule", "body": "In-page surfaces never sit on a drop shadow. If a panel needs to feel raised, it gets a stronger cobalt top edge and inset glow - the light is above it, nothing is under it.", "section": "elevation" },
+      { "name": "The One Cast Shadow Rule", "body": "The cobalt daybreak cast belongs to the primary action and nothing else. Secondary buttons, panels, chips and inputs have no box-shadow beyond an inset.", "section": "elevation" },
+      { "name": "The Cobalt Top Edge Rule", "body": "A resting panel or rail chip carries a 2px cobalt border-top and a 1px periwinkle hairline on its other three sides. On a clickable panel the top edge brightens to full cobalt on hover; on the in-progress rail chip it turns rose.", "section": "shapes" },
+      { "name": "The Rail Reads Left-to-Right Rule", "body": "The day rail runs earliest to latest. Finished work is dim behind the line (opacity 0.46), the in-progress job is lit rose and scaled up, upcoming work is sober with a half cobalt edge. Selecting a chip re-lights it and re-sweeps the content seam.", "section": "components" },
+      { "name": "The Horizon Rises Once Rule", "body": "Entrance motion is the horizon lifting and content rising toward the light - once. There is no idle loop, no parallax, no ambient drift. Under prefers-reduced-motion all of it collapses to opacity only and the seam is held at zero.", "section": "components" }
+    ],
+    "dos": [
+      "Do lead every screen with an Anton-caps heading over a short cobalt tick; keep titles and body in Geist and all figures in Geist Mono tabular-nums.",
+      "Do give panels the 2px cobalt top edge, a 1px periwinkle hairline, and a flat body - inset glow only, no projected shadow.",
+      "Do carry status in a world colour - jade done, rose in progress / waiting on you, cobalt informational, amber postponed, ember cancelled or error.",
+      "Do make the primary action the cobalt-to-rose gradient bar in uppercase, and let it be the only gradient and the only content element with a cast shadow.",
+      "Do keep one full-width cobalt horizon rule as the sole divider; separate everything else with space.",
+      "Do animate only on entry (horizon rise + staggered content lift) and on state change (local cobalt seam sweep), and ship the opacity-only prefers-reduced-motion path.",
+      "Do respect env(safe-area-inset-bottom) on every bottom-anchored element and hold form inputs at 16px on small screens."
+    ],
+    "donts": [
+      "Don't float content on drop shadows or lay cards on a tinted grid of tiles - this world has no dashboard cards.",
+      "Don't add a second accent, a blue glow halo, or a violet midpoint between cobalt and rose.",
+      "Don't use a neutral grey for a status.",
+      "Don't introduce extra full-width rules, a side rail, or stat tiles.",
+      "Don't set display copy in anything but Anton uppercase, or numerals in a proportional face.",
+      "Don't add idle or looping motion, parallax, or scroll effects - the horizon rises once.",
+      "Don't rely on the bottom-chrome indigo reacting to the theme; it is fixed dusk furniture, not a token."
+    ],
+    "notCanonized": "Four shipped details are recorded but NOT house rules: (1) body { font-family: Arial, Helvetica, sans-serif } in globals.css is a pre-existing FOUT fallback, not the design face (Anton display / Geist body) - already a suppressed detector finding; (2) the forge-seam-sweep element's zero-offset box-shadow (0 0 16px 0 cobalt) is tolerated only as the transient dawn seam that animates to opacity 0 at rest - not a licence for zero-offset glows anywhere else; (3) the dawn band currently renders broad, with panels sitting inside the lit zone rather than a tight seam over a dark sky - a standing ceiling item, not a rule; (4) the portalled chrome (.forge-navbar, .forge-bar) is hardcoded deep-indigo in both themes - recorded as the 'dusk furniture' intent but flagged as a fixed value, not theme-reactive."
+  }
+}

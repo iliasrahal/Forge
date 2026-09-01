@@ -1,0 +1,33 @@
+{
+  "buildPath": "code",
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "arial",
+        "createdAt": "2026-08-31T22:33:04.121Z",
+        "reason": "pre-existing body FOUT fallback stack in globals.css (Arial, Helvetica, sans-serif), preserved verbatim from incumbent code; design display face is Anton via next/font, body is Geist; Arial never renders on a working page"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#fff",
+        "createdAt": "2026-09-01T07:03:16.313Z",
+        "reason": "documenter curation: plain white in gradients/masks/SVG fills, not a palette color; Cyclorama system records no white token"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "#000",
+        "createdAt": "2026-09-01T07:03:16.402Z",
+        "reason": "documenter curation: plain black in gradients/masks/SVG, not a palette color"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "arial",
+        "createdAt": "2026-09-01T07:03:16.463Z",
+        "reason": "pre-existing body FOUT fallback stack, preserved verbatim from incumbent code; design faces are Anton (display) + Geist (body) via next/font; Arial never renders on a working page"
+      }
+    ]
+  }
+}

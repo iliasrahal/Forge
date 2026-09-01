@@ -357,12 +357,12 @@ const newInterventionExists =
     isSelected: boolean,
   ) => {
     if (isSelected) {
-      return "bg-blue-100 text-blue-700";
+      return "bg-rose-100 text-rose-700";
     }
 
     switch (status) {
       case "inProgress":
-        return "bg-blue-100 text-blue-700";
+        return "bg-rose-100 text-rose-700";
 
       case "completed":
         return "bg-green-100 text-green-700";
@@ -1145,7 +1145,7 @@ const handleCreateInvoice = async () => {
 
   return (
     <main
-      className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible bg-white px-3 pb-4 text-slate-950 dark:bg-slate-950 dark:text-white sm:px-6 ${
+      className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible px-3 pb-4 sm:px-6 ${
         showGreeting
           ? "pt-8 sm:pt-12"
           : showUpcomingCalendar
@@ -1167,9 +1167,14 @@ const handleCreateInvoice = async () => {
 
       <section className="mb-3 min-w-0 shrink-0">
 
+        <p className="mb-2 flex items-center gap-2 font-[family-name:var(--font-display)] text-xs uppercase tracking-[0.14em] text-[var(--ink-2)]">
+          <span aria-hidden="true" className="h-[2px] w-6 rounded-full bg-[#4c6ef5]" />
+          Rail du jour
+        </p>
+
         <div
           ref={appointmentsContainerRef}
-          className="flex w-full gap-2 overflow-x-auto pb-1"
+          className="forge-rail-scroll flex w-full items-stretch gap-2 overflow-x-auto pb-1"
         >
 
           {appointmentsList.map((appointment) => {
@@ -1183,26 +1188,24 @@ const handleCreateInvoice = async () => {
                 id={`appointment-${appointment.id}`}
                 key={appointment.id}
                 type="button"
+                data-selected={isSelected ? "true" : undefined}
+                data-state={appointment.status}
                 onClick={() =>
                   handleSelectAppointment(
                     appointment.id,
                   )
                 }
-                className={`min-w-28 shrink-0 rounded-2xl border px-3 py-2 text-left transition ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                    : "border-slate-200 bg-white text-slate-900 hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
-                }`}
+                className="forge-rail-chip min-w-28 shrink-0 rounded-2xl border px-3 py-2 text-left transition"
               >
 
-                <span className="block text-xs font-medium capitalize text-slate-500 dark:text-slate-400">
+                <span className="block text-xs font-medium capitalize text-[var(--ink-3)]">
                   {getAppointmentDateLabel(
                     appointment.date,
                   )}
                 </span>
 
                 {appointment.time && (
-                  <span className="mt-0.5 block text-sm font-semibold">
+                  <span className="forge-num mt-0.5 block text-sm font-semibold text-[var(--ink)]">
                     {appointment.time}
                   </span>
                 )}
@@ -1210,7 +1213,7 @@ const handleCreateInvoice = async () => {
                 {(getAppointmentSubject(
                   appointment,
                 ) || appointment.client) && (
-                  <span className="mt-0.5 block truncate text-xs font-medium sm:text-sm">
+                  <span className="mt-0.5 block truncate text-xs font-medium text-[var(--ink-2)] sm:text-sm">
                     {getAppointmentSubject(
                       appointment,
                     ) || appointment.client}

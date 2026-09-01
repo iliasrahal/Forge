@@ -1,0 +1,7 @@
+# Impeccable — fichiers locaux / transitoires (pas de partage d'equipe)
+config.local.json
+hook.cache.json
+questions/
+review/
+mocks/
+live/
