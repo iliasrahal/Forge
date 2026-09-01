@@ -44,7 +44,7 @@ export default function AppShell({
         className={
           hideNavigation
             ? "forge-public-shell min-h-screen bg-white text-slate-950 dark:bg-slate-950 dark:text-white"
-            : "forge-app-shell min-h-dvh pb-[calc(7.5rem+env(safe-area-inset-bottom))] text-slate-950 dark:text-white"
+            : "forge-app-shell min-h-dvh pb-[calc(7.5rem+env(safe-area-inset-bottom))]"
         }
       >
         {children}
@@ -57,27 +57,7 @@ export default function AppShell({
         <div className="fixed inset-x-0 bottom-0 z-50 isolate px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]">
 
 
-          <div
-            className="
-              mx-auto
-              w-full
-              max-w-md
-              rounded-[1.75rem]
-              border
-border-slate-200/70
-bg-white/95
-px-1.5
-py-1.5
-shadow-[0_8px_20px_-10px_rgba(15,23,42,0.15),0_28px_50px_-24px_rgba(76,110,245,0.4)]
-backdrop-blur-xl
-dark:border-slate-700/70
-dark:bg-slate-900/90
-dark:shadow-[0_8px_20px_-10px_rgba(0,0,0,0.5),0_28px_55px_-24px_rgba(0,0,0,0.7)]
-sm:px-5
-sm:py-3
-
-            "
-          >
+          <div className="forge-navbar mx-auto w-full max-w-md rounded-[1.75rem] border px-1.5 py-1.5 backdrop-blur-xl sm:px-2 sm:py-2">
 
             <BottomNavigation />
 

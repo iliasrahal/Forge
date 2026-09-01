@@ -23,6 +23,7 @@ html {
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
 
@@ -73,20 +74,148 @@ html.dark body {
 }
 
 /* ================================================================== */
-/* Identité de l'application connectée — vive, moderne, "produit".      */
-/* Aligne l'app authentifiée sur la landing : fond lumineux, halo bleu  */
-/* de marque, grille fine, cartes qui respirent.                        */
+/* CYCLORAMA — l'app connectee est un horizon.                          */
+/* La journee de travail est un passage de lumiere : nuit -> cobalt ->  */
+/* aube -> jour. Le travail se pose sur la ligne. Une seule regle       */
+/* d'horizon cobalt assure chaque division. Pas de cartes flottantes,   */
+/* pas de halo d'accent, pas de grille de tuiles.                       */
+/* Seed d344fe32 · challenger « Cyclorama dawn ».                       */
 /* ================================================================== */
 
 /* Identité premium commune à toute l'application authentifiée. */
 
 .forge-app-shell {
-  --forge-brand: #4c6ef5;
+  /* Rendition JOUR (theme clair) : ciel de periwinkle, aube chaude a la couture. */
+  --sky-top: #94a9e7;
+  --sky-horizon: #ffc6da;
+  --sky-low: #d6ddf3;
+  --panel: #ffffff;
+  --panel-2: #eef1fc;
+  --ink: #0a1230;
+  --ink-2: #363f6d;
+  --ink-3: #4a5486;
+  --line: rgb(28 40 100 / 0.16);
+  --line-strong: rgb(28 40 100 / 0.30);
+  --sky-mid: #aabdf1;
+  --cobalt: #4c6ef5;
+  --cobalt-lit: #3346c4;
+  --cobalt-deep: #24308f;
+  --rose: #ff5f9e;
+  --jade: #0f9d8f;
+  --ember: #e8590c;
+  --amber: #c67c12;
+  --horizon-y: 40vh;
+  --panel-lift: 0;
+
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
   overflow-x: clip;
-  background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
+  color: var(--ink);
+  background: var(--sky-low);
+  font-feature-settings: "cv05", "ss01";
+}
+
+.dark .forge-app-shell {
+  /* Rendition NUIT : cyclo noir, bande d'horizon cobalt, aube froide. */
+  --sky-top: #04050a;
+  --sky-horizon: #1b2d69;
+  --sky-low: #06070f;
+  --panel: #0c1024;
+  --panel-2: #121838;
+  --sky-mid: #13214f;
+  --ink: #eef1fa;
+  --ink-2: #b3bcd8;
+  --ink-3: #8b95bd;
+  --line: rgb(124 144 226 / 0.22);
+  --line-strong: rgb(124 144 226 / 0.42);
+  --cobalt: #4c6ef5;
+  --cobalt-lit: #93a8ff;
+  --cobalt-deep: #1a246e;
+  --rose: #ff7db0;
+  --jade: #34d9a6;
+  --ember: #ff7a4d;
+  --amber: #f0b24a;
+  color: var(--ink);
+  background: var(--sky-low);
+}
+
+/* L'heure du ciel : la couture d'horizon monte quand le jour se leve.
+   data-daypart et .dark vivent tous deux sur <html> : selecteurs composes. */
+:root[data-daypart="nuit"] .forge-app-shell { --horizon-y: 60vh; }
+:root[data-daypart="aube"] .forge-app-shell { --horizon-y: 44vh; }
+:root[data-daypart="jour"] .forge-app-shell { --horizon-y: 30vh; }
+:root[data-daypart="crepuscule"] .forge-app-shell { --horizon-y: 48vh; }
+
+/* Rendition claire : la couture chauffe selon l'heure. */
+:root[data-daypart="jour"] .forge-app-shell { --sky-horizon: #ffd9e6; }
+:root[data-daypart="crepuscule"] .forge-app-shell { --sky-horizon: #ff9dc0; }
+
+/* Rendition nuit : le ciel reste sombre, la couture est une braise etroite,
+   sur l'axe cobalt -> rose du monde (jamais violette). */
+:root[data-daypart="aube"].dark .forge-app-shell { --sky-horizon: #2b46b8; }
+:root[data-daypart="jour"].dark .forge-app-shell { --sky-horizon: #3f5fe0; }
+:root[data-daypart="crepuscule"].dark .forge-app-shell { --sky-horizon: #b5527a; }
+
+/* Le ciel : fixe au viewport, derriere tout le contenu de la coque.
+   Degrade nuit->cobalt->aube + grain fin (la matiere du cyclo). */
+.forge-app-shell::before {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  content: "";
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(
+      140vw 52vh at 50% var(--horizon-y),
+      color-mix(in srgb, var(--sky-horizon) 92%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      var(--sky-top) 0%,
+      var(--sky-top) calc(var(--horizon-y) - 30vh),
+      var(--sky-mid) calc(var(--horizon-y) - 9vh),
+      var(--sky-horizon) var(--horizon-y),
+      var(--sky-mid) calc(var(--horizon-y) + 7vh),
+      var(--sky-low) calc(var(--horizon-y) + 24vh),
+      var(--sky-low) 100%
+    );
+  background-size: 160px 160px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-blend-mode: overlay, normal, normal;
+}
+
+/* La regle d'horizon : la seule division structurante du monde.
+   Un trait de cobalt, sa lueur d'aube, cale au viewport. */
+.forge-app-shell::after {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--horizon-y);
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--cobalt) 7%,
+    var(--cobalt) 93%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 1px 0 var(--cobalt),
+    0 0 34px 2px color-mix(in srgb, var(--cobalt) 42%, transparent),
+    0 26px 70px 0 color-mix(in srgb, var(--sky-horizon) 42%, transparent);
+  opacity: 0.95;
+  animation: forge-horizon-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes forge-horizon-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 0.9; transform: none; }
 }
 
 .forge-app-shell main {
@@ -104,46 +233,113 @@ html.dark body {
   min-width: 0;
 }
 
-/* Halo de marque + grille fine, fixés au viewport (comme le hero). */
-.forge-app-shell::before {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  content: "";
-  background-image:
-    radial-gradient(60rem 32rem at 50% -14%, rgb(76 110 245 / 0.16), transparent 66%),
-    radial-gradient(44rem 32rem at 114% -6%, rgb(129 140 248 / 0.13), transparent 58%),
-    radial-gradient(40rem 30rem at -12% 4%, rgb(99 102 241 / 0.09), transparent 60%),
-    linear-gradient(to right, rgb(226 232 240 / 0.65) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(226 232 240 / 0.65) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px;
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
-  mask-image: linear-gradient(to bottom, black 38%, transparent 92%);
-  -webkit-mask-image: linear-gradient(to bottom, black 38%, transparent 92%);
+/* Affichage : Anton capitales — la lettre du logo Forge. */
+.forge-app-shell :is(h1, h2) {
+  font-family: var(--font-display), "Arial Narrow", system-ui, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 1.03;
+  color: var(--ink);
 }
 
-.dark .forge-app-shell {
-  background: linear-gradient(180deg, #0b1120 0%, #0a0f1c 100%);
+.forge-app-shell :is(h3, h4) {
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
-.dark .forge-app-shell::before {
-  background-image:
-    radial-gradient(60rem 32rem at 50% -14%, rgb(37 99 235 / 0.26), transparent 66%),
-    radial-gradient(44rem 32rem at 114% -6%, rgb(79 70 229 / 0.2), transparent 58%),
-    radial-gradient(40rem 30rem at -12% 4%, rgb(79 70 229 / 0.16), transparent 60%),
-    linear-gradient(to right, rgb(51 65 85 / 0.4) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(51 65 85 / 0.4) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 72px 72px, 72px 72px;
-  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
+.forge-app-shell p {
+  color: var(--ink-2);
 }
 
-.forge-app-shell :is(h1, h2, h3) {
-  letter-spacing: -0.03em;
+/* Chiffres : Geist Mono tabulaire — heures, montants, references. */
+.forge-app-shell :is(time, [class*="tabular"], .forge-num) {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
+/* ================================================================== */
+/* Couverture large : l'ancien vocabulaire slate/blue de toute l'app   */
+/* authentifiee (clients, devis, factures, reglages, historique...)    */
+/* ramene dans le monde Cyclorama sans toucher au JSX.                 */
+/* ================================================================== */
+
+/* Encre : plus de gris froid, l'encre du monde (teintee), qui suit le theme. */
+.forge-app-shell [class*="text-slate-9"],
+.forge-app-shell [class*="text-slate-8"] { color: var(--ink) !important; }
+.forge-app-shell [class*="text-slate-7"],
+.forge-app-shell [class*="text-slate-6"] { color: var(--ink-2) !important; }
+.forge-app-shell [class*="text-slate-5"],
+.forge-app-shell [class*="text-slate-4"],
+.forge-app-shell [class*="text-slate-3"] { color: var(--ink-3) !important; }
+
+/* Bleus de texte : cobalt, sur tous les elements. */
+.forge-app-shell [class*="text-blue-"] { color: var(--cobalt-lit) !important; }
+
+/* Filets : slate -> le file du monde (bordures + separateurs de liste). */
+.forge-app-shell [class*="border-slate-1"],
+.forge-app-shell [class*="border-slate-2"],
+.forge-app-shell [class*="border-slate-3"],
+.forge-app-shell [class*="border-slate-7"],
+.forge-app-shell [class*="border-slate-8"],
+.forge-app-shell [class*="divide-slate-"] > * { border-color: var(--line) !important; }
+
+/* Fonds : sections claires ramenees, panneaux sombres ramenes. */
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-50"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-100"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, ul, ol, li, dl, nav, label)[class*="bg-slate-200"] {
+  background-color: color-mix(in srgb, var(--panel-2) 70%, transparent) !important;
+}
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-800"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-900"],
+.forge-app-shell :is(section, article, div, aside, header, footer, form, main, nav)[class*="bg-slate-950"] {
+  background-color: var(--panel) !important;
+}
+
+/* Verre decoratif : panneau franc, plus de flou de facade. */
+.forge-app-shell :is(section, article, div, form, a, header, nav)[class*="bg-white/"] {
+  background-color: var(--panel) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Ombres portees : le monde n'a pas de cartes qui levitent. */
+.forge-app-shell [class*="shadow-sm"],
+.forge-app-shell [class*="shadow-md"],
+.forge-app-shell [class*="shadow-lg"],
+.forge-app-shell [class*="shadow-xl"],
+.forge-app-shell [class*="shadow-2xl"],
+.forge-app-shell [class*="shadow-["] { box-shadow: none !important; }
+
+/* Panneaux sombres arrondis (bg-slate-800/900/950) : meme arete d'aube
+   que les panneaux clairs. */
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-xl"][class*="bg-slate-9"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-8"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-8"] {
+  position: relative;
+  border-color: var(--line) !important;
+  border-top: 2px solid var(--cobalt) !important;
+  background-color: var(--panel) !important;
+  box-shadow:
+    inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--cobalt) 22%, transparent) !important;
+}
+
+/* Gradients bleus decoratifs : neutralises (aucun degrade de facade). */
+.forge-app-shell :is(div, section, span, a)[class*="from-blue-"],
+.forge-app-shell :is(div, section, span, a)[class*="via-blue-"],
+.forge-app-shell :is(div, section, span, a)[class*="to-blue-"] {
+  background-image: none !important;
+  background-color: color-mix(in srgb, var(--cobalt) 12%, var(--panel)) !important;
+}
+
+/* Surfaces de la landing repeintes : le domaine "bg-white/slate-900". */
 .forge-app-shell ::selection {
-  background: rgb(76 110 245 / 0.22);
+  background: color-mix(in srgb, var(--cobalt) 34%, transparent);
+  color: var(--ink);
 }
 
 .forge-app-shell ::-webkit-scrollbar {
@@ -151,70 +347,64 @@ html.dark body {
   height: 10px;
 }
 
+.forge-app-shell ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .forge-app-shell ::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 9999px;
   background-clip: padding-box;
-  background-color: rgb(76 110 245 / 0.28);
+  background-color: color-mix(in srgb, var(--cobalt) 40%, transparent);
 }
 
 .forge-app-shell ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(76 110 245 / 0.5);
+  background-color: color-mix(in srgb, var(--cobalt) 68%, transparent);
 }
 
-/* Champs : blanc franc, anneau de focus couleur de marque. */
+/* Champs : panneau sombre, curseur et anneau de focus cobalt. */
 .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
-  border-color: rgb(203 213 225 / 0.9);
-  background-color: #ffffff;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  border-color: var(--line-strong);
+  background-color: var(--panel-2);
+  color: var(--ink);
+  caret-color: var(--cobalt);
+  box-shadow: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
 }
 
+.forge-app-shell :is(input, textarea, select)::placeholder {
+  color: var(--ink-3);
+}
+
 .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select):focus {
-  border-color: var(--forge-brand);
-  box-shadow: 0 0 0 4px rgb(76 110 245 / 0.16);
+  outline: none;
+  border-color: var(--cobalt);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cobalt) 24%, transparent);
 }
 
-.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select) {
-  border-color: rgb(51 65 85 / 0.9);
-  background-color: rgb(15 23 42 / 0.85);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
-}
-
-.dark .forge-app-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-transparent"]), textarea, select):focus {
-  border-color: var(--forge-brand);
-  box-shadow: 0 0 0 4px rgb(76 110 245 / 0.24);
-}
-
-/* Cartes : blanc franc, filet fin, ombre profonde légèrement bleutée
-   — la même respiration que les cartes de la landing. */
+/* Panneaux : poses sur la surface, pas flottants. Une arete d'aube en haut,
+   un file fin, aucune ombre portee — le monde n'a pas de cartes qui levitent. */
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
-.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"] {
-  border-color: rgb(226 232 240 / 0.9) !important;
-  background-color: #ffffff !important;
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"],
+.forge-app-shell :is(section, article, form, a, div)[class*="rounded-[2"][class*="bg-white"] {
+  position: relative;
+  border-color: var(--line) !important;
+  border-top: 2px solid var(--cobalt) !important;
+  background-color: var(--panel) !important;
+  background-image: none !important;
   box-shadow:
-    0 1px 2px rgb(15 23 42 / 0.04),
-    0 10px 24px -14px rgb(15 23 42 / 0.12),
-    0 34px 60px -42px rgb(76 110 245 / 0.32) !important;
+    inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--cobalt) 22%, transparent) !important;
 }
 
-.dark .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
-.dark .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"] {
-  border-color: rgb(51 65 85 / 0.7) !important;
-  background-color: rgb(15 23 42 / 0.92) !important;
+/* Panneaux cliquables : l'arete d'aube s'affirme au survol, sans halo. */
+.forge-app-shell :is(a, article, button)[class*="rounded-2xl"][class*="bg-white"]:hover,
+.forge-app-shell :is(a, article, button)[class*="rounded-3xl"][class*="bg-white"]:hover {
+  border-color: color-mix(in srgb, var(--cobalt) 40%, var(--line)) !important;
+  border-top-color: var(--cobalt) !important;
   box-shadow:
-    0 1px 2px rgb(0 0 0 / 0.4),
-    0 18px 44px -26px rgb(0 0 0 / 0.7) !important;
-}
-
-/* Cartes cliquables : léger décollage au survol. */
-.forge-app-shell :is(a, article)[class*="rounded-2xl"][class*="bg-white"]:hover,
-.forge-app-shell :is(a, article)[class*="rounded-3xl"][class*="bg-white"]:hover {
-  transform: translateY(-3px);
-  border-color: rgb(76 110 245 / 0.55) !important;
-  box-shadow:
-    0 1px 2px rgb(15 23 42 / 0.05),
-    0 20px 40px -20px rgb(76 110 245 / 0.42) !important;
+    inset 0 12px 34px -18px color-mix(in srgb, var(--cobalt) 52%, transparent),
+    0 1px 0 0 color-mix(in srgb, var(--cobalt) 30%, transparent) !important;
 }
 
 .forge-app-shell button,
@@ -223,38 +413,282 @@ html.dark body {
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Boutons primaires : halo bleu franc permanent, relief au survol. */
+/* Action primaire : barre degrade cobalt -> rose (le lever du jour), capitales. */
 .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled) {
-  box-shadow: 0 12px 26px -12px rgb(37 99 235 / 0.45);
+  background-color: var(--cobalt) !important;
+  background-image: linear-gradient(90deg, var(--cobalt-lit) 0%, var(--cobalt) 44%, var(--rose) 100%) !important;
+  color: #fff !important;
+  border: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 650;
+  /* Ne jamais couper un mot : retour a la ligne sur l'espace seulement. */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  text-wrap: balance;
+  box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--cobalt) 65%, transparent);
+}
+
+@media (max-width: 430px) {
+  .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled) {
+    letter-spacing: 0.005em;
+    font-size: 0.9rem;
+  }
 }
 
 .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 34px -12px rgb(37 99 235 / 0.6);
+  box-shadow: 0 20px 40px -14px color-mix(in srgb, var(--cobalt) 78%, transparent);
 }
 
-/* Voile de modale : sombre + léger flou. */
+/* Action secondaire : file cobalt, texte cobalt, fond nul. */
+.forge-app-shell :is(button, a)[class*="border-blue"]:not([class*="bg-blue-600"]) {
+  border-color: color-mix(in srgb, var(--cobalt) 70%, transparent) !important;
+  color: var(--cobalt-lit) !important;
+  background-color: transparent !important;
+}
+
+/* Liens et libelles bleus de l'ancienne identite. */
+.forge-app-shell :is(a, span, p, h1, h2, h3)[class*="text-blue-"] {
+  color: var(--cobalt-lit) !important;
+}
+
+/* Voile de modale : nuit dense + flou. */
 .forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-black"],
-.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-950"] {
-  backdrop-filter: blur(8px);
-  background-color: rgb(2 6 23 / 0.5) !important;
+.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-950"],
+.forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-900"] {
+  backdrop-filter: blur(10px) saturate(1.1);
+  background-color: color-mix(in srgb, #04050a 80%, transparent) !important;
 }
 
-/* Encarts info / succès / alerte. */
+/* Etats : le statut est une couleur du monde, jamais un gris. */
+.forge-app-shell :is(div, p, span)[class*="bg-green-50"],
+.forge-app-shell :is(div, p, span)[class*="bg-green-100"] {
+  background-color: color-mix(in srgb, var(--jade) 16%, transparent) !important;
+  color: var(--jade) !important;
+}
+.forge-app-shell :is(div, p, span)[class*="bg-blue-50"],
+.forge-app-shell :is(div, p, span)[class*="bg-blue-100"],
+.forge-app-shell :is(div, p, span)[class*="bg-blue-950"] {
+  background-color: color-mix(in srgb, var(--cobalt) 15%, transparent) !important;
+  color: var(--cobalt-lit) !important;
+}
+.forge-app-shell :is(div, p, span)[class*="bg-amber-50"],
+.forge-app-shell :is(div, p, span)[class*="bg-amber-100"] {
+  background-color: color-mix(in srgb, var(--amber) 16%, transparent) !important;
+  color: var(--amber) !important;
+}
+/* Rose = arrivee / en cours : l'etat qui vous attend. */
+.forge-app-shell :is(div, p, span)[class*="bg-rose-50"],
+.forge-app-shell :is(div, p, span)[class*="bg-rose-100"] {
+  background-color: color-mix(in srgb, var(--rose) 18%, transparent) !important;
+  color: color-mix(in srgb, var(--rose) 78%, var(--ink)) !important;
+}
+/* Gris de statut hors-monde : ramene vers l'encre du monde. */
+.forge-app-shell :is(div, p, span)[class*="bg-slate-100"][class*="text-slate-6"] {
+  background-color: color-mix(in srgb, var(--ink-3) 18%, transparent) !important;
+  color: var(--ink-2) !important;
+}
+.forge-app-shell :is(div, p, span)[class*="bg-red-50"],
+.forge-app-shell :is(div, p, span)[class*="bg-red-100"] {
+  background-color: color-mix(in srgb, var(--ember) 14%, transparent) !important;
+  color: var(--ember) !important;
+}
 .forge-app-shell :is(div, p)[class*="bg-red-50"],
 .forge-app-shell :is(div, p)[class*="bg-green-50"],
 .forge-app-shell :is(div, p)[class*="bg-blue-50"],
 .forge-app-shell :is(div, p)[class*="bg-amber-50"] {
-  box-shadow: 0 14px 34px -28px rgb(15 23 42 / 0.4);
+  border-color: color-mix(in srgb, currentColor 40%, transparent) !important;
 }
 
-/* Zones « à compléter » en pointillés. */
+/* Zones « a completer » : creux sous l'horizon. */
 .forge-app-shell [class*="border-dashed"] {
-  background-color: rgb(248 250 252 / 0.7);
+  background-color: color-mix(in srgb, var(--panel-2) 60%, transparent);
+  border-color: var(--line-strong);
 }
 
-.dark .forge-app-shell [class*="border-dashed"] {
-  background-color: rgb(15 23 42 / 0.5);
+/* Le rail defile sur la ligne : chaque intervention posee sur l'horizon,
+   fondu a droite pour dire « il y en a d'autres ». */
+.forge-rail-scroll {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--cobalt) 32%, var(--line));
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%);
+}
+
+/* A venir (defaut) : sobre, tourne vers la lumiere. */
+.forge-rail-chip {
+  border-color: var(--line);
+  border-top: 2px solid color-mix(in srgb, var(--cobalt) 40%, var(--line));
+  background-color: color-mix(in srgb, var(--panel) 72%, transparent);
+  color: var(--ink-2);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, opacity 180ms ease;
+}
+
+.forge-rail-chip:hover {
+  border-top-color: var(--cobalt);
+}
+
+/* Fait : eteint, passe derriere la ligne. */
+.forge-rail-chip[data-state="completed"],
+.forge-rail-chip[data-state="cancelled"] {
+  opacity: 0.46;
+  border-top-color: var(--line);
+}
+
+/* En cours : allumee, agrandie depuis la ligne, arete rose — elle vous attend. */
+.forge-rail-chip[data-selected="true"] {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--rose) 55%, var(--line));
+  border-top: 2px solid var(--rose);
+  background-color: color-mix(in srgb, var(--cobalt) 12%, var(--panel));
+  transform-origin: bottom center;
+  transform: scale(1.04);
+}
+
+/* Le lever : quand l'ecran s'ouvre, les blocs montent vers la lumiere en
+   cascade orchestree (pas un fondu simultane), et une couture d'aube
+   balaie chaque section de contenu qui entre. */
+.forge-app-shell main > * {
+  animation: forge-lever 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.forge-app-shell main > :nth-child(2) { animation-delay: 60ms; }
+.forge-app-shell main > :nth-child(3) { animation-delay: 120ms; }
+.forge-app-shell main > :nth-child(4) { animation-delay: 180ms; }
+.forge-app-shell main > :nth-child(n + 5) { animation-delay: 240ms; }
+
+@keyframes forge-lever {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: brightness(0.82) saturate(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* La couture locale : un trait de cobalt qui balaie ~14px vers le haut
+   quand la section de contenu entre — et qui remonte a chaque changement
+   d'etat, React remontant la section. Portee au seul bloc de contenu. */
+.forge-app-shell main > section:last-of-type {
+  position: relative;
+}
+.forge-app-shell main > section:last-of-type::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cobalt) 20%, var(--cobalt) 80%, transparent);
+  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--cobalt) 55%, transparent);
+  transform-origin: center;
+  animation: forge-seam-sweep 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+}
+
+@keyframes forge-seam-sweep {
+  0% { opacity: 0; transform: translateY(14px) scaleX(0.6); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(0) scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-app-shell::after {
+    animation: none !important;
+  }
+  .forge-app-shell main > * {
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .forge-app-shell main > section:last-of-type::before {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* La barre Forge : posee sur l'horizon. Arete haute cobalt = la ligne
+   qui traverse. Portee hors de la coque (portal), stylee au niveau racine. */
+.forge-bar {
+  border-color: rgb(76 110 245 / 0.38);
+  background-color: rgb(18 22 52 / 0.9);
+  box-shadow:
+    inset 0 1px 0 0 rgb(76 110 245 / 0.5),
+    0 -16px 50px -26px rgb(76 110 245 / 0.35),
+    0 26px 70px -30px rgb(3 6 20 / 0.85);
+}
+
+.forge-bar input {
+  color: #eef1fa;
+  caret-color: #4c6ef5;
+}
+
+.forge-bar input::placeholder {
+  color: #7f89ad;
+}
+
+.forge-bar button[class*="bg-blue-600"] {
+  background-color: #4c6ef5 !important;
+  background-image: linear-gradient(90deg, #93a8ff 0%, #4c6ef5 42%, #ff6fa5 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 28px -12px rgb(76 110 245 / 0.7) !important;
+}
+
+.forge-bar button[class*="bg-blue-50"],
+.forge-bar button[class*="bg-white/70"] {
+  background: transparent !important;
+  border-color: rgb(76 110 245 / 0.5) !important;
+  color: #93a8ff !important;
+  box-shadow: none !important;
+  --tw-ring-color: transparent !important;
+}
+
+.forge-bar button[class*="bg-blue-50"]:hover,
+.forge-bar button[class*="bg-white/70"]:hover {
+  background: rgb(76 110 245 / 0.12) !important;
+}
+
+/* Barre de navigation basse : file fin cobalt, posee bas dans le cadre. */
+.forge-navbar {
+  border-color: rgb(76 110 245 / 0.34);
+  background-color: rgb(18 22 52 / 0.92);
+  box-shadow:
+    inset 0 1px 0 0 rgb(76 110 245 / 0.4),
+    0 24px 60px -30px rgb(3 6 20 / 0.85);
+}
+
+.forge-navlink {
+  color: #7f89ad;
+}
+
+.forge-navlink:hover {
+  color: #c7cef0;
+}
+
+.forge-navlink[data-active="true"] {
+  color: #eef1fa;
+}
+
+/* L'onglet actif : une courte couture d'aube sous lui, sans halo. */
+.forge-navlink[data-active="true"]::after {
+  position: absolute;
+  left: 28%;
+  right: 28%;
+  bottom: 0.35rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #4c6ef5, #ff6fa5);
+  content: "";
+}
+
+.forge-navlink[data-active="true"] svg {
+  color: #93a8ff;
 }
 
 /* ------------------------------------------------------------------ */
@@ -397,11 +831,11 @@ html.dark body {
   place-items: center;
   border: 1px solid rgb(203 213 225 / 0.9);
   border-radius: 0.6rem;
-  background: #ffffff;
-  color: #475569;
-  content: "←";
-  font-size: 0.85rem;
-  line-height: 1;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M12 19l-7-7 7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  content: "";
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
   transition: transform 160ms ease, border-color 160ms ease,
     background-color 160ms ease, color 160ms ease;
@@ -414,26 +848,12 @@ html.dark body {
   color: #2563eb;
 }
 
-.dark .forge-back-link::before {
-  border-color: rgb(51 65 85 / 0.9);
-  background: rgb(15 23 42 / 0.8);
-  color: #94a3b8;
-}
-
-.forge-app-shell main > :first-child {
-  animation: forge-screen-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes forge-screen-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.dark .forge-back-link::before,
+.forge-app-shell .forge-back-link::before {
+  border-color: var(--line-strong, rgb(51 65 85 / 0.9));
+  background-color: var(--panel-2, rgb(15 23 42 / 0.8));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2393a8ff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M12 19l-7-7 7-7'/%3E%3C/svg%3E");
+  box-shadow: none;
 }
 
 .workflow-progress-item {

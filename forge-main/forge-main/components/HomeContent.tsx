@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { Check, LoaderCircle } from "lucide-react";
 
 import CurrentInterventionCard from "@/components/CurrentInterventionCard";
 import FixedForgeBar from "@/components/FixedForgeBar";
@@ -493,8 +493,8 @@ export default function HomeContent({
       <section className="flex flex-1 flex-col items-center justify-center px-4">
  <div className="w-full rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-slate-900 dark:border dark:border-slate-700">
 
-    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-700 dark:bg-green-950 dark:text-green-400">
-      ✓
+    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400">
+      <Check size={30} strokeWidth={2.4} />
     </div>
 
     <h2 className="mt-5 text-2xl font-bold text-blue-700 dark:text-blue-400">
@@ -630,15 +630,20 @@ export default function HomeContent({
         <div className="w-full max-w-2xl">
           {replyStatus === "idle" && !hideMainContent && (
             <div className="text-center">
-              <h2 className="text-4xl font-bold tracking-[-0.04em] text-blue-600 dark:text-blue-400 sm:text-5xl">
+              <span
+                aria-hidden="true"
+                className="mx-auto mb-5 block h-[3px] w-10 rounded-full bg-[#4c6ef5]"
+              />
+
+              <h2 className="text-4xl text-blue-600 sm:text-5xl">
                 Salut{firstName ? ` ${firstName}` : ""},
               </h2>
 
-              <p className="mx-auto mt-7 max-w-lg text-2xl leading-9 text-slate-500 dark:text-slate-400 sm:text-3xl sm:leading-10">
+              <p className="mx-auto mt-7 max-w-lg text-2xl leading-9 text-[var(--ink-2)] sm:text-3xl sm:leading-10">
                 Décris-moi ta prochaine intervention.
               </p>
 
-              <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-400 dark:text-slate-500 sm:text-xl">
+              <p className="mx-auto mt-5 max-w-xl text-base italic leading-8 text-[var(--ink-3)] sm:text-lg">
                 {getInterventionExample()}
               </p>
             </div>

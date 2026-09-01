@@ -42,15 +42,12 @@ export default function BottomNavigation() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.7rem] font-semibold transition-all duration-200 sm:min-h-16 sm:text-[0.78rem] ${
-              active
-                ? "bg-blue-600 text-white shadow-[0_10px_24px_-10px_rgba(37,99,235,0.65)]"
-                : "text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800/70 dark:hover:text-slate-200"
-            }`}
+            data-active={active ? "true" : undefined}
+            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-all duration-200 sm:min-h-16 sm:text-[0.74rem]"
           >
             <Icon
               size={22}
-              strokeWidth={active ? 2.5 : 2}
+              strokeWidth={active ? 2.6 : 2}
               className={
                 active
                   ? ""
