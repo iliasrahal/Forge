@@ -9,12 +9,14 @@ import { useRouter } from "next/navigation";
 
 
 type UserMenuProps = {
+  firstName: string;
   showLogout?: boolean;
 };
 
 
 
 export default function UserMenu({
+  firstName,
   showLogout = false,
 }: UserMenuProps) {
   const router = useRouter();
@@ -22,30 +24,12 @@ export default function UserMenu({
 
 
 
-  const [firstName, setFirstName] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
 
 
 
   const menuRef = useRef<HTMLDivElement>(null);
-
-
-
-
-  useEffect(() => {
-    const profile = localStorage.getItem("forgeUserProfile");
-
-
-
-    if (profile) {
-      const user = JSON.parse(profile);
-      setFirstName(user.firstName || "");
-    }
-
-
-  }, []);
-
 
 
 
@@ -135,7 +119,11 @@ export default function UserMenu({
           border
           border-slate-200
           bg-white
-          px-4
+          inline-flex
+          max-w-[min(18rem,calc(100vw-1.5rem))]
+          items-center
+          gap-2
+          px-3.5
           py-2
           text-sm
           font-semibold
@@ -150,7 +138,10 @@ export default function UserMenu({
           dark:hover:text-blue-400
         "
       >
-        {firstName} ▼
+        <span className="truncate">
+          {firstName.trim() || "Compte"}
+        </span>
+        <span aria-hidden="true">▼</span>
       </button>
 
 

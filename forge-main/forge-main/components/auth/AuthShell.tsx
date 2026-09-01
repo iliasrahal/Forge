@@ -20,16 +20,16 @@ export default function AuthShell({
   bare = true,
 }: AuthShellProps) {
   return (
-    <main className="relative isolate flex min-h-dvh overflow-hidden bg-[#f4f6fb] px-5 py-8 text-slate-950 dark:bg-[#0a0f1c] dark:text-white sm:px-8 sm:py-12">
+    <main className="forge-auth-shell relative isolate flex min-h-dvh overflow-hidden bg-transparent px-5 py-8 sm:px-8 sm:py-12">
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(76,110,245,0.16),transparent_66%),radial-gradient(42rem_28rem_at_112%_-4%,rgba(129,140,248,0.12),transparent_58%),radial-gradient(38rem_28rem_at_-10%_4%,rgba(99,102,241,0.08),transparent_60%)] dark:bg-[radial-gradient(56rem_30rem_at_50%_-12%,rgba(37,99,235,0.26),transparent_66%),radial-gradient(42rem_28rem_at_112%_-4%,rgba(79,70,229,0.2),transparent_58%),radial-gradient(38rem_28rem_at_-10%_4%,rgba(79,70,229,0.16),transparent_60%)]"
+        className="forge-auth-light pointer-events-none absolute inset-0 -z-20"
       />
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 opacity-50 [background-image:linear-gradient(rgba(148,163,184,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.06)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:linear-gradient(to_bottom,black,transparent_88%)] dark:opacity-25"
+        className="forge-auth-grain pointer-events-none absolute inset-0 -z-10"
       />
 
 
@@ -52,7 +52,7 @@ export default function AuthShell({
                 aria-hidden="true"
                 className="absolute inset-0 -z-10 scale-125 rounded-full bg-blue-500/20 blur-2xl"
               />
-              <span className="inline-flex rounded-[1.6rem] border border-slate-200/80 bg-white p-3 shadow-[0_24px_60px_-24px_rgba(37,99,235,0.45)] dark:border-slate-700/80 dark:bg-slate-900">
+              <span className="forge-auth-logo inline-flex rounded-[1.6rem] border p-3">
                 <ForgeLogo size={72} />
               </span>
             </span>

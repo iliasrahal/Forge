@@ -245,6 +245,105 @@ html.dark body {
   color: var(--forge-text-muted);
 }
 
+/* Authentification et onboarding : même lumière Cyclorama et mêmes tokens que
+   le produit, sans grande carte blanche intermédiaire. */
+.forge-auth-shell,
+.forge-onboarding-shell {
+  color: var(--forge-text-primary);
+  font-feature-settings: "cv05", "ss01";
+}
+
+.forge-auth-light {
+  background:
+    radial-gradient(42rem 28rem at 92% 18%, color-mix(in srgb, var(--forge-accent-pink) 24%, transparent), transparent 70%),
+    radial-gradient(50rem 30rem at 8% 8%, color-mix(in srgb, var(--forge-accent-blue) 30%, transparent), transparent 72%);
+}
+
+.forge-auth-grain {
+  opacity: 0.32;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--forge-border) 44%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--forge-border) 44%, transparent) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.forge-auth-logo {
+  border-color: color-mix(in srgb, var(--forge-accent-blue) 38%, var(--forge-border));
+  background: color-mix(in srgb, var(--forge-surface-elevated) 90%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 38%, transparent),
+    0 24px 60px -30px color-mix(in srgb, var(--forge-accent-blue) 68%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.forge-auth-shell :is(input, textarea, select),
+.forge-onboarding-shell :is(input:not([type="checkbox"]), textarea, select) {
+  border-color: var(--forge-border-strong) !important;
+  background: var(--forge-input-background) !important;
+  color: var(--forge-text-primary) !important;
+  caret-color: var(--forge-accent-blue);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+    0 14px 32px -28px color-mix(in srgb, var(--forge-accent-blue) 64%, transparent) !important;
+  backdrop-filter: blur(16px);
+}
+
+.forge-auth-shell :is(input, textarea, select)::placeholder,
+.forge-onboarding-shell :is(input, textarea, select)::placeholder {
+  color: var(--forge-text-muted) !important;
+}
+
+.forge-auth-shell :is(input, textarea, select):focus,
+.forge-onboarding-shell :is(input, textarea, select):focus {
+  border-color: var(--forge-accent-blue) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--forge-accent-blue) 18%, transparent) !important;
+}
+
+.forge-auth-shell button[class*="bg-blue-600"],
+.forge-auth-shell a[class*="bg-blue-600"],
+.forge-onboarding-shell button[class*="bg-blue-600"] {
+  border: 1px solid color-mix(in srgb, var(--forge-accent-blue) 72%, white);
+  background-color: var(--forge-accent-blue) !important;
+  background-image: linear-gradient(100deg, var(--forge-accent-blue-lit), var(--forge-accent-blue) 58%, var(--forge-accent-pink)) !important;
+  box-shadow: 0 18px 38px -22px color-mix(in srgb, var(--forge-accent-blue) 82%, transparent);
+}
+
+.forge-auth-shell button[class*="bg-blue-600"]:hover,
+.forge-auth-shell a[class*="bg-blue-600"]:hover,
+.forge-onboarding-shell button[class*="bg-blue-600"]:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.forge-auth-shell :is(h1, strong),
+.forge-onboarding-shell :is(h1, strong) {
+  color: var(--forge-text-primary) !important;
+}
+
+.forge-auth-shell :is(p, label)[class*="text-slate-6"],
+.forge-auth-shell :is(p, label)[class*="text-slate-5"],
+.forge-auth-shell :is(p, label)[class*="text-slate-4"],
+.forge-onboarding-shell :is(p, label)[class*="text-slate-"] {
+  color: var(--forge-text-secondary) !important;
+}
+
+.forge-auth-shell :is(a, h1)[class*="text-blue-"],
+.forge-onboarding-shell :is(a, h1)[class*="text-blue-"] {
+  color: var(--forge-accent-blue-lit) !important;
+}
+
+@media (max-width: 640px) {
+  .forge-auth-shell {
+    overflow-y: auto;
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+
+  .forge-auth-grain {
+    background-size: 52px 52px;
+  }
+}
+
 /* ================================================================== */
 /* LANDING CYCLORAMA — même horizon, rythme marketing inchangé.        */
 /* Cette couche est volontairement limitée à la page d'accueil.        */
@@ -800,45 +899,6 @@ html.dark body {
 .forge-app-shell [class*="border-dashed"] {
   background-color: color-mix(in srgb, var(--panel-2) 60%, transparent);
   border-color: var(--line-strong);
-}
-
-/* Le rail defile sur la ligne : chaque intervention posee sur l'horizon,
-   fondu a droite pour dire « il y en a d'autres ». */
-.forge-rail-scroll {
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--cobalt) 32%, var(--line));
-  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%);
-  mask-image: linear-gradient(90deg, #000 0, #000 86%, transparent 100%);
-}
-
-/* A venir (defaut) : sobre, tourne vers la lumiere. */
-.forge-rail-chip {
-  border-color: var(--line);
-  border-top: 2px solid color-mix(in srgb, var(--cobalt) 40%, var(--line));
-  background-color: color-mix(in srgb, var(--panel) 72%, transparent);
-  color: var(--ink-2);
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease, opacity 180ms ease;
-}
-
-.forge-rail-chip:hover {
-  border-top-color: var(--cobalt);
-}
-
-/* Fait : eteint, passe derriere la ligne. */
-.forge-rail-chip[data-state="completed"],
-.forge-rail-chip[data-state="cancelled"] {
-  opacity: 0.46;
-  border-top-color: var(--line);
-}
-
-/* En cours : allumee, agrandie depuis la ligne, arete rose — elle vous attend. */
-.forge-rail-chip[data-selected="true"] {
-  opacity: 1;
-  border-color: color-mix(in srgb, var(--rose) 55%, var(--line));
-  border-top: 2px solid var(--rose);
-  background-color: color-mix(in srgb, var(--cobalt) 12%, var(--panel));
-  transform-origin: bottom center;
-  transform: scale(1.04);
 }
 
 /* Le lever : quand l'ecran s'ouvre, les blocs montent vers la lumiere en

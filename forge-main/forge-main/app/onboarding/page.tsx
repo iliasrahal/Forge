@@ -87,7 +87,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-transparent px-6 pb-10 pt-28 text-slate-950 dark:text-white sm:pt-32">
+    <main className="forge-onboarding-shell relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-transparent px-6 pb-10 pt-28 sm:pt-32">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_15%,rgba(37,99,235,0.12),transparent_35%),radial-gradient(circle_at_20%_90%,rgba(14,165,233,0.08),transparent_30%)] dark:bg-[radial-gradient(circle_at_50%_15%,rgba(59,130,246,0.15),transparent_35%),radial-gradient(circle_at_80%_90%,rgba(14,165,233,0.08),transparent_30%)]"

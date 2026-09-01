@@ -25,7 +25,7 @@ function renderEmailLayout(
   showFooterLogo = false,
 ) {
   const actionHtml = action
-    ? `<p style="margin:28px 0;text-align:center"><a href="${escapeHtml(action.url)}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:12px">${escapeHtml(action.label)}</a></p>`
+    ? `<p style="margin:28px 0;text-align:center"><a href="${escapeHtml(action.url)}" style="display:inline-block;background:#4c6ef5;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:12px;box-shadow:0 12px 28px -16px #3346c4">${escapeHtml(action.label)}</a></p>`
     : "";
   const renderedContent = action
     ? content.replace("{{ACTION}}", actionHtml)
@@ -52,17 +52,17 @@ function renderEmailLayout(
   <meta name="supported-color-schemes" content="light dark" />
   <style>
     @media (prefers-color-scheme: dark) {
-      .forge-email-body { background: #020617 !important; color: #e2e8f0 !important; }
-      .forge-email-card { background: #0f172a !important; border-color: #334155 !important; }
-      .forge-email-header { border-color: #334155 !important; }
-      .forge-email-footer { color: #94a3b8 !important; }
+      .forge-email-body { background: #06070f !important; color: #eef1fa !important; }
+      .forge-email-card { background: #101631 !important; border-color: #334173 !important; }
+      .forge-email-header { background: #151d43 !important; border-color: #334173 !important; }
+      .forge-email-footer { color: #8b95bd !important; }
     }
   </style>
 </head>
-<body class="forge-email-body" style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#1e293b">
+<body class="forge-email-body" style="margin:0;background:#d6ddf3;font-family:Arial,sans-serif;color:#0a1230">
   <div style="max-width:640px;margin:0 auto;padding:32px 16px">
-    <div class="forge-email-card" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
-      <div class="forge-email-header" style="padding:14px 28px;border-bottom:1px solid #e2e8f0;text-align:center">${logoHtml(104)}</div>
+    <div class="forge-email-card" style="background:#e8edfc;border:1px solid #b8c4ec;border-radius:18px;overflow:hidden;box-shadow:0 20px 48px -32px #3346c4">
+      <div class="forge-email-header" style="padding:14px 28px;background:#d9e2fa;border-bottom:1px solid #b8c4ec;text-align:center">${logoHtml(104)}</div>
       <div style="padding:28px;font-size:16px;line-height:1.65">
         ${renderedContent}
         ${footerLogo}

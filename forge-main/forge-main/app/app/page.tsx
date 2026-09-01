@@ -106,7 +106,7 @@ function mapIntervention(intervention: any): Appointment {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  await requireCurrentUser();
+  const currentUser = await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
   const { newIntervention, invitationAccess } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
@@ -160,6 +160,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         />
       ) : null}
       <HomeClient
+      userFirstName={currentUser.firstName ?? ""}
       todayAppointments={todayAppointments}
       upcomingAppointments={upcomingAppointments}
       todayDateKey={todayKey}

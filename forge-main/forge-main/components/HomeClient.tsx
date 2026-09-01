@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,6 @@ import UpcomingCalendar, {
   type PlanningClient,
 } from "@/components/UpcomingCalendar";
 import {
-  getAppointmentDateLabel,
   getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
@@ -45,6 +43,7 @@ type CompleteInterventionResponse = {
 };
 
 type HomeClientProps = {
+  userFirstName: string;
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
   planningClients: PlanningClient[];
@@ -54,6 +53,7 @@ type HomeClientProps = {
 };
 
 export default function HomeClient({
+  userFirstName,
   todayAppointments,
   upcomingAppointments,
   planningClients,
@@ -62,9 +62,6 @@ export default function HomeClient({
   newInterventionId: initialNewInterventionId = null,
 }: HomeClientProps) {
   const router = useRouter();
-
-  const appointmentsContainerRef =
-    useRef<HTMLDivElement | null>(null);
 
   const [homeState, setHomeState] =
   useState<HomeState>("intervention");
@@ -331,53 +328,6 @@ const newInterventionExists =
               : appointment,
         ),
     );
-  };
-
-  const getAppointmentStatusLabel = (
-    status: Appointment["status"],
-  ) => {
-    switch (status) {
-      case "inProgress":
-        return "En cours";
-
-      case "completed":
-        return "Terminée";
-
-      case "postponed":
-        return "Reportée";
-
-      case "cancelled":
-        return "Annulée";
-
-      default:
-        return "À faire";
-    }
-  };
-
-  const getAppointmentStatusClasses = (
-    status: Appointment["status"],
-    isSelected: boolean,
-  ) => {
-    if (isSelected) {
-      return "bg-rose-100 text-rose-700";
-    }
-
-    switch (status) {
-      case "inProgress":
-        return "bg-rose-100 text-rose-700";
-
-      case "completed":
-        return "bg-green-100 text-green-700";
-
-      case "postponed":
-        return "bg-amber-100 text-amber-700";
-
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-
-      default:
-        return "bg-slate-100 text-slate-600";
-    }
   };
 
   const findNextAvailableAppointment = (
@@ -1159,90 +1109,11 @@ const handleCreateInvoice = async () => {
 
   <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 flex-col items-end gap-2`}>
     <WorkspaceSwitcher />
-    <UserMenu showLogout={homeState === "intervention"} />
+    <UserMenu
+      firstName={userFirstName}
+      showLogout={homeState === "intervention"}
+    />
   </div>
-
-
-  {homeState === "intervention" &&
-    !showUpcomingCalendar &&
-    appointmentsList.length > 0 && (
-
-      <section className="mb-3 min-w-0 shrink-0">
-
-        <p className="mb-2 flex items-center gap-2 font-[family-name:var(--font-display)] text-xs uppercase tracking-[0.14em] text-[var(--ink-2)]">
-          <span aria-hidden="true" className="h-[2px] w-6 rounded-full bg-[#4c6ef5]" />
-          Rail du jour
-        </p>
-
-        <div
-          ref={appointmentsContainerRef}
-          className="forge-rail-scroll flex w-full items-stretch gap-2 overflow-x-auto pb-1"
-        >
-
-          {appointmentsList.map((appointment) => {
-
-            const isSelected =
-              appointment.id === selectedAppointmentId;
-
-            return (
-
-              <button
-                id={`appointment-${appointment.id}`}
-                key={appointment.id}
-                type="button"
-                data-selected={isSelected ? "true" : undefined}
-                data-state={appointment.status}
-                onClick={() =>
-                  handleSelectAppointment(
-                    appointment.id,
-                  )
-                }
-                className="forge-rail-chip min-w-28 shrink-0 rounded-2xl border px-3 py-2 text-left transition"
-              >
-
-                <span className="block text-xs font-medium capitalize text-[var(--ink-3)]">
-                  {getAppointmentDateLabel(
-                    appointment.date,
-                  )}
-                </span>
-
-                {appointment.time && (
-                  <span className="forge-num mt-0.5 block text-sm font-semibold text-[var(--ink)]">
-                    {appointment.time}
-                  </span>
-                )}
-
-                {(getAppointmentSubject(
-                  appointment,
-                ) || appointment.client) && (
-                  <span className="mt-0.5 block truncate text-xs font-medium text-[var(--ink-2)] sm:text-sm">
-                    {getAppointmentSubject(
-                      appointment,
-                    ) || appointment.client}
-                  </span>
-                )}
-
-                <span
-                  className={`mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${getAppointmentStatusClasses(
-                    appointment.status,
-                    isSelected,
-                  )}`}
-                >
-                  {getAppointmentStatusLabel(
-                    appointment.status,
-                  )}
-                </span>
-
-              </button>
-
-            );
-          })}
-
-        </div>
-
-      </section>
-
-    )}
 
 
 
