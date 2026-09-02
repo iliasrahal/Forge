@@ -95,7 +95,7 @@ export default async function QuotesPage() {
           href="/quotes/stats"
           className="flex min-h-12 items-center justify-center rounded-2xl border border-blue-600 px-4 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950 sm:px-5"
         >
-          Statistiques devis
+          Historique Devis
         </Link>
 
 

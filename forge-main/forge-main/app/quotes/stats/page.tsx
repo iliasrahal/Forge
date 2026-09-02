@@ -148,6 +148,10 @@ export default async function QuoteStatsPage() {
 
         </div>
 
+        <h1 className="mb-5 text-center text-2xl font-bold text-blue-700 dark:text-blue-400 sm:text-3xl">
+          Historique Devis
+        </h1>
+
 
 
         <QuoteStatsSelector

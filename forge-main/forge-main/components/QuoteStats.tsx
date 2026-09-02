@@ -63,7 +63,7 @@ export default function QuoteStats({
       <div className="flex items-center justify-between">
 
         <h2 className="text-xl font-bold text-blue-700">
-          Statistiques devis
+          Historique Devis
         </h2>
 
 

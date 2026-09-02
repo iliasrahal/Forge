@@ -44,6 +44,7 @@ type QuoteStatsSelectorProps = {
   year: number;
   years: number[];
   monthlyTotals: MonthlyTotal[];
+  statsEndpoint?: string;
 };
 
 
@@ -52,6 +53,7 @@ export default function QuoteStatsSelector({
   year,
   years,
   monthlyTotals: initialMonthlyTotals,
+  statsEndpoint = "/api/quotes/stats",
 }: QuoteStatsSelectorProps) {
 
 
@@ -99,7 +101,7 @@ export default function QuoteStatsSelector({
 
       const response =
         await fetch(
-          `/api/quotes/stats?year=${selectedYear}`
+          `${statsEndpoint}?year=${selectedYear}`
         );
 
 
@@ -149,7 +151,7 @@ export default function QuoteStatsSelector({
     loadStats();
 
 
-  }, [selectedYear]);
+  }, [selectedYear, statsEndpoint]);
 
 
 
