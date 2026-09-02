@@ -222,6 +222,31 @@ export default function UserMenu({
 
 
           <Link
+            href="/contact"
+            className="
+              mt-1
+              block
+              w-full
+              rounded-xl
+              px-3
+              py-2
+              text-left
+              font-medium
+              text-slate-700
+              transition
+              hover:bg-slate-50
+              dark:text-slate-200
+              dark:hover:bg-slate-800
+            "
+          >
+            Nous contacter
+          </Link>
+
+
+
+
+
+          <Link
             href="/about"
             className="
               mt-1
