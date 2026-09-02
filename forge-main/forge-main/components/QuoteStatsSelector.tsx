@@ -20,6 +20,15 @@ function formatDate(date: string) {
   }).format(new Date(date));
 }
 
+function formatDateKey(dateKey: string) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${dateKey}T12:00:00Z`));
+}
+
 const months = [
   "Janvier",
   "Février",
@@ -68,6 +77,15 @@ export default function QuoteStatsSelector({
     Array.isArray(initialDocuments) ? initialDocuments : [],
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [rangeStart, setRangeStart] = useState("");
+  const [rangeEnd, setRangeEnd] = useState("");
+  const [rangeError, setRangeError] = useState("");
+  const [rangeDocuments, setRangeDocuments] = useState<HistoryDocument[]>([]);
+  const [appliedRange, setAppliedRange] = useState<{
+    from: string;
+    to: string;
+  } | null>(null);
+  const [isRangeLoading, setIsRangeLoading] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
     getParisYearMonth(new Date()).monthIndex,
   );
@@ -103,6 +121,61 @@ export default function QuoteStatsSelector({
     (sum, document) => sum + document.amountCents,
     0,
   );
+  const displayedDocuments = appliedRange
+    ? rangeDocuments
+    : selectedDocuments;
+  const displayedLoading = appliedRange ? isRangeLoading : isLoading;
+
+  function resetRange() {
+    setRangeStart("");
+    setRangeEnd("");
+    setRangeError("");
+    setRangeDocuments([]);
+    setAppliedRange(null);
+  }
+
+  async function applyRangeFilter() {
+    setRangeError("");
+
+    if (!rangeStart || !rangeEnd) {
+      setRangeError("Choisissez une date de début et une date de fin.");
+      return;
+    }
+
+    if (rangeEnd < rangeStart) {
+      setRangeError(
+        "La date de fin doit être postérieure ou égale à la date de début.",
+      );
+      return;
+    }
+
+    setIsRangeLoading(true);
+
+    try {
+      const searchParams = new URLSearchParams({
+        from: rangeStart,
+        to: rangeEnd,
+      });
+      const response = await fetch(`${statsEndpoint}?${searchParams}`);
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setRangeError(
+          typeof payload?.error === "string"
+            ? payload.error
+            : "Impossible de filtrer cette période.",
+        );
+        return;
+      }
+
+      setRangeDocuments(Array.isArray(payload) ? payload : []);
+      setAppliedRange({ from: rangeStart, to: rangeEnd });
+    } catch {
+      setRangeError("Impossible de filtrer cette période.");
+    } finally {
+      setIsRangeLoading(false);
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -148,6 +221,7 @@ export default function QuoteStatsSelector({
           onChange={(event) => {
             setSelectedYear(Number(event.target.value));
             setSelectedMonth(0);
+            setAppliedRange(null);
           }}
           className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-blue-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400"
         >
@@ -171,7 +245,10 @@ export default function QuoteStatsSelector({
         </label>
         <select
           value={selectedMonth}
-          onChange={(event) => setSelectedMonth(Number(event.target.value))}
+          onChange={(event) => {
+            setSelectedMonth(Number(event.target.value));
+            setAppliedRange(null);
+          }}
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-blue-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400"
         >
           {monthlyTotals.map((item, index) => (
@@ -185,6 +262,62 @@ export default function QuoteStatsSelector({
         </p>
       </div>
 
+      <div className="forge-surface rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-slate-700 dark:bg-slate-900/80">
+        <h2 className="text-lg font-bold text-blue-700 dark:text-blue-400">
+          Rechercher entre deux dates
+        </h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+            Date de début
+            <input
+              type="date"
+              value={rangeStart}
+              onChange={(event) => {
+                setRangeStart(event.target.value);
+                setRangeError("");
+              }}
+              className="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </label>
+          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+            Date de fin
+            <input
+              type="date"
+              value={rangeEnd}
+              min={rangeStart || undefined}
+              onChange={(event) => {
+                setRangeEnd(event.target.value);
+                setRangeError("");
+              }}
+              className="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+            />
+          </label>
+        </div>
+        {rangeError ? (
+          <p role="alert" className="mt-3 text-sm font-semibold text-red-600 dark:text-red-400">
+            {rangeError}
+          </p>
+        ) : null}
+        <div className="mt-4 grid gap-2 min-[420px]:grid-cols-2">
+          <button
+            type="button"
+            onClick={applyRangeFilter}
+            disabled={isRangeLoading}
+            className="min-h-12 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
+          >
+            {isRangeLoading ? "Recherche…" : "Appliquer le filtre"}
+          </button>
+          <button
+            type="button"
+            onClick={resetRange}
+            disabled={!rangeStart && !rangeEnd && !appliedRange}
+            className="min-h-12 rounded-xl border border-blue-600 px-4 py-3 font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-950"
+          >
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
         {monthlyTotals.map((item, index) => {
           const isSelected = index === selectedMonth;
@@ -193,7 +326,10 @@ export default function QuoteStatsSelector({
             <button
               key={item.month}
               type="button"
-              onClick={() => setSelectedMonth(index)}
+              onClick={() => {
+                setSelectedMonth(index);
+                setAppliedRange(null);
+              }}
               aria-pressed={isSelected}
               className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                 isSelected
@@ -210,22 +346,24 @@ export default function QuoteStatsSelector({
       <section aria-live="polite" className="space-y-3">
         <div>
           <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-            {months[selectedMonth]} {selectedYear}
+            {appliedRange
+              ? `Du ${formatDateKey(appliedRange.from)} au ${formatDateKey(appliedRange.to)}`
+              : `${months[selectedMonth]} ${selectedYear}`}
           </p>
           <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-            {selectedDocuments.length} {documentLabel}
-            {documentLabel === "facture" && selectedDocuments.length !== 1
+            {displayedDocuments.length} {documentLabel}
+            {documentLabel === "facture" && displayedDocuments.length !== 1
               ? "s"
               : ""}
           </h2>
         </div>
 
-        {isLoading ? (
+        {displayedLoading ? (
           <p className="py-8 text-center text-slate-500 dark:text-slate-400">
             Chargement de l’historique…
           </p>
-        ) : selectedDocuments.length > 0 ? (
-          selectedDocuments.map((document) => (
+        ) : displayedDocuments.length > 0 ? (
+          displayedDocuments.map((document) => (
             <Link
               key={document.id}
               href={document.href}
@@ -272,7 +410,7 @@ export default function QuoteStatsSelector({
           ))
         ) : (
           <p className="py-8 text-center text-slate-500 dark:text-slate-400">
-            Aucun {documentLabel} pour ce mois.
+            Aucun {documentLabel} {appliedRange ? "sur cette période" : "pour ce mois"}.
           </p>
         )}
       </section>

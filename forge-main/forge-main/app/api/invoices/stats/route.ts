@@ -2,30 +2,30 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
-import { getParisYearBounds } from "@/src/lib/document-history";
+import { resolveDocumentHistoryRange } from "@/src/lib/document-history";
 
 
 export async function GET(request: Request) {
   const workspaceContext = await requireWorkspaceContext("read");
   const { searchParams } = new URL(request.url);
   const year = Number(searchParams.get("year"));
+  const resolvedRange = resolveDocumentHistoryRange({
+    year,
+    from: searchParams.get("from"),
+    to: searchParams.get("to"),
+  });
 
-  if (!Number.isInteger(year) || year < 1) {
+  if ("error" in resolvedRange) {
     return NextResponse.json(
-      { error: "Année invalide." },
+      { error: resolvedRange.error },
       { status: 400 },
     );
   }
 
-  const { start, end } = getParisYearBounds(year);
-
   const invoices = await prisma.invoice.findMany({
     where: {
       organizationId: workspaceContext.workspace.id,
-      createdAt: {
-        gte: start,
-        lt: end,
-      },
+      createdAt: resolvedRange.range,
     },
     select: {
       id: true,
