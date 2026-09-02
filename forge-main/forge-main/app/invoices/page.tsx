@@ -92,6 +92,12 @@ export default async function InvoicesPage() {
                 {invoice.title}
               </h2>
 
+              {invoice.type === "DEPOSIT" ? (
+                <span className="mt-2 inline-flex rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-pink-600 dark:text-pink-300">
+                  Facture d’acompte
+                </span>
+              ) : null}
+
 
 
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">

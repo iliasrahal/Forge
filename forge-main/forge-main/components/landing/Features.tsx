@@ -24,7 +24,7 @@ const features = [
   {
     title: "Interventions",
     description:
-      "Créer, modifier et suivre les interventions simplement.",
+      "Planifiez une intervention ou un chantier de plusieurs jours avec une simple demande. Forge l’organise dans votre planning comme un seul rendez-vous, sur toute la période.",
     eyebrow: "Du planning au terrain",
   },
   {
@@ -36,13 +36,13 @@ const features = [
   {
     title: "Devis",
     description:
-      "Forge génère automatiquement des devis professionnels à partir d’une simple demande.",
+      "Dites par exemple : « Prépare-moi un devis pour le remplacement d’un robinet chez Dupont. » Forge retrouve le client, vos prestations et vos tarifs enregistrés. Vous gardez la validation finale.",
     eyebrow: "Une proposition claire",
   },
   {
     title: "Factures",
     description:
-      "Après chaque intervention, Forge génère automatiquement votre facture professionnelle.",
+      "Après chaque intervention, Forge prépare votre facture professionnelle. Depuis un devis, créez aussi vos acomptes et gardez le montant restant sous les yeux.",
     eyebrow: "Jusqu’au règlement",
   },
   {
@@ -337,6 +337,12 @@ function FeatureIllustration({
               </div>
             ),
           )}
+          <div className="mx-3 rounded-2xl border border-violet-200 bg-violet-50/90 px-4 py-3 text-sm font-semibold text-violet-800 shadow-sm dark:border-violet-900 dark:bg-violet-950/70 dark:text-violet-200">
+            <p>Chantier chez Martin</p>
+            <p className="mt-1 text-xs font-medium text-violet-600 dark:text-violet-300">
+              Du 10 au 15 septembre · une seule intervention
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -363,6 +369,12 @@ function FeatureIllustration({
         <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
           <Send size={16} />
           Envoyé au client
+        </div>
+        <div className="mt-2 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/45 dark:text-blue-300">
+          Consulté, accepté et signé en ligne
+          <p className="mt-1 text-xs font-medium opacity-80">
+            Statut mis à jour dans Forge
+          </p>
         </div>
       </div>
     );
@@ -513,6 +525,11 @@ export default function Features({
                 </p>
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
+                {index === 0 && (
+                  <div className="mt-8 max-w-xl rounded-2xl border border-violet-200 bg-violet-50/70 px-4 py-3 text-sm font-semibold leading-6 text-violet-800 shadow-sm dark:border-violet-900 dark:bg-violet-950/45 dark:text-violet-200">
+                    « J’ai un chantier chez Martin du 10 au 15 septembre. »
+                  </div>
+                )}
                 {index === 1 && (
                   <div className="mt-8 max-w-xl">
                     <div className="grid gap-3 sm:grid-cols-3">
@@ -569,9 +586,10 @@ export default function Features({
                 {index === 2 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
-                      "Génération automatique depuis une demande simple",
-                      "Prestations structurées de manière professionnelle",
-                      "Envoi facile et rapide au client",
+                      "Enregistrez une fois vos prestations et vos tarifs : Forge les retrouve lors de la préparation",
+                      "Votre client reçoit un lien sécurisé pour consulter, accepter et signer son devis en ligne",
+                      "Le statut du devis est mis à jour dès son acceptation",
+                      "Forge repère les devis sans réponse et propose une relance que vous vérifiez avant l’envoi",
                       "Depuis un devis accepté, créez automatiquement l’intervention associée",
                     ].map((benefit) => (
                       <div
@@ -595,6 +613,8 @@ export default function Features({
                       {[
                         "Facture générée automatiquement après l’intervention",
                         "Création professionnelle à partir du compte rendu",
+                        "Factures d’acompte créées directement depuis le devis",
+                        "Montant déjà demandé et restant du devis toujours visibles",
                         "Envoi rapide par mail au client",
                       ].map((benefit) => (
                         <div

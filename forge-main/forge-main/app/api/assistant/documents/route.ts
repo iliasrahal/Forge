@@ -110,7 +110,7 @@ export async function POST(request: Request) {
         where: {
           clientId,
           status: { not: "REFUSE" },
-          invoices: { none: {} },
+          invoices: { none: { type: "STANDARD" } },
           organizationId: workspaceContext.workspace.id,
         },
         orderBy: { createdAt: "desc" },

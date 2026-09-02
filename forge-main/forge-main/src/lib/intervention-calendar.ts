@@ -1,17 +1,22 @@
 export type CalendarAppointment = {
   date: string;
   time: string;
+  endDate?: string;
 };
 
 export function splitAppointmentsByDate<
-  T extends { date: string; time: string; status: string },
+  T extends { date: string; time: string; endDate?: string; status: string },
 >(appointments: T[], todayDateKey: string) {
   const today: T[] = [];
   const upcoming: T[] = [];
   const other: T[] = [];
 
   for (const appointment of appointments) {
-    if (appointment.date === todayDateKey) {
+    const effectiveEndDate = appointment.endDate || appointment.date;
+    if (
+      appointment.date <= todayDateKey &&
+      effectiveEndDate >= todayDateKey
+    ) {
       today.push(appointment);
     } else if (
       appointment.date > todayDateKey &&
@@ -79,9 +84,19 @@ export function groupAppointmentsByDate<
   )) {
     if (!appointment.date) continue;
 
-    const appointmentsForDate = grouped.get(appointment.date) ?? [];
-    appointmentsForDate.push(appointment);
-    grouped.set(appointment.date, appointmentsForDate);
+    const start = parseDateKey(appointment.date);
+    const end = parseDateKey(appointment.endDate || appointment.date);
+
+    for (
+      const date = new Date(start);
+      date.getTime() <= end.getTime();
+      date.setUTCDate(date.getUTCDate() + 1)
+    ) {
+      const dateKey = formatDateKey(date);
+      const appointmentsForDate = grouped.get(dateKey) ?? [];
+      appointmentsForDate.push(appointment);
+      grouped.set(dateKey, appointmentsForDate);
+    }
   }
 
   return grouped;

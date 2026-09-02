@@ -154,6 +154,12 @@ export default async function InvoicePage({
             {invoice.title}
           </h1>
 
+          {invoice.type === "DEPOSIT" ? (
+            <span className="mt-3 inline-flex rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-pink-600 dark:text-pink-300">
+              Facture d’acompte
+            </span>
+          ) : null}
+
 
           <p className="mt-2 text-slate-500">
             Facture {invoice.reference}
@@ -188,7 +194,11 @@ export default async function InvoicePage({
         <InvoiceAmountForm
           invoiceId={invoice.id}
           amountCents={invoice.amountCents}
-          editable={workspaceContext.permissions.canWrite && invoice.status === "BROUILLON"}
+          editable={
+            workspaceContext.permissions.canWrite &&
+            invoice.status === "BROUILLON" &&
+            invoice.type !== "DEPOSIT"
+          }
         />
 
 
@@ -269,6 +279,20 @@ export default async function InvoicePage({
           </div>
 
         )}
+
+        {invoice.type === "DEPOSIT" && invoice.quote ? (
+          <div className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-5">
+            <p className="text-sm text-[var(--forge-text-secondary)]">
+              Devis associé
+            </p>
+            <Link
+              href={`/clients/${invoice.clientId}/quotes/${invoice.quote.id}`}
+              className="mt-1 inline-block font-semibold text-[var(--forge-accent-blue-lit)] hover:underline"
+            >
+              {invoice.quote.reference}
+            </Link>
+          </div>
+        ) : null}
 
 
 

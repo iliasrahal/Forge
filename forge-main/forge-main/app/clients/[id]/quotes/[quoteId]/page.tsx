@@ -1,10 +1,14 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
+import CreateDepositInvoice from "@/components/CreateDepositInvoice";
+import QuoteReminderPanel from "@/components/QuoteReminderPanel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { getQuoteDepositSummary } from "@/src/lib/deposits";
+import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -21,6 +25,16 @@ function formatDate(date: Date) {
     day: "2-digit",
     month: "long",
     year: "numeric",
+  }).format(date);
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
@@ -72,6 +86,24 @@ export default async function QuotePage({
       include: {
         client: true,
         lines: true,
+        invoices: {
+          select: {
+            type: true,
+            status: true,
+            amountCents: true,
+          },
+        },
+        signature: {
+          select: {
+            signerFirstName: true,
+            signerLastName: true,
+            signedAt: true,
+          },
+        },
+        reminders: {
+          select: { id: true, sentAt: true, channel: true },
+          orderBy: { sentAt: "desc" },
+        },
       },
     });
 
@@ -90,6 +122,16 @@ export default async function QuotePage({
         }`.trim()
       : quote.client.companyName ??
         "Client professionnel";
+
+  const depositSummary = getQuoteDepositSummary(
+    quote.amountCents,
+    quote.invoices,
+  );
+  const reminderState = getQuoteReminderState({
+    status: quote.status,
+    sentAt: quote.sentAt,
+    reminders: quote.reminders,
+  });
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6">
@@ -172,6 +214,34 @@ export default async function QuotePage({
 
         </div>
 
+        {quote.status === "ACCEPTE" && quote.acceptedAt ? (
+          <p className="mt-3 text-right text-sm font-medium text-emerald-600 dark:text-emerald-400">
+            Accepté le {formatDateTime(quote.acceptedAt)}
+          </p>
+        ) : null}
+
+        {quote.signature ? (
+          <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-center">
+            <p className="font-bold text-emerald-700 dark:text-emerald-300">Accepté et signé</p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+              Signé par {quote.signature.signerFirstName} {quote.signature.signerLastName}<br />
+              le {formatDateTime(quote.signature.signedAt)}
+            </p>
+          </div>
+        ) : null}
+
+        {quote.status === "ENVOYE" || quote.reminders.length > 0 ? (
+          <QuoteReminderPanel
+            quoteId={quote.id}
+            canWrite={workspaceContext.permissions.canWrite}
+            canPrepare={quote.status === "ENVOYE"}
+            hasEmail={Boolean(quote.client.email)}
+            automaticLevel={reminderState.eligible ? reminderState.level : null}
+            daysSinceActivity={reminderState.daysSinceActivity}
+            reminders={quote.reminders}
+          />
+        ) : null}
+
 
 
 
@@ -220,6 +290,27 @@ export default async function QuotePage({
           <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
             {formatAmount(quote.amountCents)}
           </p>
+
+          {depositSummary.depositedCents > 0 ? (
+            <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-blue-200/70 pt-4 dark:border-blue-800">
+              <div>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-blue-600/80 dark:text-blue-300/80">
+                  Acomptes
+                </dt>
+                <dd className="mt-1 font-bold text-blue-800 dark:text-blue-200">
+                  {formatAmount(depositSummary.depositedCents)}
+                </dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-xs font-semibold uppercase tracking-wide text-blue-600/80 dark:text-blue-300/80">
+                  Reste
+                </dt>
+                <dd className="mt-1 font-bold text-blue-800 dark:text-blue-200">
+                  {formatAmount(depositSummary.remainingCents)}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
         </div>
 
 
@@ -228,6 +319,16 @@ export default async function QuotePage({
 
 
 <div className="mt-6 flex flex-col gap-3">
+
+  {workspaceContext.permissions.canWrite &&
+  quote.status !== "REFUSE" &&
+  depositSummary.remainingCents > 0 ? (
+    <CreateDepositInvoice
+      quoteId={quote.id}
+      quoteTotalCents={quote.amountCents}
+      alreadyDepositedCents={depositSummary.depositedCents}
+    />
+  ) : null}
 
 
   {workspaceContext.permissions.canWrite ? (
@@ -258,7 +359,7 @@ export default async function QuotePage({
   </Link>) : null}
 
 
-  {workspaceContext.permissions.canWrite ? (<Link
+  {workspaceContext.permissions.canWrite && quote.status !== "ACCEPTE" && !quote.signature ? (<Link
     href={`/clients/${id}/quotes/${quoteId}/edit`}
     className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
   >

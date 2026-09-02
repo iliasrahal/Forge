@@ -90,6 +90,7 @@ export async function POST(
 
         where: {
           quoteId: quote.id,
+          type: "STANDARD",
           organizationId: workspaceContext.workspace.id,
         },
 
@@ -137,6 +138,8 @@ export async function POST(
 
           status:
             "BROUILLON",
+
+          type: "STANDARD",
 
 
           quoteId:

@@ -2,6 +2,10 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
 import { checkRateLimit } from "@/src/lib/rate-limit";
+import { prisma } from "@/src/lib/prisma";
+import { matchCatalogServicesForQuote } from "@/src/lib/quote-catalog-matching";
+import { parseFrenchInterventionRange } from "@/src/lib/french-intervention-range";
+import { formatParisDateKey } from "@/src/lib/paris-datetime";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -48,6 +52,8 @@ type AssistantDecision = {
   currentScheduledDate: string | null;
   scheduledDate: string | null;
   scheduledTime: string | null;
+  scheduledEndDate: string | null;
+  scheduledEndTime: string | null;
 
   interventionOperation: InterventionOperation;
 
@@ -60,12 +66,7 @@ type AssistantDecision = {
 };
 
 function getCurrentFrenchDate() {
-  return new Intl.DateTimeFormat("fr-CA", {
-    timeZone: "Europe/Paris",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return formatParisDateKey(new Date());
 }
 
 function getCurrentFrenchDateLabel() {
@@ -82,16 +83,8 @@ function getNextWeekdayDate(
   weekday: number,
   nextWeek = false,
 ) {
-  const now = new Date();
-
-  const parisDate = new Date(
-    now.toLocaleString("en-US", {
-      timeZone: "Europe/Paris",
-    }),
-  );
-
-  const currentDay =
-    parisDate.getDay();
+  const parisDate = new Date(`${formatParisDateKey(new Date())}T00:00:00Z`);
+  const currentDay = parisDate.getUTCDay();
 
   let daysUntil =
     weekday - currentDay;
@@ -104,9 +97,7 @@ function getNextWeekdayDate(
     daysUntil += 7;
   }
 
-  parisDate.setDate(
-    parisDate.getDate() + daysUntil,
-  );
+  parisDate.setUTCDate(parisDate.getUTCDate() + daysUntil);
 
   return parisDate
     .toISOString()
@@ -220,7 +211,8 @@ function requestsDeleteAllInterventions(
 
 export async function POST(request: Request) {
   try {
-    const { user } = await requireWorkspaceContext("useForge");
+    const workspaceContext = await requireWorkspaceContext("useForge");
+    const { user } = workspaceContext;
 
     const limit = checkRateLimit(`assistant:${user.id}`, 30, 60_000);
     if (!limit.allowed) {
@@ -345,6 +337,13 @@ Règles documents :
 - Pour une annulation, retourne null.
 - Pour matin, après-midi ou soir sans heure précise, retourne null.
 - Une création d’intervention reste valide lorsque scheduledTime est null.
+
+7 bis. scheduledEndDate et scheduledEndTime :
+- Pour une intervention sur plusieurs jours, scheduledEndDate contient le dernier jour au format YYYY-MM-DD.
+- scheduledEndTime contient l’heure de fin au format HH:mm uniquement lorsqu’elle est précisée.
+- Comprends notamment « du 10 au 15 septembre », « du lundi au vendredi », « du lundi 14 au vendredi 18 septembre » et « du 10 septembre à 9h au 15 septembre à 17h ».
+- Pour une intervention sur une seule journée, retourne null pour ces deux champs.
+- Ne crée jamais plusieurs interventions pour une plage : il s’agit d’une seule intervention avec un début et une fin.
 
 8. interventionOperation :
 - "reschedule" lorsque l’artisan veut reporter ou déplacer une intervention.
@@ -483,6 +482,8 @@ Exemples :
   "currentScheduledDate": "DATE_CALCULÉE_DE_DEMAIN",
   "scheduledDate": null,
   "scheduledTime": null,
+  "scheduledEndDate": null,
+  "scheduledEndTime": null,
   "interventionOperation": "cancel",
   "phone": null,
   "street": null,
@@ -654,6 +655,14 @@ N’ajoute aucun texte avant ou après le JSON.
       content,
     ) as Partial<AssistantDecision>;
 
+    const parsedRange = parseFrenchInterventionRange(message);
+    if (parsedRange) {
+      parsed.scheduledDate = parsedRange.scheduledDate;
+      parsed.scheduledTime = parsedRange.scheduledTime;
+      parsed.scheduledEndDate = parsedRange.scheduledEndDate;
+      parsed.scheduledEndTime = parsedRange.scheduledEndTime;
+    }
+
     if (
   message.toLowerCase().includes(
     "jeudi prochain",
@@ -766,6 +775,8 @@ if (
     const scheduledTime = cleanTime(
       parsed.scheduledTime,
     );
+    const scheduledEndDate = cleanDate(parsed.scheduledEndDate);
+    const scheduledEndTime = cleanTime(parsed.scheduledEndTime);
 
     const interventionOperation =
       cleanInterventionOperation(
@@ -796,6 +807,17 @@ if (
       parsed.notes,
     );
 
+    const quoteLines =
+      resolvedIntent === "quote" && resolvedAction === "create"
+        ? matchCatalogServicesForQuote(
+            message,
+            await prisma.serviceCatalogItem.findMany({
+              where: { organizationId: workspaceContext.workspace.id },
+              select: { id: true, name: true, priceCents: true },
+            }),
+          )
+        : [];
+
     return NextResponse.json({
       intent: resolvedIntent,
       action: resolvedAction,
@@ -805,6 +827,8 @@ if (
       currentScheduledDate,
       scheduledDate,
       scheduledTime,
+      scheduledEndDate,
+      scheduledEndTime,
       interventionOperation,
       phone,
       street,
@@ -812,6 +836,7 @@ if (
       city,
       email,
       notes,
+      quoteLines,
     });
   } catch (error) {
     const accessError = getWorkspaceErrorResponse(error);

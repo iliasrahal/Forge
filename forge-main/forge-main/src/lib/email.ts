@@ -177,7 +177,9 @@ export async function sendQuoteEmail(
   clientName: string,
   artisanSignature: string,
   quoteTitle: string,
+  quoteReference: string,
   quoteDescription: string,
+  publicQuoteUrl: string,
   pdfBuffer: Buffer,
   fileName: string,
 ) {
@@ -192,12 +194,14 @@ export async function sendQuoteEmail(
     text:
 `Bonjour ${clientName},
 
-Veuillez trouver ci-joint votre devis concernant :
-${quoteDescription}
+Votre devis ${quoteReference} est disponible.
 
-Je reste à votre disposition pour toute question ou précision concernant cette proposition.
+Consulter mon devis :
+${publicQuoteUrl}
 
-Merci pour votre confiance.
+Vous pourrez consulter le détail et l'accepter directement en ligne.
+
+Le PDF du devis reste joint à cet e-mail.
 
 Cordialement,
 
@@ -207,18 +211,17 @@ ${artisanSignature}
     html: renderEmailLayout(`
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
-<p>Veuillez trouver ci-joint votre devis concernant :</p>
+<p>Votre devis <strong>${escapeHtml(quoteReference)}</strong> est disponible.</p>
 <p style="font-weight:600;color:#1d4ed8">${escapeHtml(quoteDescription)}</p>
-
-<p>Je reste à votre disposition pour toute question ou précision concernant cette proposition.</p>
-
-<p>Merci pour votre confiance.</p>
+{{ACTION}}
+<p>Vous pourrez consulter le détail et l’accepter directement en ligne.</p>
+<p>Le PDF du devis reste joint à cet e-mail.</p>
 
 <p>
 Cordialement,<br/>
 ${formatEmailSignature(artisanSignature)}
 </p>
-`),
+`, { label: "Consulter mon devis", url: publicQuoteUrl }),
 
     attachments: [
       {
@@ -227,6 +230,24 @@ ${formatEmailSignature(artisanSignature)}
       },
     ],
 
+  });
+}
+
+export async function sendQuoteReminderEmail(
+  recipient: string,
+  quoteReference: string,
+  message: string,
+  publicQuoteUrl: string,
+) {
+  return getResendClient().emails.send({
+    from: sender,
+    to: recipient,
+    subject: `Rappel concernant votre devis ${quoteReference}`,
+    text: `${message}\n\nConsulter mon devis :\n${publicQuoteUrl}`,
+    html: renderEmailLayout(
+      `<div style="white-space:pre-line">${escapeHtml(message)}</div>{{ACTION}}`,
+      { label: "Consulter mon devis", url: publicQuoteUrl },
+    ),
   });
 }
 

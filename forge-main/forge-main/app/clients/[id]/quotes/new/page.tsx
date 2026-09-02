@@ -8,6 +8,7 @@ import {
 import QuoteLinesForm from "@/components/QuoteLinesForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
+import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -18,6 +19,7 @@ type NewQuotePageProps = {
   searchParams: Promise<{
     title?: string;
     description?: string;
+    quoteLines?: string;
   }>;
 };
 
@@ -38,7 +40,10 @@ export default async function NewQuotePage({
   const {
     title,
     description,
+    quoteLines,
   } = await searchParams;
+
+  const initialLines = parseSerializedQuoteLines(quoteLines);
 
 
 
@@ -49,6 +54,19 @@ export default async function NewQuotePage({
         organizationId: workspaceContext.workspace.id,
       },
     });
+
+  const services = await prisma.serviceCatalogItem.findMany({
+    where: {
+      organizationId: workspaceContext.workspace.id,
+    },
+    orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      priceCents: true,
+      pricingType: true,
+    },
+  });
 
 
 
@@ -344,7 +362,12 @@ export default async function NewQuotePage({
 
 
 
-        <QuoteLinesForm />
+        <QuoteLinesForm
+          initialTitle={title}
+          initialLines={initialLines}
+          services={services}
+          canWrite={workspaceContext.permissions.canWrite}
+        />
 
 
 

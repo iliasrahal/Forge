@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Forge
+
+La roadmap produit et technique est documentée dans [ROADMAP.md](./ROADMAP.md).
+La priorité actuelle reste la bibliothèque de prestations et de tarifs ; les
+étapes suivantes ne doivent pas être développées sans validation explicite.
+
 ## Getting Started
 
 First, run the development server:

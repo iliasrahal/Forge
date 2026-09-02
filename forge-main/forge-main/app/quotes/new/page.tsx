@@ -12,6 +12,7 @@ type NewQuotePageProps = {
     client?: string;
     title?: string;
     description?: string;
+    quoteLines?: string;
   }>;
 };
 
@@ -27,6 +28,7 @@ export default async function NewQuotePage({
     client: clientSearch,
     title,
     description,
+    quoteLines,
   } = await searchParams;
 
 
@@ -106,6 +108,10 @@ export default async function NewQuotePage({
         "description",
         cleanDescription,
       );
+    }
+
+    if (quoteLines) {
+      params.set("quoteLines", quoteLines);
     }
 
 

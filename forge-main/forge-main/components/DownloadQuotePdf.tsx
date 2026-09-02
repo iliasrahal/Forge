@@ -83,6 +83,8 @@ export default function DownloadQuotePdf({
         "✅ Devis envoyé avec succès.",
       );
 
+      router.refresh();
+
 
     } catch (error) {
 

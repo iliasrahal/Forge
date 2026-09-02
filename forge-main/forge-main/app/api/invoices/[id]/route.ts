@@ -51,6 +51,16 @@ export async function PATCH(
       );
     }
 
+    if (invoice.type === "DEPOSIT") {
+      return NextResponse.json(
+        {
+          error:
+            "Le montant d’une facture d’acompte est défini depuis le devis.",
+        },
+        { status: 409 },
+      );
+    }
+
     const updatedInvoice = await prisma.invoice.update({
       where: { id },
       data: { amountCents: Math.round(amount * 100) },

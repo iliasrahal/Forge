@@ -26,12 +26,35 @@ enum QuoteStatus {
   REFUSE
 }
 
+enum QuoteAcceptanceMethod {
+  CLIENT_LINK
+}
+
+enum QuoteSignatureMethod {
+  DRAWN
+}
+
+enum QuoteReminderChannel {
+  EMAIL
+}
+
 enum InvoiceStatus {
   BROUILLON
   ENVOYEE
   PAYEE
   EN_RETARD
   ANNULEE
+}
+
+enum InvoiceType {
+  STANDARD
+  DEPOSIT
+}
+
+enum ServicePricingType {
+  FIXED
+  HOURLY
+  UNIT
 }
 
 enum UserJob {
@@ -134,6 +157,8 @@ model User {
 
   adminActions AdminAuditLog[] @relation("AdminAuditActor")
 
+  quoteReminders QuoteReminder[] @relation("QuoteReminderCreator")
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -175,26 +200,42 @@ model AdminAuditLog {
 }
 
 model Organization {
-  id                 String               @id @default(cuid())
-  name               String
-  type               OrganizationType     @default(TEAM)
-  personalOwnerId    String?              @unique
-  personalOwner      User?                @relation("PersonalOrganizationOwner", fields: [personalOwnerId], references: [id], onDelete: Cascade)
-  trialStartedAt     DateTime?
-  trialEndsAt        DateTime?
-  subscriptionStatus String               @default("TRIAL")
+  id                  String               @id @default(cuid())
+  name                String
+  type                OrganizationType     @default(TEAM)
+  personalOwnerId     String?              @unique
+  personalOwner       User?                @relation("PersonalOrganizationOwner", fields: [personalOwnerId], references: [id], onDelete: Cascade)
+  trialStartedAt      DateTime?
+  trialEndsAt         DateTime?
+  subscriptionStatus  String               @default("TRIAL")
   // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
   // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
-  graceExpiresAt     DateTime?
-  members            OrganizationMember[]
-  invitations        TeamInvitation[]
-  clients            Client[]
-  interventions      Intervention[]
-  quotes             Quote[]
-  invoices           Invoice[]
-  activeSessions     Session[]            @relation("ActiveOrganization")
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  graceExpiresAt      DateTime?
+  members             OrganizationMember[]
+  invitations         TeamInvitation[]
+  clients             Client[]
+  interventions       Intervention[]
+  quotes              Quote[]
+  invoices            Invoice[]
+  serviceCatalogItems ServiceCatalogItem[]
+  activeSessions      Session[]            @relation("ActiveOrganization")
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model ServiceCatalogItem {
+  id             String             @id @default(cuid())
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  priceCents     Int
+  pricingType    ServicePricingType
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, name])
 }
 
 model OrganizationMember {
@@ -418,6 +459,13 @@ model Quote {
 
   status QuoteStatus @default(BROUILLON)
 
+  acceptedAt DateTime?
+
+  // Date du dernier envoi réussi du devis au client.
+  sentAt DateTime?
+
+  acceptanceMethod QuoteAcceptanceMethod?
+
   clientId String
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -430,12 +478,94 @@ model Quote {
 
   invoices Invoice[]
 
+  publicAccesses QuotePublicAccess[]
+
+  signature QuoteSignature?
+
+  reminders QuoteReminder[]
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
 
   @@index([clientId])
   @@index([organizationId])
+}
+
+model QuoteReminder {
+  id String @id @default(cuid())
+
+  quoteId String
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  sentAt DateTime
+
+  channel QuoteReminderChannel @default(EMAIL)
+
+  createdByUserId String?
+
+  createdByUser User? @relation("QuoteReminderCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([quoteId, sentAt])
+  @@index([createdByUserId])
+}
+
+model QuotePublicAccess {
+  id String @id @default(cuid())
+
+  tokenHash String @unique
+
+  quoteId String
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  signature QuoteSignature?
+
+  revokedAt DateTime?
+
+  acceptedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([quoteId])
+  @@index([quoteId, revokedAt])
+}
+
+model QuoteSignature {
+  id String @id @default(cuid())
+
+  quoteId String @unique
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  publicAccessId String @unique
+
+  publicAccess QuotePublicAccess @relation(fields: [publicAccessId], references: [id], onDelete: Restrict)
+
+  signerFirstName String
+
+  signerLastName String
+
+  method QuoteSignatureMethod @default(DRAWN)
+
+  // V1 : traits manuscrits normalisés et limités. Un stockage objet pourra
+  // remplacer cette représentation si Forge gère plus tard d'autres preuves.
+  signatureData Json
+
+  quoteSnapshot Json
+
+  integrityHash String
+
+  signedAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@index([signedAt])
 }
 
 model QuoteLine {
@@ -469,6 +599,9 @@ model Invoice {
 
   status InvoiceStatus @default(BROUILLON)
 
+  // STANDARD pour les factures historiques/finales, DEPOSIT pour un acompte.
+  type InvoiceType @default(STANDARD)
+
   dueDate DateTime?
 
   // Facture créée depuis un devis
@@ -496,5 +629,6 @@ model Invoice {
   @@index([clientId])
   @@index([organizationId])
   @@index([quoteId])
+  @@index([quoteId, type])
   @@index([interventionId])
 }

@@ -8,17 +8,7 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { prisma } from "@/src/lib/prisma";
 import { splitAppointmentsByDate } from "@/src/lib/intervention-calendar";
-
-const PARIS_TIME_ZONE = "Europe/Paris";
-
-function formatParisDateKey(date: Date) {
-  return new Intl.DateTimeFormat("fr-CA", {
-    timeZone: PARIS_TIME_ZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
+import { formatParisDateKey, formatParisTime } from "@/src/lib/paris-datetime";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -74,18 +64,15 @@ function mapIntervention(intervention: any): Appointment {
     hasClient: Boolean(intervention.clientId),
     address,
     date: formatParisDateKey(intervention.scheduledAt),
-    time:
-      intervention.scheduledAt.toLocaleTimeString("fr-FR", {
-        timeZone: PARIS_TIME_ZONE,
-        hour: "2-digit",
-        minute: "2-digit",
-      }) === "00:00"
-        ? ""
-        : intervention.scheduledAt.toLocaleTimeString("fr-FR", {
-            timeZone: PARIS_TIME_ZONE,
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+    time: formatParisTime(intervention.scheduledAt) === "00:00"
+      ? ""
+      : formatParisTime(intervention.scheduledAt),
+    endDate: intervention.endDate
+      ? formatParisDateKey(intervention.endDate)
+      : undefined,
+    endTime: intervention.endDate && formatParisTime(intervention.endDate) !== "23:59"
+      ? formatParisTime(intervention.endDate)
+      : undefined,
     intervention: intervention.title ?? "",
     description: intervention.description ?? undefined,
     status: mapStatus(intervention.status),

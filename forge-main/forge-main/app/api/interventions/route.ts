@@ -6,6 +6,10 @@ import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
+import {
+  createParisInterventionPeriod,
+  getParisDayBounds,
+} from "@/src/lib/paris-datetime";
 
 type InterventionOperation =
   | "reschedule"
@@ -45,33 +49,6 @@ function getClientDisplayName(client: {
   return `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim();
 }
 
-function createScheduledAt(
-  scheduledDate: string,
-  scheduledTime: string,
-) {
-  const scheduledAt = new Date(
-    `${scheduledDate}T${scheduledTime}:00`,
-  );
-
-  return Number.isNaN(scheduledAt.getTime())
-    ? null
-    : scheduledAt;
-}
-
-function getDayBounds(date: string) {
-  const start = new Date(`${date}T00:00:00`);
-  const end = new Date(`${date}T23:59:59.999`);
-
-  if (
-    Number.isNaN(start.getTime()) ||
-    Number.isNaN(end.getTime())
-  ) {
-    return null;
-  }
-
-  return { start, end };
-}
-
 export async function POST(request: Request) {
   try {
     const workspaceContext = await requireWorkspaceContext("write");
@@ -108,6 +85,14 @@ export async function POST(request: Request) {
       typeof body.scheduledTime === "string"
         ? body.scheduledTime.trim()
         : "";
+    const scheduledEndDate =
+      typeof body.scheduledEndDate === "string"
+        ? body.scheduledEndDate.trim()
+        : "";
+    const scheduledEndTime =
+      typeof body.scheduledEndTime === "string"
+        ? body.scheduledEndTime.trim()
+        : "";
 
     const phone = cleanOptionalString(body.phone);
     const street = cleanOptionalString(body.street);
@@ -124,14 +109,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const scheduledAt = createScheduledAt(
+    const period = createParisInterventionPeriod({
       scheduledDate,
-      scheduledTime || "00:00",
-    );
+      scheduledTime,
+      scheduledEndDate: scheduledEndDate || null,
+      scheduledEndTime: scheduledEndTime || null,
+    });
 
-    if (!scheduledAt) {
+    if ("error" in period) {
       return NextResponse.json(
-        { error: "La date ou l’heure est invalide." },
+        { error: period.error },
         { status: 400 },
       );
     }
@@ -240,7 +227,8 @@ export async function POST(request: Request) {
         clientId: client?.id,
         title: title || description || "Intervention",
         description: description || null,
-        scheduledAt,
+        scheduledAt: period.start,
+        endDate: period.end,
         status: "PLANIFIEE",
       },
       include: { client: true },
@@ -340,14 +328,24 @@ export async function PATCH(request: Request) {
         typeof body.scheduledTime === "string"
           ? body.scheduledTime.trim()
           : "";
-      const scheduledAt = createScheduledAt(
+      const scheduledEndDate =
+        typeof body.scheduledEndDate === "string"
+          ? body.scheduledEndDate.trim()
+          : "";
+      const scheduledEndTime =
+        typeof body.scheduledEndTime === "string"
+          ? body.scheduledEndTime.trim()
+          : "";
+      const period = createParisInterventionPeriod({
         scheduledDate,
         scheduledTime,
-      );
+        scheduledEndDate: scheduledEndDate || null,
+        scheduledEndTime: scheduledEndTime || null,
+      });
 
-      if (!scheduledAt) {
+      if ("error" in period) {
         return NextResponse.json(
-          { error: "La date ou l’heure est invalide." },
+          { error: period.error },
           { status: 400 },
         );
       }
@@ -389,7 +387,8 @@ export async function PATCH(request: Request) {
             where: { id: interventionId },
             data: {
               title,
-              scheduledAt,
+              scheduledAt: period.start,
+              endDate: period.end,
             },
           }),
         ]);
@@ -590,7 +589,7 @@ export async function PATCH(request: Request) {
           ? body.scheduledDate.trim()
           : "";
       const dateBounds = scheduledDate
-        ? getDayBounds(scheduledDate)
+        ? getParisDayBounds(scheduledDate)
         : null;
 
       if (operation === "extend" && !dateBounds) {
@@ -671,6 +670,16 @@ export async function PATCH(request: Request) {
         ? body.scheduledTime.trim()
         : "";
 
+    const scheduledEndDate =
+      typeof body.scheduledEndDate === "string"
+        ? body.scheduledEndDate.trim()
+        : "";
+
+    const scheduledEndTime =
+      typeof body.scheduledEndTime === "string"
+        ? body.scheduledEndTime.trim()
+        : "";
+
     if (!clientName) {
       return NextResponse.json(
         { error: "Précise le client concerné." },
@@ -718,7 +727,7 @@ export async function PATCH(request: Request) {
     const client = matchingClients[0];
 
     const dateBounds = currentScheduledDate
-      ? getDayBounds(currentScheduledDate)
+      ? getParisDayBounds(currentScheduledDate)
       : null;
 
     if (currentScheduledDate && !dateBounds) {
@@ -741,10 +750,18 @@ export async function PATCH(request: Request) {
           },
           ...(dateBounds
             ? {
-                scheduledAt: {
-                  gte: dateBounds.start,
-                  lte: dateBounds.end,
-                },
+                OR: [
+                  {
+                    scheduledAt: {
+                      gte: dateBounds.start,
+                      lte: dateBounds.end,
+                    },
+                  },
+                  {
+                    scheduledAt: { lte: dateBounds.end },
+                    endDate: { gte: dateBounds.start },
+                  },
+                ],
               }
             : {}),
         },
@@ -800,12 +817,14 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const newScheduledAt = createScheduledAt(
+    const period = createParisInterventionPeriod({
       scheduledDate,
       scheduledTime,
-    );
+      scheduledEndDate: scheduledEndDate || null,
+      scheduledEndTime: scheduledEndTime || null,
+    });
 
-    if (!newScheduledAt) {
+    if ("error" in period) {
       return NextResponse.json(
         {
           error:
@@ -819,7 +838,8 @@ export async function PATCH(request: Request) {
       await prisma.intervention.update({
         where: { id: intervention.id },
         data: {
-          scheduledAt: newScheduledAt,
+          scheduledAt: period.start,
+          endDate: period.end,
           status: "PLANIFIEE",
         },
         include: { client: true },
@@ -869,19 +889,19 @@ export async function DELETE(request: Request) {
         );
       }
 
-      const startOfDay = new Date(
-        `${scheduledDate}T00:00:00.000Z`,
-      );
-      const endOfDay = new Date(startOfDay);
-      endOfDay.setUTCDate(
-        endOfDay.getUTCDate() + 1,
-      );
+      const dateBounds = getParisDayBounds(scheduledDate);
+      if (!dateBounds) {
+        return NextResponse.json(
+          { error: "La date est invalide." },
+          { status: 400 },
+        );
+      }
 
       const where = {
         status: "PLANIFIEE" as const,
         scheduledAt: {
-          gte: startOfDay,
-          lt: endOfDay,
+          gte: dateBounds.start,
+          lt: dateBounds.nextStart,
         },
         organizationId: workspaceContext.workspace.id,
       };

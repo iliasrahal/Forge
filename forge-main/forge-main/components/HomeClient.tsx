@@ -118,6 +118,8 @@ const [actionClientName, setActionClientName] = useState("");
 const [actionTitle, setActionTitle] = useState("");
 const [actionDate, setActionDate] = useState("");
 const [actionTime, setActionTime] = useState("");
+const [actionEndDate, setActionEndDate] = useState("");
+const [actionEndTime, setActionEndTime] = useState("");
 const [actionError, setActionError] = useState("");
 const [isSavingAction, setIsSavingAction] = useState(false);
 const [showAddClientModal, setShowAddClientModal] = useState(false);
@@ -671,6 +673,8 @@ const handleSaveNotes = async (notes: string) => {
     setActionTitle(currentAppointment.intervention);
     setActionDate(currentAppointment.date);
     setActionTime(currentAppointment.time);
+    setActionEndDate(currentAppointment.endDate ?? "");
+    setActionEndTime(currentAppointment.endTime ?? "");
     setActionError("");
   };
 
@@ -693,6 +697,8 @@ const handleSaveNotes = async (notes: string) => {
           title: actionTitle,
           scheduledDate: actionDate,
           scheduledTime: actionTime,
+          scheduledEndDate: actionEndDate || null,
+          scheduledEndTime: actionEndTime || null,
         }),
       });
       const data = await response.json();
@@ -1328,6 +1334,30 @@ const handleCreateInvoice = async () => {
             />
           </label>
 
+          <div className="grid gap-4 min-[360px]:grid-cols-2">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
+              <input
+                type="date"
+                min={actionDate}
+                value={actionEndDate}
+                onChange={(event) => setActionEndDate(event.target.value)}
+                className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
+              <input
+                type="time"
+                step={60}
+                value={actionEndTime}
+                onChange={(event) => setActionEndTime(event.target.value)}
+                disabled={!actionEndDate}
+                className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+          </div>
+
           {actionError && (
             <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
               {actionError}
@@ -1465,11 +1495,11 @@ const handleCreateInvoice = async () => {
       <div className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
 
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Prolonger l'intervention
+          Prolonger l&apos;intervention
         </h2>
 
         <p className="mt-3 text-slate-600 dark:text-slate-300">
-          Choisis la nouvelle date de fin de l'intervention.
+          Choisis la nouvelle date de fin de l&apos;intervention.
         </p>
 
         <input

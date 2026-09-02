@@ -5,6 +5,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { clientService } from "@/src/services/client.service";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { createParisInterventionPeriod } from "@/src/lib/paris-datetime";
 
 type NewInterventionPageProps = {
   params: Promise<{ id: string }>;
@@ -70,6 +71,8 @@ export default async function NewInterventionPage({
 
     const time =
       formData.get("time");
+    const endDate = formData.get("endDate");
+    const endTime = formData.get("endTime");
 
     const formTitle =
       formData.get("title");
@@ -138,22 +141,14 @@ export default async function NewInterventionPage({
 
 
 
-    const scheduledAt =
-      new Date(
-        `${date}T${cleanTime}:00`,
-      );
+    const period = createParisInterventionPeriod({
+      scheduledDate: date,
+      scheduledTime: cleanTime,
+      scheduledEndDate: typeof endDate === "string" && endDate ? endDate : null,
+      scheduledEndTime: typeof endTime === "string" && endTime ? endTime : null,
+    });
 
-
-
-    if (
-      Number.isNaN(
-        scheduledAt.getTime(),
-      )
-    ) {
-      throw new Error(
-        "La date ou l’heure est invalide.",
-      );
-    }
+    if ("error" in period) throw new Error(period.error);
 
 
 
@@ -165,7 +160,8 @@ export default async function NewInterventionPage({
           title: cleanTitle,
           description:
             cleanDescription || null,
-          scheduledAt,
+          scheduledAt: period.start,
+          endDate: period.end,
           clientId: workspaceClient.id,
         },
       });
@@ -214,53 +210,31 @@ export default async function NewInterventionPage({
 
 
 
-          <div>
-
-            <label
-              htmlFor="date"
-              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
-            >
-              Date
-            </label>
-
-            <input
-              id="date"
-              name="date"
-              type="date"
-              required
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            />
-
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="date" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Date de début</label>
+              <input id="date" name="date" type="date" required className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+            <div>
+              <label htmlFor="time" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Heure de début</label>
+              <input id="time" name="time" type="time" step={60} required defaultValue="09:00" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+            </div>
           </div>
 
-
-
-
-          <div>
-
-            <label
-              htmlFor="time"
-              className="mb-2 block font-semibold text-blue-700 dark:text-blue-400"
-            >
-              Heure
-            </label>
-
-
-            <input
-              id="time"
-              name="time"
-              type="time"
-              step={60}
-              required
-              defaultValue="09:00"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            />
-
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="endDate" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">
+                Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
+              </label>
+              <input id="endDate" name="endDate" type="date" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+            </div>
+            <div>
+              <label htmlFor="endTime" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">
+                Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
+              </label>
+              <input id="endTime" name="endTime" type="time" step={60} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+            </div>
           </div>
-
-
-
-
           <div>
 
             <label

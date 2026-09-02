@@ -86,6 +86,16 @@ export default function CurrentInterventionCard({
           </span>
         )}
 
+        {appointment.endDate && (
+          <span className="forge-surface-subtle inline-flex items-center rounded-full border px-3.5 py-1.5">
+            Jusqu’au&nbsp;
+            <span className="capitalize">
+              {getAppointmentDateLabel(appointment.endDate)}
+            </span>
+            {appointment.endTime ? ` à ${appointment.endTime}` : ""}
+          </span>
+        )}
+
       </div>
 
       {canWrite ? (<button

@@ -5,6 +5,7 @@ import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 
 
 
@@ -56,6 +57,10 @@ export default async function QuotesPage() {
 
       include: {
         client: true,
+        reminders: {
+          select: { sentAt: true },
+          orderBy: { sentAt: "desc" },
+        },
       },
 
 
@@ -110,6 +115,12 @@ export default async function QuotesPage() {
 
 
             {quotes.map((quote) => {
+
+              const reminderState = getQuoteReminderState({
+                status: quote.status,
+                sentAt: quote.sentAt,
+                reminders: quote.reminders,
+              });
 
 
               const clientName =
@@ -198,6 +209,12 @@ export default async function QuotesPage() {
 
 
                       </span>
+
+                      {reminderState.eligible ? (
+                        <span className="mt-2 block text-xs font-bold text-amber-700 dark:text-amber-300">
+                          À relancer
+                        </span>
+                      ) : null}
 
 
 

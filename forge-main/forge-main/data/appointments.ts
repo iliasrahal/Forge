@@ -19,6 +19,8 @@ export type Appointment = {
   address: string;
   date: string;
   time: string;
+  endDate?: string;
+  endTime?: string;
   intervention: string;
   description?: string;
   status: AppointmentStatus;

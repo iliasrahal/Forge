@@ -36,6 +36,14 @@ export default function SettingsPage() {
         <div className="mt-8 space-y-3">
 
           <Link
+            href="/settings/services"
+            className="forge-surface block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+          >
+            Prestations et tarifs
+          </Link>
+
+
+          <Link
             href="/settings/appearance"
             className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
           >

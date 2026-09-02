@@ -6,6 +6,7 @@ import { prisma } from "@/src/lib/prisma";
 import { QuoteStatus } from "@/src/generated/prisma/client";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { canTransitionQuoteStatus, isQuoteContractLocked } from "@/src/lib/quote-status";
 
 
 type EditQuotePageProps = {
@@ -33,12 +34,17 @@ export default async function EditQuotePage({
     },
     include: {
       client: true,
+      signature: { select: { id: true } },
     },
   });
 
 
   if (!quote) {
     notFound();
+  }
+
+  if (isQuoteContractLocked(quote.status, Boolean(quote.signature))) {
+    redirect(`/clients/${id}/quotes/${quoteId}`);
   }
 
 
@@ -105,6 +111,26 @@ export default async function EditQuotePage({
 
     const quoteStatus = status as QuoteStatus;
 
+    const currentQuote = await prisma.quote.findFirst({
+      where: {
+        id: quoteId,
+        clientId: id,
+        organizationId: writeContext.workspace.id,
+      },
+      select: {
+        status: true,
+        signature: { select: { id: true } },
+      },
+    });
+
+    if (!currentQuote) notFound();
+    if (isQuoteContractLocked(currentQuote.status, Boolean(currentQuote.signature))) {
+      throw new Error("Un devis accepté ne peut plus être modifié.");
+    }
+    if (!canTransitionQuoteStatus(currentQuote.status, quoteStatus)) {
+      throw new Error("Cette transition de statut n’est pas autorisée.");
+    }
+
 
 
     const amount = Number(amountValue);
@@ -126,6 +152,8 @@ export default async function EditQuotePage({
         id: quoteId,
         clientId: id,
         organizationId: writeContext.workspace.id,
+        signature: { is: null },
+        status: currentQuote.status,
       },
       data: {
         title,

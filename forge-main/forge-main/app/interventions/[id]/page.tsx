@@ -16,13 +16,21 @@ type InterventionPageProps = {
 
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("fr-FR", {
+  const dateLabel = new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: "Europe/Paris",
+  }).format(date);
+  const timeLabel = new Intl.DateTimeFormat("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Europe/Paris",
   }).format(date);
+
+  return timeLabel === "00:00" || timeLabel === "23:59"
+    ? dateLabel
+    : `${dateLabel} à ${timeLabel}`;
 }
 
 
@@ -182,7 +190,7 @@ export default async function InterventionPage({
           <div className="min-w-44 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-3.5 text-center shadow-[0_16px_40px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-800/55 dark:shadow-black/30">
 
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Date
+              {intervention.endDate ? "Période" : "Date"}
             </p>
 
 
@@ -190,6 +198,7 @@ export default async function InterventionPage({
               {formatDate(
                 intervention.scheduledAt,
               )}
+              {intervention.endDate ? ` → ${formatDate(intervention.endDate)}` : ""}
             </p>
 
           </div>

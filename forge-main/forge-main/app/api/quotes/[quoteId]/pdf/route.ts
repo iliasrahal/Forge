@@ -7,6 +7,7 @@ import {
 } from "pdf-lib";
 
 import { prisma } from "@/src/lib/prisma";
+import { parseQuoteSignatureSnapshot, shortIntegrityReference, validateDrawnSignature } from "@/src/lib/quote-signature";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type PdfRouteProps = {
@@ -26,6 +27,12 @@ function formatAmount(amountCents: number) {
     style: "currency",
     currency: "EUR",
   }).format(amountCents / 100);
+}
+
+function formatDateTime(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+  }).format(date);
 }
 
 function cleanPdfText(value: string) {
@@ -140,6 +147,7 @@ export async function GET(
           },
         },
         lines: true,
+        signature: true,
       },
     });
 
@@ -149,24 +157,33 @@ export async function GET(
       });
     }
 
+    const signedSnapshot = quote.signature
+      ? parseQuoteSignatureSnapshot(quote.signature.quoteSnapshot)
+      : null;
+    const frozenClient = signedSnapshot?.client ?? quote.client;
+    const frozenReference = signedSnapshot?.reference ?? quote.reference;
+    const frozenTitle = signedSnapshot?.title ?? quote.title;
+    const frozenDescription = signedSnapshot?.description ?? quote.description;
+    const frozenAmountCents = signedSnapshot?.amountCents ?? quote.amountCents;
+    const frozenLines = signedSnapshot?.lines ?? quote.lines;
     const clientName =
-      quote.client.type === "PARTICULIER"
+      frozenClient.type === "PARTICULIER"
         ? usefulText(
-            `${quote.client.firstName ?? ""} ${
-              quote.client.lastName ?? ""
+            `${frozenClient.firstName ?? ""} ${
+              frozenClient.lastName ?? ""
             }`,
           )
-        : usefulText(quote.client.companyName);
+        : usefulText(frozenClient.companyName);
     const clientDetails = [
       clientName,
-      usefulText(quote.client.street),
+      usefulText(frozenClient.street),
       usefulText(
-        [quote.client.postalCode, quote.client.city]
+        [frozenClient.postalCode, frozenClient.city]
           .filter(Boolean)
           .join(" "),
       ),
-      usefulText(quote.client.phone),
-      usefulText(quote.client.email),
+      usefulText(frozenClient.phone),
+      usefulText(frozenClient.email),
     ].filter(Boolean);
 
     const pdfDocument = await PDFDocument.create();
@@ -262,7 +279,7 @@ export async function GET(
 
     let referenceY = y - 18;
     for (const line of wrapText(
-      quote.reference,
+      frozenReference,
       regularFont,
       10,
       220,
@@ -305,7 +322,7 @@ export async function GET(
 
     y -= 24;
     section("Description des travaux");
-    const title = usefulText(quote.title);
+    const title = usefulText(frozenTitle);
     if (title) {
       drawLines(
         wrapText(title, boldFont, 14, width),
@@ -316,7 +333,7 @@ export async function GET(
         },
       );
     }
-    const description = usefulText(quote.description);
+    const description = usefulText(frozenDescription);
     if (description) {
       y -= 6;
       drawLines(
@@ -363,7 +380,7 @@ export async function GET(
 
     drawTableHeader();
 
-    const pricedLines = quote.lines.filter(
+    const pricedLines = frozenLines.filter(
       (line) =>
         usefulText(line.label) ||
         usefulText(line.category),
@@ -439,7 +456,7 @@ export async function GET(
 
     ensure(100);
     y -= 14;
-    const total = cleanPdfText(formatAmount(quote.amountCents));
+    const total = cleanPdfText(formatAmount(frozenAmountCents));
     const summaryX = margin + designationWidth;
     const drawSummary = (
       label: string,
@@ -480,22 +497,40 @@ export async function GET(
     drawSummary("Total TTC", total, true);
 
     y -= 34;
-    ensure(92);
-    section("Bon pour accord");
-    drawLines(
-      [
-        "Date :",
-        "Signature du client précédée de la mention « Bon pour accord » :",
-      ].map(cleanPdfText),
-      { size: 9, height: 22, color: grey },
-    );
-    y -= 28;
-    page.drawLine({
-      start: { x: margin, y },
-      end: { x: margin + 220, y },
-      thickness: 0.6,
-      color: border,
-    });
+    if (quote.signature) {
+      ensure(190);
+      section("Devis accepté et signé");
+      drawLines([
+        cleanPdfText(`Signataire : ${quote.signature.signerFirstName} ${quote.signature.signerLastName}`),
+        cleanPdfText(`Signé le : ${formatDateTime(quote.signature.signedAt)}`),
+        cleanPdfText(`Référence de preuve : ${shortIntegrityReference(quote.signature.integrityHash)}`),
+      ], { size: 9, height: 16, color: grey });
+      y -= 5;
+      const signatureBox = { x: margin, y: y - 82, width: 230, height: 76 };
+      page.drawRectangle({ ...signatureBox, borderColor: border, borderWidth: 0.7, color: light });
+      const parsedSignature = validateDrawnSignature(quote.signature.signatureData);
+      if (parsedSignature.signature) {
+        for (const stroke of parsedSignature.signature.strokes) {
+          for (let index = 1; index < stroke.length; index += 1) {
+            const from = stroke[index - 1];
+            const to = stroke[index];
+            page.drawLine({
+              start: { x: signatureBox.x + from[0] * signatureBox.width, y: signatureBox.y + (1 - from[1]) * signatureBox.height },
+              end: { x: signatureBox.x + to[0] * signatureBox.width, y: signatureBox.y + (1 - to[1]) * signatureBox.height },
+              thickness: 1.35,
+              color: dark,
+            });
+          }
+        }
+      }
+      y -= 94;
+    } else {
+      ensure(92);
+      section("Bon pour accord");
+      drawLines(["Date :", "Signature du client précédée de la mention « Bon pour accord » :"].map(cleanPdfText), { size: 9, height: 22, color: grey });
+      y -= 28;
+      page.drawLine({ start: { x: margin, y }, end: { x: margin + 220, y }, thickness: 0.6, color: border });
+    }
 
     const artisanDetails = [
       usefulText(workspaceContext.user.firstName),
@@ -530,7 +565,7 @@ export async function GET(
         color: border,
       });
       pdfPage.drawText(
-        cleanPdfText(`Devis ${quote.reference}`),
+        cleanPdfText(`Devis ${frozenReference}`),
         {
           x: margin,
           y: footerY,
@@ -539,7 +574,7 @@ export async function GET(
             (300 /
               regularFont.widthOfTextAtSize(
                 cleanPdfText(
-                  `Devis ${quote.reference}`,
+                  `Devis ${frozenReference}`,
                 ),
                 8,
               )) *
@@ -563,16 +598,7 @@ export async function GET(
 
     const pdfBytes = await pdfDocument.save();
 
-    // Comportement historique conservé : le téléchargement
-    // marque un brouillon comme envoyé.
-    if (quote.status === "BROUILLON" && workspaceContext.permissions.canWrite) {
-      await prisma.quote.update({
-        where: { id: quote.id },
-        data: { status: "ENVOYE" },
-      });
-    }
-
-    const safeReference = quote.reference.replace(
+    const safeReference = frozenReference.replace(
       /[^a-zA-Z0-9-_]/g,
       "-",
     );

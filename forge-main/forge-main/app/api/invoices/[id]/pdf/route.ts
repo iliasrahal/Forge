@@ -98,6 +98,7 @@ export async function GET(
       include: {
         client: true,
         intervention: true,
+        quote: true,
       },
     });
 
@@ -220,7 +221,8 @@ export async function GET(
     });
 
     const rightEdge = pageSize[0] - margin;
-    const invoiceLabel = "FACTURE";
+    const invoiceLabel =
+      invoice.type === "DEPOSIT" ? "FACTURE D'ACOMPTE" : "FACTURE";
     const invoiceLabelWidth = boldFont.widthOfTextAtSize(
       invoiceLabel,
       18,
@@ -264,6 +266,20 @@ export async function GET(
       font: regularFont,
       color: grey,
     });
+
+    if (invoice.type === "DEPOSIT" && invoice.quote) {
+      currentY -= 16;
+      page.drawText(
+        cleanPdfText(`Acompte relatif au devis ${invoice.quote.reference}`),
+        {
+          x: margin,
+          y: currentY,
+          size: 10,
+          font: boldFont,
+          color: blue,
+        },
+      );
+    }
 
     currentY -= 48;
     drawSectionTitle("Client");
@@ -410,7 +426,9 @@ export async function GET(
         color: borderGrey,
       });
       pdfPage.drawText(
-        cleanPdfText(`Facture ${invoice.reference}`),
+        cleanPdfText(
+          `${invoice.type === "DEPOSIT" ? "Facture d'acompte" : "Facture"} ${invoice.reference}`,
+        ),
         {
           x: margin,
           y: footerY,

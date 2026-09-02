@@ -68,6 +68,8 @@ export default function UpcomingCalendar({
   const [title, setTitle] = useState("");
   const [scheduledDate, setScheduledDate] = useState(initialDateKey);
   const [scheduledTime, setScheduledTime] = useState("09:00");
+  const [scheduledEndDate, setScheduledEndDate] = useState("");
+  const [scheduledEndTime, setScheduledEndTime] = useState("");
   const [description, setDescription] = useState("");
   const [creationError, setCreationError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -159,6 +161,8 @@ export default function UpcomingCalendar({
           description: description.trim(),
           scheduledDate,
           scheduledTime,
+          scheduledEndDate: scheduledEndDate || null,
+          scheduledEndTime: scheduledEndTime || null,
         }),
       });
       const data = await response.json();
@@ -170,6 +174,8 @@ export default function UpcomingCalendar({
       setShowCreationForm(false);
       setTitle("");
       setDescription("");
+      setScheduledEndDate("");
+      setScheduledEndTime("");
       setNewClientName("");
       onInterventionCreated(data.intervention.id, scheduledDate);
     } catch (error) {
@@ -304,6 +310,11 @@ export default function UpcomingCalendar({
                   <span className="mt-2 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                     {getStatusLabel(appointment.status)}
                   </span>
+                  {appointment.endDate && appointment.endDate !== appointment.date ? (
+                    <span className="ml-2 mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[0.68rem] font-semibold text-violet-700 dark:bg-violet-950 dark:text-violet-300">
+                      Jusqu’au {new Date(`${appointment.endDate}T00:00:00Z`).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "UTC" })}
+                    </span>
+                  ) : null}
                 </span>
               </button>
             ))}
@@ -413,6 +424,30 @@ export default function UpcomingCalendar({
                     onChange={(event) => setScheduledTime(event.target.value)}
                     required
                     className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 min-[360px]:grid-cols-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
+                  <input
+                    type="date"
+                    min={scheduledDate}
+                    value={scheduledEndDate}
+                    onChange={(event) => setScheduledEndDate(event.target.value)}
+                    className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
+                  <input
+                    type="time"
+                    step={60}
+                    value={scheduledEndTime}
+                    onChange={(event) => setScheduledEndTime(event.target.value)}
+                    disabled={!scheduledEndDate}
+                    className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </label>
               </div>

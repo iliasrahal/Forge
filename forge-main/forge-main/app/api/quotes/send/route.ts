@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createQuotePublicToken, hashQuotePublicToken } from "@/src/lib/quote-public-access";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
@@ -67,6 +68,13 @@ export async function POST(
         },
       );
 
+    }
+
+    if (quote.status === "REFUSE") {
+      return NextResponse.json(
+        { error: "Un devis refusé ne peut pas être renvoyé." },
+        { status: 409 },
+      );
     }
 
 
@@ -141,31 +149,55 @@ export async function POST(
       quote.description?.trim() ||
       quote.title.trim();
 
-
-
-    await sendQuoteEmail(
-      quote.client.email,
-      clientName,
-      artisanSignature,
-      quote.title,
-      quoteDescription,
-      pdfBuffer,
-      `devis-${quote.reference}.pdf`,
-    );
-
-
-
-    await prisma.quote.update({
-
-      where: {
-        id: quote.id,
-      },
-
+    const rawPublicToken = createQuotePublicToken();
+    const publicAccess = await prisma.quotePublicAccess.create({
       data: {
-        status: "ENVOYE",
+        quoteId: quote.id,
+        tokenHash: hashQuotePublicToken(rawPublicToken),
       },
-
+      select: { id: true },
     });
+    const publicQuoteUrl = `${origin}/quote/view/${rawPublicToken}`;
+
+    try {
+      const delivery = await sendQuoteEmail(
+        quote.client.email,
+        clientName,
+        artisanSignature,
+        quote.title,
+        quote.reference,
+        quoteDescription,
+        publicQuoteUrl,
+        pdfBuffer,
+        `devis-${quote.reference}.pdf`,
+      );
+      if (delivery.error) {
+        throw new Error("L’e-mail du devis n’a pas pu être envoyé.");
+      }
+    } catch (emailError) {
+      await prisma.quotePublicAccess.delete({ where: { id: publicAccess.id } });
+      throw emailError;
+    }
+
+
+
+    const sentAt = new Date();
+    await prisma.$transaction([
+      prisma.quotePublicAccess.updateMany({
+        where: {
+          quoteId: quote.id,
+          id: { not: publicAccess.id },
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      }),
+      prisma.quote.update({
+        where: { id: quote.id },
+        data: quote.status === "ACCEPTE"
+          ? { sentAt }
+          : { status: "ENVOYE", sentAt },
+      }),
+    ]);
 
 
 

@@ -98,6 +98,8 @@ type AssistantDecision = {
   currentScheduledDate: string | null;
   scheduledDate: string | null;
   scheduledTime: string | null;
+  scheduledEndDate: string | null;
+  scheduledEndTime: string | null;
   interventionOperation: InterventionOperation;
   phone: string | null;
   street: string | null;
@@ -105,6 +107,10 @@ type AssistantDecision = {
   city: string | null;
   email: string | null;
   notes: string | null;
+  quoteLines: Array<{
+    category: string;
+    amount: string;
+  }>;
 };
 
 
@@ -460,6 +466,16 @@ export default function ForgeBar({
           ? data.scheduledTime.trim()
           : null,
 
+      scheduledEndDate:
+        typeof data.scheduledEndDate === "string" && data.scheduledEndDate.trim()
+          ? data.scheduledEndDate.trim()
+          : null,
+
+      scheduledEndTime:
+        typeof data.scheduledEndTime === "string" && data.scheduledEndTime.trim()
+          ? data.scheduledEndTime.trim()
+          : null,
+
       interventionOperation:
         data.interventionOperation ===
           "reschedule" ||
@@ -504,6 +520,18 @@ export default function ForgeBar({
         data.notes.trim()
           ? data.notes.trim()
           : null,
+
+      quoteLines: Array.isArray(data.quoteLines)
+        ? data.quoteLines.filter(
+            (line: unknown): line is { category: string; amount: string } =>
+              Boolean(
+                line &&
+                  typeof line === "object" &&
+                  typeof (line as { category?: unknown }).category === "string" &&
+                  typeof (line as { amount?: unknown }).amount === "string",
+              ),
+          )
+        : [],
     };
   }
 
@@ -726,6 +754,8 @@ export default function ForgeBar({
       description,
       scheduledDate,
       scheduledTime,
+      scheduledEndDate,
+      scheduledEndTime,
       phone,
       street,
       postalCode,
@@ -761,6 +791,8 @@ export default function ForgeBar({
           description,
           scheduledDate,
           scheduledTime,
+          scheduledEndDate,
+          scheduledEndTime,
           phone,
           street,
           postalCode,
@@ -835,6 +867,10 @@ export default function ForgeBar({
       );
     }
 
+    if (decision.quoteLines.length > 0) {
+      params.set("quoteLines", JSON.stringify(decision.quoteLines));
+    }
+
     setMessage("");
     setPendingRequest(null);
     setAssistantMessage("");
@@ -857,6 +893,8 @@ export default function ForgeBar({
       currentScheduledDate,
       scheduledDate,
       scheduledTime,
+      scheduledEndDate,
+      scheduledEndTime,
       interventionOperation,
     } = decision;
 
@@ -907,6 +945,8 @@ export default function ForgeBar({
           currentScheduledDate,
           scheduledDate,
           scheduledTime,
+          scheduledEndDate,
+          scheduledEndTime,
         }),
       },
     );
