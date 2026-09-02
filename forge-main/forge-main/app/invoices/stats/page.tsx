@@ -5,22 +5,7 @@ import QuoteStatsSelector from "@/components/QuoteStatsSelector";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
-
-
-const months = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+import { getParisYearMonth } from "@/src/lib/document-history";
 
 
 export default async function InvoiceStatsPage() {
@@ -32,6 +17,11 @@ export default async function InvoiceStatsPage() {
       organizationId: workspaceContext.workspace.id,
     },
     select: {
+      id: true,
+      title: true,
+      reference: true,
+      status: true,
+      type: true,
       amountCents: true,
       createdAt: true,
     },
@@ -40,22 +30,34 @@ export default async function InvoiceStatsPage() {
     },
   });
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = getParisYearMonth(new Date()).year;
   const availableYears = Array.from(
-    new Set(invoices.map((invoice) => invoice.createdAt.getFullYear())),
+    new Set(invoices.map((invoice) => getParisYearMonth(invoice.createdAt).year)),
   );
   const years = Array.from(new Set([currentYear, ...availableYears])).sort(
     (a, b) => b - a,
   );
-  const yearInvoices = invoices.filter(
-    (invoice) => invoice.createdAt.getFullYear() === currentYear,
-  );
-  const monthlyTotals = months.map((month, index) => ({
-    month,
-    total: yearInvoices
-      .filter((invoice) => invoice.createdAt.getMonth() === index)
-      .reduce((sum, invoice) => sum + invoice.amountCents, 0),
-  }));
+  const statusLabels: Record<string, string> = {
+    BROUILLON: "Brouillon",
+    ENVOYEE: "Envoyée",
+    PAYEE: "Payée",
+    EN_RETARD: "En retard",
+    ANNULEE: "Annulée",
+  };
+  const initialDocuments = invoices
+    .filter(
+      (invoice) => getParisYearMonth(invoice.createdAt).year === currentYear,
+    )
+    .map((invoice) => ({
+      id: invoice.id,
+      title: invoice.title,
+      reference: `Facture ${invoice.reference}`,
+      amountCents: invoice.amountCents,
+      createdAt: invoice.createdAt.toISOString(),
+      statusLabel: statusLabels[invoice.status] ?? invoice.status,
+      href: `/invoices/${invoice.id}`,
+      badge: invoice.type === "DEPOSIT" ? "Facture d’acompte" : undefined,
+    }));
 
   return (
     <main className="min-h-screen pb-32">
@@ -76,8 +78,9 @@ export default async function InvoiceStatsPage() {
         <QuoteStatsSelector
           year={currentYear}
           years={years}
-          monthlyTotals={monthlyTotals}
+          initialDocuments={initialDocuments}
           statsEndpoint="/api/invoices/stats"
+          documentLabel="facture"
         />
       </div>
 

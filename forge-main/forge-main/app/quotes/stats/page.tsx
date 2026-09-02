@@ -5,23 +5,8 @@ import QuoteStatsSelector from "@/components/QuoteStatsSelector";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
-
-
-const months = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
-
+import { getQuoteReminderState } from "@/src/lib/quote-reminders";
+import { getParisYearMonth } from "@/src/lib/document-history";
 
 
 export default async function QuoteStatsPage() {
@@ -40,8 +25,26 @@ export default async function QuoteStatsPage() {
 
 
       select: {
+        id: true,
+        title: true,
+        reference: true,
+        status: true,
+        sentAt: true,
         amountCents: true,
         createdAt: true,
+        clientId: true,
+        client: {
+          select: {
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        },
+        reminders: {
+          select: { sentAt: true },
+          orderBy: { sentAt: "desc" },
+        },
       },
 
 
@@ -53,8 +56,7 @@ export default async function QuoteStatsPage() {
 
 
 
-  const currentYear =
-    new Date().getFullYear();
+  const currentYear = getParisYearMonth(new Date()).year;
 
 
 
@@ -63,7 +65,7 @@ export default async function QuoteStatsPage() {
       new Set(
         quotes.map(
           (quote) =>
-            quote.createdAt.getFullYear()
+            getParisYearMonth(quote.createdAt).year
         )
       )
     );
@@ -82,39 +84,37 @@ export default async function QuoteStatsPage() {
 
 
 
-  const yearQuotes =
-    quotes.filter(
-      (quote) =>
-        quote.createdAt.getFullYear() === currentYear
-    );
+  const initialDocuments = quotes
+    .filter((quote) => getParisYearMonth(quote.createdAt).year === currentYear)
+    .map((quote) => {
+      const reminderState = getQuoteReminderState({
+        status: quote.status,
+        sentAt: quote.sentAt,
+        reminders: quote.reminders,
+      });
+      const clientName =
+        quote.client.type === "PARTICULIER"
+          ? `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim()
+          : quote.client.companyName ?? "Client professionnel";
+      const statusLabels: Record<string, string> = {
+        BROUILLON: "Brouillon",
+        ENVOYE: "Envoyé",
+        ACCEPTE: "Accepté",
+        REFUSE: "Refusé",
+      };
 
-
-
-  const monthlyTotals =
-    months.map(
-      (month, index) => {
-
-        const total =
-          yearQuotes
-            .filter(
-              (quote) =>
-                quote.createdAt.getMonth() === index
-            )
-            .reduce(
-              (sum, quote) =>
-                sum + quote.amountCents,
-              0
-            );
-
-
-
-        return {
-          month,
-          total,
-        };
-
-      }
-    );
+      return {
+        id: quote.id,
+        title: quote.title,
+        reference: quote.reference,
+        amountCents: quote.amountCents,
+        createdAt: quote.createdAt.toISOString(),
+        statusLabel: statusLabels[quote.status] ?? quote.status,
+        href: `/clients/${quote.clientId}/quotes/${quote.id}`,
+        clientName,
+        attention: reminderState.eligible ? "À relancer" : undefined,
+      };
+    });
 
 
 
@@ -157,7 +157,7 @@ export default async function QuoteStatsPage() {
         <QuoteStatsSelector
           year={currentYear}
           years={years}
-          monthlyTotals={monthlyTotals}
+          initialDocuments={initialDocuments}
         />
 
 
