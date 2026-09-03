@@ -31,7 +31,7 @@ export default function CurrentInterventionCard({
     appointment.client || subject;
 
   return (
-    <article className="forge-surface w-full overflow-hidden rounded-[2.25rem] border border-t-2">
+    <article className="forge-surface w-full overflow-hidden rounded-[2.25rem] border">
       <div className="px-4 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
 
 

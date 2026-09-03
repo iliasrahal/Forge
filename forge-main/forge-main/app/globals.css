@@ -22,6 +22,7 @@
   --forge-text-muted: #4a5486;
   --forge-border: rgb(28 40 100 / 0.16);
   --forge-border-strong: rgb(28 40 100 / 0.3);
+  --forge-card-border: rgb(76 110 245 / 0.3);
   --forge-accent-blue: #4c6ef5;
   --forge-accent-blue-lit: #3346c4;
   --forge-accent-pink: #ff5f9e;
@@ -103,6 +104,7 @@ html.dark {
   --forge-text-muted: #8b95bd;
   --forge-border: rgb(124 144 226 / 0.22);
   --forge-border-strong: rgb(124 144 226 / 0.42);
+  --forge-card-border: rgb(124 144 226 / 0.34);
   --forge-accent-blue: #4c6ef5;
   --forge-accent-blue-lit: #93a8ff;
   --forge-accent-pink: #ff7db0;
@@ -181,8 +183,7 @@ html.dark body {
 /* Surface Cyclorama explicite pour les nouveaux composants. Les anciennes
    classes Tailwind restent couvertes plus bas pour assurer la transition. */
 .forge-surface {
-  border-color: var(--forge-border) !important;
-  border-top-color: var(--forge-accent-blue) !important;
+  border-color: var(--forge-card-border) !important;
   background: color-mix(in srgb, var(--forge-surface) 94%, transparent) !important;
   color: var(--forge-text-primary);
   box-shadow:
@@ -435,7 +436,7 @@ html.dark body {
 
 .landing-cyclorama :is(article, div, aside, form)[class*="bg-white"][class*="rounded-"],
 .landing-cyclorama :is(article, div, aside, form)[class*="bg-slate-9"][class*="rounded-"] {
-  border-top-color: var(--forge-accent-blue) !important;
+  border-color: var(--forge-card-border) !important;
   background-color: var(--landing-panel) !important;
   background-image: none !important;
   box-shadow:
@@ -684,16 +685,15 @@ html.dark body {
 .forge-app-shell [class*="shadow-2xl"],
 .forge-app-shell [class*="shadow-["] { box-shadow: none !important; }
 
-/* Panneaux sombres arrondis (bg-slate-800/900/950) : meme arete d'aube
-   que les panneaux clairs. */
+/* Panneaux sombres arrondis (bg-slate-800/900/950) : contour Cyclorama
+   continu et discret sur les quatre côtés. */
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-9"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-9"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-xl"][class*="bg-slate-9"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-slate-8"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-slate-8"] {
   position: relative;
-  border-color: var(--line) !important;
-  border-top: 2px solid var(--cobalt) !important;
+  border: 1px solid var(--forge-card-border) !important;
   background-color: var(--panel) !important;
   box-shadow:
     inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
@@ -754,15 +754,14 @@ html.dark body {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cobalt) 24%, transparent);
 }
 
-/* Panneaux : poses sur la surface, pas flottants. Une arete d'aube en haut,
-   un file fin, aucune ombre portee — le monde n'a pas de cartes qui levitent. */
+/* Panneaux : poses sur la surface, pas flottants. Un contour Cyclorama fin
+   et continu remplace l'ancienne arête limitée au bord supérieur. */
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-3xl"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-2xl"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-xl"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, a, div)[class*="rounded-[2"][class*="bg-white"] {
   position: relative;
-  border-color: var(--line) !important;
-  border-top: 2px solid var(--cobalt) !important;
+  border: 1px solid var(--forge-card-border) !important;
   background-color: var(--panel) !important;
   background-image: none !important;
   box-shadow:
@@ -798,11 +797,10 @@ html.dark body {
   border-color: var(--forge-border-strong) !important;
 }
 
-/* Panneaux cliquables : l'arete d'aube s'affirme au survol, sans halo. */
+/* Panneaux cliquables : le contour complet s'affirme au survol, sans halo. */
 .forge-app-shell :is(a, article, button)[class*="rounded-2xl"][class*="bg-white"]:hover,
 .forge-app-shell :is(a, article, button)[class*="rounded-3xl"][class*="bg-white"]:hover {
   border-color: color-mix(in srgb, var(--cobalt) 40%, var(--line)) !important;
-  border-top-color: var(--cobalt) !important;
   box-shadow:
     inset 0 12px 34px -18px color-mix(in srgb, var(--cobalt) 52%, transparent),
     0 1px 0 0 color-mix(in srgb, var(--cobalt) 30%, transparent) !important;
