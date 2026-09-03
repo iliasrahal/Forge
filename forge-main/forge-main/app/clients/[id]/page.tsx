@@ -217,18 +217,16 @@ export default async function ClientPage({
 
             <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
 
-
-              <p className="text-center text-base text-slate-500 dark:text-slate-400">
-                {client.street ||
-                  "Aucune adresse renseignée"}
-              </p>
-
-
-              {(client.postalCode ||
-                client.city) && (
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                  {client.postalCode}{" "}
-                  {client.city}
+              {client.email ? (
+                <a
+                  href={`mailto:${client.email}`}
+                  className="block break-all text-center font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400"
+                >
+                  {client.email}
+                </a>
+              ) : (
+                <p className="text-center text-base text-slate-500 dark:text-slate-400">
+                  Aucun e-mail renseigné.
                 </p>
               )}
 
