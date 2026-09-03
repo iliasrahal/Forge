@@ -8,6 +8,7 @@ import {
   buildInvoiceDescriptionSections,
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
+import { resolveClientEmail } from "@/src/lib/client-email";
 
 
 export async function POST(
@@ -27,6 +28,7 @@ export async function POST(
 
     const {
       invoiceId,
+      email: explicitEmail,
     } = body;
 
 
@@ -81,7 +83,28 @@ export async function POST(
 
 
 
-    if (!invoice.client.email) {
+    if (
+      invoice.client.organizationId !==
+      workspaceContext.workspace.id
+    ) {
+
+      return NextResponse.json(
+        {
+          error: "Facture introuvable",
+        },
+        {
+          status: 404,
+        },
+      );
+
+    }
+
+    const recipientEmail = resolveClientEmail({
+      explicitEmail,
+      clientEmail: invoice.client.email,
+    });
+
+    if (!recipientEmail) {
 
       return NextResponse.json(
         {
@@ -168,7 +191,7 @@ export async function POST(
 
 
     await sendInvoiceEmail(
-      invoice.client.email,
+      recipientEmail,
       clientName,
       artisanSignature,
       invoice.reference,

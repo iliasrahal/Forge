@@ -11,6 +11,10 @@ import {
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import {
+  isValidClientEmail,
+  normalizeClientEmail,
+} from "@/src/lib/client-email";
 
 
 
@@ -123,6 +127,9 @@ export default async function InvoicePage({
       : parseInvoiceDescriptionSections(
           invoice.description,
         );
+  const clientEmail = isValidClientEmail(invoice.client.email)
+    ? normalizeClientEmail(invoice.client.email)
+    : null;
 
 
 
@@ -304,6 +311,7 @@ export default async function InvoicePage({
             <SendInvoiceButton
               invoiceId={invoice.id}
               clientId={invoice.clientId}
+              clientEmail={clientEmail}
             />
           ) : null}
 

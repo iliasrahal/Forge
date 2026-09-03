@@ -3,15 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import {
+  isValidClientEmail,
+  normalizeClientEmail,
+} from "@/src/lib/client-email";
+
 type SendInvoiceButtonProps = {
   invoiceId: string;
   clientId: string;
+  clientEmail: string | null;
 };
 
 
 export default function SendInvoiceButton({
   invoiceId,
   clientId,
+  clientEmail,
 }: SendInvoiceButtonProps) {
 
   const router = useRouter();
@@ -23,10 +30,13 @@ export default function SendInvoiceButton({
     useState("");
 
   const [missingEmail, setMissingEmail] =
-    useState(false);
+    useState(!clientEmail);
 
   const [email, setEmail] =
-    useState("");
+    useState(clientEmail ?? "");
+
+  const [recipientEmail, setRecipientEmail] =
+    useState(clientEmail);
 
   const [savingEmail, setSavingEmail] =
     useState(false);
@@ -36,7 +46,7 @@ export default function SendInvoiceButton({
 
 
 
-  async function handleSendInvoice() {
+  async function handleSendInvoice(explicitEmail?: string) {
 
     try {
 
@@ -59,6 +69,9 @@ export default function SendInvoiceButton({
 
             body: JSON.stringify({
               invoiceId,
+              ...(explicitEmail
+                ? { email: explicitEmail }
+                : {}),
             }),
 
           },
@@ -83,6 +96,7 @@ export default function SendInvoiceButton({
           );
 
           setMissingEmail(true);
+          setRecipientEmail(null);
 
           return;
 
@@ -135,9 +149,9 @@ export default function SendInvoiceButton({
   }
 
   async function handleSaveEmail() {
-    const cleanEmail = email.trim();
+    const cleanEmail = normalizeClientEmail(email);
 
-    if (!cleanEmail || !cleanEmail.includes("@")) {
+    if (!isValidClientEmail(cleanEmail)) {
       setMessage("Saisis une adresse email valide.");
       return;
     }
@@ -162,8 +176,9 @@ export default function SendInvoiceButton({
 
       setMissingEmail(false);
       setEmail(cleanEmail);
+      setRecipientEmail(cleanEmail);
       setMessage("");
-      await handleSendInvoice();
+      await handleSendInvoice(cleanEmail);
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -182,18 +197,27 @@ export default function SendInvoiceButton({
     <div className="space-y-3">
 
 
-      <button
-        type="button"
-        onClick={handleSendInvoice}
-        disabled={loading}
-        className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
-      >
+      {!missingEmail && (
+        <>
+          {recipientEmail && (
+            <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+              Envoyer à :{" "}
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
+                {recipientEmail}
+              </span>
+            </p>
+          )}
 
-        {loading
-          ? "Envoi en cours..."
-          : "Envoyer la facture"}
-
-      </button>
+          <button
+            type="button"
+            onClick={() => void handleSendInvoice()}
+            disabled={loading}
+            className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
+          >
+            {loading ? "Envoi en cours..." : "Envoyer la facture"}
+          </button>
+        </>
+      )}
 
 
 
@@ -216,41 +240,40 @@ export default function SendInvoiceButton({
               Terminé
             </button>
           )}
-
-
-
-          {missingEmail && (
-            <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-left dark:border-blue-900 dark:bg-blue-950">
-              <label
-                htmlFor="invoice-client-email"
-                className="block text-sm font-semibold text-blue-700 dark:text-blue-300"
-              >
-                Adresse email du client
-              </label>
-
-              <input
-                id="invoice-client-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="client@exemple.fr"
-                className="mt-2 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-white"
-              />
-
-              <button
-                type="button"
-                onClick={() => void handleSaveEmail()}
-                disabled={savingEmail}
-                className="mt-3 w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {savingEmail ? "Enregistrement..." : "Enregistrer et envoyer"}
-              </button>
-            </div>
-          )}
-
-
         </div>
 
+      )}
+
+      {missingEmail && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-left dark:border-blue-900 dark:bg-blue-950">
+          {!message && (
+            <p className="text-sm text-slate-700 dark:text-slate-200">
+              Ce client n&apos;a pas encore d&apos;adresse email valide.
+            </p>
+          )}
+          <label
+            htmlFor="invoice-client-email"
+            className="mt-3 block text-sm font-semibold text-blue-700 dark:text-blue-300"
+          >
+            Adresse email du client
+          </label>
+          <input
+            id="invoice-client-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="client@exemple.fr"
+            className="mt-2 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 dark:border-blue-800 dark:bg-slate-900 dark:text-white"
+          />
+          <button
+            type="button"
+            onClick={() => void handleSaveEmail()}
+            disabled={savingEmail}
+            className="mt-3 w-full rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {savingEmail ? "Enregistrement..." : "Enregistrer et envoyer"}
+          </button>
+        </div>
       )}
 
 
