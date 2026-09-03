@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type SendInvoiceButtonProps = {
@@ -12,6 +13,8 @@ export default function SendInvoiceButton({
   invoiceId,
   clientId,
 }: SendInvoiceButtonProps) {
+
+  const router = useRouter();
 
   const [loading, setLoading] =
     useState(false);
@@ -28,6 +31,9 @@ export default function SendInvoiceButton({
   const [savingEmail, setSavingEmail] =
     useState(false);
 
+  const [sentSuccessfully, setSentSuccessfully] =
+    useState(false);
+
 
 
   async function handleSendInvoice() {
@@ -37,6 +43,7 @@ export default function SendInvoiceButton({
       setLoading(true);
       setMessage("");
       setMissingEmail(false);
+      setSentSuccessfully(false);
 
 
 
@@ -64,7 +71,7 @@ export default function SendInvoiceButton({
 
 
 
-      if (!response.ok) {
+      if (!response.ok || data.success !== true) {
 
 
         if (
@@ -97,6 +104,8 @@ export default function SendInvoiceButton({
         "✅ Facture envoyée avec succès.",
       );
 
+      setSentSuccessfully(true);
+
 
 
     } catch (error) {
@@ -118,6 +127,11 @@ export default function SendInvoiceButton({
 
     }
 
+  }
+
+  function handleFinish() {
+    router.push("/app");
+    router.refresh();
   }
 
   async function handleSaveEmail() {
@@ -192,6 +206,16 @@ export default function SendInvoiceButton({
           <p>
             {message}
           </p>
+
+          {sentSuccessfully && (
+            <button
+              type="button"
+              onClick={handleFinish}
+              className="mt-3 min-h-12 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+            >
+              Terminé
+            </button>
+          )}
 
 
 
