@@ -1171,7 +1171,7 @@ const handleCreateInvoice = async () => {
 
 
   {showAddClientModal && currentAppointment && (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/50 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
+    <div className="forge-modal-overlay fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
       <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Informations client

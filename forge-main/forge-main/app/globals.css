@@ -12,6 +12,7 @@
   --forge-surface-strong: rgb(195 211 246 / 0.78);
   --forge-surface-hover: rgb(205 219 249 / 0.82);
   --forge-modal-background: rgb(222 231 251 / 0.9);
+  --forge-modal-overlay: rgb(10 18 48 / 0.14);
   --forge-background-accent: #d6ddf3;
   --forge-input-background: rgb(235 240 252 / 0.88);
   --forge-navigation-background: rgb(210 221 247 / 0.88);
@@ -92,6 +93,7 @@ html.dark {
   --forge-surface-strong: rgb(25 33 73 / 0.88);
   --forge-surface-hover: rgb(24 32 71 / 0.9);
   --forge-modal-background: rgb(13 18 43 / 0.93);
+  --forge-modal-overlay: rgb(4 5 10 / 0.24);
   --forge-background-accent: #06070f;
   --forge-input-background: rgb(18 24 56 / 0.86);
   --forge-navigation-background: rgb(12 16 36 / 0.88);
@@ -784,6 +786,12 @@ html.dark body {
 }
 
 /* Une modale est plus dense qu'une carte mais reste teintée par le monde. */
+.forge-modal-overlay {
+  background-color: var(--forge-modal-overlay);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
 .forge-app-shell [class*="fixed"][class*="inset-0"] > :is(section, article, form, div)[class*="rounded-"][class*="bg-white"],
 .forge-app-shell :is(section, article, form, div)[class*="max-h-"][class*="rounded-"][class*="bg-white"] {
   background-color: var(--forge-modal-background) !important;
