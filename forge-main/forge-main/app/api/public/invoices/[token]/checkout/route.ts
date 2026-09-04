@@ -122,14 +122,17 @@ export async function POST(request: Request, { params }: CheckoutRouteProps) {
       },
     });
 
-    const successUrl = `${base}/facture/${token}?paid=1`;
-    const cancelUrl = `${base}/facture/${token}?canceled=1`;
     const productName = `Facture ${invoice.reference}`;
 
+    // Checkout intégré : le client paie directement dans /facture/[token],
+    // sans jamais quitter myforge.online. return_url ne sert que pour les
+    // moyens de paiement qui exigent une étape externe (3D Secure...) ;
+    // redirect_on_completion "if_required" évite une navigation sinon.
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: "payment",
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      ui_mode: "embedded_page",
+      return_url: `${base}/facture/${token}?paid=1`,
+      redirect_on_completion: "if_required",
       client_reference_id: invoice.id,
       metadata: { paymentId: created.id, invoiceId: invoice.id },
       payment_intent_data: {
@@ -197,7 +200,7 @@ export async function POST(request: Request, { params }: CheckoutRouteProps) {
       data: { stripeCheckoutSessionId: session.id },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ clientSecret: session.client_secret });
   } catch (error) {
     console.error("PUBLIC INVOICE CHECKOUT ERROR", error);
     return NextResponse.json(

@@ -6,8 +6,13 @@ import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
-import { appUrl, getStripe, isStripeConfigured } from "@/src/lib/stripe";
+import { getStripe, isStripeConfigured } from "@/src/lib/stripe";
+import { ensureConnectAccount } from "@/src/lib/stripe-connect";
 
+/**
+ * Session Connect embarquée : le formulaire d'onboarding s'affiche dans
+ * /settings/paiement, sans jamais rediriger vers connect.stripe.com.
+ */
 export async function POST() {
   try {
     const currentUser = await requireCurrentUser();
@@ -37,49 +42,26 @@ export async function POST() {
       );
     }
 
-    const stripe = getStripe();
-    const organization = context.workspace;
-    let accountId = organization.stripeAccountId;
+    const accountId = await ensureConnectAccount(
+      prisma,
+      context.workspace,
+      currentUser.email,
+    );
 
-    if (!accountId) {
-      const account = await stripe.accounts.create({
-        type: "express",
-        country: "FR",
-        email: currentUser.email,
-        business_type: "individual",
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-          // Virement SEPA (customer_balance) côté facture publique.
-          sepa_bank_transfer_payments: { requested: true },
-        },
-        business_profile: {
-          name: organization.name,
-        },
-        metadata: { organizationId: organization.id },
-      });
-      accountId = account.id;
-      await prisma.organization.update({
-        where: { id: organization.id },
-        data: { stripeAccountId: accountId },
-      });
-    }
-
-    const base = appUrl();
-    const link = await stripe.accountLinks.create({
+    const accountSession = await getStripe().accountSessions.create({
       account: accountId,
-      refresh_url: `${base}/api/stripe/connect/refresh`,
-      return_url: `${base}/api/stripe/connect/return`,
-      type: "account_onboarding",
+      components: {
+        account_onboarding: { enabled: true },
+      },
     });
 
-    return NextResponse.json({ url: link.url });
+    return NextResponse.json({ clientSecret: accountSession.client_secret });
   } catch (error) {
     const accessError = getWorkspaceErrorResponse(error);
     if (accessError) {
       return NextResponse.json(accessError.body, { status: accessError.status });
     }
-    console.error("STRIPE CONNECT START ERROR", error);
+    console.error("STRIPE CONNECT ONBOARDING SESSION ERROR", error);
     return NextResponse.json(
       { error: "Impossible de démarrer la configuration Stripe." },
       { status: 500 },

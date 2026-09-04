@@ -1,12 +1,21 @@
 "use client";
 
-import { Building2, CreditCard, Loader2 } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckout,
+  EmbeddedCheckoutProvider,
+} from "@stripe/react-stripe-js";
+import { ArrowLeft, Building2, CreditCard, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 type Props = {
   token: string;
   remainingCents: number;
 };
+
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null;
 
 function formatEur(cents: number) {
   return new Intl.NumberFormat("fr-FR", {
@@ -17,6 +26,7 @@ function formatEur(cents: number) {
 
 export default function PublicInvoicePayment({ token, remainingCents }: Props) {
   const [pending, setPending] = useState<"card" | "bank_transfer" | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   async function pay(method: "card" | "bank_transfer") {
@@ -33,10 +43,10 @@ export default function PublicInvoicePayment({ token, remainingCents }: Props) {
         },
       );
       const data = await response.json();
-      if (!response.ok || !data.url) {
+      if (!response.ok || !data.clientSecret) {
         throw new Error(data.error || "Le paiement n’a pas pu démarrer.");
       }
-      window.location.href = data.url;
+      setClientSecret(data.clientSecret);
     } catch (payError) {
       setError(
         payError instanceof Error
@@ -47,14 +57,45 @@ export default function PublicInvoicePayment({ token, remainingCents }: Props) {
     }
   }
 
+  if (clientSecret && stripePromise) {
+    return (
+      <section className="mt-6 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-5">
+        <button
+          type="button"
+          onClick={() => {
+            setClientSecret(null);
+            setPending(null);
+          }}
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--forge-text-secondary)] hover:text-[var(--forge-text-primary)]"
+        >
+          <ArrowLeft size={15} />
+          Changer de moyen de paiement
+        </button>
+        <div className="mt-4 overflow-hidden rounded-xl">
+          <EmbeddedCheckoutProvider
+            stripe={stripePromise}
+            options={{
+              clientSecret,
+              onComplete: () => {
+                window.location.href = `/facture/${token}?paid=1`;
+              },
+            }}
+          >
+            <EmbeddedCheckout />
+          </EmbeddedCheckoutProvider>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="mt-6 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-5">
       <p className="text-sm font-semibold text-[var(--forge-text-primary)]">
         Payer {formatEur(remainingCents)}
       </p>
       <p className="mt-1 text-xs text-[var(--forge-text-muted)]">
-        Paiement sécurisé par Stripe. Le statut de la facture est mis à jour
-        automatiquement.
+        Paiement sécurisé par Stripe, directement ici. Le statut de la facture
+        est mis à jour automatiquement.
       </p>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
