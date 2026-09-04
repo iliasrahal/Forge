@@ -11,6 +11,7 @@ import {
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import { computeInvoicePaymentState } from "@/src/lib/payments";
 import {
   computeDocumentTotals,
   formatVatRateBp,
@@ -105,6 +106,15 @@ export async function GET(
         intervention: true,
         quote: true,
         lines: true,
+        payments: {
+          select: {
+            status: true,
+            amountCents: true,
+            feeCents: true,
+            refundedCents: true,
+            paidAt: true,
+          },
+        },
       },
     });
 
@@ -113,6 +123,11 @@ export async function GET(
         status: 404,
       });
     }
+
+    const paymentState = computeInvoicePaymentState(
+      invoice.amountCents,
+      invoice.payments,
+    );
 
     const clientName =
       invoice.client.type === "PARTICULIER"
@@ -364,6 +379,119 @@ export async function GET(
       );
     }
 
+    const pricedLines = invoice.lines.filter(
+      (line) => cleanPdfText(line.label || line.category || "").length > 0,
+    );
+
+    if (pricedLines.length > 0) {
+      currentY -= 24;
+      drawSectionTitle("Détail");
+
+      const designationWidth = contentWidth - 130;
+
+      const drawTableHeader = () => {
+        page.drawRectangle({
+          x: margin,
+          y: currentY - 22,
+          width: contentWidth,
+          height: 28,
+          color: lightGrey,
+          borderColor: borderGrey,
+          borderWidth: 0.7,
+        });
+        page.drawText("Désignation", {
+          x: margin + 10,
+          y: currentY - 11,
+          size: 9,
+          font: boldFont,
+          color: dark,
+        });
+        const totalLabel = "Total";
+        const totalLabelWidth = boldFont.widthOfTextAtSize(
+          totalLabel,
+          9,
+        );
+        page.drawText(totalLabel, {
+          x: rightEdge - 10 - totalLabelWidth,
+          y: currentY - 11,
+          size: 9,
+          font: boldFont,
+          color: dark,
+        });
+        currentY -= 28;
+      };
+
+      drawTableHeader();
+
+      for (const line of pricedLines) {
+        const designation = cleanPdfText(
+          line.label || line.category,
+        );
+        const designationLines = wrapText(
+          designation,
+          regularFont,
+          9,
+          designationWidth - 20,
+        );
+        const rowHeight = Math.max(
+          32,
+          designationLines.length * 13 + 14,
+        );
+
+        if (currentY - rowHeight < 70) {
+          addPage();
+          drawTableHeader();
+        }
+
+        page.drawRectangle({
+          x: margin,
+          y: currentY - rowHeight,
+          width: contentWidth,
+          height: rowHeight,
+          borderColor: borderGrey,
+          borderWidth: 0.6,
+        });
+        page.drawLine({
+          start: { x: margin + designationWidth, y: currentY },
+          end: {
+            x: margin + designationWidth,
+            y: currentY - rowHeight,
+          },
+          thickness: 0.6,
+          color: borderGrey,
+        });
+
+        let lineY = currentY - 18;
+        for (const designationLine of designationLines) {
+          page.drawText(designationLine, {
+            x: margin + 10,
+            y: lineY,
+            size: 9,
+            font: regularFont,
+            color: dark,
+          });
+          lineY -= 13;
+        }
+
+        const amountText = cleanPdfText(
+          formatAmount(line.amountCents),
+        );
+        const amountTextWidth = regularFont.widthOfTextAtSize(
+          amountText,
+          9,
+        );
+        page.drawText(amountText, {
+          x: rightEdge - 10 - amountTextWidth,
+          y: currentY - 18,
+          size: 9,
+          font: regularFont,
+          color: dark,
+        });
+
+        currentY -= rowHeight;
+      }
+    }
+
     currentY -= 30;
     ensureSpace(94);
     drawSectionTitle("Montant");
@@ -401,6 +529,43 @@ export async function GET(
       color: dark,
     });
     currentY -= amountBoxHeight + 12;
+
+    if (paymentState.collectedCents > 0) {
+      ensureSpace(36);
+      drawLines(
+        [
+          `Déjà réglé : ${cleanPdfText(formatAmount(paymentState.collectedCents))}`,
+        ],
+        {
+          x: margin,
+          size: 10,
+          lineHeight: 15,
+          color: grey,
+        },
+      );
+      page.drawText("Reste à payer", {
+        x: margin,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: dark,
+      });
+      const remainingText = cleanPdfText(
+        formatAmount(paymentState.remainingCents),
+      );
+      const remainingTextWidth = boldFont.widthOfTextAtSize(
+        remainingText,
+        11,
+      );
+      page.drawText(remainingText, {
+        x: rightEdge - remainingTextWidth,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: dark,
+      });
+      currentY -= 24;
+    }
 
     if (invoice.vatApplicable) {
       const vt = computeDocumentTotals(

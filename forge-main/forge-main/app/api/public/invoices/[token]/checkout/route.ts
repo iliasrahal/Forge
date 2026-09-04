@@ -4,6 +4,7 @@ import type Stripe from "stripe";
 import { prisma } from "@/src/lib/prisma";
 import { appUrl, getStripe, isStripeConfigured } from "@/src/lib/stripe";
 import { getPublicInvoiceByToken } from "@/src/lib/public-invoice";
+import { getOrganizationSubscriptionAccess } from "@/src/lib/organization-subscription";
 import { computeInvoicePaymentState } from "@/src/lib/payments";
 import { isValidClientEmail, normalizeClientEmail } from "@/src/lib/client-email";
 
@@ -51,6 +52,20 @@ export async function POST(request: Request, { params }: CheckoutRouteProps) {
         {
           error:
             "L’artisan n’a pas encore activé le paiement en ligne pour cette facture.",
+        },
+        { status: 409 },
+      );
+    }
+
+    // Le paiement en ligne est réservé aux formules payantes : on revérifie
+    // au moment du paiement, pas seulement à l'envoi — un abonnement peut
+    // avoir expiré depuis, alors qu'un lien envoyé plus tôt reste ouvert.
+    const subscriptionAccess = await getOrganizationSubscriptionAccess(org.id);
+    if (!subscriptionAccess.hasAccess) {
+      return NextResponse.json(
+        {
+          error:
+            "Le paiement en ligne n’est plus disponible pour cette facture.",
         },
         { status: 409 },
       );
