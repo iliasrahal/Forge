@@ -10,9 +10,8 @@ import { getStripe, isStripeConfigured } from "@/src/lib/stripe";
 import { ensureConnectAccount } from "@/src/lib/stripe-connect";
 
 /**
- * Session Connect embarquée : couvre à la fois l'onboarding et la gestion
- * du compte, affichés dans /settings/paiement sans jamais rediriger vers
- * connect.stripe.com.
+ * Session Connect embarquée : le formulaire d'onboarding s'affiche dans
+ * /settings/paiement, sans jamais rediriger vers connect.stripe.com.
  */
 export async function POST() {
   try {
@@ -53,7 +52,6 @@ export async function POST() {
       account: accountId,
       components: {
         account_onboarding: { enabled: true },
-        account_management: { enabled: true },
       },
     });
 
@@ -63,7 +61,7 @@ export async function POST() {
     if (accessError) {
       return NextResponse.json(accessError.body, { status: accessError.status });
     }
-    console.error("STRIPE CONNECT EMBEDDED SESSION ERROR", error);
+    console.error("STRIPE CONNECT ONBOARDING SESSION ERROR", error);
     return NextResponse.json(
       { error: "Impossible de démarrer la configuration Stripe." },
       { status: 500 },
