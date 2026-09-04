@@ -50,6 +50,8 @@ export async function POST() {
         capabilities: {
           card_payments: { requested: true },
           transfers: { requested: true },
+          // Virement SEPA (customer_balance) côté facture publique.
+          sepa_bank_transfer_payments: { requested: true },
         },
         business_profile: {
           name: organization.name,
