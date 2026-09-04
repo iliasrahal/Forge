@@ -260,6 +260,7 @@ export async function sendInvoiceEmail(
   interventionSections: InvoiceDescriptionSection[],
   pdfBuffer: Buffer,
   fileName: string,
+  paymentUrl?: string | null,
 ) {
   const structuredText = interventionSections
     .map(({ label, content }) => `${label}\n${content}`)
@@ -270,6 +271,13 @@ export async function sendInvoiceEmail(
         `<div style="margin-top:12px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc"><p style="margin:0;color:#1d4ed8;font-size:14px;font-weight:700">${escapeHtml(label)}</p><p style="margin:8px 0 0;color:#334155;line-height:1.6">${escapeHtml(content).replace(/\n/g, "<br/>")}</p></div>`,
     )
     .join("");
+
+  const paymentText = paymentUrl
+    ? `\nPayer cette facture en ligne (carte ou virement) : ${paymentUrl}\n`
+    : "";
+  const paymentHtml = paymentUrl
+    ? `<p style="margin-top:20px"><a href="${escapeHtml(paymentUrl)}" style="display:inline-block;padding:12px 22px;border-radius:14px;background:#1d4ed8;color:#ffffff;font-weight:700;text-decoration:none">Payer cette facture en ligne</a></p><p style="margin-top:8px;color:#64748b;font-size:13px">Paiement sécurisé par carte bancaire ou virement. Le statut est mis à jour automatiquement.</p>`
+    : "";
 
   return getResendClient().emails.send({
 
@@ -284,7 +292,7 @@ export async function sendInvoiceEmail(
 
 Veuillez trouver ci-joint votre facture concernant :
 ${structuredText}
-
+${paymentText}
 Je reste disponible si vous avez besoin d'informations complémentaires.
 
 Merci pour votre confiance.
@@ -299,6 +307,7 @@ ${artisanSignature}
 
 <p>Veuillez trouver ci-joint votre facture concernant :</p>
 ${structuredHtml}
+${paymentHtml}
 
 <p>Je reste disponible si vous avez besoin d'informations complémentaires.</p>
 

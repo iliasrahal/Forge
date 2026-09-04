@@ -9,6 +9,10 @@ import {
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { sendInvoiceEmail } from "@/src/lib/email";
 import {
+  createInvoicePublicToken,
+  hashInvoicePublicToken,
+} from "@/src/lib/invoice-public-access";
+import {
   buildInvoiceDescriptionSections,
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
@@ -212,15 +216,56 @@ export async function POST(
 
 
 
-    await sendInvoiceEmail(
-      recipientEmail,
-      clientName,
-      artisanSignature,
-      invoice.reference,
-      interventionSections,
-      pdfBuffer,
-      `facture-${invoice.reference}.pdf`,
-    );
+    // Lien de paiement en ligne : uniquement si l'organisation a activé
+    // Stripe Connect et dispose d'un abonnement actif.
+    let paymentUrl: string | null = null;
+    let publicAccessId: string | null = null;
+    if (
+      workspaceContext.workspace.stripeChargesEnabled &&
+      workspaceContext.subscription.hasAccess
+    ) {
+      const rawPublicToken = createInvoicePublicToken();
+      const publicAccess = await prisma.invoicePublicAccess.create({
+        data: {
+          invoiceId: invoice.id,
+          tokenHash: hashInvoicePublicToken(rawPublicToken),
+        },
+        select: { id: true },
+      });
+      publicAccessId = publicAccess.id;
+      paymentUrl = `${origin}/facture/${rawPublicToken}`;
+    }
+
+    try {
+      await sendInvoiceEmail(
+        recipientEmail,
+        clientName,
+        artisanSignature,
+        invoice.reference,
+        interventionSections,
+        pdfBuffer,
+        `facture-${invoice.reference}.pdf`,
+        paymentUrl,
+      );
+    } catch (emailError) {
+      if (publicAccessId) {
+        await prisma.invoicePublicAccess.delete({
+          where: { id: publicAccessId },
+        });
+      }
+      throw emailError;
+    }
+
+    if (publicAccessId) {
+      await prisma.invoicePublicAccess.updateMany({
+        where: {
+          invoiceId: invoice.id,
+          id: { not: publicAccessId },
+          revokedAt: null,
+        },
+        data: { revokedAt: new Date() },
+      });
+    }
 
 
 
