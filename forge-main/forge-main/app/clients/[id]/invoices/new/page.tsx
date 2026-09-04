@@ -10,6 +10,7 @@ import {
   computeDocumentMargin,
   normalizeDiscountBp,
 } from "@/src/lib/document-lines";
+import { draftReference } from "@/src/lib/document-numbering";
 import {
   computeDocumentTotals,
   normalizeVatRateBp,
@@ -119,7 +120,7 @@ export default async function NewInvoicePage({
 
     const invoice = await prisma.invoice.create({
       data: {
-        reference: `FAC-${Date.now()}`,
+        reference: draftReference(),
         title,
         description: description || null,
         amountCents: totals.totalTtcCents,

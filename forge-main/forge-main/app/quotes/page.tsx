@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
+import { displayDocumentReference } from "@/src/lib/document-numbering";
 
 
 
@@ -162,7 +163,7 @@ export default async function QuotesPage() {
 
 
                       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {quote.reference}
+                        {displayDocumentReference(quote.reference)}
                       </p>
 
 

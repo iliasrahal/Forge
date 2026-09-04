@@ -4,6 +4,7 @@ import FixedForgeBar from "@/components/FixedForgeBar";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { displayDocumentReference } from "@/src/lib/document-numbering";
 
 
 function formatAmount(amountCents: number) {
@@ -116,7 +117,7 @@ export default async function InvoicesPage() {
 
 
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Facture {invoice.reference}
+                Facture {displayDocumentReference(invoice.reference)}
               </p>
 
 

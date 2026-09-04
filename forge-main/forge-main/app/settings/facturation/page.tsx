@@ -34,9 +34,23 @@ export default async function FacturationSettingsPage({
       2000,
     );
 
+    const cleanPrefix = (value: FormDataEntryValue | null, fallback: string) => {
+      const text = (value?.toString() ?? "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9-]/g, "")
+        .slice(0, 6);
+      return text || fallback;
+    };
+
     await prisma.organization.update({
       where: { id: writeContext.workspace.id },
-      data: { vatScheme: scheme, defaultVatRateBp },
+      data: {
+        vatScheme: scheme,
+        defaultVatRateBp,
+        quotePrefix: cleanPrefix(formData.get("quotePrefix"), "D"),
+        invoicePrefix: cleanPrefix(formData.get("invoicePrefix"), "F"),
+        creditNotePrefix: cleanPrefix(formData.get("creditNotePrefix"), "AV"),
+      },
     });
 
     revalidatePath("/settings/facturation");
@@ -133,6 +147,35 @@ export default async function FacturationSettingsPage({
               Appliqué aux nouvelles lignes ; modifiable ligne par ligne.
             </p>
           </div>
+
+          <fieldset className="space-y-3 border-t border-slate-200 pt-6 dark:border-slate-700">
+            <legend className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+              Numérotation
+            </legend>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Numéro final : préfixe + année + 6 chiffres, ex.{" "}
+              <span className="font-mono">{workspace.invoicePrefix}
+                {new Date().getFullYear()}-000042</span>. Attribué à l’envoi du
+              document ; le compteur repart à 1 chaque année.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                ["quotePrefix", "Devis", workspace.quotePrefix],
+                ["invoicePrefix", "Factures", workspace.invoicePrefix],
+                ["creditNotePrefix", "Avoirs", workspace.creditNotePrefix],
+              ].map(([name, label, value]) => (
+                <label key={name} className="block text-sm font-medium">
+                  {label}
+                  <input
+                    name={name}
+                    defaultValue={value}
+                    maxLength={6}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 font-mono uppercase text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           {saved === "1" && (
             <p className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300">

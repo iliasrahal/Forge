@@ -14,6 +14,7 @@ import {
   computeDocumentMargin,
   normalizeDiscountBp,
 } from "@/src/lib/document-lines";
+import { draftReference } from "@/src/lib/document-numbering";
 import {
   computeDocumentTotals,
   normalizeVatRateBp,
@@ -196,8 +197,7 @@ export default async function NewQuotePage({
 
 
 
-    const reference =
-      `DEV-${Date.now()}`;
+    const reference = draftReference();
 
 
 

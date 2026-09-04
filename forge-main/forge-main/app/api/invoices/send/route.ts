@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  allocateDocumentNumber,
+  isDraftReference,
+} from "@/src/lib/document-numbering";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { sendInvoiceEmail } from "@/src/lib/email";
 import {
@@ -115,6 +119,24 @@ export async function POST(
         },
       );
 
+    }
+
+
+
+    // Numéro définitif de facture attribué à la première émission (avant le PDF).
+    if (isDraftReference(invoice.reference)) {
+      const allocated = await prisma.$transaction((tx) =>
+        allocateDocumentNumber(tx, {
+          organizationId: workspaceContext.workspace.id,
+          kind: "INVOICE",
+          prefix: workspaceContext.workspace.invoicePrefix,
+        }),
+      );
+      await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { reference: allocated.reference },
+      });
+      invoice.reference = allocated.reference;
     }
 
 

@@ -19,6 +19,7 @@ import {
   formatQuantity,
   formatUnit,
 } from "@/src/lib/document-lines";
+import { isDraftReference } from "@/src/lib/document-numbering";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -203,7 +204,9 @@ export default async function QuotePage({
 
 
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Devis {quote.reference}
+              {isDraftReference(quote.reference)
+                ? "Brouillon — numéro attribué à l’envoi"
+                : `Devis ${quote.reference}`}
             </p>
 
 

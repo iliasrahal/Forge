@@ -4,6 +4,10 @@ import { createQuotePublicToken, hashQuotePublicToken } from "@/src/lib/quote-pu
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { sendQuoteEmail } from "@/src/lib/email";
+import {
+  allocateDocumentNumber,
+  isDraftReference,
+} from "@/src/lib/document-numbering";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -75,6 +79,24 @@ export async function POST(
         { error: "Un devis refusé ne peut pas être renvoyé." },
         { status: 409 },
       );
+    }
+
+
+
+    // Numéro définitif attribué à la première finalisation, avant le PDF.
+    if (isDraftReference(quote.reference)) {
+      const allocated = await prisma.$transaction((tx) =>
+        allocateDocumentNumber(tx, {
+          organizationId: workspaceContext.workspace.id,
+          kind: "QUOTE",
+          prefix: workspaceContext.workspace.quotePrefix,
+        }),
+      );
+      await prisma.quote.update({
+        where: { id: quote.id },
+        data: { reference: allocated.reference },
+      });
+      quote.reference = allocated.reference;
     }
 
 

@@ -59,6 +59,13 @@ enum VatScheme {
   FRANCHISE_BASE
 }
 
+// Nature d'un document numéroté (compteur séquentiel séparé par nature).
+enum DocumentKind {
+  QUOTE
+  INVOICE
+  CREDIT_NOTE
+}
+
 enum ServicePricingType {
   FIXED
   HOURLY
@@ -223,6 +230,12 @@ model Organization {
   // 2000 = 20 %, 1000 = 10 %, 550 = 5,5 %, 0 = 0 %). Surchargeable par document.
   vatScheme           VatScheme            @default(FRANCHISE_BASE)
   defaultVatRateBp    Int                  @default(2000)
+  // Préfixes de numérotation. Numéro final : <préfixe><année>-<6 chiffres>,
+  // ex. F2026-000042. Compteur remis à zéro chaque année.
+  quotePrefix         String               @default("D")
+  invoicePrefix       String               @default("F")
+  creditNotePrefix    String               @default("AV")
+  documentCounters    DocumentCounter[]
   members             OrganizationMember[]
   invitations         TeamInvitation[]
   clients             Client[]
@@ -248,6 +261,21 @@ model ServiceCatalogItem {
 
   @@index([organizationId])
   @@index([organizationId, name])
+}
+
+// Compteur séquentiel de numéros de documents, par organisation, par nature
+// et par année. `nextNumber` est le prochain numéro à attribuer.
+model DocumentCounter {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  kind           DocumentKind
+  year           Int
+  nextNumber     Int          @default(1)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, kind, year])
 }
 
 model OrganizationMember {

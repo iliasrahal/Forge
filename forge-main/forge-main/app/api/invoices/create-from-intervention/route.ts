@@ -4,8 +4,10 @@ import { buildInvoiceDescription } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
+import { draftReference } from "@/src/lib/document-numbering";
+
 function generateInvoiceReference() {
-  return `FAC-${Date.now()}`;
+  return draftReference();
 }
 
 export async function POST(request: Request) {

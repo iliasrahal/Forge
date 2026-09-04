@@ -5,6 +5,10 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/src/lib/prisma";
 import { QuoteStatus } from "@/src/generated/prisma/client";
 import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  allocateDocumentNumber,
+  isDraftReference,
+} from "@/src/lib/document-numbering";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { canTransitionQuoteStatus, isQuoteContractLocked } from "@/src/lib/quote-status";
 
@@ -119,6 +123,7 @@ export default async function EditQuotePage({
       },
       select: {
         status: true,
+        reference: true,
         signature: { select: { id: true } },
       },
     });
@@ -145,6 +150,23 @@ export default async function EditQuotePage({
 
     const amountCents = Math.round(amount * 100);
 
+    // Numéro définitif à la première sortie de « Brouillon ».
+    const leavingDraft =
+      currentQuote.status === "BROUILLON" &&
+      quoteStatus !== "BROUILLON" &&
+      isDraftReference(currentQuote.reference);
+    let finalReference: string | undefined;
+    if (leavingDraft) {
+      const allocated = await prisma.$transaction((tx) =>
+        allocateDocumentNumber(tx, {
+          organizationId: writeContext.workspace.id,
+          kind: "QUOTE",
+          prefix: writeContext.workspace.quotePrefix,
+        }),
+      );
+      finalReference = allocated.reference;
+    }
+
 
 
     const updated = await prisma.quote.updateMany({
@@ -160,6 +182,7 @@ export default async function EditQuotePage({
         description,
         amountCents,
         status: quoteStatus,
+        ...(finalReference ? { reference: finalReference } : {}),
       },
     });
 

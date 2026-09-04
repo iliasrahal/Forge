@@ -21,6 +21,7 @@ import {
   formatQuantity,
   formatUnit,
 } from "@/src/lib/document-lines";
+import { isDraftReference } from "@/src/lib/document-numbering";
 import {
   isValidClientEmail,
   normalizeClientEmail,
@@ -189,7 +190,9 @@ export default async function InvoicePage({
 
 
           <p className="mt-2 text-slate-500">
-            Facture {invoice.reference}
+            {isDraftReference(invoice.reference)
+              ? "Brouillon — numéro attribué à l’émission"
+              : `Facture ${invoice.reference}`}
           </p>
 
 

@@ -4,6 +4,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { resolveDocumentHistoryRange } from "@/src/lib/document-history";
+import { displayDocumentReference } from "@/src/lib/document-numbering";
 
 
 export async function GET(
@@ -99,7 +100,7 @@ export async function GET(
       return {
         id: quote.id,
         title: quote.title,
-        reference: quote.reference,
+        reference: displayDocumentReference(quote.reference),
         // Le chiffre d'affaires se pilote en HT ; le TTC reste sur le détail.
         amountCents: quote.totalHtCents,
         amountTtcCents: quote.amountCents,

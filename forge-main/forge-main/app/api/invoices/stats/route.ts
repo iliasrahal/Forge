@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { resolveDocumentHistoryRange } from "@/src/lib/document-history";
+import { displayDocumentReference } from "@/src/lib/document-numbering";
 
 
 export async function GET(request: Request) {
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
     invoices.map((invoice) => ({
       id: invoice.id,
       title: invoice.title,
-      reference: `Facture ${invoice.reference}`,
+      reference: `Facture ${displayDocumentReference(invoice.reference)}`,
       // Le chiffre d'affaires se pilote en HT ; le TTC reste sur le détail.
       amountCents: invoice.totalHtCents,
       amountTtcCents: invoice.amountCents,
