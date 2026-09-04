@@ -10,6 +10,11 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
 import {
+  buildDocumentLinesFromForm,
+  computeDocumentMargin,
+  normalizeDiscountBp,
+} from "@/src/lib/document-lines";
+import {
   computeDocumentTotals,
   normalizeVatRateBp,
 } from "@/src/lib/vat";
@@ -149,11 +154,6 @@ export default async function NewQuotePage({
 
 
 
-    const lines =
-      JSON.parse(
-        quoteLinesRaw,
-      );
-
     const orgDefaultRateBp = normalizeVatRateBp(
       writeContext.workspace.defaultVatRateBp,
       2000,
@@ -161,25 +161,16 @@ export default async function NewQuotePage({
 
     const vatApplicable =
       formData.get("vatApplicable")?.toString() === "true";
+    const documentDiscountBp = normalizeDiscountBp(
+      formData.get("documentDiscount"),
+    );
 
 
 
-    const cleanLines: Array<{
-      category: string;
-      amountCents: number;
-      vatRateBp: number;
-    }> = lines
-      .filter(
-        (line: { category?: string; amount?: string }) =>
-          line.category && line.amount,
-      )
-      .map((line: { category: string; amount: string; vatRateBp?: number }) => ({
-        category: line.category,
-        amountCents: Math.round(
-          Number(String(line.amount).replace(",", ".")) * 100,
-        ),
-        vatRateBp: normalizeVatRateBp(line.vatRateBp, orgDefaultRateBp),
-      }));
+    const cleanLines = buildDocumentLinesFromForm(
+      quoteLinesRaw,
+      orgDefaultRateBp,
+    );
 
 
 
@@ -193,7 +184,15 @@ export default async function NewQuotePage({
 
 
 
-    const totals = computeDocumentTotals(cleanLines, vatApplicable);
+    const totals = computeDocumentTotals(
+      cleanLines,
+      vatApplicable,
+      documentDiscountBp,
+    );
+    const { totalCostCents } = computeDocumentMargin(
+      cleanLines,
+      documentDiscountBp,
+    );
 
 
 
@@ -212,6 +211,8 @@ export default async function NewQuotePage({
           vatApplicable,
           totalHtCents: totals.totalHtCents,
           totalVatCents: totals.totalVatCents,
+          discountBp: documentDiscountBp,
+          totalCostCents,
           status:
             "BROUILLON",
           clientId:
@@ -221,7 +222,12 @@ export default async function NewQuotePage({
           lines: {
             create: cleanLines.map((line) => ({
               category: line.category,
-              label: line.category,
+              label: line.label,
+              quantityMilli: line.quantityMilli,
+              unit: line.unit,
+              unitPriceCents: line.unitPriceCents,
+              costCents: line.costCents,
+              discountBp: line.discountBp,
               amountCents: line.amountCents,
               vatRateBp: line.vatRateBp,
             })),

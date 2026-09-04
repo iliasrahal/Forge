@@ -139,11 +139,18 @@ export async function POST(
           vatApplicable: quote.vatApplicable,
           totalHtCents: quote.totalHtCents,
           totalVatCents: quote.totalVatCents,
+          discountBp: quote.discountBp,
+          totalCostCents: quote.totalCostCents,
 
           lines: {
             create: quote.lines.map((line) => ({
               category: line.category,
               label: line.label,
+              quantityMilli: line.quantityMilli,
+              unit: line.unit,
+              unitPriceCents: line.unitPriceCents,
+              costCents: line.costCents,
+              discountBp: line.discountBp,
               amountCents: line.amountCents,
               vatRateBp: line.vatRateBp,
             })),

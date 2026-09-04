@@ -126,7 +126,11 @@ export function matchCatalogServicesForQuote(
       start: range.start,
       line: {
         category: service.name,
-        amount: (priceCents / 100).toFixed(2),
+        quantity: "1",
+        unit: "forfait",
+        unitPrice: (priceCents / 100).toFixed(2),
+        discount: "",
+        cost: "",
       },
     });
   }
@@ -141,7 +145,11 @@ export function serializeQuoteLines(lines: EditableQuoteLine[]) {
   return JSON.stringify(lines.slice(0, 20));
 }
 
-export function parseSerializedQuoteLines(value: string | undefined) {
+const PRICE_PATTERN = /^\d+(?:[.,]\d{1,2})?$/;
+
+export function parseSerializedQuoteLines(
+  value: string | undefined,
+): EditableQuoteLine[] {
   if (!value) return [];
 
   try {
@@ -149,27 +157,53 @@ export function parseSerializedQuoteLines(value: string | undefined) {
     if (!Array.isArray(parsed)) return [];
 
     return parsed
-      .filter(
-        (line): line is EditableQuoteLine =>
-          Boolean(
-            line &&
-              typeof line === "object" &&
-              typeof (line as EditableQuoteLine).category === "string" &&
-              typeof (line as EditableQuoteLine).amount === "string" &&
-              (line as EditableQuoteLine).category.trim() &&
-              /^\d+(?:[.,]\d{1,2})?$/.test(
-                (line as EditableQuoteLine).amount.trim(),
-              ),
-          ),
-      )
-      .slice(0, 20)
-      .map((line) => ({
-        category: line.category.trim().slice(0, 160),
-        amount: line.amount.trim().replace(",", "."),
-        ...(typeof (line as EditableQuoteLine).vatRateBp === "number"
-          ? { vatRateBp: (line as EditableQuoteLine).vatRateBp }
-          : {}),
-      }));
+      .map((raw): EditableQuoteLine | null => {
+        if (!raw || typeof raw !== "object") return null;
+        const line = raw as Record<string, unknown>;
+
+        const category =
+          typeof line.category === "string" ? line.category.trim() : "";
+        if (!category) return null;
+
+        // "unitPrice" (nouveau format) ou "amount" (ancien lien transitoire).
+        const rawUnitPrice =
+          typeof line.unitPrice === "string"
+            ? line.unitPrice
+            : typeof line.amount === "string"
+              ? line.amount
+              : "";
+        const unitPrice = rawUnitPrice.trim().replace(",", ".");
+        if (!PRICE_PATTERN.test(unitPrice)) return null;
+
+        const quantity =
+          typeof line.quantity === "string" && line.quantity.trim()
+            ? line.quantity.trim().replace(",", ".")
+            : "1";
+        const unit =
+          typeof line.unit === "string" && line.unit.trim()
+            ? line.unit.trim().slice(0, 16)
+            : "forfait";
+        const discount =
+          typeof line.discount === "string" ? line.discount.trim() : "";
+        const cost =
+          typeof line.cost === "string" && PRICE_PATTERN.test(line.cost.trim())
+            ? line.cost.trim().replace(",", ".")
+            : "";
+
+        return {
+          category: category.slice(0, 160),
+          quantity,
+          unit,
+          unitPrice,
+          discount: PRICE_PATTERN.test(discount) ? discount : "",
+          cost,
+          ...(typeof line.vatRateBp === "number"
+            ? { vatRateBp: line.vatRateBp }
+            : {}),
+        };
+      })
+      .filter((line): line is EditableQuoteLine => line !== null)
+      .slice(0, 20);
   } catch {
     return [];
   }

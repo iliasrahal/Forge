@@ -97,3 +97,35 @@ test("vatApplicableForScheme : seul SUBJECT facture la TVA", () => {
   assert.equal(vatApplicableForScheme("SUBJECT"), true);
   assert.equal(vatApplicableForScheme("FRANCHISE_BASE"), false);
 });
+
+test("remise globale de pied : appliquée après les lignes, avant la TVA", () => {
+  // Sans TVA : HT − 10 %
+  const sansTva = computeDocumentTotals(
+    [{ amountCents: 100000, vatRateBp: 0 }],
+    false,
+    1000,
+  );
+  assert.equal(sansTva.totalHtCents, 90000);
+  assert.equal(sansTva.totalTtcCents, 90000);
+
+  // Avec TVA : base et TVA calculées sur le HT remisé
+  const avecTva = computeDocumentTotals(
+    [{ amountCents: 100000, vatRateBp: 2000 }],
+    true,
+    1000,
+  );
+  assert.equal(avecTva.totalHtCents, 90000);
+  assert.equal(avecTva.totalVatCents, 18000);
+  assert.equal(avecTva.totalTtcCents, 108000);
+});
+
+test("remise globale 0 : résultat identique à l'appel à deux arguments", () => {
+  const lines = [
+    { amountCents: 100000, vatRateBp: 2000 },
+    { amountCents: 50000, vatRateBp: 1000 },
+  ];
+  assert.deepEqual(
+    computeDocumentTotals(lines, true, 0),
+    computeDocumentTotals(lines, true),
+  );
+});

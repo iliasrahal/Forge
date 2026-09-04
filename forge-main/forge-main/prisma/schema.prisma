@@ -477,6 +477,13 @@ model Quote {
 
   totalVatCents Int @default(0)
 
+  // Remise globale de pied de devis, en points de base (appliquée après les
+  // remises de ligne, avant la TVA).
+  discountBp Int @default(0)
+
+  // Somme des déboursés secs des lignes (pour le calcul de marge).
+  totalCostCents Int @default(0)
+
   status QuoteStatus @default(BROUILLON)
 
   acceptedAt DateTime?
@@ -595,7 +602,23 @@ model QuoteLine {
 
   label String?
 
-  // Montant HT de la ligne.
+  // Quantité en milliunités (1000 = 1 ; 12500 = 12,5).
+  quantityMilli Int @default(1000)
+
+  // Unité affichée : "forfait", "h", "j", "m2", "m3", "ml", "u", "kg", "lot".
+  unit String @default("forfait")
+
+  // Prix unitaire HT en centimes.
+  unitPriceCents Int @default(0)
+
+  // Déboursé sec unitaire en centimes (coût). Null = marge non suivie.
+  costCents Int?
+
+  // Remise de ligne en points de base (500 = 5 %).
+  discountBp Int @default(0)
+
+  // Montant HT de la ligne, dénormalisé :
+  // round(quantityMilli * unitPriceCents / 1000 * (10000 - discountBp) / 10000).
   amountCents Int @default(0)
 
   // Taux de TVA de la ligne en points de base (2000 = 20 %, 1000 = 10 %,
@@ -628,6 +651,12 @@ model Invoice {
   totalHtCents Int @default(0)
 
   totalVatCents Int @default(0)
+
+  // Remise globale de pied de facture, en points de base.
+  discountBp Int @default(0)
+
+  // Somme des déboursés secs des lignes (pour le calcul de marge).
+  totalCostCents Int @default(0)
 
   lines InvoiceLine[]
 
@@ -673,6 +702,17 @@ model InvoiceLine {
   category String
 
   label String?
+
+  // Détail figé à la création de la facture.
+  quantityMilli Int @default(1000)
+
+  unit String @default("forfait")
+
+  unitPriceCents Int @default(0)
+
+  costCents Int?
+
+  discountBp Int @default(0)
 
   // Montant HT de la ligne, figé à la création de la facture.
   amountCents Int @default(0)

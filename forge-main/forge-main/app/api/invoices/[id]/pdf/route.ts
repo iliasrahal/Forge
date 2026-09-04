@@ -409,6 +409,7 @@ export async function GET(
           vatRateBp: line.vatRateBp,
         })),
         true,
+        invoice.discountBp,
       );
       const vatRows = [
         `Total HT : ${cleanPdfText(formatAmount(vt.totalHtCents || invoice.totalHtCents))}`,
@@ -418,6 +419,11 @@ export async function GET(
         ),
         `Total TVA : ${cleanPdfText(formatAmount(vt.totalVatCents || invoice.totalVatCents))}`,
       ];
+      if (invoice.discountBp > 0) {
+        vatRows.push(
+          `Remise globale de ${(invoice.discountBp / 100).toLocaleString("fr-FR")} %`,
+        );
+      }
       ensureSpace(18 + vatRows.length * 13);
       drawLines(vatRows, {
         x: margin,

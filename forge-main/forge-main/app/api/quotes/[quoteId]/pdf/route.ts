@@ -508,6 +508,7 @@ export async function GET(
           };
         }),
         true,
+        quote.discountBp ?? 0,
       );
       drawSummary(
         "Total HT",
@@ -526,12 +527,19 @@ export async function GET(
     }
 
     y -= 12;
+    const pdfMentions: string[] = [];
+    if (quote.discountBp && quote.discountBp > 0) {
+      pdfMentions.push(
+        cleanPdfText(
+          `Remise globale de ${(quote.discountBp / 100).toLocaleString("fr-FR")} % appliquee.`,
+        ),
+      );
+    }
     if (!quote.vatApplicable) {
-      drawLines([cleanPdfText(VAT_EXEMPTION_MENTION)], {
-        size: 8,
-        height: 12,
-        color: grey,
-      });
+      pdfMentions.push(cleanPdfText(VAT_EXEMPTION_MENTION));
+    }
+    if (pdfMentions.length > 0) {
+      drawLines(pdfMentions, { size: 8, height: 12, color: grey });
     }
 
     y -= 22;

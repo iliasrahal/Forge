@@ -17,6 +17,11 @@ import {
   VAT_EXEMPTION_MENTION,
 } from "@/src/lib/vat";
 import {
+  computeDocumentMargin,
+  formatQuantity,
+  formatUnit,
+} from "@/src/lib/document-lines";
+import {
   isValidClientEmail,
   normalizeClientEmail,
 } from "@/src/lib/client-email";
@@ -221,6 +226,7 @@ export default async function InvoicePage({
                 vatRateBp: line.vatRateBp,
               })),
               true,
+              invoice.discountBp,
             );
             return (
               <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
@@ -270,6 +276,73 @@ export default async function InvoicePage({
           <p className="mt-2 px-1 text-xs text-slate-500 dark:text-slate-400">
             {VAT_EXEMPTION_MENTION}
           </p>
+        ) : null}
+
+        {invoice.discountBp > 0 ? (
+          <p className="mt-2 px-1 text-xs text-slate-500 dark:text-slate-400">
+            Remise globale de{" "}
+            {(invoice.discountBp / 100).toLocaleString("fr-FR")} % appliquée.
+          </p>
+        ) : null}
+
+        {invoice.lines.length > 0 ? (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-slate-500">Détail</p>
+            <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 dark:divide-slate-700 dark:border-slate-700">
+              {invoice.lines.map((line) => (
+                <div
+                  key={line.id}
+                  className="flex items-baseline justify-between gap-3 px-4 py-3 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
+                      {line.label || line.category}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {formatQuantity(line.quantityMilli)} {formatUnit(line.unit)} ×{" "}
+                      {formatEur(line.unitPriceCents)}
+                      {line.discountBp > 0
+                        ? ` · −${(line.discountBp / 100).toLocaleString("fr-FR")} %`
+                        : ""}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-semibold text-slate-900 dark:text-white">
+                    {formatEur(line.amountCents)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {invoice.lines.some((line) => line.costCents != null) ? (
+          (() => {
+            const m = computeDocumentMargin(
+              invoice.lines.map((line) => ({
+                quantityMilli: line.quantityMilli,
+                unitPriceCents: line.unitPriceCents,
+                discountBp: line.discountBp,
+                costCents: line.costCents,
+                amountCents: line.amountCents,
+              })),
+              invoice.discountBp,
+            );
+            const htRef = invoice.totalHtCents || invoice.amountCents;
+            const pct = htRef > 0 ? (m.totalMarginCents / htRef) * 100 : null;
+            return (
+              <p className="mt-3 px-1 text-sm text-slate-600 dark:text-slate-300">
+                Déboursé {formatEur(m.totalCostCents)} · Marge{" "}
+                <span className="font-semibold">
+                  {formatEur(m.totalMarginCents)}
+                  {pct !== null
+                    ? ` (${pct.toLocaleString("fr-FR", {
+                        maximumFractionDigits: 1,
+                      })} %)`
+                    : ""}
+                </span>
+              </p>
+            );
+          })()
         ) : null}
 
 

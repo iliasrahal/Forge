@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import {
   createQuoteLineSnapshot,
+  emptyQuoteLine,
   type EditableQuoteLine,
 } from "@/src/lib/quote-lines";
 import {
@@ -13,6 +14,13 @@ import {
   formatServicePrice,
   type ServicePricingTypeValue,
 } from "@/src/lib/service-catalog";
+import {
+  computeDocumentMargin,
+  computeLineAmountCents,
+  DOCUMENT_UNITS,
+  normalizeDiscountBp,
+  parseQuantityToMilli,
+} from "@/src/lib/document-lines";
 import {
   computeDocumentTotals,
   formatVatRateBp,
@@ -26,6 +34,8 @@ type QuoteLinesFormProps = {
   initialTitle?: string;
   initialLines?: EditableQuoteLine[];
   initialVatApplicable?: boolean;
+  initialDocumentDiscount?: string;
+  initialTrackMargins?: boolean;
   defaultVatApplicable?: boolean;
   defaultVatRateBp?: number;
   /** Nom du champ caché sérialisant les lignes. Devis : "quoteLines" ;
@@ -41,6 +51,10 @@ type QuoteLinesFormProps = {
 };
 
 
+function eurosToCents(value: string): number {
+  return Math.round((Number(String(value).replace(",", ".")) || 0) * 100);
+}
+
 function formatEuros(cents: number) {
   return (cents / 100).toLocaleString("fr-FR", {
     minimumFractionDigits: 2,
@@ -53,6 +67,8 @@ export default function QuoteLinesForm({
   initialTitle,
   initialLines = [],
   initialVatApplicable,
+  initialDocumentDiscount,
+  initialTrackMargins,
   defaultVatApplicable = false,
   defaultVatRateBp = 2000,
   linesFieldName = "quoteLines",
@@ -64,20 +80,23 @@ export default function QuoteLinesForm({
   const [vatApplicable, setVatApplicable] = useState<boolean>(
     initialVatApplicable ?? defaultVatApplicable,
   );
+  const [documentDiscount, setDocumentDiscount] = useState<string>(
+    initialDocumentDiscount ?? "",
+  );
+  const [trackMargins, setTrackMargins] = useState<boolean>(
+    initialTrackMargins ?? initialLines.some((line) => line.cost?.trim()),
+  );
 
   const [lines, setLines] = useState<EditableQuoteLine[]>(
     initialLines.length > 0
       ? initialLines.map((line) => ({
           ...line,
-          vatRateBp: normalizeVatRateBp(
-            line.vatRateBp,
-            normalizedDefaultRate,
-          ),
+          vatRateBp: normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate),
         }))
       : [
-          { category: initialTitle || "Main d'œuvre", amount: "", vatRateBp: normalizedDefaultRate },
-          { category: "Matériel", amount: "", vatRateBp: normalizedDefaultRate },
-          { category: "Déplacement", amount: "", vatRateBp: normalizedDefaultRate },
+          emptyQuoteLine(initialTitle || "Main d'œuvre", normalizedDefaultRate),
+          emptyQuoteLine("Matériel", normalizedDefaultRate),
+          emptyQuoteLine("Déplacement", normalizedDefaultRate),
         ],
   );
 
@@ -93,27 +112,10 @@ export default function QuoteLinesForm({
     : services;
 
 
-  function updateAmount(index: number, value: string) {
+  function patchLine(index: number, patch: Partial<EditableQuoteLine>) {
     setLines((current) =>
       current.map((line, lineIndex) =>
-        lineIndex === index ? { ...line, amount: value } : line,
-      ),
-    );
-  }
-
-  function updateCategory(index: number, value: string) {
-    setLines((current) =>
-      current.map((line, lineIndex) =>
-        lineIndex === index ? { ...line, category: value } : line,
-      ),
-    );
-  }
-
-  function updateVatRate(index: number, value: string) {
-    const rateBp = normalizeVatRateBp(value, normalizedDefaultRate);
-    setLines((current) =>
-      current.map((line, lineIndex) =>
-        lineIndex === index ? { ...line, vatRateBp: rateBp } : line,
+        lineIndex === index ? { ...line, ...patch } : line,
       ),
     );
   }
@@ -122,7 +124,7 @@ export default function QuoteLinesForm({
     if (!canWrite) return;
     setLines((current) => [
       ...current,
-      { category: "", amount: "", vatRateBp: normalizedDefaultRate },
+      emptyQuoteLine("", normalizedDefaultRate),
     ]);
     setShowAddMenu(false);
   }
@@ -145,47 +147,88 @@ export default function QuoteLinesForm({
   }
 
 
-  const totals = computeDocumentTotals(
-    lines.map((line) => ({
-      amountCents: Math.round(
-        (Number(String(line.amount).replace(",", ".")) || 0) * 100,
-      ),
+  const docDiscountBp = normalizeDiscountBp(documentDiscount);
+
+  const computedLines = lines.map((line) => {
+    const quantityMilli = parseQuantityToMilli(line.quantity, 1000);
+    const unitPriceCents = eurosToCents(line.unitPrice);
+    const discountBp = normalizeDiscountBp(line.discount);
+    const costCents = line.cost?.trim() ? eurosToCents(line.cost) : null;
+    const amountCents = computeLineAmountCents({
+      quantityMilli,
+      unitPriceCents,
+      discountBp,
+    });
+    return {
+      quantityMilli,
+      unitPriceCents,
+      discountBp,
+      costCents,
+      amountCents,
       vatRateBp: normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate),
-    })),
-    vatApplicable,
+    };
+  });
+
+  const subtotalHtCents = computedLines.reduce(
+    (sum, line) => sum + line.amountCents,
+    0,
   );
+  const totals = computeDocumentTotals(
+    computedLines,
+    vatApplicable,
+    docDiscountBp,
+  );
+  const margin = trackMargins
+    ? computeDocumentMargin(computedLines, docDiscountBp)
+    : null;
+  const marginPercent =
+    margin && totals.totalHtCents > 0
+      ? (margin.totalMarginCents / totals.totalHtCents) * 100
+      : null;
 
 
   return (
     <div className="space-y-5">
 
-      <input
-        type="hidden"
-        name={linesFieldName}
-        value={JSON.stringify(lines)}
-      />
+      <input type="hidden" name={linesFieldName} value={JSON.stringify(lines)} />
       <input
         type="hidden"
         name="vatApplicable"
         value={vatApplicable ? "true" : "false"}
       />
+      <input
+        type="hidden"
+        name="documentDiscount"
+        value={documentDiscount.trim()}
+      />
 
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h2 className="text-sm font-semibold text-blue-700 dark:text-blue-400">
-          Détail du devis
+          Détail
         </h2>
 
         {canWrite ? (
-          <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-            <input
-              type="checkbox"
-              checked={vatApplicable}
-              onChange={(event) => setVatApplicable(event.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600"
-            />
-            Assujetti à la TVA
-          </label>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <label className="inline-flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={vatApplicable}
+                onChange={(event) => setVatApplicable(event.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600"
+              />
+              Assujetti à la TVA
+            </label>
+            <label className="inline-flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={trackMargins}
+                onChange={(event) => setTrackMargins(event.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600"
+              />
+              Suivre les marges
+            </label>
+          </div>
         ) : null}
       </div>
 
@@ -194,59 +237,156 @@ export default function QuoteLinesForm({
         {lines.map((line, index) => (
           <div
             key={index}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+            className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
           >
-            <input
-              type="text"
-              value={line.category}
-              placeholder="Nouvelle prestation"
-              onChange={(event) => updateCategory(index, event.target.value)}
-              disabled={!canWrite}
-              className="min-w-[8rem] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
-            />
-
-            {vatApplicable ? (
-              <select
-                aria-label="Taux de TVA"
-                value={String(normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate))}
-                onChange={(event) => updateVatRate(index, event.target.value)}
-                disabled={!canWrite}
-                className="rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-              >
-                {VAT_RATES_BP.map((rateBp) => (
-                  <option key={rateBp} value={rateBp}>
-                    {formatVatRateBp(rateBp)}
-                  </option>
-                ))}
-              </select>
-            ) : null}
-
-            <div className="relative w-32">
+            <div className="flex items-start gap-3">
               <input
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                value={line.amount}
-                onChange={(event) => updateAmount(index, event.target.value)}
+                type="text"
+                value={line.category}
+                placeholder="Prestation / désignation"
+                onChange={(event) =>
+                  patchLine(index, { category: event.target.value })
+                }
                 disabled={!canWrite}
-                placeholder="0"
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-16 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
               />
-              <span className="pointer-events-none absolute right-9 top-2 text-slate-500 dark:text-slate-400">
-                {vatApplicable ? "€ HT" : "€"}
-              </span>
+              {canWrite ? (
+                <button
+                  type="button"
+                  onClick={() => removeLine(index)}
+                  aria-label="Supprimer la ligne"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
+                >
+                  <X size={18} />
+                </button>
+              ) : null}
             </div>
 
-            {canWrite ? (
-              <button
-                type="button"
-                onClick={() => removeLine(index)}
-                className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
-              >
-                Supprimer
-              </button>
-            ) : null}
+            <div className="flex flex-wrap items-end gap-2 text-sm">
+              <label className="flex flex-col gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Qté</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={line.quantity}
+                  onChange={(event) =>
+                    patchLine(index, { quantity: event.target.value })
+                  }
+                  disabled={!canWrite}
+                  className="w-16 rounded-xl border border-slate-300 bg-white px-2 py-2 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Unité</span>
+                <select
+                  value={line.unit}
+                  onChange={(event) =>
+                    patchLine(index, { unit: event.target.value })
+                  }
+                  disabled={!canWrite}
+                  className="rounded-xl border border-slate-300 bg-white px-2 py-2 text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                >
+                  {DOCUMENT_UNITS.map((entry) => (
+                    <option key={entry.value} value={entry.value}>
+                      {entry.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400">PU HT</span>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={line.unitPrice}
+                    placeholder="0"
+                    onChange={(event) =>
+                      patchLine(index, { unitPrice: event.target.value })
+                    }
+                    disabled={!canWrite}
+                    className="w-24 rounded-xl border border-slate-300 bg-white px-2 py-2 pr-6 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                  />
+                  <span className="pointer-events-none absolute right-2 top-2 text-slate-400">€</span>
+                </div>
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Remise</span>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={line.discount}
+                    placeholder="0"
+                    onChange={(event) =>
+                      patchLine(index, { discount: event.target.value })
+                    }
+                    disabled={!canWrite}
+                    className="w-16 rounded-xl border border-slate-300 bg-white px-2 py-2 pr-5 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                  />
+                  <span className="pointer-events-none absolute right-2 top-2 text-slate-400">%</span>
+                </div>
+              </label>
+
+              {vatApplicable ? (
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">TVA</span>
+                  <select
+                    value={String(computedLines[index].vatRateBp)}
+                    onChange={(event) =>
+                      patchLine(index, {
+                        vatRateBp: normalizeVatRateBp(
+                          event.target.value,
+                          normalizedDefaultRate,
+                        ),
+                      })
+                    }
+                    disabled={!canWrite}
+                    className="rounded-xl border border-slate-300 bg-white px-2 py-2 text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                  >
+                    {VAT_RATES_BP.map((rateBp) => (
+                      <option key={rateBp} value={rateBp}>
+                        {formatVatRateBp(rateBp)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {trackMargins ? (
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Coût unit.
+                  </span>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={line.cost}
+                      placeholder="—"
+                      onChange={(event) =>
+                        patchLine(index, { cost: event.target.value })
+                      }
+                      disabled={!canWrite}
+                      className="w-20 rounded-xl border border-slate-300 bg-white px-2 py-2 pr-5 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                    />
+                    <span className="pointer-events-none absolute right-2 top-2 text-slate-400">€</span>
+                  </div>
+                </label>
+              ) : null}
+
+              <div className="ml-auto flex flex-col items-end gap-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  Total HT
+                </span>
+                <span className="py-2 font-semibold text-slate-900 dark:text-white">
+                  {formatEuros(computedLines[index].amountCents)} €
+                </span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -288,10 +428,40 @@ export default function QuoteLinesForm({
       ) : null}
 
 
-      <div className="rounded-2xl bg-blue-50 p-4 dark:bg-blue-950">
+      <div className="space-y-3 rounded-2xl bg-blue-50 p-4 text-sm text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+        <div className="flex items-center justify-between">
+          <span>Sous-total HT</span>
+          <span className="font-semibold">{formatEuros(subtotalHtCents)} €</span>
+        </div>
+
+        {canWrite || docDiscountBp > 0 ? (
+          <div className="flex items-center justify-between gap-3">
+            <label className="flex items-center gap-2">
+              Remise globale
+              <span className="relative inline-block">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={documentDiscount}
+                  placeholder="0"
+                  onChange={(event) => setDocumentDiscount(event.target.value)}
+                  disabled={!canWrite}
+                  className="w-16 rounded-lg border border-blue-200 bg-white px-2 py-1 pr-5 text-right text-blue-800 dark:border-blue-900 dark:bg-slate-900 dark:text-blue-200"
+                />
+                <span className="pointer-events-none absolute right-2 top-1 text-blue-400">
+                  %
+                </span>
+              </span>
+            </label>
+            {docDiscountBp > 0 ? (
+              <span>− {formatEuros(subtotalHtCents - totals.totalHtCents)} €</span>
+            ) : null}
+          </div>
+        ) : null}
+
         {vatApplicable ? (
-          <div className="space-y-1.5 text-sm text-blue-700 dark:text-blue-300">
-            <div className="flex items-center justify-between">
+          <>
+            <div className="flex items-center justify-between border-t border-blue-200 pt-2 dark:border-blue-900">
               <span>Total HT</span>
               <span className="font-semibold">
                 {formatEuros(totals.totalHtCents)} €
@@ -300,7 +470,7 @@ export default function QuoteLinesForm({
             {totals.byRate.map((entry) => (
               <div
                 key={entry.rateBp}
-                className="flex items-center justify-between text-blue-600/90 dark:text-blue-300/80"
+                className="flex items-center justify-between text-blue-600/85 dark:text-blue-300/75"
               >
                 <span>
                   TVA {formatVatRateBp(entry.rateBp)} sur{" "}
@@ -309,24 +479,38 @@ export default function QuoteLinesForm({
                 <span>{formatEuros(entry.vatCents)} €</span>
               </div>
             ))}
-            <div className="flex items-center justify-between border-t border-blue-200 pt-1.5 text-base font-bold dark:border-blue-900">
+            <div className="flex items-center justify-between text-base font-bold">
               <span>Total TTC</span>
               <span>{formatEuros(totals.totalTtcCents)} €</span>
             </div>
-          </div>
+          </>
         ) : (
           <>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              Total du devis
-            </p>
-            <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
-              {formatEuros(totals.totalHtCents)} €
-            </p>
-            <p className="mt-1 text-xs text-blue-600/80 dark:text-blue-300/70">
+            <div className="flex items-center justify-between border-t border-blue-200 pt-2 text-base font-bold dark:border-blue-900">
+              <span>Total</span>
+              <span>{formatEuros(totals.totalHtCents)} €</span>
+            </div>
+            <p className="text-xs text-blue-600/75 dark:text-blue-300/65">
               {VAT_EXEMPTION_MENTION}
             </p>
           </>
         )}
+
+        {margin ? (
+          <div className="flex items-center justify-between border-t border-blue-200 pt-2 text-blue-800 dark:border-blue-900 dark:text-blue-200">
+            <span>
+              Déboursé {formatEuros(margin.totalCostCents)} € · Marge
+            </span>
+            <span className="font-semibold">
+              {formatEuros(margin.totalMarginCents)} €
+              {marginPercent !== null
+                ? ` (${marginPercent.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 1,
+                  })} %)`
+                : ""}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {showServicePicker ? (

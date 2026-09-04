@@ -109,7 +109,13 @@ type AssistantDecision = {
   notes: string | null;
   quoteLines: Array<{
     category: string;
-    amount: string;
+    unitPrice?: string;
+    amount?: string;
+    quantity?: string;
+    unit?: string;
+    discount?: string;
+    cost?: string;
+    vatRateBp?: number;
   }>;
 };
 
@@ -523,12 +529,14 @@ export default function ForgeBar({
 
       quoteLines: Array.isArray(data.quoteLines)
         ? data.quoteLines.filter(
-            (line: unknown): line is { category: string; amount: string } =>
+            (line: unknown): line is { category: string } =>
               Boolean(
                 line &&
                   typeof line === "object" &&
                   typeof (line as { category?: unknown }).category === "string" &&
-                  typeof (line as { amount?: unknown }).amount === "string",
+                  (typeof (line as { unitPrice?: unknown }).unitPrice ===
+                    "string" ||
+                    typeof (line as { amount?: unknown }).amount === "string"),
               ),
           )
         : [],

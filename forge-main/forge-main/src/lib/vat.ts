@@ -78,18 +78,24 @@ export type DocumentTotals = {
 
 /**
  * Calcule HT / TVA / TTC pour un ensemble de lignes.
+ * `line.amountCents` = HT de la ligne (remise de ligne déjà appliquée).
+ * `documentDiscountBp` = remise globale de pied, appliquée après les lignes
+ * et avant la TVA (0 par défaut, comportement identique à l'existant).
  * Quand `vatApplicable` est faux, TTC = HT et aucune TVA n'est ventilée.
  */
 export function computeDocumentTotals(
   lines: VatLineInput[],
   vatApplicable: boolean,
+  documentDiscountBp = 0,
 ): DocumentTotals {
-  const totalHtCents = lines.reduce(
-    (sum, line) => sum + Math.round(line.amountCents || 0),
-    0,
-  );
+  const discountFactor = 10000 - Math.max(0, Math.min(documentDiscountBp, 10000));
 
   if (!vatApplicable) {
+    const htBeforeDoc = lines.reduce(
+      (sum, line) => sum + Math.round(line.amountCents || 0),
+      0,
+    );
+    const totalHtCents = Math.round((htBeforeDoc * discountFactor) / 10000);
     return {
       totalHtCents,
       totalVatCents: 0,
@@ -107,14 +113,18 @@ export function computeDocumentTotals(
   }
 
   const byRate: VatRateBreakdown[] = [...basesByRate.entries()]
-    .map(([rateBp, baseCents]) => ({
-      rateBp,
-      baseCents,
-      vatCents: Math.round((baseCents * rateBp) / 10000),
-    }))
+    .map(([rateBp, rawBase]) => {
+      const baseCents = Math.round((rawBase * discountFactor) / 10000);
+      return {
+        rateBp,
+        baseCents,
+        vatCents: Math.round((baseCents * rateBp) / 10000),
+      };
+    })
     .filter((entry) => entry.baseCents !== 0)
     .sort((a, b) => b.rateBp - a.rateBp);
 
+  const totalHtCents = byRate.reduce((sum, entry) => sum + entry.baseCents, 0);
   const totalVatCents = byRate.reduce(
     (sum, entry) => sum + entry.vatCents,
     0,

@@ -14,6 +14,11 @@ import {
   formatVatRateBp,
   VAT_EXEMPTION_MENTION,
 } from "@/src/lib/vat";
+import {
+  computeDocumentMargin,
+  formatQuantity,
+  formatUnit,
+} from "@/src/lib/document-lines";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -138,7 +143,24 @@ export default async function QuotePage({
       vatRateBp: line.vatRateBp,
     })),
     quote.vatApplicable,
+    quote.discountBp,
   );
+  const marginInfo = quote.lines.some((line) => line.costCents != null)
+    ? computeDocumentMargin(
+        quote.lines.map((line) => ({
+          quantityMilli: line.quantityMilli,
+          unitPriceCents: line.unitPriceCents,
+          discountBp: line.discountBp,
+          costCents: line.costCents,
+          amountCents: line.amountCents,
+        })),
+        quote.discountBp,
+      )
+    : null;
+  const marginPercent =
+    marginInfo && vatTotals.totalHtCents > 0
+      ? (marginInfo.totalMarginCents / vatTotals.totalHtCents) * 100
+      : null;
   const reminderState = getQuoteReminderState({
     status: quote.status,
     sentAt: quote.sentAt,
@@ -289,6 +311,40 @@ export default async function QuotePage({
 
 
 
+        {quote.lines.length > 0 ? (
+          <div className="mt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Détail
+            </p>
+            <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 dark:divide-slate-700 dark:border-slate-700">
+              {quote.lines.map((line) => (
+                <div
+                  key={line.id}
+                  className="flex items-baseline justify-between gap-3 px-4 py-3 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
+                      {line.label || line.category}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {formatQuantity(line.quantityMilli)} {formatUnit(line.unit)} ×{" "}
+                      {formatAmount(line.unitPriceCents)}
+                      {line.discountBp > 0
+                        ? ` · −${(line.discountBp / 100).toLocaleString("fr-FR")} %`
+                        : ""}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-semibold text-slate-900 dark:text-white">
+                    {formatAmount(line.amountCents)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+
+
         <div className="mt-6 rounded-2xl border border-blue-100 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-950">
 
 
@@ -333,6 +389,27 @@ export default async function QuotePage({
               {VAT_EXEMPTION_MENTION}
             </p>
           )}
+
+          {quote.discountBp > 0 ? (
+            <p className="mt-2 text-xs text-blue-600/80 dark:text-blue-300/70">
+              Remise globale de{" "}
+              {(quote.discountBp / 100).toLocaleString("fr-FR")} % appliquée.
+            </p>
+          ) : null}
+
+          {marginInfo ? (
+            <p className="mt-3 border-t border-blue-200/70 pt-3 text-sm text-blue-800 dark:border-blue-800 dark:text-blue-200">
+              Déboursé {formatAmount(marginInfo.totalCostCents)} · Marge{" "}
+              <span className="font-semibold">
+                {formatAmount(marginInfo.totalMarginCents)}
+                {marginPercent !== null
+                  ? ` (${marginPercent.toLocaleString("fr-FR", {
+                      maximumFractionDigits: 1,
+                    })} %)`
+                  : ""}
+              </span>
+            </p>
+          ) : null}
 
           {depositSummary.depositedCents > 0 ? (
             <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-blue-200/70 pt-4 dark:border-blue-800">

@@ -6,6 +6,11 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
 import {
+  buildDocumentLinesFromForm,
+  computeDocumentMargin,
+  normalizeDiscountBp,
+} from "@/src/lib/document-lines";
+import {
   computeDocumentTotals,
   normalizeVatRateBp,
 } from "@/src/lib/vat";
@@ -81,30 +86,28 @@ export default async function NewInvoicePage({
     );
     const vatApplicable =
       formData.get("vatApplicable")?.toString() === "true";
+    const documentDiscountBp = normalizeDiscountBp(
+      formData.get("documentDiscount"),
+    );
 
-    const parsedLines = JSON.parse(invoiceLinesRaw);
-    const cleanLines: Array<{
-      category: string;
-      amountCents: number;
-      vatRateBp: number;
-    }> = parsedLines
-      .filter(
-        (line: { category?: string; amount?: string }) =>
-          line.category && line.amount,
-      )
-      .map((line: { category: string; amount: string; vatRateBp?: number }) => ({
-        category: line.category,
-        amountCents: Math.round(
-          Number(String(line.amount).replace(",", ".")) * 100,
-        ),
-        vatRateBp: normalizeVatRateBp(line.vatRateBp, orgDefaultRateBp),
-      }));
+    const cleanLines = buildDocumentLinesFromForm(
+      invoiceLinesRaw,
+      orgDefaultRateBp,
+    );
 
     if (cleanLines.length === 0) {
       throw new Error("Ajoute au moins une ligne à la facture.");
     }
 
-    const totals = computeDocumentTotals(cleanLines, vatApplicable);
+    const totals = computeDocumentTotals(
+      cleanLines,
+      vatApplicable,
+      documentDiscountBp,
+    );
+    const { totalCostCents } = computeDocumentMargin(
+      cleanLines,
+      documentDiscountBp,
+    );
 
     let dueDate: Date | null = null;
     if (dueDateRaw) {
@@ -123,6 +126,8 @@ export default async function NewInvoicePage({
         vatApplicable,
         totalHtCents: totals.totalHtCents,
         totalVatCents: totals.totalVatCents,
+        discountBp: documentDiscountBp,
+        totalCostCents,
         status: "BROUILLON",
         type: "STANDARD",
         dueDate,
@@ -131,7 +136,12 @@ export default async function NewInvoicePage({
         lines: {
           create: cleanLines.map((line) => ({
             category: line.category,
-            label: line.category,
+            label: line.label,
+            quantityMilli: line.quantityMilli,
+            unit: line.unit,
+            unitPriceCents: line.unitPriceCents,
+            costCents: line.costCents,
+            discountBp: line.discountBp,
             amountCents: line.amountCents,
             vatRateBp: line.vatRateBp,
           })),
