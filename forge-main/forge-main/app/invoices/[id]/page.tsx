@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import SendInvoiceButton from "@/components/SendInvoiceButton";
 import InvoiceAmountForm from "@/components/InvoiceAmountForm";
+import InvoicePaymentsPanel from "@/components/InvoicePaymentsPanel";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
@@ -116,6 +117,22 @@ export default async function InvoicePage({
 
         lines: true,
 
+        payments: {
+
+          orderBy: [{ paidAt: "asc" }, { createdAt: "asc" }],
+
+          include: {
+
+            recordedByUser: {
+
+              select: { firstName: true, lastName: true },
+
+            },
+
+          },
+
+        },
+
       },
 
     });
@@ -151,6 +168,29 @@ export default async function InvoicePage({
   const clientEmail = isValidClientEmail(invoice.client.email)
     ? normalizeClientEmail(invoice.client.email)
     : null;
+
+  const paymentRows = invoice.payments.map((payment) => ({
+    id: payment.id,
+    provider: payment.provider as "STRIPE" | "MANUAL",
+    status: payment.status as string,
+    method: payment.method,
+    amountCents: payment.amountCents,
+    feeCents: payment.feeCents,
+    refundedCents: payment.refundedCents,
+    reference: payment.reference,
+    paidAt: payment.paidAt ? payment.paidAt.toISOString() : null,
+    createdAt: payment.createdAt.toISOString(),
+    recordedByName: payment.recordedByUser
+      ? `${payment.recordedByUser.firstName ?? ""} ${
+          payment.recordedByUser.lastName ?? ""
+        }`.trim() || null
+      : null,
+  }));
+
+  const canRecordPayment =
+    workspaceContext.permissions.canWrite &&
+    invoice.status !== "BROUILLON" &&
+    invoice.status !== "ANNULEE";
 
 
 
@@ -370,6 +410,16 @@ export default async function InvoicePage({
 
 
         </div>
+
+
+        {invoice.status !== "BROUILLON" || paymentRows.length > 0 ? (
+          <InvoicePaymentsPanel
+            invoiceId={invoice.id}
+            invoiceTtcCents={invoice.amountCents}
+            canRecord={canRecordPayment}
+            payments={paymentRows}
+          />
+        ) : null}
 
 
 

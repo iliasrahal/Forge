@@ -66,6 +66,19 @@ enum DocumentKind {
   CREDIT_NOTE
 }
 
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELED
+}
+
+enum PaymentProvider {
+  STRIPE
+  MANUAL
+}
+
 enum ServicePricingType {
   FIXED
   HOURLY
@@ -174,6 +187,8 @@ model User {
 
   quoteReminders QuoteReminder[] @relation("QuoteReminderCreator")
 
+  recordedPayments Payment[] @relation("PaymentRecorder")
+
   createdAt DateTime @default(now())
 
   updatedAt DateTime @updatedAt
@@ -236,6 +251,13 @@ model Organization {
   invoicePrefix       String               @default("F")
   creditNotePrefix    String               @default("AV")
   documentCounters    DocumentCounter[]
+  // Compte Stripe Connect (Express) de l'artisan pour encaisser en ligne.
+  stripeAccountId        String?
+  stripeChargesEnabled   Boolean            @default(false)
+  stripePayoutsEnabled   Boolean            @default(false)
+  stripeDetailsSubmitted Boolean            @default(false)
+  stripeOnboardedAt      DateTime?
+  payments               Payment[]
   members             OrganizationMember[]
   invitations         TeamInvitation[]
   clients             Client[]
@@ -688,6 +710,13 @@ model Invoice {
 
   lines InvoiceLine[]
 
+  // Encaissement.
+  paidAt        DateTime?
+  paymentMethod String?
+
+  payments       Payment[]
+  publicAccesses InvoicePublicAccess[]
+
   status InvoiceStatus @default(BROUILLON)
 
   // STANDARD pour les factures historiques/finales, DEPOSIT pour un acompte.
@@ -722,6 +751,69 @@ model Invoice {
   @@index([quoteId])
   @@index([quoteId, type])
   @@index([interventionId])
+}
+
+// Paiement d'une facture. Une facture peut en avoir plusieurs (partiels,
+// relances, remboursements). Le statut PAYEE de la facture est dérivé de la
+// somme des paiements SUCCEEDED (moins les remboursements).
+model Payment {
+  id             String          @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  amountCents    Int
+  // Frais du prestataire (Stripe). netCents = amountCents - feeCents.
+  feeCents       Int             @default(0)
+  netCents       Int             @default(0)
+  refundedCents  Int             @default(0)
+  currency       String          @default("eur")
+
+  status         PaymentStatus   @default(PENDING)
+  provider       PaymentProvider @default(MANUAL)
+  // "card" | "bank_transfer" | "virement" | "cheque" | "especes"
+  method         String?
+  reference      String?
+  errorMessage   String?
+
+  stripePaymentIntentId   String? @unique
+  stripeCheckoutSessionId String? @unique
+
+  recordedByUserId String?
+  recordedByUser   User?   @relation("PaymentRecorder", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+
+  paidAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([organizationId])
+  @@index([status])
+}
+
+// Idempotence des webhooks Stripe : un event n'est traité qu'une fois.
+model StripeEvent {
+  id         String   @id
+  type       String
+  accountId  String?
+  receivedAt DateTime @default(now())
+}
+
+// Lien public tokenisé d'une facture (page de règlement client), sur le
+// modèle de QuotePublicAccess.
+model InvoicePublicAccess {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  invoiceId String
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  revokedAt DateTime?
+  viewedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([invoiceId])
+  @@index([invoiceId, revokedAt])
 }
 
 model InvoiceLine {
