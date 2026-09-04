@@ -52,6 +52,7 @@ export async function GET(
         status: true,
         sentAt: true,
         amountCents: true,
+        totalHtCents: true,
         createdAt: true,
         clientId: true,
         client: {
@@ -99,7 +100,9 @@ export async function GET(
         id: quote.id,
         title: quote.title,
         reference: quote.reference,
-        amountCents: quote.amountCents,
+        // Le chiffre d'affaires se pilote en HT ; le TTC reste sur le détail.
+        amountCents: quote.totalHtCents,
+        amountTtcCents: quote.amountCents,
         createdAt: quote.createdAt.toISOString(),
         statusLabel: statusLabels[quote.status] ?? quote.status,
         href: `/clients/${quote.clientId}/quotes/${quote.id}`,

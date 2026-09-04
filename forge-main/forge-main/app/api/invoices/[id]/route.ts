@@ -61,9 +61,21 @@ export async function PATCH(
       );
     }
 
+    if (invoice.vatApplicable) {
+      return NextResponse.json(
+        {
+          error:
+            "Le montant d’une facture avec TVA se règle depuis le devis d’origine.",
+        },
+        { status: 409 },
+      );
+    }
+
+    const amountCents = Math.round(amount * 100);
     const updatedInvoice = await prisma.invoice.update({
       where: { id },
-      data: { amountCents: Math.round(amount * 100) },
+      // Sans TVA : HT = TTC, TVA = 0.
+      data: { amountCents, totalHtCents: amountCents, totalVatCents: 0 },
     });
 
     return NextResponse.json({ invoice: updatedInvoice });

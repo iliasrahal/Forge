@@ -63,6 +63,7 @@ export async function POST(
 
         include: {
           client: true,
+          lines: true,
         },
 
       });
@@ -134,6 +135,19 @@ export async function POST(
 
           amountCents:
             quote.amountCents,
+
+          vatApplicable: quote.vatApplicable,
+          totalHtCents: quote.totalHtCents,
+          totalVatCents: quote.totalVatCents,
+
+          lines: {
+            create: quote.lines.map((line) => ({
+              category: line.category,
+              label: line.label,
+              amountCents: line.amountCents,
+              vatRateBp: line.vatRateBp,
+            })),
+          },
 
 
           status:

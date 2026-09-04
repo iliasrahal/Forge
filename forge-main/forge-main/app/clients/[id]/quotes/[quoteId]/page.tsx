@@ -9,6 +9,11 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { getQuoteDepositSummary } from "@/src/lib/deposits";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
+import {
+  computeDocumentTotals,
+  formatVatRateBp,
+  VAT_EXEMPTION_MENTION,
+} from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -126,6 +131,13 @@ export default async function QuotePage({
   const depositSummary = getQuoteDepositSummary(
     quote.amountCents,
     quote.invoices,
+  );
+  const vatTotals = computeDocumentTotals(
+    quote.lines.map((line) => ({
+      amountCents: line.amountCents,
+      vatRateBp: line.vatRateBp,
+    })),
+    quote.vatApplicable,
   );
   const reminderState = getQuoteReminderState({
     status: quote.status,
@@ -282,7 +294,7 @@ export default async function QuotePage({
 
 
           <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-            Montant
+            Montant {quote.vatApplicable ? "TTC" : null}
           </p>
 
 
@@ -290,6 +302,37 @@ export default async function QuotePage({
           <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
             {formatAmount(quote.amountCents)}
           </p>
+
+          {quote.vatApplicable ? (
+            <dl className="mt-4 space-y-1.5 border-t border-blue-200/70 pt-4 text-sm text-blue-700 dark:border-blue-800 dark:text-blue-300">
+              <div className="flex items-center justify-between">
+                <dt>Total HT</dt>
+                <dd className="font-semibold">
+                  {formatAmount(vatTotals.totalHtCents)}
+                </dd>
+              </div>
+              {vatTotals.byRate.map((entry) => (
+                <div
+                  key={entry.rateBp}
+                  className="flex items-center justify-between text-blue-600/80 dark:text-blue-300/75"
+                >
+                  <dt>
+                    TVA {formatVatRateBp(entry.rateBp)} sur{" "}
+                    {formatAmount(entry.baseCents)}
+                  </dt>
+                  <dd>{formatAmount(entry.vatCents)}</dd>
+                </div>
+              ))}
+              <div className="flex items-center justify-between font-bold">
+                <dt>Total TVA</dt>
+                <dd>{formatAmount(vatTotals.totalVatCents)}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="mt-2 text-xs text-blue-600/80 dark:text-blue-300/70">
+              {VAT_EXEMPTION_MENTION}
+            </p>
+          )}
 
           {depositSummary.depositedCents > 0 ? (
             <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-blue-200/70 pt-4 dark:border-blue-800">

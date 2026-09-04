@@ -34,6 +34,7 @@ export async function GET(request: Request) {
       status: true,
       type: true,
       amountCents: true,
+      totalHtCents: true,
       createdAt: true,
     },
     orderBy: {
@@ -54,7 +55,9 @@ export async function GET(request: Request) {
       id: invoice.id,
       title: invoice.title,
       reference: `Facture ${invoice.reference}`,
-      amountCents: invoice.amountCents,
+      // Le chiffre d'affaires se pilote en HT ; le TTC reste sur le détail.
+      amountCents: invoice.totalHtCents,
+      amountTtcCents: invoice.amountCents,
       createdAt: invoice.createdAt.toISOString(),
       statusLabel: statusLabels[invoice.status] ?? invoice.status,
       href: `/invoices/${invoice.id}`,

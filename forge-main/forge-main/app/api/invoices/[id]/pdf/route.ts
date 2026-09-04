@@ -11,6 +11,11 @@ import {
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import {
+  computeDocumentTotals,
+  formatVatRateBp,
+  VAT_EXEMPTION_MENTION,
+} from "@/src/lib/vat";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type PdfRouteProps = {
@@ -99,6 +104,7 @@ export async function GET(
         client: true,
         intervention: true,
         quote: true,
+        lines: true,
       },
     });
 
@@ -394,7 +400,42 @@ export async function GET(
       font: boldFont,
       color: dark,
     });
-    currentY -= amountBoxHeight + 22;
+    currentY -= amountBoxHeight + 12;
+
+    if (invoice.vatApplicable) {
+      const vt = computeDocumentTotals(
+        invoice.lines.map((line) => ({
+          amountCents: line.amountCents,
+          vatRateBp: line.vatRateBp,
+        })),
+        true,
+      );
+      const vatRows = [
+        `Total HT : ${cleanPdfText(formatAmount(vt.totalHtCents || invoice.totalHtCents))}`,
+        ...vt.byRate.map(
+          (entry) =>
+            `TVA ${formatVatRateBp(entry.rateBp)} : ${cleanPdfText(formatAmount(entry.vatCents))}`,
+        ),
+        `Total TVA : ${cleanPdfText(formatAmount(vt.totalVatCents || invoice.totalVatCents))}`,
+      ];
+      ensureSpace(18 + vatRows.length * 13);
+      drawLines(vatRows, {
+        x: margin,
+        size: 9,
+        lineHeight: 13,
+        color: grey,
+      });
+      currentY -= 14;
+    } else {
+      ensureSpace(20);
+      drawLines([cleanPdfText(VAT_EXEMPTION_MENTION)], {
+        x: margin,
+        size: 8,
+        lineHeight: 12,
+        color: grey,
+      });
+      currentY -= 12;
+    }
 
     const artisanDetails = [
       workspaceContext.user.firstName?.trim(),

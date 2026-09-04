@@ -8,6 +8,11 @@ import {
 
 import { prisma } from "@/src/lib/prisma";
 import { parseQuoteSignatureSnapshot, shortIntegrityReference, validateDrawnSignature } from "@/src/lib/quote-signature";
+import {
+  computeDocumentTotals,
+  formatVatRateBp,
+  VAT_EXEMPTION_MENTION,
+} from "@/src/lib/vat";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type PdfRouteProps = {
@@ -493,10 +498,43 @@ export async function GET(
       });
       y -= rowHeight;
     };
-    drawSummary("Sous-total", total);
-    drawSummary("Total TTC", total, true);
+    if (quote.vatApplicable) {
+      const vt = computeDocumentTotals(
+        frozenLines.map((line) => {
+          const rate = (line as { vatRateBp?: number }).vatRateBp;
+          return {
+            amountCents: line.amountCents,
+            vatRateBp: typeof rate === "number" ? rate : 0,
+          };
+        }),
+        true,
+      );
+      drawSummary(
+        "Total HT",
+        cleanPdfText(formatAmount(vt.totalHtCents || quote.totalHtCents)),
+      );
+      for (const entry of vt.byRate) {
+        drawSummary(
+          cleanPdfText(`TVA ${formatVatRateBp(entry.rateBp)}`),
+          cleanPdfText(formatAmount(entry.vatCents)),
+        );
+      }
+      drawSummary("Total TTC", total, true);
+    } else {
+      drawSummary("Sous-total", total);
+      drawSummary("Total", total, true);
+    }
 
-    y -= 34;
+    y -= 12;
+    if (!quote.vatApplicable) {
+      drawLines([cleanPdfText(VAT_EXEMPTION_MENTION)], {
+        size: 8,
+        height: 12,
+        color: grey,
+      });
+    }
+
+    y -= 22;
     if (quote.signature) {
       ensure(190);
       section("Devis accepté et signé");

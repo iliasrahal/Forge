@@ -51,6 +51,14 @@ enum InvoiceType {
   DEPOSIT
 }
 
+// Régime de TVA de l'organisation.
+// SUBJECT : assujettie, elle facture la TVA.
+// FRANCHISE_BASE : franchise en base (art. 293 B du CGI), aucune TVA facturée.
+enum VatScheme {
+  SUBJECT
+  FRANCHISE_BASE
+}
+
 enum ServicePricingType {
   FIXED
   HOURLY
@@ -211,6 +219,10 @@ model Organization {
   // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
   // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
   graceExpiresAt      DateTime?
+  // Régime de TVA par défaut de l'espace + taux par défaut (points de base :
+  // 2000 = 20 %, 1000 = 10 %, 550 = 5,5 %, 0 = 0 %). Surchargeable par document.
+  vatScheme           VatScheme            @default(FRANCHISE_BASE)
+  defaultVatRateBp    Int                  @default(2000)
   members             OrganizationMember[]
   invitations         TeamInvitation[]
   clients             Client[]
@@ -455,7 +467,15 @@ model Quote {
 
   description String?
 
+  // amountCents = total TTC (= total HT quand la TVA n'est pas applicable).
   amountCents Int @default(0)
+
+  // TVA appliquée sur ce devis (surcharge le régime de l'organisation).
+  vatApplicable Boolean @default(false)
+
+  totalHtCents Int @default(0)
+
+  totalVatCents Int @default(0)
 
   status QuoteStatus @default(BROUILLON)
 
@@ -575,7 +595,12 @@ model QuoteLine {
 
   label String?
 
+  // Montant HT de la ligne.
   amountCents Int @default(0)
+
+  // Taux de TVA de la ligne en points de base (2000 = 20 %, 1000 = 10 %,
+  // 550 = 5,5 %, 0 = 0 %). Ignoré si le devis n'applique pas la TVA.
+  vatRateBp Int @default(0)
 
   quoteId String
 
@@ -595,7 +620,16 @@ model Invoice {
 
   description String?
 
+  // amountCents = total TTC (= total HT quand la TVA n'est pas applicable).
   amountCents Int @default(0)
+
+  vatApplicable Boolean @default(false)
+
+  totalHtCents Int @default(0)
+
+  totalVatCents Int @default(0)
+
+  lines InvoiceLine[]
 
   status InvoiceStatus @default(BROUILLON)
 
@@ -631,4 +665,27 @@ model Invoice {
   @@index([quoteId])
   @@index([quoteId, type])
   @@index([interventionId])
+}
+
+model InvoiceLine {
+  id String @id @default(cuid())
+
+  category String
+
+  label String?
+
+  // Montant HT de la ligne, figé à la création de la facture.
+  amountCents Int @default(0)
+
+  // Taux de TVA de la ligne en points de base. Ignoré si la facture
+  // n'applique pas la TVA.
+  vatRateBp Int @default(0)
+
+  invoiceId String
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
 }

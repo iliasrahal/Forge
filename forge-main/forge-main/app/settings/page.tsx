@@ -44,6 +44,14 @@ export default function SettingsPage() {
 
 
           <Link
+            href="/settings/facturation"
+            className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+          >
+            TVA et facturation
+          </Link>
+
+
+          <Link
             href="/settings/appearance"
             className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
           >

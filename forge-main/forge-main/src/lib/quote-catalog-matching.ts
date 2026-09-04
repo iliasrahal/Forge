@@ -166,6 +166,9 @@ export function parseSerializedQuoteLines(value: string | undefined) {
       .map((line) => ({
         category: line.category.trim().slice(0, 160),
         amount: line.amount.trim().replace(",", "."),
+        ...(typeof (line as EditableQuoteLine).vatRateBp === "number"
+          ? { vatRateBp: (line as EditableQuoteLine).vatRateBp }
+          : {}),
       }));
   } catch {
     return [];

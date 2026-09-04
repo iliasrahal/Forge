@@ -9,6 +9,10 @@ import QuoteLinesForm from "@/components/QuoteLinesForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
+import {
+  computeDocumentTotals,
+  normalizeVatRateBp,
+} from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -150,17 +154,32 @@ export default async function NewQuotePage({
         quoteLinesRaw,
       );
 
+    const orgDefaultRateBp = normalizeVatRateBp(
+      writeContext.workspace.defaultVatRateBp,
+      2000,
+    );
+
+    const vatApplicable =
+      formData.get("vatApplicable")?.toString() === "true";
 
 
-    const cleanLines =
-      lines.filter(
-        (line: {
-          category: string;
-          amount: string;
-        }) =>
-          line.category &&
-          line.amount,
-      );
+
+    const cleanLines: Array<{
+      category: string;
+      amountCents: number;
+      vatRateBp: number;
+    }> = lines
+      .filter(
+        (line: { category?: string; amount?: string }) =>
+          line.category && line.amount,
+      )
+      .map((line: { category: string; amount: string; vatRateBp?: number }) => ({
+        category: line.category,
+        amountCents: Math.round(
+          Number(String(line.amount).replace(",", ".")) * 100,
+        ),
+        vatRateBp: normalizeVatRateBp(line.vatRateBp, orgDefaultRateBp),
+      }));
 
 
 
@@ -174,25 +193,7 @@ export default async function NewQuotePage({
 
 
 
-    const amountCents =
-      Math.round(
-        cleanLines.reduce(
-          (
-            total: number,
-            line: {
-              amount: string;
-            },
-          ) =>
-            total +
-            Number(
-              line.amount.replace(
-                ",",
-                ".",
-              ),
-            ),
-          0,
-        ) * 100,
-      );
+    const totals = computeDocumentTotals(cleanLines, vatApplicable);
 
 
 
@@ -207,7 +208,10 @@ export default async function NewQuotePage({
           reference,
           title,
           description,
-          amountCents,
+          amountCents: totals.totalTtcCents,
+          vatApplicable,
+          totalHtCents: totals.totalHtCents,
+          totalVatCents: totals.totalVatCents,
           status:
             "BROUILLON",
           clientId:
@@ -215,29 +219,12 @@ export default async function NewQuotePage({
           organizationId: writeContext.workspace.id,
 
           lines: {
-            create:
-              cleanLines.map(
-                (line: {
-                  category: string;
-                  amount: string;
-                }) => ({
-                  category:
-                    line.category,
-
-                  label:
-                    line.category,
-
-                  amountCents:
-                    Math.round(
-                      Number(
-                        line.amount.replace(
-                          ",",
-                          ".",
-                        ),
-                      ) * 100,
-                    ),
-                }),
-              ),
+            create: cleanLines.map((line) => ({
+              category: line.category,
+              label: line.category,
+              amountCents: line.amountCents,
+              vatRateBp: line.vatRateBp,
+            })),
           },
         },
       });
@@ -365,6 +352,8 @@ export default async function NewQuotePage({
         <QuoteLinesForm
           initialTitle={title}
           initialLines={initialLines}
+          defaultVatApplicable={workspaceContext.workspace.vatScheme === "SUBJECT"}
+          defaultVatRateBp={workspaceContext.workspace.defaultVatRateBp}
           services={services}
           canWrite={workspaceContext.permissions.canWrite}
         />

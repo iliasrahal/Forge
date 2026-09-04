@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { Plus, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import {
-  calculateQuoteLinesTotal,
   createQuoteLineSnapshot,
   type EditableQuoteLine,
 } from "@/src/lib/quote-lines";
@@ -14,11 +13,21 @@ import {
   formatServicePrice,
   type ServicePricingTypeValue,
 } from "@/src/lib/service-catalog";
+import {
+  computeDocumentTotals,
+  formatVatRateBp,
+  normalizeVatRateBp,
+  VAT_EXEMPTION_MENTION,
+  VAT_RATES_BP,
+} from "@/src/lib/vat";
 
 
 type QuoteLinesFormProps = {
   initialTitle?: string;
   initialLines?: EditableQuoteLine[];
+  initialVatApplicable?: boolean;
+  defaultVatApplicable?: boolean;
+  defaultVatRateBp?: number;
   services?: Array<{
     id: string;
     name: string;
@@ -29,248 +38,214 @@ type QuoteLinesFormProps = {
 };
 
 
+function formatEuros(cents: number) {
+  return (cents / 100).toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 
 export default function QuoteLinesForm({
   initialTitle,
   initialLines = [],
+  initialVatApplicable,
+  defaultVatApplicable = false,
+  defaultVatRateBp = 2000,
   services = [],
   canWrite = true,
 }: QuoteLinesFormProps) {
+  const normalizedDefaultRate = normalizeVatRateBp(defaultVatRateBp, 2000);
 
+  const [vatApplicable, setVatApplicable] = useState<boolean>(
+    initialVatApplicable ?? defaultVatApplicable,
+  );
 
-  const [lines, setLines] =
-    useState<EditableQuoteLine[]>(
-      initialLines.length > 0
-        ? initialLines
-        : [
-            {
-              category: initialTitle || "Main d'œuvre",
-              amount: "",
-            },
-            {
-              category: "Matériel",
-              amount: "",
-            },
-            {
-              category: "Déplacement",
-              amount: "",
-            },
-          ],
-    );
+  const [lines, setLines] = useState<EditableQuoteLine[]>(
+    initialLines.length > 0
+      ? initialLines.map((line) => ({
+          ...line,
+          vatRateBp: normalizeVatRateBp(
+            line.vatRateBp,
+            normalizedDefaultRate,
+          ),
+        }))
+      : [
+          { category: initialTitle || "Main d'œuvre", amount: "", vatRateBp: normalizedDefaultRate },
+          { category: "Matériel", amount: "", vatRateBp: normalizedDefaultRate },
+          { category: "Déplacement", amount: "", vatRateBp: normalizedDefaultRate },
+        ],
+  );
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [serviceSearch, setServiceSearch] = useState("");
 
-  const filteredServices = useMemo(() => {
-    const search = serviceSearch.trim().toLocaleLowerCase("fr");
-    if (!search) return services;
-    return services.filter((service) =>
-      service.name.toLocaleLowerCase("fr").includes(search),
+  const serviceSearchTerm = serviceSearch.trim().toLocaleLowerCase("fr");
+  const filteredServices = serviceSearchTerm
+    ? services.filter((service) =>
+        service.name.toLocaleLowerCase("fr").includes(serviceSearchTerm),
+      )
+    : services;
+
+
+  function updateAmount(index: number, value: string) {
+    setLines((current) =>
+      current.map((line, lineIndex) =>
+        lineIndex === index ? { ...line, amount: value } : line,
+      ),
     );
-  }, [serviceSearch, services]);
-
-
-
-
-  function updateAmount(
-    index: number,
-    value: string,
-  ) {
-
-    const updatedLines =
-      [...lines];
-
-    updatedLines[index].amount =
-      value;
-
-    setLines(updatedLines);
   }
 
-
-
-
-
-  function updateCategory(
-    index: number,
-    value: string,
-  ) {
-
-    const updatedLines =
-      [...lines];
-
-    updatedLines[index].category =
-      value;
-
-    setLines(updatedLines);
+  function updateCategory(index: number, value: string) {
+    setLines((current) =>
+      current.map((line, lineIndex) =>
+        lineIndex === index ? { ...line, category: value } : line,
+      ),
+    );
   }
 
-
-
-
+  function updateVatRate(index: number, value: string) {
+    const rateBp = normalizeVatRateBp(value, normalizedDefaultRate);
+    setLines((current) =>
+      current.map((line, lineIndex) =>
+        lineIndex === index ? { ...line, vatRateBp: rateBp } : line,
+      ),
+    );
+  }
 
   function addLine() {
-
     if (!canWrite) return;
-
-    setLines([
-      ...lines,
-      {
-        category: "",
-        amount: "",
-      },
+    setLines((current) => [
+      ...current,
+      { category: "", amount: "", vatRateBp: normalizedDefaultRate },
     ]);
-
     setShowAddMenu(false);
-
   }
 
   function addSavedService(service: (typeof services)[number]) {
     if (!canWrite) return;
-
-    setLines((current) => [...current, createQuoteLineSnapshot(service)]);
+    setLines((current) => [
+      ...current,
+      createQuoteLineSnapshot(service, normalizedDefaultRate),
+    ]);
     setShowServicePicker(false);
     setShowAddMenu(false);
     setServiceSearch("");
   }
 
-
-
-
-
-  function removeLine(
-    index: number,
-  ) {
-
-    setLines(
-      lines.filter(
-        (_, lineIndex) =>
-          lineIndex !== index,
-      ),
+  function removeLine(index: number) {
+    setLines((current) =>
+      current.filter((_, lineIndex) => lineIndex !== index),
     );
-
   }
 
 
-
-
-
-  const total = calculateQuoteLinesTotal(lines);
-
-
-
+  const totals = computeDocumentTotals(
+    lines.map((line) => ({
+      amountCents: Math.round(
+        (Number(String(line.amount).replace(",", ".")) || 0) * 100,
+      ),
+      vatRateBp: normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate),
+    })),
+    vatApplicable,
+  );
 
 
   return (
     <div className="space-y-5">
-
 
       <input
         type="hidden"
         name="quoteLines"
         value={JSON.stringify(lines)}
       />
+      <input
+        type="hidden"
+        name="vatApplicable"
+        value={vatApplicable ? "true" : "false"}
+      />
 
 
-
-
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-blue-700 dark:text-blue-400">
           Détail du devis
         </h2>
+
+        {canWrite ? (
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={vatApplicable}
+              onChange={(event) => setVatApplicable(event.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600"
+            />
+            Assujetti à la TVA
+          </label>
+        ) : null}
       </div>
 
 
-
-
-
       <div className="space-y-3">
+        {lines.map((line, index) => (
+          <div
+            key={index}
+            className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+          >
+            <input
+              type="text"
+              value={line.category}
+              placeholder="Nouvelle prestation"
+              onChange={(event) => updateCategory(index, event.target.value)}
+              disabled={!canWrite}
+              className="min-w-[8rem] flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
+            />
 
-
-        {lines.map(
-          (line, index) => (
-
-            <div
-              key={index}
-              className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
-            >
-
-
-              <input
-                type="text"
-                value={line.category}
-                placeholder="Nouvelle prestation"
-                onChange={(event) =>
-                  updateCategory(
-                    index,
-                    event.target.value,
-                  )
-                }
+            {vatApplicable ? (
+              <select
+                aria-label="Taux de TVA"
+                value={String(normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate))}
+                onChange={(event) => updateVatRate(index, event.target.value)}
                 disabled={!canWrite}
-                className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:text-white dark:placeholder:text-slate-500"
+                className="rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+              >
+                {VAT_RATES_BP.map((rateBp) => (
+                  <option key={rateBp} value={rateBp}>
+                    {formatVatRateBp(rateBp)}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+
+            <div className="relative w-32">
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={line.amount}
+                onChange={(event) => updateAmount(index, event.target.value)}
+                disabled={!canWrite}
+                placeholder="0"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-16 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
               />
+              <span className="pointer-events-none absolute right-9 top-2 text-slate-500 dark:text-slate-400">
+                {vatApplicable ? "€ HT" : "€"}
+              </span>
+            </div>
 
-
-
-
-              <div className="relative w-32">
-
-
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={line.amount}
-                  onChange={(event) =>
-                    updateAmount(
-                      index,
-                      event.target.value,
-                    )
-                  }
-                  disabled={!canWrite}
-                  placeholder="0"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pr-16 text-right text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                />
-
-
-
-                <span className="pointer-events-none absolute right-9 top-2 text-slate-500 dark:text-slate-400">
-                  €
-                </span>
-
-
-              </div>
-
-
-
-
-
-              {canWrite ? <button
+            {canWrite ? (
+              <button
                 type="button"
-                onClick={() =>
-                  removeLine(index)
-                }
+                onClick={() => removeLine(index)}
                 className="rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
               >
                 Supprimer
               </button>
-              : null}
-
-
-
-
-            </div>
-
-          ),
-        )}
-
-
-
+            ) : null}
+          </div>
+        ))}
       </div>
-
-
-
 
 
       {canWrite ? (
@@ -309,25 +284,45 @@ export default function QuoteLinesForm({
       ) : null}
 
 
-
-
-
-
       <div className="rounded-2xl bg-blue-50 p-4 dark:bg-blue-950">
-
-
-        <p className="text-sm text-blue-700 dark:text-blue-300">
-          Total du devis
-        </p>
-
-
-
-        <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
-          {total.toFixed(2)} €
-        </p>
-
-
-
+        {vatApplicable ? (
+          <div className="space-y-1.5 text-sm text-blue-700 dark:text-blue-300">
+            <div className="flex items-center justify-between">
+              <span>Total HT</span>
+              <span className="font-semibold">
+                {formatEuros(totals.totalHtCents)} €
+              </span>
+            </div>
+            {totals.byRate.map((entry) => (
+              <div
+                key={entry.rateBp}
+                className="flex items-center justify-between text-blue-600/90 dark:text-blue-300/80"
+              >
+                <span>
+                  TVA {formatVatRateBp(entry.rateBp)} sur{" "}
+                  {formatEuros(entry.baseCents)} €
+                </span>
+                <span>{formatEuros(entry.vatCents)} €</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-blue-200 pt-1.5 text-base font-bold dark:border-blue-900">
+              <span>Total TTC</span>
+              <span>{formatEuros(totals.totalTtcCents)} €</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Total du devis
+            </p>
+            <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
+              {formatEuros(totals.totalHtCents)} €
+            </p>
+            <p className="mt-1 text-xs text-blue-600/80 dark:text-blue-300/70">
+              {VAT_EXEMPTION_MENTION}
+            </p>
+          </>
+        )}
       </div>
 
       {showServicePicker ? (
@@ -418,9 +413,6 @@ export default function QuoteLinesForm({
           </section>
         </div>
       ) : null}
-
-
-
     </div>
   );
 }

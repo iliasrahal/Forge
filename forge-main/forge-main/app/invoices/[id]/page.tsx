@@ -12,9 +12,22 @@ import {
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import {
+  computeDocumentTotals,
+  formatVatRateBp,
+  VAT_EXEMPTION_MENTION,
+} from "@/src/lib/vat";
+import {
   isValidClientEmail,
   normalizeClientEmail,
 } from "@/src/lib/client-email";
+
+
+function formatEur(cents: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
+}
 
 
 
@@ -94,6 +107,8 @@ export default async function InvoicePage({
         quote: true,
 
         intervention: true,
+
+        lines: true,
 
       },
 
@@ -198,15 +213,64 @@ export default async function InvoicePage({
 
 
 
-        <InvoiceAmountForm
-          invoiceId={invoice.id}
-          amountCents={invoice.amountCents}
-          editable={
-            workspaceContext.permissions.canWrite &&
-            invoice.status === "BROUILLON" &&
-            invoice.type !== "DEPOSIT"
-          }
-        />
+        {invoice.vatApplicable ? (
+          (() => {
+            const vt = computeDocumentTotals(
+              invoice.lines.map((line) => ({
+                amountCents: line.amountCents,
+                vatRateBp: line.vatRateBp,
+              })),
+              true,
+            );
+            return (
+              <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Montant TTC
+                </p>
+                <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
+                  {formatEur(invoice.amountCents)}
+                </p>
+                <dl className="mt-4 space-y-1.5 border-t border-blue-200/70 pt-4 text-sm text-blue-700 dark:border-blue-800 dark:text-blue-300">
+                  <div className="flex items-center justify-between">
+                    <dt>Total HT</dt>
+                    <dd className="font-semibold">{formatEur(vt.totalHtCents)}</dd>
+                  </div>
+                  {vt.byRate.map((entry) => (
+                    <div
+                      key={entry.rateBp}
+                      className="flex items-center justify-between text-blue-600/80 dark:text-blue-300/75"
+                    >
+                      <dt>
+                        TVA {formatVatRateBp(entry.rateBp)} sur{" "}
+                        {formatEur(entry.baseCents)}
+                      </dt>
+                      <dd>{formatEur(entry.vatCents)}</dd>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between font-bold">
+                    <dt>Total TVA</dt>
+                    <dd>{formatEur(vt.totalVatCents)}</dd>
+                  </div>
+                </dl>
+              </div>
+            );
+          })()
+        ) : (
+          <InvoiceAmountForm
+            invoiceId={invoice.id}
+            amountCents={invoice.amountCents}
+            editable={
+              workspaceContext.permissions.canWrite &&
+              invoice.status === "BROUILLON" &&
+              invoice.type !== "DEPOSIT"
+            }
+          />
+        )}
+        {!invoice.vatApplicable ? (
+          <p className="mt-2 px-1 text-xs text-slate-500 dark:text-slate-400">
+            {VAT_EXEMPTION_MENTION}
+          </p>
+        ) : null}
 
 
 

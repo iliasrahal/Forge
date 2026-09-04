@@ -73,13 +73,31 @@ export async function POST(request: Request) {
           throw new DepositCreationError(calculation.error, 400);
         }
 
+        // L'acompte est un % du TTC du devis. Quand le devis porte la TVA,
+        // on ventile l'acompte au taux effectif du devis (TVA / HT).
+        const depositTtc = calculation.amountCents;
+        let depositHt = depositTtc;
+        let depositVat = 0;
+        if (quote.vatApplicable && quote.totalHtCents > 0) {
+          const effectiveRateBp = Math.round(
+            (quote.totalVatCents * 10000) / quote.totalHtCents,
+          );
+          depositHt = Math.round(
+            (depositTtc * 10000) / (10000 + effectiveRateBp),
+          );
+          depositVat = depositTtc - depositHt;
+        }
+
         return transaction.invoice.create({
           data: {
             reference: generateInvoiceReference(),
             type: "DEPOSIT",
             title: `Facture d’acompte - ${quote.title}`,
             description: `Acompte relatif au devis ${quote.reference}`,
-            amountCents: calculation.amountCents,
+            amountCents: depositTtc,
+            vatApplicable: quote.vatApplicable,
+            totalHtCents: depositHt,
+            totalVatCents: depositVat,
             status: "BROUILLON",
             quoteId: quote.id,
             clientId: quote.clientId,
