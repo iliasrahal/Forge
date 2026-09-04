@@ -28,6 +28,9 @@ type QuoteLinesFormProps = {
   initialVatApplicable?: boolean;
   defaultVatApplicable?: boolean;
   defaultVatRateBp?: number;
+  /** Nom du champ caché sérialisant les lignes. Devis : "quoteLines" ;
+   *  facture : "invoiceLines". */
+  linesFieldName?: string;
   services?: Array<{
     id: string;
     name: string;
@@ -52,6 +55,7 @@ export default function QuoteLinesForm({
   initialVatApplicable,
   defaultVatApplicable = false,
   defaultVatRateBp = 2000,
+  linesFieldName = "quoteLines",
   services = [],
   canWrite = true,
 }: QuoteLinesFormProps) {
@@ -157,7 +161,7 @@ export default function QuoteLinesForm({
 
       <input
         type="hidden"
-        name="quoteLines"
+        name={linesFieldName}
         value={JSON.stringify(lines)}
       />
       <input

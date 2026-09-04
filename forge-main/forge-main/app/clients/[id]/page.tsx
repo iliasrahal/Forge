@@ -302,6 +302,14 @@ export default async function ClientPage({
               </Link>
 
 
+              <Link
+                href={`/clients/${client.id}/invoices/new`}
+                className="rounded-2xl border border-blue-600 px-5 py-4 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950 sm:col-span-2"
+              >
+                Nouvelle facture
+              </Link>
+
+
             </div>
 
 
