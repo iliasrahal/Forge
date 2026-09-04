@@ -82,6 +82,19 @@ export async function POST(request: Request, { params }: CheckoutRouteProps) {
             access.invoice.client.lastName ?? ""
           }`.trim() || "Client";
 
+    // Nettoie les tentatives précédentes jamais allées au bout (session
+    // Checkout créée puis abandonnée avant confirmation par Stripe) pour ne
+    // pas accumuler des lignes PENDING fantômes à chaque nouvel essai.
+    await prisma.payment.updateMany({
+      where: {
+        invoiceId: invoice.id,
+        provider: "STRIPE",
+        status: "PENDING",
+        stripePaymentIntentId: null,
+      },
+      data: { status: "CANCELED" },
+    });
+
     const created = await prisma.payment.create({
       data: {
         invoiceId: invoice.id,

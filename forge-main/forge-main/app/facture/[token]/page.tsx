@@ -52,8 +52,15 @@ export default async function PublicInvoicePage({
       invoice.organization.stripeAccountId,
   );
   const settled = state.isFullyPaid || invoice.status === "PAYEE";
+  // Un paiement PENDING sans stripePaymentIntentId n'est qu'une tentative
+  // abandonnée (session Checkout jamais terminée) : elle ne doit pas bloquer
+  // un nouvel essai. Seule une session de virement réellement initiée
+  // (confirmée par le webhook checkout.session.completed) doit le faire.
   const hasPendingTransfer = invoice.payments.some(
-    (payment) => payment.status === "PENDING",
+    (payment) =>
+      payment.status === "PENDING" &&
+      payment.method === "bank_transfer" &&
+      Boolean(payment.stripePaymentIntentId),
   );
 
   return (

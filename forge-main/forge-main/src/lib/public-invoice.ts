@@ -52,10 +52,12 @@ export async function getPublicInvoiceByToken(rawToken: unknown) {
           payments: {
             select: {
               status: true,
+              method: true,
               amountCents: true,
               feeCents: true,
               refundedCents: true,
               paidAt: true,
+              stripePaymentIntentId: true,
             },
           },
         },
