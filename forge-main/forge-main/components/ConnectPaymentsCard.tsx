@@ -2,10 +2,11 @@
 
 import { loadConnectAndInitialize } from "@stripe/connect-js";
 import {
+  ConnectAccountManagement,
   ConnectAccountOnboarding,
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
-import { ArrowUpRight, CreditCard, ExternalLink } from "lucide-react";
+import { ArrowUpRight, CreditCard, Settings, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { StripeConnectInstance } from "@stripe/connect-js";
@@ -17,6 +18,8 @@ type Props = {
   canManage: boolean;
   payoutsEnabled: boolean;
 };
+
+type Mode = "onboarding" | "management";
 
 const STATUS_COPY: Record<
   ConnectStatus,
@@ -48,8 +51,8 @@ const STATUS_COPY: Record<
   },
 };
 
-async function fetchOnboardingClientSecret() {
-  const response = await fetch("/api/stripe/connect/onboarding-session", {
+async function fetchEmbeddedClientSecret() {
+  const response = await fetch("/api/stripe/connect/embedded-session", {
     method: "POST",
   });
   const data = await response.json();
@@ -66,16 +69,18 @@ export default function ConnectPaymentsCard({
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [mode, setMode] = useState<Mode | null>(null);
   const [connectInstance, setConnectInstance] =
     useState<StripeConnectInstance | null>(null);
   const copy = STATUS_COPY[status];
 
-  function startOnboarding() {
+  function open(nextMode: Mode) {
     setError("");
+    setMode(nextMode);
     setConnectInstance(
       loadConnectAndInitialize({
         publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "",
-        fetchClientSecret: fetchOnboardingClientSecret,
+        fetchClientSecret: fetchEmbeddedClientSecret,
         locale: "fr",
         appearance: {
           variables: { colorPrimary: "#3b5bfd" },
@@ -84,32 +89,62 @@ export default function ConnectPaymentsCard({
     );
   }
 
-  if (connectInstance) {
+  function close() {
+    setMode(null);
+    setConnectInstance(null);
+  }
+
+  function handleLoadError(loadError: { message?: string }) {
+    close();
+    setError(
+      loadError.message || "La configuration n’a pas pu être chargée.",
+    );
+  }
+
+  if (mode && connectInstance) {
     return (
       <section className="forge-surface rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-5">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--forge-accent-blue-lit)]/15 text-[var(--forge-accent-blue-lit)]">
-            <CreditCard size={19} />
-          </span>
-          <p className="font-bold text-[var(--forge-text-primary)]">
-            Configuration du paiement en ligne
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--forge-accent-blue-lit)]/15 text-[var(--forge-accent-blue-lit)]">
+              <CreditCard size={19} />
+            </span>
+            <p className="font-bold text-[var(--forge-text-primary)]">
+              {mode === "management"
+                ? "Mon compte Stripe"
+                : "Configuration du paiement en ligne"}
+            </p>
+          </div>
+          {mode === "management" ? (
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Fermer"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[var(--forge-text-muted)] transition hover:bg-[var(--forge-surface-hover)]"
+            >
+              <X size={16} />
+            </button>
+          ) : null}
         </div>
         <div className="mt-4">
           <ConnectComponentsProvider connectInstance={connectInstance}>
-            <ConnectAccountOnboarding
-              onExit={() => {
-                setConnectInstance(null);
-                router.refresh();
-              }}
-              onLoadError={({ error: loadError }) => {
-                setConnectInstance(null);
-                setError(
-                  loadError.message ||
-                    "La configuration n’a pas pu être chargée.",
-                );
-              }}
-            />
+            {mode === "management" ? (
+              <ConnectAccountManagement
+                onLoadError={({ error: loadError }) =>
+                  handleLoadError(loadError)
+                }
+              />
+            ) : (
+              <ConnectAccountOnboarding
+                onExit={() => {
+                  close();
+                  router.refresh();
+                }}
+                onLoadError={({ error: loadError }) =>
+                  handleLoadError(loadError)
+                }
+              />
+            )}
           </ConnectComponentsProvider>
         </div>
       </section>
@@ -139,7 +174,7 @@ export default function ConnectPaymentsCard({
           {status === "active" && !payoutsEnabled ? (
             <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
               Les virements vers ton compte bancaire ne sont pas encore activés
-              par Stripe. Complète ton profil depuis le tableau de bord.
+              par Stripe. Complète ton profil ci-dessous.
             </p>
           ) : null}
         </div>
@@ -154,17 +189,18 @@ export default function ConnectPaymentsCard({
           Seul le propriétaire de l’espace peut gérer le compte de paiement.
         </p>
       ) : status === "active" ? (
-        <a
-          href="/api/stripe/connect/dashboard"
+        <button
+          type="button"
+          onClick={() => open("management")}
           className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--forge-border)] px-4 font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
         >
-          <ExternalLink size={16} />
+          <Settings size={16} />
           Gérer mon compte Stripe
-        </a>
+        </button>
       ) : (
         <button
           type="button"
-          onClick={startOnboarding}
+          onClick={() => open("onboarding")}
           className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-4 font-bold text-white transition hover:opacity-95"
         >
           <ArrowUpRight size={17} />
