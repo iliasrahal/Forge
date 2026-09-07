@@ -107,6 +107,7 @@ enum TeamRole {
   OWNER
   ADMIN
   READ_ONLY
+
   // Rôles historiques conservés tant que leur présence en production
   // n'a pas pu être auditée.
   MANAGER
@@ -238,6 +239,7 @@ model Organization {
   trialStartedAt      DateTime?
   trialEndsAt         DateTime?
   subscriptionStatus  String               @default("TRIAL")
+
   // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
   // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
   graceExpiresAt      DateTime?
@@ -266,6 +268,7 @@ model Organization {
   invoices            Invoice[]
   serviceCatalogItems ServiceCatalogItem[]
   activeSessions      Session[]            @relation("ActiveOrganization")
+
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 }

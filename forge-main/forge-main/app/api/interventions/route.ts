@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { splitPersonalClientName } from "@/src/lib/client-name";
+import { getInterventionReportState } from "@/src/lib/intervention-completion";
 import { prisma } from "@/src/lib/prisma";
 import {
   getWorkspaceErrorResponse,
@@ -535,12 +536,15 @@ export async function PATCH(request: Request) {
         body.reportRecommendation,
       );
 
-      if (
-        !reportIntervention ||
-        !reportDiagnostic ||
-        !reportTravaux ||
-        !reportRecommendation
-      ) {
+      const reportState = getInterventionReportState({
+        reportIntervention,
+        reportDiagnostic,
+        reportTravaux,
+        reportRecommendation,
+      });
+      const hasCompleteReport = reportState === "complete";
+
+      if (reportState === "incomplete") {
         return NextResponse.json(
           { error: "Le compte rendu est incomplet." },
           { status: 400 },
@@ -552,10 +556,14 @@ export async function PATCH(request: Request) {
           where: { id: interventionId },
           data: {
             status: "TERMINEE",
-            reportIntervention,
-            reportDiagnostic,
-            reportTravaux,
-            reportRecommendation,
+            ...(hasCompleteReport
+              ? {
+                  reportIntervention,
+                  reportDiagnostic,
+                  reportTravaux,
+                  reportRecommendation,
+                }
+              : {}),
           },
           include: { client: true },
         });
@@ -570,8 +578,9 @@ export async function PATCH(request: Request) {
         clientIsTemporary:
           completedIntervention.client?.isTemporary ??
           false,
-        message:
-          "Le compte rendu a été enregistré et l’intervention est terminée.",
+        message: hasCompleteReport
+          ? "Le compte rendu a été enregistré et l’intervention est terminée."
+          : "L’intervention est terminée.",
       });
     }
 

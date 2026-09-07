@@ -144,6 +144,9 @@ const [isAddingStartClient, setIsAddingStartClient] = useState(false);
   const [isValidatingReport, setIsValidatingReport] =
     useState(false);
 
+  const [completedWithReport, setCompletedWithReport] =
+    useState(true);
+
   const [savedClientName, setSavedClientName] =
     useState("");
 
@@ -862,101 +865,123 @@ const handleSaveNotes = async (notes: string) => {
     setHomeState("reportInput");
   };
 
-  const handleValidateReport =
-    async () => {
-      if (!currentAppointment || !report) {
-        return;
-      }
+  const completeIntervention = async (
+    completedReport: InterventionReport | null,
+  ) => {
+    if (!currentAppointment) {
+      return;
+    }
 
-      if (isValidatingReport) {
-        return;
-      }
+    if (isValidatingReport) {
+      return;
+    }
 
-      setIsValidatingReport(true);
-      setReportError("");
+    setIsValidatingReport(true);
+    setReportError("");
 
-      try {
-        const response = await fetch(
-          "/api/interventions",
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              operation: "complete",
-              interventionId:
-                currentAppointment.id,
-              reportIntervention:
-                report.intervention,
-              reportDiagnostic:
-                report.diagnostic,
-              reportTravaux:
-                report.travaux,
-              reportRecommendation:
-                report.recommandation,
-            }),
+    try {
+      const response = await fetch(
+        "/api/interventions",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type":
+              "application/json",
           },
+          body: JSON.stringify({
+            operation: "complete",
+            interventionId:
+              currentAppointment.id,
+            ...(completedReport
+              ? {
+                  reportIntervention:
+                    completedReport.intervention,
+                  reportDiagnostic:
+                    completedReport.diagnostic,
+                  reportTravaux:
+                    completedReport.travaux,
+                  reportRecommendation:
+                    completedReport.recommandation,
+                }
+              : {}),
+          }),
+        },
+      );
+
+      const data =
+        (await response.json()) as CompleteInterventionResponse;
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Impossible de terminer l’intervention.",
         );
+      }
 
-        const data =
-          (await response.json()) as CompleteInterventionResponse;
+      updateCurrentAppointmentStatus(
+        "completed",
+        completedReport ?? undefined,
+      );
 
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Impossible d’enregistrer le compte rendu.",
-          );
-        }
-
-        updateCurrentAppointmentStatus(
-          "completed",
-          report,
-        );
-
-        const nextAppointment =
-          findNextAvailableAppointment(
-            currentAppointment.id,
-          );
-
-        setSavedClientName(
-          data.clientName ||
-            currentAppointment.client,
-        );
-
-        setSavedClientId(
-          data.clientId ?? null,
-        );
-
-        setCompletedInterventionId(
+      const nextAppointment =
+        findNextAvailableAppointment(
           currentAppointment.id,
         );
 
-        setNextAppointmentId(
-          nextAppointment?.id ?? null,
-        );
+      setSavedClientName(
+        data.clientName ||
+          currentAppointment.client,
+      );
 
-        setReport(null);
-        setReportError("");
-        setHomeState(
-          data.clientIsTemporary
-            ? "clientChoice"
-            : "invoiceChoice",
-        );
-        router.refresh();
-      } catch (error) {
-        setReportError(
-          error instanceof Error
-            ? error.message
-            : "Une erreur est survenue.",
-        );
+      setSavedClientId(
+        data.clientId ?? null,
+      );
 
-        setHomeState("review");
-      } finally {
-        setIsValidatingReport(false);
-      }
-    };
+      setCompletedInterventionId(
+        currentAppointment.id,
+      );
+
+      setCompletedWithReport(Boolean(completedReport));
+
+      setNextAppointmentId(
+        nextAppointment?.id ?? null,
+      );
+
+      setReport(null);
+      setReportError("");
+      setHomeState(
+        data.clientIsTemporary
+          ? "clientChoice"
+          : "invoiceChoice",
+      );
+      router.refresh();
+    } catch (error) {
+      setReportError(
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue.",
+      );
+
+      setHomeState(
+        completedReport ? "review" : "reportInput",
+      );
+    } finally {
+      setIsValidatingReport(false);
+    }
+  };
+
+  const handleValidateReport = async () => {
+    if (!report) {
+      return;
+    }
+
+    await completeIntervention(report);
+  };
+
+  const handleSkipReport = async () => {
+    await completeIntervention(null);
+  };
+
 const handleKeepClient = async () => {
 
   console.log("CLICK GARDER CLIENT");
@@ -1410,6 +1435,8 @@ const handleCreateInvoice = async () => {
       savedClientName
     }
 
+    completedWithReport={completedWithReport}
+
 
     onStartIntervention={
       handleStartIntervention
@@ -1454,6 +1481,10 @@ const handleCreateInvoice = async () => {
 
     onValidateReport={
       handleValidateReport
+    }
+
+    onSkipReport={
+      handleSkipReport
     }
 
 

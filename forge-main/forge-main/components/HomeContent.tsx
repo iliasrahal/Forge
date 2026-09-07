@@ -62,6 +62,7 @@ type HomeContentProps = {
   error?: string;
   isValidatingReport?: boolean;
   savedClientName?: string;
+  completedWithReport?: boolean;
 
   onStartIntervention: () => void;
   onEditIntervention: () => void;
@@ -79,6 +80,7 @@ type HomeContentProps = {
   onReportError: (message: string) => void;
   onEditReport: () => void;
   onValidateReport: () => void;
+  onSkipReport: () => void;
   onInterventionCreated: (
     interventionId: string,
   ) => void;
@@ -98,6 +100,7 @@ export default function HomeContent({
   error,
   isValidatingReport = false,
   savedClientName,
+  completedWithReport = true,
   onStartIntervention,
   onEditIntervention,
   onDeleteIntervention,
@@ -111,6 +114,7 @@ export default function HomeContent({
   onReportError,
   onEditReport,
   onValidateReport,
+  onSkipReport,
   onInterventionCreated,
   onInterventionsDeleted,
   onSkipInvoice,
@@ -478,6 +482,16 @@ export default function HomeContent({
           onSelectedMediaChange={setReportMedia}
           errorMessage={error}
         />
+        <button
+          type="button"
+          onClick={onSkipReport}
+          disabled={isValidatingReport}
+          className="mt-4 min-h-11 rounded-full border border-[var(--forge-border-strong)] bg-[var(--forge-surface-secondary)] px-6 py-2.5 text-sm font-semibold text-[var(--forge-text-secondary)] transition hover:border-[var(--forge-accent-blue)] hover:text-[var(--forge-accent-blue-lit)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
+        >
+          {isValidatingReport
+            ? "Clôture en cours…"
+            : "Passer le compte rendu"}
+        </button>
       </section>
     );
   }
@@ -586,7 +600,11 @@ export default function HomeContent({
     return (
       <section className="flex flex-1 flex-col items-center justify-center px-4">
         <div className="forge-surface w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/20">
-          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">Compte rendu enregistré</h2>
+          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400">
+            {completedWithReport
+              ? "Compte rendu enregistré"
+              : "Intervention terminée"}
+          </h2>
 
           <p className="mt-4 text-slate-700 dark:text-slate-300">
             L’intervention de{' '}
