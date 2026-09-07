@@ -177,25 +177,28 @@ export async function GET(
     const frozenTitle = signedSnapshot?.title ?? quote.title;
     const frozenAmountCents = signedSnapshot?.amountCents ?? quote.amountCents;
     const frozenLines = signedSnapshot?.lines ?? quote.lines;
-    const clientName =
-      frozenClient.type === "PARTICULIER"
+    const clientName = !frozenClient
+      ? ""
+      : frozenClient.type === "PARTICULIER"
         ? usefulText(
             `${frozenClient.firstName ?? ""} ${
               frozenClient.lastName ?? ""
             }`,
           )
         : usefulText(frozenClient.companyName);
-    const clientDetails = [
-      clientName,
-      usefulText(frozenClient.street),
-      usefulText(
-        [frozenClient.postalCode, frozenClient.city]
-          .filter(Boolean)
-          .join(" "),
-      ),
-      usefulText(frozenClient.phone),
-      usefulText(frozenClient.email),
-    ].filter(Boolean);
+    const clientDetails = frozenClient
+      ? [
+          clientName,
+          usefulText(frozenClient.street),
+          usefulText(
+            [frozenClient.postalCode, frozenClient.city]
+              .filter(Boolean)
+              .join(" "),
+          ),
+          usefulText(frozenClient.phone),
+          usefulText(frozenClient.email),
+        ].filter(Boolean)
+      : [];
     const issuerDetails = getQuoteIssuerLines(
       quote.organization,
     ).map((detail) => usefulText(detail)).filter(Boolean);
@@ -332,9 +335,9 @@ export async function GET(
       );
     }
 
-    y -= issuerDetails.length > 0 ? 24 : 48;
-    section("Client");
     if (clientDetails.length > 0) {
+      y -= issuerDetails.length > 0 ? 24 : 48;
+      section("Client");
       drawLines(clientDetails.flatMap((detail) =>
         wrapText(
           detail,
@@ -346,9 +349,10 @@ export async function GET(
         size: 10,
         height: 16,
       });
+      y -= 24;
+    } else {
+      y -= issuerDetails.length > 0 ? 24 : 48;
     }
-
-    y -= 24;
     section("Objet du devis");
     const title = usefulText(frozenTitle);
     if (title) {

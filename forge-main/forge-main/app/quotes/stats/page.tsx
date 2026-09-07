@@ -7,6 +7,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { getParisYearMonth } from "@/src/lib/document-history";
+import { getQuoteClientName, getQuotePath } from "@/src/lib/quote-routes";
 
 
 export default async function QuoteStatsPage() {
@@ -92,10 +93,7 @@ export default async function QuoteStatsPage() {
         sentAt: quote.sentAt,
         reminders: quote.reminders,
       });
-      const clientName =
-        quote.client.type === "PARTICULIER"
-          ? `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim()
-          : quote.client.companyName ?? "Client professionnel";
+      const clientName = getQuoteClientName(quote.client);
       const statusLabels: Record<string, string> = {
         BROUILLON: "Brouillon",
         ENVOYE: "Envoyé",
@@ -110,7 +108,7 @@ export default async function QuoteStatsPage() {
         amountCents: quote.amountCents,
         createdAt: quote.createdAt.toISOString(),
         statusLabel: statusLabels[quote.status] ?? quote.status,
-        href: `/clients/${quote.clientId}/quotes/${quote.id}`,
+        href: getQuotePath(quote),
         clientName,
         attention: reminderState.eligible ? "À relancer" : undefined,
       };

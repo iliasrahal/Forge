@@ -24,6 +24,7 @@ export async function POST(_request: Request, { params }: RouteProps) {
     });
     if (!quote) return NextResponse.json({ error: "Devis introuvable." }, { status: 404 });
     if (quote.status !== "ENVOYE") return NextResponse.json({ error: "Seul un devis envoyé peut être relancé." }, { status: 409 });
+    if (!quote.client) return NextResponse.json({ error: "Associez un client au devis avant de préparer une relance." }, { status: 400 });
     if (!quote.client.email) return NextResponse.json({ error: "Aucune adresse e-mail n’est renseignée pour ce client." }, { status: 400 });
 
     const clientName = quote.client.type === "PROFESSIONNEL"

@@ -19,6 +19,10 @@ import {
   normalizeVatRateBp,
 } from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import {
+  getQuotePath,
+  UNASSIGNED_QUOTE_CLIENT_ID,
+} from "@/src/lib/quote-routes";
 
 type NewQuotePageProps = {
   params: Promise<{
@@ -40,6 +44,7 @@ export default async function NewQuotePage({
     await requireWorkspaceContext("write");
 
   const { id } = await params;
+  const withoutClient = id === UNASSIGNED_QUOTE_CLIENT_ID;
 
   const {
     title,
@@ -51,8 +56,9 @@ export default async function NewQuotePage({
       quoteLines,
     );
 
-  const client =
-    await prisma.client.findFirst({
+  const client = withoutClient
+    ? null
+    : await prisma.client.findFirst({
       where: {
         id,
         organizationId:
@@ -78,12 +84,13 @@ export default async function NewQuotePage({
       },
     });
 
-  if (!client) {
+  if (!withoutClient && !client) {
     notFound();
   }
 
-  const clientName =
-    client.type === "PROFESSIONNEL"
+  const clientName = !client
+    ? "Aucun client associé"
+    : client.type === "PROFESSIONNEL"
       ? client.companyName
       : `${client.firstName ?? ""} ${
           client.lastName ?? ""
@@ -101,8 +108,9 @@ export default async function NewQuotePage({
         "write",
       );
 
-    const ownedClient =
-      await prisma.client.findFirst({
+    const ownedClient = withoutClient
+      ? null
+      : await prisma.client.findFirst({
         where: {
           id,
           organizationId:
@@ -113,7 +121,7 @@ export default async function NewQuotePage({
         },
       });
 
-    if (!ownedClient) {
+    if (!withoutClient && !ownedClient) {
       notFound();
     }
 
@@ -192,8 +200,7 @@ export default async function NewQuotePage({
           status:
             "BROUILLON",
 
-          clientId:
-            ownedClient.id,
+          clientId: ownedClient?.id,
 
           organizationId:
             writeContext.workspace.id,
@@ -214,16 +221,14 @@ export default async function NewQuotePage({
         },
       });
 
-    redirect(
-      `/clients/${ownedClient.id}/quotes/${quote.id}`,
-    );
+    redirect(getQuotePath(quote));
   }
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <div>
         <Link
-          href={`/clients/${id}`}
+          href={client ? `/clients/${id}` : "/quotes"}
           aria-label="Retour au dossier client"
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >

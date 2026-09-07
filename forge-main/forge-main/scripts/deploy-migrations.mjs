@@ -32,6 +32,7 @@ const requiredDeployMigrations = new Set([
   "20260831120001_workspace_roles",
   "20260831120002_workspace_foundation",
   "20260907130000_repair_quote_invoice_links",
+  "20260907150000_allow_quote_without_client",
 ]);
 
 if (!databaseUrl) {

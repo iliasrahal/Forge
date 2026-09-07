@@ -58,6 +58,13 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!quote.clientId) {
+      return NextResponse.json(
+        { error: "Associez un client au devis avant de créer une facture." },
+        { status: 400 },
+      );
+    }
+
     const existingInvoice = await prisma.invoice.findFirst({
       where: {
         quoteId: quote.id,

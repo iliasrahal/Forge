@@ -29,6 +29,7 @@ export async function POST(request: Request, { params }: RouteProps) {
     });
     if (!quote) return NextResponse.json({ error: "Devis introuvable." }, { status: 404 });
     if (quote.status !== "ENVOYE") return NextResponse.json({ error: "Ce devis ne peut plus être relancé." }, { status: 409 });
+    if (!quote.client) return NextResponse.json({ error: "Associez un client au devis avant d’envoyer une relance." }, { status: 400 });
     if (!quote.client.email) return NextResponse.json({ error: "Aucune adresse e-mail n’est renseignée pour ce client." }, { status: 400 });
     if (isReminderCoolingDown(quote.reminders[0]?.sentAt ?? null)) {
       return NextResponse.json({ error: "Une relance a déjà été envoyée récemment. Réessayez plus tard." }, { status: 409 });

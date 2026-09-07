@@ -11,6 +11,11 @@ import {
 } from "@/src/lib/document-numbering";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { canTransitionQuoteStatus, isQuoteContractLocked } from "@/src/lib/quote-status";
+import {
+  getQuoteClientName,
+  getQuotePath,
+  UNASSIGNED_QUOTE_CLIENT_ID,
+} from "@/src/lib/quote-routes";
 
 
 type EditQuotePageProps = {
@@ -26,6 +31,7 @@ export default async function EditQuotePage({
   params,
 }: EditQuotePageProps) {
   const { id, quoteId } = await params;
+  const withoutClient = id === UNASSIGNED_QUOTE_CLIENT_ID;
   await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("write");
 
@@ -33,7 +39,7 @@ export default async function EditQuotePage({
   const quote = await prisma.quote.findFirst({
     where: {
       id: quoteId,
-      clientId: id,
+      ...(withoutClient ? { clientId: null } : { clientId: id }),
       organizationId: workspaceContext.workspace.id,
     },
     include: {
@@ -48,16 +54,25 @@ export default async function EditQuotePage({
   }
 
   if (isQuoteContractLocked(quote.status, Boolean(quote.signature))) {
-    redirect(`/clients/${id}/quotes/${quoteId}`);
+    redirect(getQuotePath(quote));
   }
 
+  const clients = await prisma.client.findMany({
+    where: {
+      organizationId: workspaceContext.workspace.id,
+      archived: false,
+    },
+    orderBy: [{ companyName: "asc" }, { lastName: "asc" }, { firstName: "asc" }],
+    select: {
+      id: true,
+      type: true,
+      firstName: true,
+      lastName: true,
+      companyName: true,
+    },
+  });
 
-  const clientName =
-    quote.client.type === "PARTICULIER"
-      ? `${quote.client.firstName ?? ""} ${
-          quote.client.lastName ?? ""
-        }`.trim()
-      : quote.client.companyName ?? "Client professionnel";
+  const clientName = getQuoteClientName(quote.client);
 
 
 
@@ -83,6 +98,7 @@ export default async function EditQuotePage({
     const status = formData
       .get("status")
       ?.toString();
+    const selectedClientId = formData.get("clientId")?.toString().trim() || null;
 
 
 
@@ -90,6 +106,20 @@ export default async function EditQuotePage({
       throw new Error(
         "Tous les champs obligatoires doivent être remplis.",
       );
+    }
+
+    if (selectedClientId) {
+      const selectedClient = await prisma.client.findFirst({
+        where: {
+          id: selectedClientId,
+          organizationId: writeContext.workspace.id,
+          archived: false,
+        },
+        select: { id: true },
+      });
+      if (!selectedClient) {
+        throw new Error("Le client sélectionné est introuvable.");
+      }
     }
 
 
@@ -112,7 +142,6 @@ export default async function EditQuotePage({
     const currentQuote = await prisma.quote.findFirst({
       where: {
         id: quoteId,
-        clientId: id,
         organizationId: writeContext.workspace.id,
       },
       select: {
@@ -166,7 +195,6 @@ export default async function EditQuotePage({
     const updated = await prisma.quote.updateMany({
       where: {
         id: quoteId,
-        clientId: id,
         organizationId: writeContext.workspace.id,
         signature: { is: null },
         status: currentQuote.status,
@@ -175,6 +203,7 @@ export default async function EditQuotePage({
         title,
         amountCents,
         status: quoteStatus,
+        clientId: selectedClientId,
         ...(finalReference ? { reference: finalReference } : {}),
       },
     });
@@ -183,7 +212,7 @@ export default async function EditQuotePage({
 
 
 
-    redirect(`/clients/${id}/quotes/${quoteId}`);
+    redirect(getQuotePath({ id: quoteId, clientId: selectedClientId }));
   }
 
 
@@ -196,7 +225,7 @@ export default async function EditQuotePage({
 
 
         <Link
-          href={`/clients/${id}/quotes/${quoteId}`}
+          href={getQuotePath(quote)}
           aria-label="Retour au devis"
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
@@ -220,6 +249,28 @@ export default async function EditQuotePage({
         action={updateQuote}
         className="forge-surface mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
       >
+
+        <div>
+          <label
+            htmlFor="clientId"
+            className="mb-2 block text-sm font-semibold text-blue-700 dark:text-blue-400"
+          >
+            Client (facultatif)
+          </label>
+          <select
+            id="clientId"
+            name="clientId"
+            defaultValue={quote.clientId ?? ""}
+            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+          >
+            <option value="">Aucun client pour le moment</option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {getQuoteClientName(client)}
+              </option>
+            ))}
+          </select>
+        </div>
 
 
         <div>
@@ -344,7 +395,7 @@ export default async function EditQuotePage({
 
 
           <Link
-            href={`/clients/${id}/quotes/${quoteId}`}
+            href={getQuotePath(quote)}
             className="rounded-2xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Annuler

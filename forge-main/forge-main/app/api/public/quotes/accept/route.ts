@@ -55,6 +55,7 @@ export async function POST(request: Request) {
       });
 
       if (!access || access.revokedAt) return { kind: "invalid" as const };
+      if (!access.quote.client) return { kind: "invalid" as const };
       if (access.quote.signature) return { kind: "signed" as const, alreadySigned: true, ...access.quote.signature };
 
       const state = getQuoteAcceptanceState(access.quote.status);
@@ -62,7 +63,10 @@ export async function POST(request: Request) {
       if (!state.canAccept) return { kind: "unavailable" as const, reason: state.reason };
 
       const signedAt = new Date();
-      const snapshot = buildQuoteSignatureSnapshot(access.quote);
+      const snapshot = buildQuoteSignatureSnapshot({
+        ...access.quote,
+        client: access.quote.client,
+      });
       const integrityHash = createQuoteIntegrityHash({ snapshot, signerFirstName: firstName.value!, signerLastName: lastName.value!, signedAt });
       const updated = await transaction.quote.updateMany({
         where: { id: access.quote.id, status: "ENVOYE", signature: { is: null } },

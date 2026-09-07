@@ -61,13 +61,15 @@ export default async function AdminUserQuotesPage({
               <Td className="font-mono text-xs">{quote.reference}</Td>
               <Td className="font-medium">{quote.title}</Td>
               <Td className="text-slate-500">
-                {[
-                  quote.client.firstName,
-                  quote.client.lastName,
-                  quote.client.companyName,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
+                {quote.client
+                  ? [
+                      quote.client.firstName,
+                      quote.client.lastName,
+                      quote.client.companyName,
+                    ]
+                      .filter(Boolean)
+                      .join(" ")
+                  : "Aucun client associé"}
               </Td>
               <Td>
                 <Badge

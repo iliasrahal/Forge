@@ -5,6 +5,7 @@ import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { resolveDocumentHistoryRange } from "@/src/lib/document-history";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
+import { getQuoteClientName, getQuotePath } from "@/src/lib/quote-routes";
 
 
 export async function GET(
@@ -92,10 +93,7 @@ export async function GET(
         sentAt: quote.sentAt,
         reminders: quote.reminders,
       });
-      const clientName =
-        quote.client.type === "PARTICULIER"
-          ? `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim()
-          : quote.client.companyName ?? "Client professionnel";
+      const clientName = getQuoteClientName(quote.client);
 
       return {
         id: quote.id,
@@ -106,7 +104,7 @@ export async function GET(
         amountTtcCents: quote.amountCents,
         createdAt: quote.createdAt.toISOString(),
         statusLabel: statusLabels[quote.status] ?? quote.status,
-        href: `/clients/${quote.clientId}/quotes/${quote.id}`,
+        href: getQuotePath(quote),
         clientName,
         attention: reminderState.eligible ? "À relancer" : undefined,
       };

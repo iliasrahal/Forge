@@ -63,6 +63,13 @@ export async function POST(request: Request) {
           throw new DepositCreationError("Ce devis est introuvable ou refusé.", 404);
         }
 
+        if (!quote.clientId) {
+          throw new DepositCreationError(
+            "Associez un client au devis avant de créer une facture d’acompte.",
+            400,
+          );
+        }
+
         const summary = getQuoteDepositSummary(quote.amountCents, quote.invoices);
         const calculation = calculateDepositAmount({
           mode,

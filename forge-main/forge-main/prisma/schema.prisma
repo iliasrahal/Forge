@@ -551,9 +551,9 @@ model Quote {
 
   acceptanceMethod QuoteAcceptanceMethod?
 
-  clientId String
+  clientId String?
 
-  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   organizationId String?
 

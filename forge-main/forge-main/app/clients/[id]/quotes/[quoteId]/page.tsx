@@ -26,6 +26,11 @@ import {
   quoteIssuerOrganizationSelect,
 } from "@/src/lib/quote-issuer";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import {
+  getQuoteClientName,
+  getQuoteEditPath,
+  UNASSIGNED_QUOTE_CLIENT_ID,
+} from "@/src/lib/quote-routes";
 
 
 type QuotePageProps = {
@@ -88,6 +93,7 @@ export default async function QuotePage({
 
   const { id, quoteId } =
     await params;
+  const withoutClient = id === UNASSIGNED_QUOTE_CLIENT_ID;
 
 
 
@@ -95,7 +101,7 @@ export default async function QuotePage({
     await prisma.quote.findFirst({
       where: {
         id: quoteId,
-        clientId: id,
+        ...(withoutClient ? { clientId: null } : { clientId: id }),
 
         organizationId: workspaceContext.workspace.id,
       },
@@ -134,13 +140,7 @@ export default async function QuotePage({
 
 
 
-  const clientName =
-    quote.client.type === "PARTICULIER"
-      ? `${quote.client.firstName ?? ""} ${
-          quote.client.lastName ?? ""
-        }`.trim()
-      : quote.client.companyName ??
-        "Client professionnel";
+  const clientName = getQuoteClientName(quote.client);
   const issuer = getQuoteIssuer(quote.organization);
 
   const depositSummary = getQuoteDepositSummary(
@@ -189,7 +189,7 @@ export default async function QuotePage({
 
 
           <Link
-            href={`/clients/${id}`}
+            href={quote.clientId ? `/clients/${quote.clientId}` : "/quotes"}
             aria-label="Retour au dossier client"
             className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
@@ -302,7 +302,7 @@ export default async function QuotePage({
             quoteId={quote.id}
             canWrite={workspaceContext.permissions.canWrite}
             canPrepare={quote.status === "ENVOYE"}
-            hasEmail={Boolean(quote.client.email)}
+            hasEmail={Boolean(quote.client?.email)}
             automaticLevel={reminderState.eligible ? reminderState.level : null}
             daysSinceActivity={reminderState.daysSinceActivity}
             reminders={quote.reminders}
@@ -445,6 +445,7 @@ export default async function QuotePage({
 
   {workspaceContext.permissions.canWrite &&
   quote.status !== "REFUSE" &&
+  quote.clientId &&
   depositSummary.remainingCents > 0 ? (
     <CreateDepositInvoice
       quoteId={quote.id}
@@ -456,14 +457,15 @@ export default async function QuotePage({
 
   {workspaceContext.permissions.canWrite ? (
     <DownloadQuotePdf
-      clientId={id}
+      clientId={quote.clientId}
       quoteId={quoteId}
+      quoteEditUrl={getQuoteEditPath(quote)}
     />
   ) : null}
 
 
 
-  {workspaceContext.permissions.canWrite ? (<Link
+  {workspaceContext.permissions.canWrite && quote.clientId ? (<Link
     href={{
       pathname: `/clients/${id}/interventions/new`,
       query: {
@@ -484,7 +486,7 @@ export default async function QuotePage({
 
 
   {workspaceContext.permissions.canWrite && quote.status !== "ACCEPTE" && !quote.signature ? (<Link
-    href={`/clients/${id}/quotes/${quoteId}/edit`}
+    href={getQuoteEditPath(quote)}
     className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
   >
     Modifier le devis

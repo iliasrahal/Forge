@@ -17,6 +17,7 @@ import {
   getSpeechRecognitionErrorMessage,
   getSpeechRecognitionStartErrorMessage,
 } from "@/src/lib/speechRecognition";
+import { getQuoteEditPath, getQuotePath } from "@/src/lib/quote-routes";
 
 type SpeechRecognitionResultLike = {
   0?: {
@@ -221,7 +222,7 @@ const placeholders = {
 
 type DocumentResolution = {
   id: string;
-  clientId: string;
+  clientId: string | null;
   title: string;
   description: string | null;
   reference: string;
@@ -689,10 +690,6 @@ export default function ForgeBar({
   ) {
     const missingFields: MissingField[] =
       [];
-
-    if (!decision.entity) {
-      missingFields.push("entity");
-    }
 
     if (!decision.title) {
       missingFields.push("title");
@@ -1216,7 +1213,7 @@ export default function ForgeBar({
 
     if (action === "update") {
       router.push(
-        `/clients/${quote.clientId}/quotes/${quote.id}/edit`,
+        getQuoteEditPath(quote),
       );
       return;
     }
@@ -1245,7 +1242,9 @@ export default function ForgeBar({
 
       if (!response.ok) {
         throw new Error(
-          data.error === "email_missing"
+          data.error === "client_missing"
+            ? "Associe un client au devis avant de l’envoyer."
+            : data.error === "email_missing"
             ? "Ce client n’a pas encore d’adresse email. Ajoute-la dans sa fiche puis réessaie."
             : "Impossible d’envoyer ce devis. Vérifie l’adresse email du client puis réessaie.",
         );
@@ -1257,6 +1256,11 @@ export default function ForgeBar({
     }
 
     if (action === "createIntervention") {
+      if (!quote.clientId) {
+        throw new Error(
+          "Associe un client au devis avant de créer une intervention.",
+        );
+      }
       const params = new URLSearchParams({
         title: quote.title,
         quoteId: quote.id,
@@ -1276,7 +1280,7 @@ export default function ForgeBar({
     }
 
     router.push(
-      `/clients/${quote.clientId}/quotes/${quote.id}`,
+      getQuotePath(quote),
     );
   }
 

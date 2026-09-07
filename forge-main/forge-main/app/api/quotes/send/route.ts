@@ -81,6 +81,16 @@ export async function POST(
       );
     }
 
+    if (!quote.client) {
+      return NextResponse.json(
+        {
+          error: "client_missing",
+          message: "Associez un client au devis avant de l’envoyer.",
+        },
+        { status: 400 },
+      );
+    }
+
 
 
     // Numéro définitif attribué à la première finalisation, avant le PDF.

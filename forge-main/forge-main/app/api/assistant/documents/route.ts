@@ -159,7 +159,7 @@ export async function POST(request: Request) {
           const searchableValues = [
             document.reference,
             document.title,
-            getClientName(document.client),
+            document.client ? getClientName(document.client) : "",
           ];
 
           return searchableValues.some((value) =>

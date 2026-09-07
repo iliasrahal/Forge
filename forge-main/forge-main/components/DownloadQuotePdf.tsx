@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type DownloadQuotePdfProps = {
-  clientId: string;
+  clientId?: string | null;
   quoteId?: string;
+  quoteEditUrl?: string;
 };
 
 export default function DownloadQuotePdf({
   clientId,
   quoteId,
+  quoteEditUrl,
 }: DownloadQuotePdfProps) {
 
   const router = useRouter();
@@ -18,6 +20,7 @@ export default function DownloadQuotePdf({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [missingEmail, setMissingEmail] = useState(false);
+  const [missingClient, setMissingClient] = useState(false);
 
 
   async function handleSendQuote() {
@@ -27,6 +30,7 @@ export default function DownloadQuotePdf({
       setLoading(true);
       setMessage("");
       setMissingEmail(false);
+      setMissingClient(false);
 
 
       const response =
@@ -65,6 +69,14 @@ export default function DownloadQuotePdf({
 
           return;
 
+        }
+
+        if (data.error === "client_missing") {
+          setMessage(
+            data.message ?? "Associez un client au devis avant de l’envoyer.",
+          );
+          setMissingClient(true);
+          return;
         }
 
 
@@ -140,7 +152,7 @@ export default function DownloadQuotePdf({
 
 
 
-          {missingEmail && (
+          {missingEmail && clientId && (
 
             <button
               type="button"
@@ -154,6 +166,16 @@ export default function DownloadQuotePdf({
               Ajouter un email
             </button>
 
+          )}
+
+          {missingClient && quoteEditUrl && (
+            <button
+              type="button"
+              onClick={() => router.push(quoteEditUrl)}
+              className="mt-4 rounded-xl bg-blue-600 px-7 py-3 text-base font-semibold text-white transition hover:bg-blue-700"
+            >
+              Associer un client
+            </button>
           )}
 
         </div>

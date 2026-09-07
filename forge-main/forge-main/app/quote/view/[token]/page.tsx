@@ -6,6 +6,7 @@ import PublicQuoteAcceptance from "@/components/PublicQuoteAcceptance";
 import { getPublicQuoteByToken } from "@/src/lib/public-quote";
 import { getQuoteIssuer } from "@/src/lib/quote-issuer";
 import { getQuoteAcceptanceState } from "@/src/lib/quote-public-access";
+import { getQuoteClientName } from "@/src/lib/quote-routes";
 
 type PublicQuotePageProps = {
   params: Promise<{ token: string }>;
@@ -32,11 +33,7 @@ export default async function PublicQuotePage({ params }: PublicQuotePageProps) 
   if (!access) notFound();
 
   const { quote } = access;
-  const clientName =
-    quote.client.type === "PROFESSIONNEL"
-      ? quote.client.companyName || "Client professionnel"
-      : `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim() ||
-        "Client";
+  const clientName = getQuoteClientName(quote.client);
   const acceptance = getQuoteAcceptanceState(quote.status);
   const issuer = getQuoteIssuer(quote.organization);
 

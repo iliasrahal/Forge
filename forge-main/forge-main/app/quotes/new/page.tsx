@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { UNASSIGNED_QUOTE_CLIENT_ID } from "@/src/lib/quote-routes";
 
 
 type NewQuotePageProps = {
@@ -139,6 +140,10 @@ export default async function NewQuotePage({
     );
   }
 
+  if (!cleanSearch && cleanTitle) {
+    redirect(buildQuoteFormUrl(UNASSIGNED_QUOTE_CLIENT_ID));
+  }
+
 
 
   return (
@@ -166,10 +171,17 @@ export default async function NewQuotePage({
           </p>
         )}
 
+        <Link
+          href={buildQuoteFormUrl(UNASSIGNED_QUOTE_CLIENT_ID)}
+          className="mt-6 block rounded-2xl border border-blue-300 bg-blue-50/70 p-4 text-center font-semibold text-blue-700 transition hover:border-blue-500 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:border-blue-600"
+        >
+          Aucun client pour le moment
+        </Link>
+
 
 
         {clients.length > 0 ? (
-          <div className="mt-6 space-y-3">
+          <div className="mt-3 space-y-3">
 
 
             {clients.map((client) => {
