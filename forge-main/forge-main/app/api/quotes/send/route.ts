@@ -167,10 +167,6 @@ export async function POST(
       currentUser.firstName?.trim() ||
       "L'équipe Forge";
 
-    const quoteDescription =
-      quote.description?.trim() ||
-      quote.title.trim();
-
     const rawPublicToken = createQuotePublicToken();
     const publicAccess = await prisma.quotePublicAccess.create({
       data: {
@@ -188,7 +184,6 @@ export async function POST(
         artisanSignature,
         quote.title,
         quote.reference,
-        quoteDescription,
         publicQuoteUrl,
         pdfBuffer,
         `devis-${quote.reference}.pdf`,

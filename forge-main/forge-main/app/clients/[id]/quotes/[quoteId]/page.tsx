@@ -284,36 +284,6 @@ export default async function QuotePage({
 
 
 
-        <div className="mt-6">
-
-
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            Description
-          </p>
-
-
-
-          <div className="mt-2 rounded-2xl border border-slate-100 p-4 dark:border-slate-700">
-
-
-            <p className="whitespace-pre-line text-slate-700 dark:text-slate-300">
-              {quote.description ||
-                "Aucune description renseignée."}
-            </p>
-
-
-
-          </div>
-
-
-
-        </div>
-
-
-
-
-
-
         {quote.lines.length > 0 ? (
           <div className="mt-6">
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">

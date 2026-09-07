@@ -178,7 +178,6 @@ export async function sendQuoteEmail(
   artisanSignature: string,
   quoteTitle: string,
   quoteReference: string,
-  quoteDescription: string,
   publicQuoteUrl: string,
   pdfBuffer: Buffer,
   fileName: string,
@@ -212,7 +211,6 @@ ${artisanSignature}
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
 <p>Votre devis <strong>${escapeHtml(quoteReference)}</strong> est disponible.</p>
-<p style="font-weight:600;color:#1d4ed8">${escapeHtml(quoteDescription)}</p>
 {{ACTION}}
 <p>Vous pourrez consulter le détail et l’accepter directement en ligne.</p>
 <p>Le PDF du devis reste joint à cet e-mail.</p>

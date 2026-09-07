@@ -73,12 +73,6 @@ export default async function EditQuotePage({
       .trim();
 
 
-    const description = formData
-      .get("description")
-      ?.toString()
-      .trim();
-
-
     const amountValue = formData
       .get("amount")
       ?.toString()
@@ -92,7 +86,7 @@ export default async function EditQuotePage({
 
 
 
-    if (!title || !description || !amountValue || !status) {
+    if (!title || !amountValue || !status) {
       throw new Error(
         "Tous les champs obligatoires doivent être remplis.",
       );
@@ -179,7 +173,6 @@ export default async function EditQuotePage({
       },
       data: {
         title,
-        description,
         amountCents,
         status: quoteStatus,
         ...(finalReference ? { reference: finalReference } : {}),
@@ -248,32 +241,6 @@ export default async function EditQuotePage({
             required
             defaultValue={quote.title}
             className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
-          />
-
-
-        </div>
-
-
-
-        <div>
-
-
-          <label
-            htmlFor="description"
-            className="mb-2 block text-sm font-semibold text-blue-700 dark:text-blue-400"
-          >
-            Description des travaux
-          </label>
-
-
-
-          <textarea
-            id="description"
-            name="description"
-            required
-            rows={6}
-            defaultValue={quote.description ?? ""}
-            className="w-full resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
           />
 
 

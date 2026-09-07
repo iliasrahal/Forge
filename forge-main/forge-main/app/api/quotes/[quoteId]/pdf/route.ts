@@ -168,7 +168,6 @@ export async function GET(
     const frozenClient = signedSnapshot?.client ?? quote.client;
     const frozenReference = signedSnapshot?.reference ?? quote.reference;
     const frozenTitle = signedSnapshot?.title ?? quote.title;
-    const frozenDescription = signedSnapshot?.description ?? quote.description;
     const frozenAmountCents = signedSnapshot?.amountCents ?? quote.amountCents;
     const frozenLines = signedSnapshot?.lines ?? quote.lines;
     const clientName =
@@ -326,7 +325,7 @@ export async function GET(
     }
 
     y -= 24;
-    section("Description des travaux");
+    section("Objet du devis");
     const title = usefulText(frozenTitle);
     if (title) {
       drawLines(
@@ -338,14 +337,6 @@ export async function GET(
         },
       );
     }
-    const description = usefulText(frozenDescription);
-    if (description) {
-      y -= 6;
-      drawLines(
-        wrapText(description, regularFont, 10, width),
-      );
-    }
-
     y -= 26;
     section("Tarification");
 

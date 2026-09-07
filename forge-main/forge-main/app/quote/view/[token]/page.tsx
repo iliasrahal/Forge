@@ -80,15 +80,6 @@ export default async function PublicQuotePage({ params }: PublicQuotePageProps) 
             </div>
           </section>
 
-          {quote.description ? (
-            <section className="mt-6">
-              <h2 className="text-sm font-bold text-[var(--forge-text-primary)]">Description</h2>
-              <p className="mt-2 whitespace-pre-line leading-7 text-[var(--forge-text-secondary)]">
-                {quote.description}
-              </p>
-            </section>
-          ) : null}
-
           <section className="mt-6">
             <h2 className="text-sm font-bold text-[var(--forge-text-primary)]">Détail du devis</h2>
             <div className="mt-3 divide-y divide-[var(--forge-border)] overflow-hidden rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)]">
