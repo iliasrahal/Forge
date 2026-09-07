@@ -6,9 +6,11 @@ import CustomerReply from "@/components/landing/CustomerReply";
 import Features from "@/components/landing/Features";
 import Footer from "@/components/landing/Footer";
 import Hero from "@/components/landing/Hero";
+import Payments from "@/components/landing/Payments";
 import Problem from "@/components/landing/Problem";
 import Pricing from "@/components/landing/Pricing";
 import ProductDemo from "@/components/landing/ProductDemo";
+import SmartReminders from "@/components/landing/SmartReminders";
 import Workflow from "@/components/landing/Workflow";
 import WorkModes from "@/components/landing/WorkModes";
 import { getCurrentUser } from "@/src/lib/auth";
@@ -28,6 +30,8 @@ export default async function LandingPage() {
       <Workflow />
       <Features group="operations" />
       <Features group="documents" showHeading={false} />
+      <Payments />
+      <SmartReminders />
       <ClientCreation />
       <CustomerReply />
       <WorkModes />
