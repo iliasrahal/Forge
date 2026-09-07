@@ -1,7 +1,5 @@
 import { Resend } from "resend";
 
-import type { InvoiceDescriptionSection } from "@/src/lib/invoiceDescription";
-
 const sender = "Forge <contact@myforge.online>";
 
 function getResendClient() {
@@ -255,21 +253,11 @@ export async function sendInvoiceEmail(
   clientName: string,
   artisanSignature: string,
   invoiceReference: string,
-  interventionSections: InvoiceDescriptionSection[],
+  invoiceTitle: string,
   pdfBuffer: Buffer,
   fileName: string,
   paymentUrl?: string | null,
 ) {
-  const structuredText = interventionSections
-    .map(({ label, content }) => `${label}\n${content}`)
-    .join("\n\n");
-  const structuredHtml = interventionSections
-    .map(
-      ({ label, content }) =>
-        `<div style="margin-top:12px;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc"><p style="margin:0;color:#1d4ed8;font-size:14px;font-weight:700">${escapeHtml(label)}</p><p style="margin:8px 0 0;color:#334155;line-height:1.6">${escapeHtml(content).replace(/\n/g, "<br/>")}</p></div>`,
-    )
-    .join("");
-
   const paymentText = paymentUrl
     ? `\nPayer cette facture en ligne (carte ou virement) : ${paymentUrl}\n`
     : "";
@@ -289,7 +277,7 @@ export async function sendInvoiceEmail(
 `Bonjour ${clientName},
 
 Veuillez trouver ci-joint votre facture concernant :
-${structuredText}
+${invoiceTitle}
 ${paymentText}
 Je reste disponible si vous avez besoin d'informations complémentaires.
 
@@ -304,7 +292,7 @@ ${artisanSignature}
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
 <p>Veuillez trouver ci-joint votre facture concernant :</p>
-${structuredHtml}
+<p><strong>${escapeHtml(invoiceTitle)}</strong></p>
 ${paymentHtml}
 
 <p>Je reste disponible si vous avez besoin d'informations complémentaires.</p>

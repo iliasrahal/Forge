@@ -12,10 +12,6 @@ import {
   createInvoicePublicToken,
   hashInvoicePublicToken,
 } from "@/src/lib/invoice-public-access";
-import {
-  buildInvoiceDescriptionSections,
-  parseInvoiceDescriptionSections,
-} from "@/src/lib/invoiceDescription";
 import { resolveClientEmail } from "@/src/lib/client-email";
 
 async function ensureInvoiceReference(params: {
@@ -259,21 +255,9 @@ export async function POST(
       currentUser.firstName?.trim() ||
       "L'équipe Forge";
 
-    const generatedInterventionSections =
-      invoice.intervention
-        ? buildInvoiceDescriptionSections(
-            invoice.intervention,
-          )
-        : parseInvoiceDescriptionSections(
-            invoice.description?.trim() ||
-              invoice.title.trim(),
-          );
-    const interventionSections =
-      generatedInterventionSections.length > 0
-        ? generatedInterventionSections
-        : parseInvoiceDescriptionSections(
-            invoice.title,
-          );
+    const invoiceTitle =
+      invoice.title.trim() ||
+      `Facture ${invoice.reference}`;
 
 
 
@@ -303,7 +287,7 @@ export async function POST(
         clientName,
         artisanSignature,
         invoice.reference,
-        interventionSections,
+        invoiceTitle,
         pdfBuffer,
         `facture-${invoice.reference}.pdf`,
         paymentUrl,
