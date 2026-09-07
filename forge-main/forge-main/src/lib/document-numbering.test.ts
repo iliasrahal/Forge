@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  allocateAvailableDocumentNumber,
   allocateDocumentNumber,
   draftReference,
   formatDocumentNumber,
@@ -12,6 +13,43 @@ test("format : préfixe + année + 6 chiffres", () => {
   assert.equal(formatDocumentNumber("F", 2026, 42), "F2026-000042");
   assert.equal(formatDocumentNumber("D", 2026, 1), "D2026-000001");
   assert.equal(formatDocumentNumber("AV", 2027, 1234567), "AV2027-1234567");
+});
+
+test("saute les références déjà utilisées globalement", async () => {
+  const store = new Map<string, number>();
+  const client = {
+    documentCounter: {
+      async upsert(args: {
+        where: { organizationId_kind_year: { organizationId: string; kind: string; year: number } };
+        create: { nextNumber: number };
+      }) {
+        const value = args.where.organizationId_kind_year;
+        const key = `${value.organizationId}|${value.kind}|${value.year}`;
+        if (!store.has(key)) store.set(key, args.create.nextNumber);
+      },
+      async update(args: {
+        where: { organizationId_kind_year: { organizationId: string; kind: string; year: number } };
+        data: { nextNumber: { increment: number } };
+      }) {
+        const value = args.where.organizationId_kind_year;
+        const key = `${value.organizationId}|${value.kind}|${value.year}`;
+        const nextNumber = (store.get(key) ?? 1) + args.data.nextNumber.increment;
+        store.set(key, nextNumber);
+        return { nextNumber };
+      },
+    },
+  };
+
+  const allocated = await allocateAvailableDocumentNumber(client, {
+    organizationId: "org-2",
+    kind: "INVOICE",
+    prefix: "F",
+    now: new Date("2026-05-01T10:00:00Z"),
+    referenceExists: async (reference) =>
+      reference === "F2026-000001" || reference === "F2026-000002",
+  });
+
+  assert.equal(allocated.reference, "F2026-000003");
 });
 
 test("draftReference est reconnue comme provisoire", () => {

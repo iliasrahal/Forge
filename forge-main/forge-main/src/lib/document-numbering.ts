@@ -98,3 +98,31 @@ export async function allocateDocumentNumber(
     reference: formatDocumentNumber(params.prefix, year, number),
   };
 }
+
+/**
+ * Réserve le premier numéro qui n'est pas déjà utilisé dans une colonne dont
+ * l'unicité est globale. Les compteurs restent isolés par organisation, mais
+ * deux espaces utilisant le même préfixe ne peuvent plus entrer en collision.
+ */
+export async function allocateAvailableDocumentNumber(
+  client: PrismaLikeCounterClient,
+  params: {
+    organizationId: string;
+    kind: DocumentKindValue;
+    prefix: string;
+    now?: Date;
+    referenceExists: (reference: string) => Promise<boolean>;
+  },
+) {
+  const { referenceExists, ...allocationParams } = params;
+
+  for (let attempt = 0; attempt < 10_000; attempt += 1) {
+    const allocated = await allocateDocumentNumber(client, allocationParams);
+
+    if (!(await referenceExists(allocated.reference))) {
+      return allocated;
+    }
+  }
+
+  throw new Error("Impossible de réserver un numéro de document disponible.");
+}

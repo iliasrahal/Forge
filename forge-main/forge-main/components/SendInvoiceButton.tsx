@@ -104,8 +104,9 @@ export default function SendInvoiceButton({
 
 
         setMessage(
-          data.error ??
-          "Erreur lors de l'envoi de la facture.",
+          data.error === "email_missing"
+            ? "⚠️ Ce client n'a pas encore d'adresse email."
+            : "Impossible d’envoyer la facture pour le moment. Réessayez.",
         );
 
         return;

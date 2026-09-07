@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
-  allocateDocumentNumber,
+  allocateAvailableDocumentNumber,
   isDraftReference,
 } from "@/src/lib/document-numbering";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -17,6 +17,74 @@ import {
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
 import { resolveClientEmail } from "@/src/lib/client-email";
+
+async function ensureInvoiceReference(params: {
+  invoiceId: string;
+  organizationId: string;
+  prefix: string;
+}) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        // Sérialise les doubles clics et les nouvelles tentatives concernant
+        // cette facture. La seconde requête relira la référence définitive.
+        await tx.$queryRaw`
+          SELECT "id"
+          FROM "Invoice"
+          WHERE "id" = ${params.invoiceId}
+          FOR UPDATE
+        `;
+
+        const currentInvoice = await tx.invoice.findFirst({
+          where: {
+            id: params.invoiceId,
+            organizationId: params.organizationId,
+          },
+          select: { reference: true },
+        });
+
+        if (!currentInvoice) {
+          throw new Error("Facture introuvable pendant la numérotation.");
+        }
+
+        if (!isDraftReference(currentInvoice.reference)) {
+          return currentInvoice.reference;
+        }
+
+        const allocated = await allocateAvailableDocumentNumber(tx, {
+          organizationId: params.organizationId,
+          kind: "INVOICE",
+          prefix: params.prefix,
+          referenceExists: async (reference) =>
+            Boolean(
+              await tx.invoice.findUnique({
+                where: { reference },
+                select: { id: true },
+              }),
+            ),
+        });
+
+        const updatedInvoice = await tx.invoice.update({
+          where: { id: params.invoiceId },
+          data: { reference: allocated.reference },
+          select: { reference: true },
+        });
+
+        return updatedInvoice.reference;
+      });
+    } catch (error) {
+      // Une autre organisation peut réserver le même candidat entre notre
+      // vérification et l'UPDATE. La contrainte UNIQUE reste l'ultime garde-fou.
+      if ((error as { code?: string }).code === "P2002" && attempt < 2) {
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  throw new Error("Impossible d’attribuer un numéro unique à la facture.");
+}
 
 
 export async function POST(
@@ -129,18 +197,11 @@ export async function POST(
 
     // Numéro définitif de facture attribué à la première émission (avant le PDF).
     if (isDraftReference(invoice.reference)) {
-      const allocated = await prisma.$transaction((tx) =>
-        allocateDocumentNumber(tx, {
-          organizationId: workspaceContext.workspace.id,
-          kind: "INVOICE",
-          prefix: workspaceContext.workspace.invoicePrefix,
-        }),
-      );
-      await prisma.invoice.update({
-        where: { id: invoice.id },
-        data: { reference: allocated.reference },
+      invoice.reference = await ensureInvoiceReference({
+        invoiceId: invoice.id,
+        organizationId: workspaceContext.workspace.id,
+        prefix: workspaceContext.workspace.invoicePrefix,
       });
-      invoice.reference = allocated.reference;
     }
 
 
@@ -308,10 +369,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Erreur envoi facture",
+        error: "Impossible d’envoyer la facture pour le moment. Réessayez.",
       },
       {
         status: 500,
