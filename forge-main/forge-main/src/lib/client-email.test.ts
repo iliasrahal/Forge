@@ -5,6 +5,7 @@ import {
   isValidClientEmail,
   normalizeClientEmail,
   resolveClientEmail,
+  resolveStoredOrProvidedClientEmail,
 } from "./client-email";
 
 test("normalise et valide une adresse client enregistrée", () => {
@@ -29,4 +30,21 @@ test("utilise d'abord l'adresse explicite puis celle du client", () => {
 test("refuse une adresse absente ou invalide", () => {
   assert.equal(resolveClientEmail({ clientEmail: "adresse-invalide" }), null);
   assert.equal(resolveClientEmail({}), null);
+});
+
+test("conserve l'adresse enregistrée ou prépare la sauvegarde d'une nouvelle adresse", () => {
+  assert.deepEqual(
+    resolveStoredOrProvidedClientEmail({
+      clientEmail: "client@exemple.fr",
+      explicitEmail: "autre@exemple.fr",
+    }),
+    { recipientEmail: "client@exemple.fr", shouldPersist: false },
+  );
+  assert.deepEqual(
+    resolveStoredOrProvidedClientEmail({
+      clientEmail: null,
+      explicitEmail: " Nouveau@Exemple.FR ",
+    }),
+    { recipientEmail: "nouveau@exemple.fr", shouldPersist: true },
+  );
 });

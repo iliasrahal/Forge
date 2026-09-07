@@ -9,6 +9,9 @@ import {
   isDraftReference,
 } from "@/src/lib/document-numbering";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
+import {
+  resolveStoredOrProvidedClientEmail,
+} from "@/src/lib/client-email";
 
 
 export async function POST(
@@ -27,6 +30,7 @@ export async function POST(
 
     const {
       quoteId,
+      email: explicitEmail,
     } = body;
 
 
@@ -91,6 +95,29 @@ export async function POST(
       );
     }
 
+    if (quote.client.organizationId !== workspaceContext.workspace.id) {
+      return NextResponse.json({ error: "Devis introuvable" }, { status: 404 });
+    }
+
+    const { recipientEmail, shouldPersist } =
+      resolveStoredOrProvidedClientEmail({
+        clientEmail: quote.client.email,
+        explicitEmail,
+      });
+
+    if (!recipientEmail) {
+      return NextResponse.json(
+        {
+          error: explicitEmail ? "email_invalid" : "email_missing",
+          message: explicitEmail
+            ? "Saisis une adresse e-mail valide."
+            : "Ce client n'a pas encore d'adresse e-mail.",
+          clientId: quote.client.id,
+        },
+        { status: 400 },
+      );
+    }
+
 
 
     // Numéro définitif attribué à la première finalisation, avant le PDF.
@@ -107,25 +134,6 @@ export async function POST(
         data: { reference: allocated.reference },
       });
       quote.reference = allocated.reference;
-    }
-
-
-
-    // Vérification email client
-    if (!quote.client.email) {
-
-      return NextResponse.json(
-        {
-          error: "email_missing",
-          message:
-            "Ce client n'a pas encore d'adresse email.",
-          clientId: quote.client.id,
-        },
-        {
-          status: 400,
-        },
-      );
-
     }
 
 
@@ -189,7 +197,7 @@ export async function POST(
 
     try {
       const delivery = await sendQuoteEmail(
-        quote.client.email,
+        recipientEmail,
         clientName,
         artisanSignature,
         quote.title,
@@ -209,7 +217,7 @@ export async function POST(
 
 
     const sentAt = new Date();
-    await prisma.$transaction([
+    const finalizationOperations = [
       prisma.quotePublicAccess.updateMany({
         where: {
           quoteId: quote.id,
@@ -224,7 +232,21 @@ export async function POST(
           ? { sentAt }
           : { status: "ENVOYE", sentAt },
       }),
-    ]);
+    ];
+
+    if (shouldPersist) {
+      finalizationOperations.push(
+        prisma.client.updateMany({
+          where: {
+            id: quote.client.id,
+            organizationId: workspaceContext.workspace.id,
+          },
+          data: { email: recipientEmail },
+        }),
+      );
+    }
+
+    await prisma.$transaction(finalizationOperations);
 
 
 

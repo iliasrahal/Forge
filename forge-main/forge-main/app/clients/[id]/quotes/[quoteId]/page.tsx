@@ -458,6 +458,7 @@ export default async function QuotePage({
   {workspaceContext.permissions.canWrite ? (
     <DownloadQuotePdf
       clientId={quote.clientId}
+      clientEmail={quote.client?.email}
       quoteId={quoteId}
       quoteEditUrl={getQuoteEditPath(quote)}
     />

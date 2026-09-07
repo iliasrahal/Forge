@@ -21,3 +21,20 @@ export function resolveClientEmail(input: {
 
   return null;
 }
+
+export function resolveStoredOrProvidedClientEmail(input: {
+  clientEmail?: unknown;
+  explicitEmail?: unknown;
+}) {
+  const savedEmail = isValidClientEmail(input.clientEmail)
+    ? normalizeClientEmail(input.clientEmail)
+    : null;
+  const providedEmail = isValidClientEmail(input.explicitEmail)
+    ? normalizeClientEmail(input.explicitEmail)
+    : null;
+
+  return {
+    recipientEmail: savedEmail ?? providedEmail,
+    shouldPersist: !savedEmail && Boolean(providedEmail),
+  };
+}
