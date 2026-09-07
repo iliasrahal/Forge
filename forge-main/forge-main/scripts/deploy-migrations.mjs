@@ -25,9 +25,13 @@ const databaseUrl =
   cleanConnectionString(process.env.DIRECT_URL) ||
   runtimeDatabaseUrl;
 const migrationsDirectory = resolve(process.cwd(), "prisma/migrations");
-const pendingWorkspaceMigrations = new Set([
+// Ces migrations portent des fondations indispensables au code actuellement
+// déployé. Elles ne doivent jamais être absorbées silencieusement dans le
+// baseline d'une base existante sans historique Prisma.
+const requiredDeployMigrations = new Set([
   "20260831120001_workspace_roles",
   "20260831120002_workspace_foundation",
+  "20260907130000_repair_quote_invoice_links",
 ]);
 
 if (!databaseUrl) {
@@ -208,7 +212,7 @@ async function inspectDatabase(client) {
 async function deploy() {
   const migrationDirectories = await getMigrationDirectories();
   const unknownPendingMigrations = [
-    ...pendingWorkspaceMigrations,
+    ...requiredDeployMigrations,
   ].filter((migrationName) => !migrationDirectories.includes(migrationName));
 
   if (unknownPendingMigrations.length > 0) {
@@ -233,7 +237,7 @@ async function deploy() {
 
   if (needsBaseline) {
     const historicalMigrations = migrationDirectories.filter(
-      (migrationName) => !pendingWorkspaceMigrations.has(migrationName),
+      (migrationName) => !requiredDeployMigrations.has(migrationName),
     );
 
     console.log(
