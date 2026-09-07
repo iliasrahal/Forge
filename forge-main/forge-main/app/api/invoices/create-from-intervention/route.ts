@@ -80,10 +80,12 @@ export async function POST(request: Request) {
         amountCents: quoteSnapshot?.amountCents ?? 0,
         status: "BROUILLON",
         type: "STANDARD",
-        quoteId: intervention.quoteId,
-        interventionId: intervention.id,
-        clientId: intervention.clientId,
-        organizationId: workspaceContext.workspace.id,
+        ...(intervention.quoteId
+          ? { quote: { connect: { id: intervention.quoteId } } }
+          : {}),
+        intervention: { connect: { id: intervention.id } },
+        client: { connect: { id: intervention.clientId } },
+        organization: { connect: { id: workspaceContext.workspace.id } },
         vatApplicable: quoteSnapshot?.vatApplicable ?? false,
         totalHtCents: quoteSnapshot?.totalHtCents ?? 0,
         totalVatCents: quoteSnapshot?.totalVatCents ?? 0,
@@ -108,10 +110,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Erreur lors de la création de la facture.",
+        error: "Impossible de créer la facture pour le moment. Réessayez.",
       },
       { status: 500 },
     );

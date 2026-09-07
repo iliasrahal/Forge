@@ -94,11 +94,11 @@ export async function POST(request: Request) {
 
         type: "STANDARD",
 
-        quoteId: quote.id,
+        quote: { connect: { id: quote.id } },
 
-        clientId: quote.clientId,
+        client: { connect: { id: quote.clientId } },
 
-        organizationId: workspaceContext.workspace.id,
+        organization: { connect: { id: workspaceContext.workspace.id } },
 
         // Chaque ligne du devis est copiée dans la facture.
         // Ensuite les deux documents sont totalement indépendants.
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "Erreur lors de la création de la facture",
+        error: "Impossible de créer la facture pour le moment. Réessayez.",
       },
       {
         status: 500,
