@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 import HomeContent from "@/components/HomeContent";
+import TodayInterventions from "@/components/TodayInterventions";
 import UpcomingCalendar, {
   type PlanningClient,
 } from "@/components/UpcomingCalendar";
@@ -1145,6 +1146,15 @@ const handleCreateInvoice = async () => {
       showLogout={homeState === "intervention"}
     />
   </div>
+
+
+  {homeState === "intervention" && !showUpcomingCalendar ? (
+    <TodayInterventions
+      appointments={appointmentsList}
+      selectedAppointmentId={selectedAppointmentId}
+      onSelect={handleSelectAppointment}
+    />
+  ) : null}
 
 
 

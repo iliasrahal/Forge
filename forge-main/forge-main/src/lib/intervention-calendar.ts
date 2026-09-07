@@ -4,6 +4,29 @@ export type CalendarAppointment = {
   endDate?: string;
 };
 
+export function sortActiveTodayAppointments<
+  T extends { date: string; time: string; status: string },
+>(appointments: T[]) {
+  return [...appointments]
+    .filter(
+      (appointment) =>
+        appointment.status === "inProgress" ||
+        appointment.status === "scheduled",
+    )
+    .sort((first, second) => {
+      const firstPriority = first.status === "inProgress" ? 0 : 1;
+      const secondPriority = second.status === "inProgress" ? 0 : 1;
+
+      if (firstPriority !== secondPriority) {
+        return firstPriority - secondPriority;
+      }
+
+      return `${first.date}T${first.time || "00:00"}`.localeCompare(
+        `${second.date}T${second.time || "00:00"}`,
+      );
+    });
+}
+
 export function splitAppointmentsByDate<
   T extends { date: string; time: string; endDate?: string; status: string },
 >(appointments: T[], todayDateKey: string) {
