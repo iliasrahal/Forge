@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { prisma } from "@/src/lib/prisma";
-import { isProSubscription } from "@/src/lib/subscription-policy";
+import { isPaidSubscriptionActive } from "@/src/lib/subscription-policy";
 import { countUserTeams, teamMemberLimit } from "@/src/lib/team-access";
 import {
   EXPIRED_INVITATION_MESSAGE,
@@ -109,7 +109,7 @@ export async function acceptTeamInvitation({
   }
 
   if (!existingMembership) {
-    if (!isProSubscription(user.subscriptionStatus)) {
+    if (!isPaidSubscriptionActive(user.subscriptionStatus)) {
       const otherTeams = await countUserTeams(userId, invitation.organizationId);
       if (otherTeams >= 1) {
         throw new TeamInvitationError(

@@ -3,7 +3,7 @@ const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
 /** Nombre de jours de sursis avant suppression d'une équipe 100 % gratuite. */
 export const TEAM_GRACE_DAYS = 14;
-/** Membres max d'une équipe créée par un abonné Standard (illimité pour Pro). */
+/** Membres max pendant l'essai (illimité avec l'abonnement Forge actif). */
 export const TEAM_MEMBER_LIMIT = 5;
 
 export const SUBSCRIPTION_STATUSES = [
@@ -27,23 +27,17 @@ export function isPaidSubscriptionActive(status: string | null | undefined) {
   return PAID_STATUSES.has((status ?? "").toUpperCase());
 }
 
-export function isProSubscription(status: string | null | undefined) {
-  return (status ?? "").toUpperCase() === "ACTIVE_PRO";
-}
-
 export function evaluateSubscriptionAccess(
   subscriptionStatus: string | null | undefined,
   trialEndsAt: Date | null | undefined,
   now = new Date(),
 ) {
   const hasActiveSubscription = isPaidSubscriptionActive(subscriptionStatus);
-  const isPro = isProSubscription(subscriptionStatus);
   const isTrialActive = Boolean(trialEndsAt && trialEndsAt > now);
 
   return {
     hasAccess: hasActiveSubscription || isTrialActive,
     hasActiveSubscription,
-    isPro,
     isTrialActive,
     isTrialExpired: !hasActiveSubscription && !isTrialActive,
     trialEndsAt: trialEndsAt ?? null,

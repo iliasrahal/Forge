@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Plafond de membres (illimité si le propriétaire est Pro).
+    // Plafond pendant l’essai, illimité avec l’abonnement Forge actif.
     const limit = teamMemberLimit(context.user.subscriptionStatus);
     if (Number.isFinite(limit)) {
       const [memberCount, pendingCount] = await Promise.all([
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       if (memberCount + pendingCount + emails.length > limit) {
         return NextResponse.json(
           {
-            error: `Une équipe est limitée à ${limit} personnes (abonnement Standard). Passe au Pro (49,99 €) pour une équipe plus grande.`,
+            error: `Cette équipe est actuellement limitée à ${limit} personnes. Un abonnement Forge actif est nécessaire pour inviter davantage de collaborateurs.`,
             code: "TEAM_MEMBER_LIMIT",
           },
           { status: 403 },

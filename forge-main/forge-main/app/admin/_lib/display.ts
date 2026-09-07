@@ -58,7 +58,7 @@ export function subscriptionSummary(
 
   if (access.hasActiveSubscription) {
     return {
-      label: access.isPro ? "Abonné Pro" : "Abonné",
+      label: "Abonné",
       tone: "emerald" as const,
     };
   }

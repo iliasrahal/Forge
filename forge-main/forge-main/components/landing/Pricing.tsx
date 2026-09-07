@@ -7,7 +7,7 @@ import {
 import ForgeSymbol from "@/components/ForgeSymbol";
 import { FORGE_PRICING } from "@/src/lib/pricing";
 
-const forgeOffer = FORGE_PRICING.STANDARD;
+const forgeOffer = FORGE_PRICING;
 
 export default function Pricing() {
   return (
@@ -26,7 +26,7 @@ export default function Pricing() {
             1 mois offert pour découvrir Forge
           </p>
           <p className="mx-auto mt-3 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Après votre période d’essai, Forge est disponible à 29,99 € / mois
+            Après votre période d’essai, Forge est disponible à {forgeOffer.monthlyLabel}
             par utilisateur disposant d’un accès complet.
           </p>
         </div>

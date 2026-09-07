@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { isProSubscription } from "@/src/lib/subscription-policy";
+import { isPaidSubscriptionActive } from "@/src/lib/subscription-policy";
 import { countUserTeams } from "@/src/lib/team-access";
 import {
   getWorkspaceErrorResponse,
@@ -45,14 +45,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le nom de l’équipe est obligatoire." }, { status: 400 });
     }
 
-    // Standard : une seule équipe. Pro : illimité.
-    if (!isProSubscription(context.user.subscriptionStatus)) {
+    // Pendant l’essai : une seule équipe. L’abonnement Forge actif permet
+    // d’utiliser plusieurs équipes, sans palier tarifaire supplémentaire.
+    if (!isPaidSubscriptionActive(context.user.subscriptionStatus)) {
       const teamCount = await countUserTeams(context.user.id);
       if (teamCount >= 1) {
         return NextResponse.json(
           {
             error:
-              "Tu es déjà dans une équipe. Passe à l’abonnement Pro (49,99 €) pour en créer ou en rejoindre plusieurs.",
+              "Tu es déjà dans une équipe. Un abonnement Forge actif est nécessaire pour en créer ou en rejoindre plusieurs.",
             code: "TEAM_LIMIT_REACHED",
           },
           { status: 403 },

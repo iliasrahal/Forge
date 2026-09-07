@@ -10,7 +10,7 @@ import { getSubscriptionAccessForUser } from "@/src/lib/subscription-access";
 export default async function SubscriptionPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const plan = getForgePlan(user.workMode);
+  const plan = getForgePlan();
   const access = await getSubscriptionAccessForUser(user.id);
 
   return (
@@ -74,7 +74,7 @@ export default async function SubscriptionPage() {
 
 
             <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-              Forge Pro
+              Forge
             </h2>
 
             <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">

@@ -122,11 +122,10 @@ are illustrative and must never be presented as real.
 
 Pricing is real and specific:
 
-- **Standard — 29,99 € / month** per full-access user: complete personal
-  workspace, Forge assistant by text and voice, one team (created or joined) of
-  up to 5 people.
-- **Pro — 49,99 € / month:** everything in Standard, multiple teams, teams of
-  more than 5 people.
+- **Forge — 29,99 € / month** per full-access user. There is no separate Solo,
+  Team, Standard, or Pro price.
+- Team workspaces operate by invitation. Each user who needs full access uses
+  their own Forge subscription; read-only access remains free.
 - 1 month free, no commitment; the trial can be converted early.
 
 ## Product Principles

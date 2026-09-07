@@ -11,6 +11,8 @@ import {
   useState,
 } from "react";
 
+import { FORGE_PRICING } from "@/src/lib/pricing";
+
 const workModes = [
   {
     title: "Votre espace personnel",
@@ -32,7 +34,7 @@ const workModes = [
       "Créez votre espace partagé et devenez propriétaire de l’équipe",
       "Invitez vos collaborateurs par e-mail dans leur propre compte Forge",
       "Lecture seule gratuite pour consulter les informations de l’équipe",
-      "Accès complet avec un abonnement Forge personnel à 29,99 € / mois après le mois d’essai",
+      `Accès complet avec un abonnement Forge personnel à ${FORGE_PRICING.monthlyLabel} après le mois d’essai`,
     ],
   },
 ];

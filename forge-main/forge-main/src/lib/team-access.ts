@@ -1,7 +1,7 @@
 import { prisma } from "@/src/lib/prisma";
 import {
   evaluateSubscriptionAccess,
-  isProSubscription,
+  isPaidSubscriptionActive,
   TEAM_GRACE_DAYS,
   TEAM_MEMBER_LIMIT,
 } from "@/src/lib/subscription-policy";
@@ -31,7 +31,7 @@ export async function countUserTeams(userId: string, exceptOrgId?: string) {
 }
 
 export function teamMemberLimit(ownerStatus: string | null | undefined) {
-  return isProSubscription(ownerStatus)
+  return isPaidSubscriptionActive(ownerStatus)
     ? Number.POSITIVE_INFINITY
     : TEAM_MEMBER_LIMIT;
 }
