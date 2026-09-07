@@ -27,7 +27,11 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
-    context.strokeStyle = getComputedStyle(canvas).color;
+    // La zone de signature est sombre dans l'interface publique : le trait
+    // doit rester immédiatement visible, quel que soit le périphérique.
+    // Seules les coordonnées sont enregistrées ; le PDF les redessine ensuite
+    // avec sa propre couleur sombre sur son fond clair.
+    context.strokeStyle = "#ffffff";
     context.lineWidth = 5;
     context.lineCap = "round";
     context.lineJoin = "round";
