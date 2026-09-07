@@ -466,7 +466,17 @@ export default function HomeContent({
 
   if (state === "reportInput") {
     return (
-      <section className="flex flex-1 flex-col items-center justify-center px-4">
+      <section className="flex flex-1 flex-col items-center justify-start px-4 pt-4 sm:pt-8">
+        <button
+          type="button"
+          onClick={onSkipReport}
+          disabled={isValidatingReport}
+          className="mb-4 min-h-11 rounded-full border border-[var(--forge-border-strong)] bg-[var(--forge-surface-secondary)] px-6 py-2.5 text-sm font-semibold text-[var(--forge-text-secondary)] transition hover:border-[var(--forge-accent-blue)] hover:text-[var(--forge-accent-blue-lit)] disabled:cursor-not-allowed disabled:opacity-60 sm:mb-6 sm:text-base"
+        >
+          {isValidatingReport
+            ? "Clôture en cours…"
+            : "Passer le compte rendu"}
+        </button>
         <ForgeListenCard
           clientName={
             currentAppointment?.client ||
@@ -482,16 +492,6 @@ export default function HomeContent({
           onSelectedMediaChange={setReportMedia}
           errorMessage={error}
         />
-        <button
-          type="button"
-          onClick={onSkipReport}
-          disabled={isValidatingReport}
-          className="mt-4 min-h-11 rounded-full border border-[var(--forge-border-strong)] bg-[var(--forge-surface-secondary)] px-6 py-2.5 text-sm font-semibold text-[var(--forge-text-secondary)] transition hover:border-[var(--forge-accent-blue)] hover:text-[var(--forge-accent-blue-lit)] disabled:cursor-not-allowed disabled:opacity-60 sm:text-base"
-        >
-          {isValidatingReport
-            ? "Clôture en cours…"
-            : "Passer le compte rendu"}
-        </button>
       </section>
     );
   }
