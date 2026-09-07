@@ -3,6 +3,7 @@ import {
   cleanQuotePublicToken,
   hashQuotePublicToken,
 } from "@/src/lib/quote-public-access";
+import { quoteIssuerOrganizationSelect } from "@/src/lib/quote-issuer";
 
 export async function getPublicQuoteByToken(rawToken: unknown) {
   const token = cleanQuotePublicToken(rawToken);
@@ -31,7 +32,9 @@ export async function getPublicQuoteByToken(rawToken: unknown) {
               signedAt: true,
             },
           },
-          organization: { select: { name: true } },
+          organization: {
+            select: quoteIssuerOrganizationSelect,
+          },
           client: {
             select: {
               type: true,

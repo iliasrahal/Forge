@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ForgeLogo from "@/components/ForgeLogo";
 import PublicQuoteAcceptance from "@/components/PublicQuoteAcceptance";
 import { getPublicQuoteByToken } from "@/src/lib/public-quote";
+import { getQuoteIssuer } from "@/src/lib/quote-issuer";
 import { getQuoteAcceptanceState } from "@/src/lib/quote-public-access";
 
 type PublicQuotePageProps = {
@@ -37,6 +38,7 @@ export default async function PublicQuotePage({ params }: PublicQuotePageProps) 
       : `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim() ||
         "Client";
   const acceptance = getQuoteAcceptanceState(quote.status);
+  const issuer = getQuoteIssuer(quote.organization);
 
   return (
     <main className="relative isolate min-h-dvh overflow-hidden bg-transparent px-4 py-6 sm:px-6 sm:py-10">
@@ -66,6 +68,27 @@ export default async function PublicQuotePage({ params }: PublicQuotePageProps) 
               <FileText size={24} />
             </div>
           </div>
+
+          {(issuer.companyName ||
+            issuer.fullName ||
+            issuer.phone ||
+            issuer.email) && (
+            <section className="mt-6 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--forge-text-muted)]">
+                Émetteur
+              </p>
+              {issuer.companyName ? (
+                <p className="mt-1 font-bold text-[var(--forge-text-primary)]">
+                  {issuer.companyName}
+                </p>
+              ) : null}
+              <div className={`${issuer.companyName ? "mt-1" : "mt-2"} space-y-0.5 text-sm text-[var(--forge-text-secondary)]`}>
+                {issuer.fullName ? <p>{issuer.fullName}</p> : null}
+                {issuer.phone ? <p>{issuer.phone}</p> : null}
+                {issuer.email ? <p className="break-all">{issuer.email}</p> : null}
+              </div>
+            </section>
+          )}
 
           <section className="mt-6 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4">

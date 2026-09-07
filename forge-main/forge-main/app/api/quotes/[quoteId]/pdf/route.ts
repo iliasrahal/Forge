@@ -7,6 +7,10 @@ import {
 } from "pdf-lib";
 
 import { prisma } from "@/src/lib/prisma";
+import {
+  getQuoteIssuerLines,
+  quoteIssuerOrganizationSelect,
+} from "@/src/lib/quote-issuer";
 import { parseQuoteSignatureSnapshot, shortIntegrityReference, validateDrawnSignature } from "@/src/lib/quote-signature";
 import {
   computeDocumentTotals,
@@ -151,6 +155,9 @@ export async function GET(
             },
           },
         },
+        organization: {
+          select: quoteIssuerOrganizationSelect,
+        },
         lines: true,
         signature: true,
       },
@@ -189,6 +196,9 @@ export async function GET(
       usefulText(frozenClient.phone),
       usefulText(frozenClient.email),
     ].filter(Boolean);
+    const issuerDetails = getQuoteIssuerLines(
+      quote.organization,
+    ).map((detail) => usefulText(detail)).filter(Boolean);
 
     const pdfDocument = await PDFDocument.create();
     const regularFont = await pdfDocument.embedFont(
@@ -308,7 +318,21 @@ export async function GET(
       color: grey,
     });
 
-    y -= 48;
+    if (issuerDetails.length > 0) {
+      y -= 34;
+      section("Émetteur");
+      drawLines(
+        issuerDetails.flatMap((detail) =>
+          wrapText(detail, regularFont, 10, width),
+        ),
+        {
+          size: 10,
+          height: 16,
+        },
+      );
+    }
+
+    y -= issuerDetails.length > 0 ? 24 : 48;
     section("Client");
     if (clientDetails.length > 0) {
       drawLines(clientDetails.flatMap((detail) =>
@@ -567,29 +591,6 @@ export async function GET(
       drawLines(["Date :", "Signature du client précédée de la mention « Bon pour accord » :"].map(cleanPdfText), { size: 9, height: 22, color: grey });
       y -= 28;
       page.drawLine({ start: { x: margin, y }, end: { x: margin + 220, y }, thickness: 0.6, color: border });
-    }
-
-    const artisanDetails = [
-      usefulText(workspaceContext.user.firstName),
-      usefulText(workspaceContext.user.email),
-      usefulText(workspaceContext.user.phone),
-    ].filter(Boolean);
-    if (artisanDetails.length > 0) {
-      y -= 34;
-      ensure(65);
-      section("Artisan");
-      drawLines(artisanDetails.flatMap((detail) =>
-        wrapText(
-          detail,
-          regularFont,
-          9,
-          width,
-        ),
-      ), {
-        size: 9,
-        height: 13,
-        color: grey,
-      });
     }
 
     const pages = pdfDocument.getPages();

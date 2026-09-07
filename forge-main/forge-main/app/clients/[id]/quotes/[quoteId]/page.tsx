@@ -20,6 +20,10 @@ import {
   formatUnit,
 } from "@/src/lib/document-lines";
 import { isDraftReference } from "@/src/lib/document-numbering";
+import {
+  getQuoteIssuer,
+  quoteIssuerOrganizationSelect,
+} from "@/src/lib/quote-issuer";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 
@@ -96,6 +100,9 @@ export default async function QuotePage({
       },
       include: {
         client: true,
+        organization: {
+          select: quoteIssuerOrganizationSelect,
+        },
         lines: true,
         invoices: {
           select: {
@@ -133,6 +140,7 @@ export default async function QuotePage({
         }`.trim()
       : quote.client.companyName ??
         "Client professionnel";
+  const issuer = getQuoteIssuer(quote.organization);
 
   const depositSummary = getQuoteDepositSummary(
     quote.amountCents,
@@ -190,6 +198,27 @@ export default async function QuotePage({
 
 
           </Link>
+
+          {(issuer.companyName ||
+            issuer.fullName ||
+            issuer.phone ||
+            issuer.email) && (
+            <div className="mt-5 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--forge-text-muted)]">
+                Émetteur du devis
+              </p>
+              {issuer.companyName ? (
+                <p className="mt-2 text-lg font-bold text-[var(--forge-text-primary)]">
+                  {issuer.companyName}
+                </p>
+              ) : null}
+              <div className={`${issuer.companyName ? "mt-1" : "mt-2"} space-y-0.5 text-sm text-[var(--forge-text-secondary)]`}>
+                {issuer.fullName ? <p>{issuer.fullName}</p> : null}
+                {issuer.phone ? <p>{issuer.phone}</p> : null}
+                {issuer.email ? <p className="break-all">{issuer.email}</p> : null}
+              </div>
+            </div>
+          )}
 
 
 
