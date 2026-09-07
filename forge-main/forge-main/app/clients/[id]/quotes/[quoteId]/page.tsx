@@ -1,4 +1,5 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
+import DeleteQuoteButton from "@/components/DeleteQuoteButton";
 import CreateDepositInvoice from "@/components/CreateDepositInvoice";
 import QuoteReminderPanel from "@/components/QuoteReminderPanel";
 import Link from "next/link";
@@ -497,6 +498,10 @@ export default async function QuotePage({
     Télécharger le devis
   </a>
 
+  {workspaceContext.permissions.canWrite &&
+  quote.status === "BROUILLON" ? (
+    <DeleteQuoteButton quoteId={quote.id} />
+  ) : null}
 
 </div>
 
