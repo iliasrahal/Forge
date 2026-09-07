@@ -12,6 +12,7 @@ type NewInterventionPageProps = {
   searchParams: Promise<{
     title?: string;
     description?: string;
+    quoteId?: string;
   }>;
 };
 
@@ -22,7 +23,7 @@ export default async function NewInterventionPage({
 
   const { id } = await params;
 
-  const { title, description } =
+  const { title, description, quoteId } =
     await searchParams;
 
   const currentUser =
@@ -64,6 +65,22 @@ export default async function NewInterventionPage({
       select: { id: true },
     });
     if (!workspaceClient) notFound();
+
+    const sourceQuote = quoteId
+      ? await prisma.quote.findFirst({
+          where: {
+            id: quoteId,
+            clientId: workspaceClient.id,
+            organizationId: writeContext.workspace.id,
+            status: { not: "REFUSE" },
+          },
+          select: { id: true },
+        })
+      : null;
+
+    if (quoteId && !sourceQuote) {
+      throw new Error("Le devis d’origine est introuvable dans cet espace.");
+    }
 
 
     const date =
@@ -163,6 +180,7 @@ export default async function NewInterventionPage({
           scheduledAt: period.start,
           endDate: period.end,
           clientId: workspaceClient.id,
+          quoteId: sourceQuote?.id ?? null,
         },
       });
 

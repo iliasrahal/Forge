@@ -304,7 +304,7 @@ export default async function InvoicePage({
               </div>
             );
           })()
-        ) : (
+        ) : invoice.lines.length === 0 ? (
           <InvoiceAmountForm
             invoiceId={invoice.id}
             amountCents={invoice.amountCents}
@@ -314,6 +314,15 @@ export default async function InvoicePage({
               invoice.type !== "DEPOSIT"
             }
           />
+        ) : (
+          <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              Montant total
+            </p>
+            <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
+              {formatEur(invoice.amountCents)}
+            </p>
+          </div>
         )}
         {!invoice.vatApplicable ? (
           <p className="mt-2 px-1 text-xs text-slate-500 dark:text-slate-400">
@@ -495,6 +504,17 @@ export default async function InvoicePage({
 
 
         <div className="mt-6 space-y-4 pt-5">
+
+          {workspaceContext.permissions.canWrite &&
+          invoice.status === "BROUILLON" &&
+          invoice.type === "STANDARD" ? (
+            <Link
+              href={`/invoices/${invoice.id}/edit`}
+              className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+            >
+              Modifier la facture
+            </Link>
+          ) : null}
 
 
           {workspaceContext.permissions.canWrite ? (

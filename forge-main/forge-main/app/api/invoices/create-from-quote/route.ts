@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import { cleanInvoiceDescriptionValue } from "@/src/lib/invoiceDescription";
+import { buildInvoiceSnapshotFromQuote } from "@/src/lib/quote-invoice-snapshot";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -76,16 +77,18 @@ export async function POST(request: Request) {
       );
     }
 
+    const snapshot = buildInvoiceSnapshotFromQuote(quote);
+
     const invoice = await prisma.invoice.create({
       data: {
         reference: generateInvoiceReference(),
 
-        title: `Facture - ${quote.title}`,
+        title: snapshot.title,
 
         description:
-          cleanInvoiceDescriptionValue(quote.description) || null,
+          cleanInvoiceDescriptionValue(snapshot.description) || null,
 
-        amountCents: quote.amountCents,
+        amountCents: snapshot.amountCents,
 
         status: "BROUILLON",
 
@@ -100,7 +103,7 @@ export async function POST(request: Request) {
         // Chaque ligne du devis est copiée dans la facture.
         // Ensuite les deux documents sont totalement indépendants.
         lines: {
-          create: quote.lines.map((line) => ({
+          create: snapshot.lines.map((line) => ({
             category: line.category,
             label: line.label,
             quantityMilli: line.quantityMilli,
@@ -113,11 +116,11 @@ export async function POST(request: Request) {
           })),
         },
 
-        vatApplicable: quote.vatApplicable,
-        totalHtCents: quote.totalHtCents,
-        totalVatCents: quote.totalVatCents,
-        discountBp: quote.discountBp,
-        totalCostCents: quote.totalCostCents,
+        vatApplicable: snapshot.vatApplicable,
+        totalHtCents: snapshot.totalHtCents,
+        totalVatCents: snapshot.totalVatCents,
+        discountBp: snapshot.discountBp,
+        totalCostCents: snapshot.totalCostCents,
       },
 
       include: {

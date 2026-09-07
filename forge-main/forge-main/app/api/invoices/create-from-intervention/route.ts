@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { buildInvoiceDescription } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
+import { buildInvoiceSnapshotFromQuote } from "@/src/lib/quote-invoice-snapshot";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 import { draftReference } from "@/src/lib/document-numbering";
@@ -32,6 +33,9 @@ export async function POST(request: Request) {
         status: "TERMINEE",
         organizationId: workspaceContext.workspace.id,
       },
+      include: {
+        quote: { include: { lines: true } },
+      },
     });
 
     if (!intervention) {
@@ -49,28 +53,51 @@ export async function POST(request: Request) {
     }
 
     const existingInvoice = await prisma.invoice.findFirst({
-      where: { interventionId, organizationId: workspaceContext.workspace.id },
+      where: {
+        organizationId: workspaceContext.workspace.id,
+        type: "STANDARD",
+        OR: [
+          { interventionId },
+          ...(intervention.quoteId ? [{ quoteId: intervention.quoteId }] : []),
+        ],
+      },
     });
 
     if (existingInvoice) {
       return NextResponse.json({ invoice: existingInvoice });
     }
 
-    const description = buildInvoiceDescription(
-      intervention,
-    );
+    const description = buildInvoiceDescription(intervention);
+    const quoteSnapshot = intervention.quote
+      ? buildInvoiceSnapshotFromQuote(intervention.quote)
+      : null;
 
     const invoice = await prisma.invoice.create({
       data: {
         reference: generateInvoiceReference(),
-        title: `Facture - ${intervention.title}`,
-        description: description || null,
-        amountCents: 0,
+        title: quoteSnapshot?.title ?? `Facture - ${intervention.title}`,
+        description: description || quoteSnapshot?.description || null,
+        amountCents: quoteSnapshot?.amountCents ?? 0,
         status: "BROUILLON",
+        type: "STANDARD",
+        quoteId: intervention.quoteId,
         interventionId: intervention.id,
         clientId: intervention.clientId,
         organizationId: workspaceContext.workspace.id,
+        vatApplicable: quoteSnapshot?.vatApplicable ?? false,
+        totalHtCents: quoteSnapshot?.totalHtCents ?? 0,
+        totalVatCents: quoteSnapshot?.totalVatCents ?? 0,
+        discountBp: quoteSnapshot?.discountBp ?? 0,
+        totalCostCents: quoteSnapshot?.totalCostCents ?? 0,
+        ...(quoteSnapshot
+          ? {
+              lines: {
+                create: quoteSnapshot.lines,
+              },
+            }
+          : {}),
       },
+      include: { lines: true },
     });
 
     return NextResponse.json({ invoice }, { status: 201 });

@@ -1259,6 +1259,7 @@ export default function ForgeBar({
     if (action === "createIntervention") {
       const params = new URLSearchParams({
         title: quote.title,
+        quoteId: quote.id,
       });
 
       if (quote.description) {

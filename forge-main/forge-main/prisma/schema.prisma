@@ -481,6 +481,10 @@ model Intervention {
 
   reportRecommendation String?
 
+  quoteId String?
+
+  quote Quote? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
+
   invoices Invoice[]
 
   userId String?
@@ -509,6 +513,7 @@ model Intervention {
   @@index([assignedToId])
   @@index([scheduledAt])
   @@index([endDate])
+  @@index([quoteId])
 }
 
 model Quote {
@@ -563,6 +568,8 @@ model Quote {
   signature QuoteSignature?
 
   reminders QuoteReminder[]
+
+  interventions Intervention[]
 
   createdAt DateTime @default(now())
 

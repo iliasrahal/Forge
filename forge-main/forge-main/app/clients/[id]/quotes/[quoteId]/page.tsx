@@ -468,6 +468,7 @@ export default async function QuotePage({
       pathname: `/clients/${id}/interventions/new`,
       query: {
         title: quote.title,
+        quoteId: quote.id,
         ...(quote.description
           ? {
               description:
