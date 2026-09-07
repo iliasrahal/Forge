@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
 import HomeContent from "@/components/HomeContent";
+import HomeReminders from "@/components/HomeReminders";
 import TodayInterventions from "@/components/TodayInterventions";
 import UpcomingCalendar, {
   type PlanningClient,
@@ -16,6 +17,7 @@ import {
   getAppointmentSubject,
   type Appointment,
 } from "@/data/appointments";
+import type { SmartReminder } from "@/src/lib/smart-reminders";
 
 type HomeState =
   | "finished"
@@ -47,6 +49,7 @@ type HomeClientProps = {
   userFirstName: string;
   todayAppointments: Appointment[];
   upcomingAppointments: Appointment[];
+  reminders: SmartReminder[];
   planningClients: PlanningClient[];
   todayDateKey: string;
   newInterventionId?: string | null;
@@ -57,6 +60,7 @@ export default function HomeClient({
   userFirstName,
   todayAppointments,
   upcomingAppointments,
+  reminders,
   planningClients,
   todayDateKey,
   canWrite,
@@ -1146,6 +1150,10 @@ const handleCreateInvoice = async () => {
       showLogout={homeState === "intervention"}
     />
   </div>
+
+  {homeState === "intervention" && !showUpcomingCalendar ? (
+    <HomeReminders reminders={reminders} canWrite={canWrite} />
+  ) : null}
 
 
   {homeState === "intervention" && !showUpcomingCalendar ? (

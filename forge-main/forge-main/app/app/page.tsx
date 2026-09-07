@@ -9,6 +9,7 @@ import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { prisma } from "@/src/lib/prisma";
 import { splitAppointmentsByDate } from "@/src/lib/intervention-calendar";
 import { formatParisDateKey, formatParisTime } from "@/src/lib/paris-datetime";
+import { buildSmartReminders } from "@/src/lib/smart-reminders";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -98,7 +99,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const { newIntervention, invitationAccess } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
-  const [interventions, clients] = await Promise.all([
+  const [interventions, clients, reminderQuotes, reminderInvoices, completedInterventions] = await Promise.all([
     prisma.intervention.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
@@ -124,7 +125,96 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         { firstName: "asc" },
       ],
     }),
+    prisma.quote.findMany({
+      where: {
+        organizationId: workspaceContext.workspace.id,
+        status: { in: ["BROUILLON", "ENVOYE"] },
+      },
+      select: {
+        id: true,
+        clientId: true,
+        client: {
+          select: {
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        },
+        status: true,
+        createdAt: true,
+        sentAt: true,
+        reminders: {
+          select: { sentAt: true },
+          orderBy: { sentAt: "desc" },
+        },
+      },
+    }),
+    prisma.invoice.findMany({
+      where: {
+        organizationId: workspaceContext.workspace.id,
+        status: { in: ["BROUILLON", "ENVOYEE", "EN_RETARD"] },
+      },
+      select: {
+        id: true,
+        reference: true,
+        amountCents: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        dueDate: true,
+        client: {
+          select: {
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        },
+        payments: {
+          select: {
+            status: true,
+            amountCents: true,
+            feeCents: true,
+            refundedCents: true,
+            paidAt: true,
+          },
+        },
+      },
+    }),
+    prisma.intervention.findMany({
+      where: {
+        organizationId: workspaceContext.workspace.id,
+        status: "TERMINEE",
+        invoices: { none: {} },
+      },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        finishedAt: true,
+        updatedAt: true,
+        client: {
+          select: {
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        },
+        _count: { select: { invoices: true } },
+      },
+    }),
   ]);
+
+  const smartReminders = buildSmartReminders({
+    quotes: reminderQuotes,
+    invoices: reminderInvoices,
+    interventions: completedInterventions.map((intervention) => ({
+      ...intervention,
+      invoiceCount: intervention._count.invoices,
+    })),
+  });
 
   const appointments = interventions.map(mapIntervention);
   const {
@@ -150,6 +240,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       userFirstName={currentUser.firstName ?? ""}
       todayAppointments={todayAppointments}
       upcomingAppointments={upcomingAppointments}
+      reminders={smartReminders}
       todayDateKey={todayKey}
       planningClients={clients.map((client) => ({
         id: client.id,
