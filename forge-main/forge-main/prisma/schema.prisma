@@ -161,6 +161,8 @@ model User {
 
   themePreference String?
 
+  smartRemindersEnabled Boolean @default(false)
+
   // Forcé à true quand un admin plateforme attribue un mot de passe temporaire.
   mustChangePassword Boolean @default(false)
 

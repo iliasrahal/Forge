@@ -1,7 +1,10 @@
 import Link from "next/link";
+import SmartRemindersSetting from "@/components/SmartRemindersSetting";
+import { requireCurrentUser } from "@/src/lib/auth";
 
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const currentUser = await requireCurrentUser();
   return (
     <main className="min-h-dvh px-6 py-8 text-slate-950 dark:text-white">
       <section className="mx-auto max-w-xl">
@@ -34,6 +37,10 @@ export default function SettingsPage() {
 
 
         <div className="mt-8 space-y-3">
+
+          <SmartRemindersSetting
+            initialEnabled={currentUser.smartRemindersEnabled}
+          />
 
           <Link
             href="/settings/services"

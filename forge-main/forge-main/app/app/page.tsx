@@ -10,6 +10,7 @@ import { prisma } from "@/src/lib/prisma";
 import { splitAppointmentsByDate } from "@/src/lib/intervention-calendar";
 import { formatParisDateKey, formatParisTime } from "@/src/lib/paris-datetime";
 import { buildSmartReminders } from "@/src/lib/smart-reminders";
+import type { Prisma } from "@/src/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,7 +35,11 @@ function mapStatus(status: string): AppointmentStatus {
   }
 }
 
-function mapIntervention(intervention: any): Appointment {
+type HomeIntervention = Prisma.InterventionGetPayload<{
+  include: { client: true };
+}>;
+
+function mapIntervention(intervention: HomeIntervention): Appointment {
   const notesMarker = "Notes de prolongation :";
   const description = intervention.description ?? "";
   const notesIndex = description.indexOf(notesMarker);
@@ -99,7 +104,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const { newIntervention, invitationAccess } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
-  const [interventions, clients, reminderQuotes, reminderInvoices, completedInterventions] = await Promise.all([
+  const [interventions, clients] = await Promise.all([
     prisma.intervention.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
@@ -125,6 +130,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         { firstName: "asc" },
       ],
     }),
+  ]);
+
+  const [reminderQuotes, reminderInvoices, completedInterventions] = currentUser.smartRemindersEnabled
+    ? await Promise.all([
     prisma.quote.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
@@ -205,16 +214,19 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         _count: { select: { invoices: true } },
       },
     }),
-  ]);
+  ])
+    : [[], [], []];
 
-  const smartReminders = buildSmartReminders({
-    quotes: reminderQuotes,
-    invoices: reminderInvoices,
-    interventions: completedInterventions.map((intervention) => ({
-      ...intervention,
-      invoiceCount: intervention._count.invoices,
-    })),
-  });
+  const smartReminders = currentUser.smartRemindersEnabled
+    ? buildSmartReminders({
+        quotes: reminderQuotes,
+        invoices: reminderInvoices,
+        interventions: completedInterventions.map((intervention) => ({
+          ...intervention,
+          invoiceCount: intervention._count.invoices,
+        })),
+      })
+    : [];
 
   const appointments = interventions.map(mapIntervention);
   const {
