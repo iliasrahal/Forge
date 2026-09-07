@@ -12,6 +12,7 @@ import {
   groupAppointmentsByDate,
   parseDateKey,
 } from "@/src/lib/intervention-calendar";
+import { isInterventionDatePast } from "@/src/lib/intervention-display-status";
 
 type UpcomingCalendarProps = {
   appointments: Appointment[];
@@ -34,11 +35,16 @@ export type PlanningClient = {
 
 const weekDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
-function getStatusLabel(status: Appointment["status"]) {
+function getStatusLabel(
+  status: Appointment["status"],
+  scheduledDateKey: string,
+  todayDateKey: string,
+) {
   if (status === "inProgress") return "En cours";
   if (status === "completed") return "Terminée";
   if (status === "postponed") return "Reportée";
   if (status === "cancelled") return "Annulée";
+  if (isInterventionDatePast(scheduledDateKey, todayDateKey)) return "Passée";
   return "Planifiée";
 }
 
@@ -308,7 +314,11 @@ export default function UpcomingCalendar({
                     {getAppointmentSubject(appointment) || "Intervention"}
                   </span>
                   <span className="mt-2 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                    {getStatusLabel(appointment.status)}
+                    {getStatusLabel(
+                      appointment.status,
+                      appointment.date,
+                      todayDateKey,
+                    )}
                   </span>
                   {appointment.endDate && appointment.endDate !== appointment.date ? (
                     <span className="ml-2 mt-2 inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-[0.68rem] font-semibold text-violet-700 dark:bg-violet-950 dark:text-violet-300">

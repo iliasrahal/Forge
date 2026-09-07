@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import DeleteClientButton from "@/components/clients/DeleteClientButton";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  formatInterventionDisplayStatus,
+  getInterventionDisplayStatus,
+} from "@/src/lib/intervention-display-status";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { clientService } from "@/src/services/client.service";
 
@@ -34,13 +38,8 @@ function formatDate(date: Date) {
 }
 
 
-function formatStatus(status: string) {
+function formatDocumentStatus(status: string) {
   const statuses: Record<string, string> = {
-    PLANIFIEE: "Planifiée",
-    EN_COURS: "En cours",
-    TERMINEE: "Terminée",
-    ANNULEE: "Annulée",
-
     BROUILLON: "Brouillon",
     ENVOYE: "Envoyé",
     ENVOYEE: "Envoyée",
@@ -105,8 +104,11 @@ export default async function ClientPage({
         title: intervention.title,
         date: intervention.scheduledAt,
         type: "Intervention" as const,
-        status: formatStatus(
-          intervention.status,
+        status: formatInterventionDisplayStatus(
+          getInterventionDisplayStatus(
+            intervention.status,
+            intervention.scheduledAt,
+          ),
         ),
       }),
     ),
@@ -119,7 +121,7 @@ export default async function ClientPage({
         title: quote.title,
         date: quote.createdAt,
         type: "Devis" as const,
-        status: formatStatus(
+        status: formatDocumentStatus(
           quote.status,
         ),
       }),
@@ -133,7 +135,7 @@ export default async function ClientPage({
         title: invoice.title,
         date: invoice.createdAt,
         type: "Facture" as const,
-        status: formatStatus(
+        status: formatDocumentStatus(
           invoice.status,
         ),
       }),

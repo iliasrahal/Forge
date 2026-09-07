@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
+import {
+  formatInterventionDisplayStatus,
+  getInterventionDisplayStatus,
+} from "@/src/lib/intervention-display-status";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import AssignmentSelect from "@/components/team/AssignmentSelect";
 
@@ -34,23 +38,13 @@ function formatDate(date: Date) {
 }
 
 
-function formatStatus(status: string) {
-  const statuses: Record<string, string> = {
-    PLANIFIEE: "Planifiée",
-    EN_COURS: "En cours",
-    TERMINEE: "Terminée",
-    ANNULEE: "Annulée",
-  };
-
-
-  return statuses[status] ?? status;
-}
-
-
 function getStatusClasses(status: string) {
   const classes: Record<string, string> = {
     PLANIFIEE:
       "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+
+    PASSEE:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
 
     EN_COURS:
       "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
@@ -98,6 +92,11 @@ export default async function InterventionPage({
   if (!intervention) {
     notFound();
   }
+
+  const displayStatus = getInterventionDisplayStatus(
+    intervention.status,
+    intervention.scheduledAt,
+  );
 
   const teamMembers = workspaceContext.workspace.type === "TEAM"
     ? await prisma.organizationMember.findMany({
@@ -215,12 +214,10 @@ export default async function InterventionPage({
 
             <span
               className={`mt-2 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusClasses(
-                intervention.status,
+                displayStatus,
               )}`}
             >
-              {formatStatus(
-                intervention.status,
-              )}
+              {formatInterventionDisplayStatus(displayStatus)}
             </span>
 
           </div>
