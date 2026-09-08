@@ -91,7 +91,7 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
 
   return (
     <div>
-      <div className="overflow-hidden rounded-2xl border border-[var(--forge-border)] bg-white/90 shadow-inner dark:bg-white/95">
+      <div className="overflow-hidden rounded-2xl border border-white/15 bg-slate-950 shadow-inner">
         <canvas
           ref={canvasRef}
           width={900}
@@ -112,7 +112,6 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
 }
 
 export default function PublicQuoteAcceptance({ token, initialAccepted, initialSignature, canAccept, unavailableReason }: Props) {
-  const [open, setOpen] = useState(false);
   const [signed, setSigned] = useState<SignedDetails | null>(initialSignature);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -134,7 +133,6 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Votre signature n’a pas pu être enregistrée.");
       setSigned({ signerFirstName: data.signerFirstName, signerLastName: data.signerLastName, signedAt: data.signedAt });
-      setOpen(false);
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "Votre signature n’a pas pu être enregistrée.");
     } finally {
@@ -162,14 +160,6 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
   if (!canAccept) {
     return <p className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 text-center text-sm font-medium text-[var(--forge-text-primary)]">{unavailableReason || "Ce devis ne peut pas être accepté."}</p>;
   }
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="min-h-14 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-6 text-base font-bold text-white shadow-lg shadow-blue-950/20 transition hover:brightness-105">
-        Accepter et signer
-      </button>
-    );
-  }
-
   return (
     <section className="rounded-3xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 sm:p-5">
       <h2 className="text-center text-xl font-bold text-[var(--forge-text-primary)]">Accepter et signer</h2>
@@ -191,9 +181,8 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
         <span>Je confirme avoir pris connaissance de ce devis et l’accepter.</span>
       </label>
       {error ? <p className="mt-3 text-center text-sm font-medium text-red-500">{error}</p> : null}
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <button type="button" onClick={() => setOpen(false)} disabled={loading} className="min-h-12 rounded-2xl border border-[var(--forge-border)] px-5 font-semibold text-[var(--forge-text-primary)]">Annuler</button>
-        <button type="button" onClick={submit} disabled={loading} className="min-h-12 rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60">{loading ? "Enregistrement…" : "Confirmer la signature"}</button>
+      <div className="mt-5">
+        <button type="button" onClick={submit} disabled={loading} className="min-h-12 w-full rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-5 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60">{loading ? "Enregistrement…" : "Confirmer la signature"}</button>
       </div>
     </section>
   );

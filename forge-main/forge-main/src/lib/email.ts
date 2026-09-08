@@ -191,12 +191,12 @@ export async function sendQuoteEmail(
     text:
 `Bonjour ${clientName},
 
-Votre devis ${quoteReference} est disponible.
+Vous avez reçu le devis ${quoteReference}.
 
-Consulter mon devis :
+Signer le devis :
 ${publicQuoteUrl}
 
-Vous pourrez consulter le détail et l'accepter directement en ligne.
+Vous pourrez consulter son détail sur la page de signature sécurisée.
 
 Le PDF du devis reste joint à cet e-mail.
 
@@ -208,16 +208,16 @@ ${artisanSignature}
     html: renderEmailLayout(`
 <p>Bonjour ${escapeHtml(clientName)},</p>
 
-<p>Votre devis <strong>${escapeHtml(quoteReference)}</strong> est disponible.</p>
+<p>Vous avez reçu le devis <strong>${escapeHtml(quoteReference)}</strong>.</p>
 {{ACTION}}
-<p>Vous pourrez consulter le détail et l’accepter directement en ligne.</p>
+<p>Vous pourrez consulter son détail sur la page de signature sécurisée.</p>
 <p>Le PDF du devis reste joint à cet e-mail.</p>
 
 <p>
 Cordialement,<br/>
 ${formatEmailSignature(artisanSignature)}
 </p>
-`, { label: "Consulter mon devis", url: publicQuoteUrl }),
+`, { label: "Signer le devis", url: publicQuoteUrl }),
 
     attachments: [
       {
