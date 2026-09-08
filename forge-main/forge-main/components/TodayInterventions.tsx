@@ -28,7 +28,7 @@ export default function TodayInterventions({
         Aujourd&apos;hui
       </h2>
 
-      <div className="flex snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
         {visibleAppointments.map((appointment) => {
           const selected = appointment.id === selectedAppointmentId;
           const inProgress = appointment.status === "inProgress";
@@ -41,34 +41,32 @@ export default function TodayInterventions({
               type="button"
               aria-pressed={selected}
               onClick={() => onSelect(appointment.id)}
-              className={`forge-surface min-w-[12rem] flex-1 snap-start rounded-2xl border px-4 py-3 text-left transition sm:min-w-[13rem] ${
+              className={`forge-surface flex min-h-[8.5rem] min-w-0 flex-col rounded-2xl border px-3.5 py-3 text-left transition ${
                 selected
-                  ? "border-blue-500 bg-blue-500/10 shadow-md shadow-blue-500/10"
+                  ? "border-blue-500 bg-blue-500/15 shadow-md shadow-blue-500/15 ring-1 ring-inset ring-blue-500/25"
                   : "hover:border-blue-300 hover:bg-blue-500/5 dark:hover:border-blue-700"
               }`}
             >
-              <span className="flex items-center justify-between gap-3">
-                <span className="text-sm font-bold text-slate-950 dark:text-white">
+              <span className="text-base font-bold text-slate-950 dark:text-white">
                   {appointment.time || "Aujourd’hui"}
-                </span>
-                <span
-                  className={`text-[0.65rem] font-bold uppercase tracking-wide ${
-                    inProgress
-                      ? "text-emerald-600 dark:text-emerald-300"
-                      : "text-blue-600 dark:text-blue-300"
-                  }`}
-                >
-                  {inProgress ? "En cours" : "À faire"}
-                </span>
               </span>
-              <span className="mt-1 block truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
+              <span className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-800 dark:text-slate-100">
                 {subject}
               </span>
               {appointment.client ? (
-                <span className="mt-0.5 block truncate text-xs text-slate-500 dark:text-slate-400">
+                <span className="mt-1 block truncate text-xs text-slate-500 dark:text-slate-400">
                   {appointment.client}
                 </span>
               ) : null}
+              <span
+                className={`mt-auto pt-3 text-[0.65rem] font-bold uppercase tracking-wide ${
+                  inProgress
+                    ? "text-emerald-600 dark:text-emerald-300"
+                    : "text-blue-600 dark:text-blue-300"
+                }`}
+              >
+                {inProgress ? "En cours" : "À faire"}
+              </span>
             </button>
           );
         })}
