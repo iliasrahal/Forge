@@ -66,9 +66,7 @@ export default function UpcomingCalendar({
   }));
   const [selectedDateKey, setSelectedDateKey] = useState(initialDateKey);
   const [showCreationForm, setShowCreationForm] = useState(false);
-  const [clientMode, setClientMode] = useState<"existing" | "new">(
-    clients.length > 0 ? "existing" : "new",
-  );
+  const [clientMode, setClientMode] = useState<"none" | "existing" | "new">("none");
   const [clientId, setClientId] = useState(clients[0]?.id ?? "");
   const [newClientName, setNewClientName] = useState("");
   const [title, setTitle] = useState("");
@@ -358,8 +356,15 @@ export default function UpcomingCalendar({
             </div>
 
             <div className="mt-5 space-y-4">
-              {clients.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+              <div className={`grid gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 ${clients.length > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
+                  <button
+                    type="button"
+                    onClick={() => setClientMode("none")}
+                    className={`rounded-xl px-2 py-2 text-sm font-semibold transition ${clientMode === "none" ? "bg-white text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300" : "text-slate-500 dark:text-slate-400"}`}
+                  >
+                    Sans client
+                  </button>
+                {clients.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setClientMode("existing")}
@@ -367,6 +372,7 @@ export default function UpcomingCalendar({
                   >
                     Client existant
                   </button>
+                )}
                   <button
                     type="button"
                     onClick={() => setClientMode("new")}
@@ -374,8 +380,7 @@ export default function UpcomingCalendar({
                   >
                     Nouveau client
                   </button>
-                </div>
-              )}
+              </div>
 
               {clientMode === "existing" && clients.length > 0 ? (
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -391,7 +396,7 @@ export default function UpcomingCalendar({
                     ))}
                   </select>
                 </label>
-              ) : (
+              ) : clientMode === "new" ? (
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Nom du nouveau client
                   <input
@@ -402,14 +407,13 @@ export default function UpcomingCalendar({
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </label>
-              )}
+              ) : null}
 
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Motif de l’intervention
+                Motif de l’intervention <span className="font-normal text-slate-400">(facultatif)</span>
                 <input
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
-                  required
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </label>

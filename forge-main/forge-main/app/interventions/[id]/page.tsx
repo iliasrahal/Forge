@@ -151,7 +151,7 @@ export default async function InterventionPage({
         <div className="mx-auto mt-8 max-w-2xl text-center">
 
           <h1 className="text-balance text-3xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl">
-            {intervention.title}
+            {intervention.title || "Intervention"}
           </h1>
 
 

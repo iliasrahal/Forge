@@ -393,7 +393,7 @@ export default async function ClientPage({
                     <div className="min-w-0">
 
                       <p className="font-semibold text-slate-800 dark:text-white">
-                        {item.title}
+                        {item.title || "Intervention"}
                       </p>
 
 

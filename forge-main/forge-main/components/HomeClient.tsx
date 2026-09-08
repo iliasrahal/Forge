@@ -13,10 +13,7 @@ import TodayInterventions from "@/components/TodayInterventions";
 import UpcomingCalendar, {
   type PlanningClient,
 } from "@/components/UpcomingCalendar";
-import {
-  getAppointmentSubject,
-  type Appointment,
-} from "@/data/appointments";
+import { type Appointment } from "@/data/appointments";
 import type { SmartReminder } from "@/src/lib/smart-reminders";
 
 type HomeState =
@@ -128,11 +125,16 @@ const [actionEndTime, setActionEndTime] = useState("");
 const [actionError, setActionError] = useState("");
 const [isSavingAction, setIsSavingAction] = useState(false);
 const [showAddClientModal, setShowAddClientModal] = useState(false);
+const [startClientMode, setStartClientMode] = useState<"existing" | "new">(
+  planningClients.length > 0 ? "existing" : "new",
+);
+const [startExistingClientId, setStartExistingClientId] = useState(
+  planningClients[0]?.id ?? "",
+);
 const [startClientType, setStartClientType] = useState<"PARTICULIER" | "PROFESSIONNEL">("PARTICULIER");
 const [startClientFirstName, setStartClientFirstName] = useState("");
 const [startClientLastName, setStartClientLastName] = useState("");
 const [startClientCompanyName, setStartClientCompanyName] = useState("");
-const [startInterventionTitle, setStartInterventionTitle] = useState("");
 const [startClientError, setStartClientError] = useState("");
 const [isAddingStartClient, setIsAddingStartClient] = useState(false);
   const [
@@ -496,19 +498,6 @@ const handleStartIntervention = async () => {
     return;
   }
 
-  if (!currentAppointment.hasClient) {
-    setStartClientType("PARTICULIER");
-    setStartClientFirstName("");
-    setStartClientLastName("");
-    setStartClientCompanyName("");
-    setStartInterventionTitle(
-      getAppointmentSubject(currentAppointment),
-    );
-    setStartClientError("");
-    setShowAddClientModal(true);
-    return;
-  }
-
   await startIntervention();
 };
 
@@ -517,7 +506,12 @@ const handleAddClientAndStart = async () => {
     return;
   }
 
-  if (
+  if (startClientMode === "existing" && !startExistingClientId) {
+    setStartClientError("Sélectionnez un client.");
+    return;
+  }
+
+  if (startClientMode === "new" &&
     startClientType === "PARTICULIER" &&
     !startClientFirstName.trim()
   ) {
@@ -525,7 +519,7 @@ const handleAddClientAndStart = async () => {
     return;
   }
 
-  if (
+  if (startClientMode === "new" &&
     startClientType === "PROFESSIONNEL" &&
     !startClientCompanyName.trim()
   ) {
@@ -533,24 +527,64 @@ const handleAddClientAndStart = async () => {
     return;
   }
 
-  if (!startInterventionTitle.trim()) {
-    setStartClientError("Le motif de l’intervention est obligatoire.");
-    return;
-  }
-
   setIsAddingStartClient(true);
   setStartClientError("");
 
   try {
-    await startIntervention({
-      clientType: startClientType,
-      firstName: startClientFirstName.trim(),
-      lastName: startClientLastName.trim(),
-      companyName: startClientCompanyName.trim(),
-      phone: "",
-      address: "",
-      title: startInterventionTitle.trim(),
+    const interventionId = completedInterventionId ?? currentAppointment?.id;
+    if (!interventionId) {
+      throw new Error("Forge ne retrouve pas l’intervention concernée.");
+    }
+
+    const response = await fetch("/api/interventions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        operation: "attachClient",
+        interventionId,
+        ...(startClientMode === "existing"
+          ? { clientId: startExistingClientId }
+          : {
+              clientType: startClientType,
+              firstName: startClientFirstName.trim(),
+              lastName: startClientLastName.trim(),
+              companyName: startClientCompanyName.trim(),
+            }),
+      }),
     });
+
+    const data = await response.json();
+    if (!response.ok || !data.clientId) {
+      throw new Error(data.error || "Impossible d’associer le client.");
+    }
+
+    setSavedClientId(data.clientId);
+    setSavedClientName(data.clientName || "");
+    setStartClientMode("existing");
+    setStartExistingClientId(data.clientId);
+    const attachClient = (appointment: Appointment) =>
+      appointment.id === interventionId
+        ? { ...appointment, client: data.clientName || "", hasClient: true }
+        : appointment;
+    setAppointmentsList((appointments) => appointments.map(attachClient));
+    setUpcomingAppointmentsList((appointments) => appointments.map(attachClient));
+    router.refresh();
+
+    const invoiceResponse = await fetch("/api/invoices/create-from-intervention", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interventionId }),
+    });
+    const invoiceData = await invoiceResponse.json();
+    if (!invoiceResponse.ok || !invoiceData.invoice?.id) {
+      throw new Error(invoiceData.error || "Impossible de créer la facture.");
+    }
+    setShowAddClientModal(false);
+    router.push(`/invoices/${invoiceData.invoice.id}`);
+  } catch (error) {
+    setStartClientError(
+      error instanceof Error ? error.message : "Une erreur est survenue.",
+    );
   } finally {
     setIsAddingStartClient(false);
   }
@@ -1099,6 +1133,18 @@ const handleCreateInvoice = async () => {
     return;
   }
 
+  if (!savedClientId && !currentAppointment?.hasClient) {
+    setStartClientMode(planningClients.length > 0 ? "existing" : "new");
+    setStartExistingClientId(planningClients[0]?.id ?? "");
+    setStartClientType("PARTICULIER");
+    setStartClientFirstName("");
+    setStartClientLastName("");
+    setStartClientCompanyName("");
+    setStartClientError("");
+    setShowAddClientModal(true);
+    return;
+  }
+
   setReportError("");
 
   try {
@@ -1217,10 +1263,48 @@ const handleCreateInvoice = async () => {
     <div className="forge-modal-overlay fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
       <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-          Informations client
+          Ajouter un client
         </h2>
 
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Pour créer la facture, associez d’abord un client à cette intervention.
+        </p>
+
         <div className="mt-5 space-y-4">
+          {planningClients.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+              <button
+                type="button"
+                onClick={() => setStartClientMode("existing")}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${startClientMode === "existing" ? "bg-white text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300" : "text-slate-500 dark:text-slate-400"}`}
+              >
+                Client existant
+              </button>
+              <button
+                type="button"
+                onClick={() => setStartClientMode("new")}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${startClientMode === "new" ? "bg-white text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300" : "text-slate-500 dark:text-slate-400"}`}
+              >
+                Nouveau client
+              </button>
+            </div>
+          )}
+
+          {startClientMode === "existing" && planningClients.length > 0 ? (
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Client
+              <select
+                value={startExistingClientId}
+                onChange={(event) => setStartExistingClientId(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
+              >
+                {planningClients.map((client) => (
+                  <option key={client.id} value={client.id}>{client.name}</option>
+                ))}
+              </select>
+            </label>
+          ) : (
+          <>
           <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
             Type de client
             <select
@@ -1282,20 +1366,8 @@ const handleCreateInvoice = async () => {
               />
             </label>
           )}
-
-          <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Motif de l&apos;intervention
-            <input
-              required
-              value={startInterventionTitle}
-              onChange={(event) =>
-                setStartInterventionTitle(
-                  event.target.value,
-                )
-              }
-              className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
-            />
-          </label>
+          </>
+          )}
 
           {startClientError && (
             <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
@@ -1319,7 +1391,7 @@ const handleCreateInvoice = async () => {
             disabled={isAddingStartClient}
             className="rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
           >
-            {isAddingStartClient ? "Démarrage…" : "Ajouter et commencer"}
+            {isAddingStartClient ? "Création…" : "Ajouter et créer la facture"}
           </button>
         </div>
       </section>

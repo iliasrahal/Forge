@@ -90,7 +90,7 @@ export default async function HistoryPage() {
 
 
                 <p className="mt-2 font-medium text-slate-700 dark:text-slate-300">
-                  {intervention.title}
+                  {intervention.title || "Intervention"}
                 </p>
 
 

@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     const invoice = await prisma.invoice.create({
       data: {
         reference: generateInvoiceReference(),
-        title: quoteSnapshot?.title ?? `Facture - ${intervention.title}`,
+        title: quoteSnapshot?.title ?? `Facture - ${intervention.title || "Intervention"}`,
         description: description || quoteSnapshot?.description || null,
         amountCents: quoteSnapshot?.amountCents ?? 0,
         status: "BROUILLON",

@@ -18,6 +18,7 @@ type InterventionOperation =
   | "extend"
   | "updateNotes"
   | "cancel"
+  | "attachClient"
   | "start"
   | "complete";
 
@@ -226,7 +227,10 @@ export async function POST(request: Request) {
         userId: currentUser.id,
         organizationId: workspaceContext.workspace.id,
         clientId: client?.id,
-        title: title || description || "Intervention",
+        // Le titre reste techniquement non nullable pour préserver le schéma et
+        // les anciens devis, mais une chaîne vide représente une intervention
+        // créée sans motif. Le fallback « Intervention » reste purement visuel.
+        title: title || description || "",
         description: description || null,
         scheduledAt: period.start,
         endDate: period.end,
@@ -280,6 +284,7 @@ export async function PATCH(request: Request) {
       body.operation === "extend" ||
       body.operation === "updateNotes" ||
       body.operation === "cancel" ||
+      body.operation === "attachClient" ||
       body.operation === "start" ||
       body.operation === "complete"
         ? body.operation
@@ -296,6 +301,91 @@ export async function PATCH(request: Request) {
       typeof body.interventionId === "string"
         ? body.interventionId.trim()
         : "";
+
+    if (operation === "attachClient") {
+      if (!interventionId) {
+        return NextResponse.json(
+          { error: "L’identifiant de l’intervention est obligatoire." },
+          { status: 400 },
+        );
+      }
+
+      const intervention = await prisma.intervention.findFirst({
+        where: {
+          id: interventionId,
+          organizationId: workspaceContext.workspace.id,
+        },
+      });
+
+      if (!intervention) {
+        return NextResponse.json(
+          { error: "Cette intervention est introuvable." },
+          { status: 404 },
+        );
+      }
+
+      const requestedClientId = cleanOptionalString(body.clientId);
+      let client = requestedClientId
+        ? await prisma.client.findFirst({
+            where: {
+              id: requestedClientId,
+              organizationId: workspaceContext.workspace.id,
+              archived: false,
+            },
+          })
+        : null;
+
+      if (requestedClientId && !client) {
+        return NextResponse.json(
+          { error: "Le client sélectionné est introuvable." },
+          { status: 404 },
+        );
+      }
+
+      if (!client) {
+        const clientType = body.clientType === "PROFESSIONNEL"
+          ? "PROFESSIONNEL" as const
+          : "PARTICULIER" as const;
+        const firstName = cleanOptionalString(body.firstName);
+        const lastName = cleanOptionalString(body.lastName);
+        const companyName = cleanOptionalString(body.companyName);
+
+        if (
+          (clientType === "PARTICULIER" && !firstName) ||
+          (clientType === "PROFESSIONNEL" && !companyName)
+        ) {
+          return NextResponse.json(
+            { error: "Les informations du client sont incomplètes." },
+            { status: 400 },
+          );
+        }
+
+        client = await prisma.client.create({
+          data: {
+            type: clientType,
+            firstName: clientType === "PARTICULIER" ? firstName : null,
+            lastName: clientType === "PARTICULIER" ? lastName : null,
+            companyName: clientType === "PROFESSIONNEL" ? companyName : null,
+            isTemporary: true,
+            userId: currentUser.id,
+            organizationId: workspaceContext.workspace.id,
+          },
+        });
+      }
+
+      const updatedIntervention = await prisma.intervention.update({
+        where: { id: intervention.id },
+        data: { clientId: client.id },
+        include: { client: true },
+      });
+
+      return NextResponse.json({
+        intervention: updatedIntervention,
+        operation,
+        clientId: client.id,
+        clientName: getClientDisplayName(client),
+      });
+    }
 
     if (operation === "edit") {
       if (!interventionId) {
@@ -359,40 +449,27 @@ export async function PATCH(request: Request) {
         typeof body.title === "string"
           ? body.title.trim()
           : "";
-      if (!clientName || !title) {
-        return NextResponse.json(
-          { error: "Le client et le titre sont obligatoires." },
-          { status: 400 },
-        );
-      }
-
-      if (!existingIntervention.client || !existingIntervention.clientId) {
-        return NextResponse.json(
-          { error: "Aucun client n’est encore associé à cette intervention." },
-          { status: 409 },
-        );
-      }
-
-      const clientData =
-        existingIntervention.client.type === "PROFESSIONNEL"
-          ? { companyName: clientName }
-          : splitPersonalClientName(clientName);
-
-      const [, updatedIntervention] =
-        await prisma.$transaction([
-          prisma.client.update({
+      const clientUpdate = existingIntervention.client &&
+        existingIntervention.clientId && clientName
+        ? prisma.client.update({
             where: { id: existingIntervention.clientId },
-            data: clientData,
-          }),
-          prisma.intervention.update({
-            where: { id: interventionId },
-            data: {
-              title,
-              scheduledAt: period.start,
-              endDate: period.end,
-            },
-          }),
-        ]);
+            data: existingIntervention.client.type === "PROFESSIONNEL"
+              ? { companyName: clientName }
+              : splitPersonalClientName(clientName),
+          })
+        : null;
+
+      const updateIntervention = prisma.intervention.update({
+        where: { id: interventionId },
+        data: {
+          title,
+          scheduledAt: period.start,
+          endDate: period.end,
+        },
+      });
+      const updatedIntervention = clientUpdate
+        ? (await prisma.$transaction([clientUpdate, updateIntervention]))[1]
+        : await updateIntervention;
 
       return NextResponse.json({
         intervention: updatedIntervention,
@@ -442,14 +519,17 @@ export async function PATCH(request: Request) {
         }
 
         let startedIntervention;
+        const suppliedClientInformation = Boolean(
+          cleanOptionalString(body.firstName) ||
+          cleanOptionalString(body.companyName),
+        );
 
-        if (existingIntervention.client) {
-          startedIntervention =
-            await prisma.intervention.update({
-              where: { id: interventionId },
-              data: { status: "EN_COURS" },
-              include: { client: true },
-            });
+        if (existingIntervention.client || !suppliedClientInformation) {
+          startedIntervention = await prisma.intervention.update({
+            where: { id: interventionId },
+            data: { status: "EN_COURS", startedAt: new Date() },
+            include: { client: true },
+          });
         } else {
           const clientType =
             body.clientType === "PROFESSIONNEL"
@@ -467,13 +547,6 @@ export async function PATCH(request: Request) {
           ) {
             return NextResponse.json(
               { error: "Les informations du client sont incomplètes." },
-              { status: 400 },
-            );
-          }
-
-          if (!title) {
-            return NextResponse.json(
-              { error: "Le motif de l’intervention est obligatoire." },
               { status: 400 },
             );
           }
@@ -504,8 +577,9 @@ export async function PATCH(request: Request) {
                 where: { id: interventionId },
                 data: {
                   clientId: client.id,
-                  title,
+                  ...(title ? { title } : {}),
                   status: "EN_COURS",
+                  startedAt: new Date(),
                 },
                 include: { client: true },
               });
