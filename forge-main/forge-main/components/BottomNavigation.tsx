@@ -4,38 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, House, UsersRound, ReceiptText } from "lucide-react";
 
+import {
+  getBottomNavigationSection,
+} from "@/src/lib/bottom-navigation";
+
 const ITEMS = [
-  { href: "/app", label: "Accueil", icon: House },
-  { href: "/clients", label: "Clients", icon: UsersRound },
-  { href: "/quotes", label: "Devis", icon: FileText },
-  { href: "/invoices", label: "Factures", icon: ReceiptText },
+  { href: "/app", section: "home", label: "Accueil", icon: House },
+  { href: "/clients", section: "clients", label: "Clients", icon: UsersRound },
+  { href: "/quotes", section: "quotes", label: "Devis", icon: FileText },
+  { href: "/invoices", section: "invoices", label: "Factures", icon: ReceiptText },
 ] as const;
 
 export default function BottomNavigation() {
   const pathname = usePathname();
-
-  const isQuotes = pathname.startsWith("/quotes");
-  const isInvoices = pathname.startsWith("/invoices");
-  const isClients =
-    !isQuotes &&
-    !isInvoices &&
-    (pathname.startsWith("/clients") ||
-      pathname.startsWith("/intervention") ||
-      pathname.startsWith("/history"));
-
-  const activeFor = (href: string) => {
-    if (href === "/app") return pathname === "/app";
-    if (href === "/quotes") return isQuotes;
-    if (href === "/invoices") return isInvoices;
-    if (href === "/clients") return isClients;
-
-    return false;
-  };
+  const activeSection = getBottomNavigationSection(pathname);
 
   return (
     <nav className="grid grid-cols-4 gap-1">
-      {ITEMS.map(({ href, label, icon: Icon }) => {
-        const active = activeFor(href);
+      {ITEMS.map(({ href, section, label, icon: Icon }) => {
+        const active = activeSection === section;
 
         return (
           <Link
