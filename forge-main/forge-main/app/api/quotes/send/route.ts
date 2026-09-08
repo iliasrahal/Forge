@@ -5,13 +5,77 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { sendQuoteEmail } from "@/src/lib/email";
 import {
-  allocateDocumentNumber,
+  allocateAvailableDocumentNumber,
   isDraftReference,
 } from "@/src/lib/document-numbering";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 import {
   resolveStoredOrProvidedClientEmail,
 } from "@/src/lib/client-email";
+
+async function ensureQuoteReference(params: {
+  quoteId: string;
+  organizationId: string;
+  prefix: string;
+}) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        // Sérialise les envois simultanés du même devis : le second envoi
+        // relit la référence définitive et ne renumérote jamais le document.
+        await tx.$queryRaw`
+          SELECT "id"
+          FROM "Quote"
+          WHERE "id" = ${params.quoteId}
+          FOR UPDATE
+        `;
+
+        const currentQuote = await tx.quote.findFirst({
+          where: {
+            id: params.quoteId,
+            organizationId: params.organizationId,
+          },
+          select: { reference: true },
+        });
+
+        if (!currentQuote) {
+          throw new Error("Devis introuvable pendant la numérotation.");
+        }
+
+        if (!isDraftReference(currentQuote.reference)) {
+          return currentQuote.reference;
+        }
+
+        const allocated = await allocateAvailableDocumentNumber(tx, {
+          organizationId: params.organizationId,
+          kind: "QUOTE",
+          prefix: params.prefix,
+          referenceExists: async (reference) => Boolean(
+            await tx.quote.findUnique({
+              where: { reference },
+              select: { id: true },
+            }),
+          ),
+        });
+
+        const updated = await tx.quote.update({
+          where: { id: params.quoteId },
+          data: { reference: allocated.reference },
+          select: { reference: true },
+        });
+
+        return updated.reference;
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === "P2002" && attempt < 2) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Impossible d’attribuer un numéro unique au devis.");
+}
 
 
 export async function POST(
@@ -122,18 +186,11 @@ export async function POST(
 
     // Numéro définitif attribué à la première finalisation, avant le PDF.
     if (isDraftReference(quote.reference)) {
-      const allocated = await prisma.$transaction((tx) =>
-        allocateDocumentNumber(tx, {
-          organizationId: workspaceContext.workspace.id,
-          kind: "QUOTE",
-          prefix: workspaceContext.workspace.quotePrefix,
-        }),
-      );
-      await prisma.quote.update({
-        where: { id: quote.id },
-        data: { reference: allocated.reference },
+      quote.reference = await ensureQuoteReference({
+        quoteId: quote.id,
+        organizationId: workspaceContext.workspace.id,
+        prefix: workspaceContext.workspace.quotePrefix,
       });
-      quote.reference = allocated.reference;
     }
 
 
@@ -275,10 +332,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Erreur envoi devis",
+        error: "Impossible d’envoyer le devis pour le moment. Réessayez.",
       },
       {
         status: 500,

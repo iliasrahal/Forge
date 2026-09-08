@@ -97,10 +97,7 @@ export default function DownloadQuotePdf({
         }
 
 
-        setMessage(
-          data.error ??
-          "Erreur lors de l'envoi du devis.",
-        );
+        setMessage("Impossible d’envoyer le devis pour le moment. Réessayez.");
 
         return;
 
