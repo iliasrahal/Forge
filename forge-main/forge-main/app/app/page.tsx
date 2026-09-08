@@ -36,7 +36,7 @@ function mapStatus(status: string): AppointmentStatus {
 }
 
 type HomeIntervention = Prisma.InterventionGetPayload<{
-  include: { client: true };
+  include: { client: true; invoices: { select: { id: true; status: true } } };
 }>;
 
 function mapIntervention(intervention: HomeIntervention): Appointment {
@@ -95,6 +95,9 @@ function mapIntervention(intervention: HomeIntervention): Appointment {
             recommandation: intervention.reportRecommendation ?? "",
           }
         : undefined,
+    finalizationStep: intervention.finalizationStep,
+    reportDraft: intervention.reportDraft ?? "",
+    invoiceId: intervention.invoices[0]?.id ?? null,
   };
 }
 
@@ -108,13 +111,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     prisma.intervention.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
-        status: {
-          in: ["PLANIFIEE", "EN_COURS"],
-        },
+        OR: [
+          { status: { in: ["PLANIFIEE", "EN_COURS"] } },
+          { status: "TERMINEE", finalizedAt: null, finalizationStep: { not: null } },
+        ],
       },
-      include: {
-        client: true,
-      },
+      include: { client: true, invoices: { select: { id: true, status: true }, take: 1 } },
       orderBy: {
         scheduledAt: "asc",
       },
@@ -232,7 +234,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const {
     today: todayAppointments,
     upcoming: upcomingAppointments,
+    other,
   } = splitAppointmentsByDate(appointments, todayKey);
+  todayAppointments.push(...other.filter((item) => item.status === "completed" && item.finalizationStep));
 
   return (
     <>

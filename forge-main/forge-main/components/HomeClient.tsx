@@ -597,6 +597,18 @@ const handleFinishIntervention = () => {
 
   setHomeState("reportInput");
 
+  if (currentAppointment) {
+    void fetch("/api/interventions", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        operation: "saveFinalization",
+        interventionId: currentAppointment.id,
+        finalizationStep: "REPORT_INPUT",
+      }),
+    });
+  }
+
 };
 
 
@@ -688,6 +700,33 @@ const handleSaveNotes = async (notes: string) => {
   const handleSelectAppointment = (
     appointmentId: string,
   ) => {
+    const selected = [...appointmentsList, ...upcomingAppointmentsList].find(
+      (appointment) => appointment.id === appointmentId,
+    );
+    if (selected?.status === "completed" && selected.finalizationStep) {
+      setCompletedInterventionId(selected.id);
+      setSavedClientId(selected.hasClient ? "associated" : null);
+      setSavedClientName(selected.client);
+      setCompletedWithReport(!selected.finalizationStep.includes("SKIPPED"));
+      if (selected.invoiceId) {
+        router.push(`/invoices/${selected.invoiceId}`);
+        return;
+      }
+      setSelectedAppointmentId(appointmentId);
+      setHomeState("invoiceChoice");
+      return;
+    }
+    if (selected?.finalizationStep === "REPORT_INPUT") {
+      setSelectedAppointmentId(appointmentId);
+      setHomeState("reportInput");
+      return;
+    }
+    if (selected?.finalizationStep === "REPORT_REVIEW" && selected.report) {
+      setSelectedAppointmentId(appointmentId);
+      setReport(selected.report);
+      setHomeState("review");
+      return;
+    }
     setShowUpcomingCalendar(false);
     setIsInitialWelcomeActive(false);
     setSelectedAppointmentId(appointmentId);
@@ -885,6 +924,18 @@ const handleSaveNotes = async (notes: string) => {
     setReport(generatedReport);
     setReportError("");
     setHomeState("review");
+    if (currentAppointment) {
+      void fetch("/api/interventions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation: "saveFinalization",
+          interventionId: currentAppointment.id,
+          finalizationStep: "REPORT_REVIEW",
+          report: generatedReport,
+        }),
+      });
+    }
   };
 
   const handleReportError = (
@@ -1526,6 +1577,20 @@ const handleCreateInvoice = async () => {
     }
 
     completedWithReport={completedWithReport}
+    initialReportDraft={currentAppointment?.reportDraft ?? ""}
+    onReportDraftChange={(draft) => {
+      if (!currentAppointment) return;
+      void fetch("/api/interventions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          operation: "saveFinalization",
+          interventionId: currentAppointment.id,
+          finalizationStep: "REPORT_INPUT",
+          reportDraft: draft,
+        }),
+      });
+    }}
 
 
     onStartIntervention={

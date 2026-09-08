@@ -19,6 +19,8 @@ type InterventionOperation =
   | "updateNotes"
   | "cancel"
   | "attachClient"
+  | "saveFinalization"
+  | "finalize"
   | "start"
   | "complete";
 
@@ -285,6 +287,8 @@ export async function PATCH(request: Request) {
       body.operation === "updateNotes" ||
       body.operation === "cancel" ||
       body.operation === "attachClient" ||
+      body.operation === "saveFinalization" ||
+      body.operation === "finalize" ||
       body.operation === "start" ||
       body.operation === "complete"
         ? body.operation
@@ -301,6 +305,44 @@ export async function PATCH(request: Request) {
       typeof body.interventionId === "string"
         ? body.interventionId.trim()
         : "";
+
+    if (operation === "saveFinalization" || operation === "finalize") {
+      if (!interventionId) {
+        return NextResponse.json({ error: "Intervention manquante." }, { status: 400 });
+      }
+
+      const existing = await prisma.intervention.findFirst({
+        where: { id: interventionId, organizationId: workspaceContext.workspace.id },
+        select: { id: true },
+      });
+      if (!existing) {
+        return NextResponse.json({ error: "Cette intervention est introuvable." }, { status: 404 });
+      }
+
+      const finalizationStep = cleanOptionalString(body.finalizationStep);
+      const reportDraft = typeof body.reportDraft === "string"
+        ? body.reportDraft
+        : undefined;
+      const draftReport = body.report && typeof body.report === "object"
+        ? body.report as Record<string, unknown>
+        : null;
+      const intervention = await prisma.intervention.update({
+        where: { id: existing.id },
+        data: operation === "finalize"
+          ? { finalizedAt: new Date(), finalizationStep: "FINALIZED" }
+          : {
+              ...(finalizationStep ? { finalizationStep } : {}),
+              ...(reportDraft !== undefined ? { reportDraft } : {}),
+              ...(draftReport ? {
+                reportIntervention: cleanOptionalString(draftReport.intervention),
+                reportDiagnostic: cleanOptionalString(draftReport.diagnostic),
+                reportTravaux: cleanOptionalString(draftReport.travaux),
+                reportRecommendation: cleanOptionalString(draftReport.recommandation),
+              } : {}),
+            },
+      });
+      return NextResponse.json({ intervention, operation });
+    }
 
     if (operation === "attachClient") {
       if (!interventionId) {
@@ -630,6 +672,9 @@ export async function PATCH(request: Request) {
           where: { id: interventionId },
           data: {
             status: "TERMINEE",
+            finishedAt: new Date(),
+            finalizationStep: "INVOICE_CHOICE",
+            reportSkippedAt: hasCompleteReport ? null : new Date(),
             ...(hasCompleteReport
               ? {
                   reportIntervention,

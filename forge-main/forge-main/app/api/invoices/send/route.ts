@@ -326,6 +326,13 @@ export async function POST(
 
     });
 
+    if (invoice.interventionId) {
+      await prisma.intervention.update({
+        where: { id: invoice.interventionId },
+        data: { finalizationStep: "INVOICE_SENT" },
+      });
+    }
+
 
 
     return NextResponse.json({

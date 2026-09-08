@@ -483,6 +483,15 @@ model Intervention {
 
   reportRecommendation String?
 
+  // Progression administrative persistante après le travail sur le terrain.
+  finalizationStep String?
+
+  reportDraft String?
+
+  reportSkippedAt DateTime?
+
+  finalizedAt DateTime?
+
   quoteId String?
 
   quote Quote? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
@@ -516,6 +525,7 @@ model Intervention {
   @@index([scheduledAt])
   @@index([endDate])
   @@index([quoteId])
+  @@index([organizationId, finalizedAt])
 }
 
 model Quote {

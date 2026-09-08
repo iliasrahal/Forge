@@ -64,6 +64,10 @@ export async function POST(request: Request) {
     });
 
     if (existingInvoice) {
+      await prisma.intervention.update({
+        where: { id: intervention.id },
+        data: { finalizationStep: "INVOICE_CREATED" },
+      });
       return NextResponse.json({ invoice: existingInvoice });
     }
 
@@ -100,6 +104,11 @@ export async function POST(request: Request) {
           : {}),
       },
       include: { lines: true },
+    });
+
+    await prisma.intervention.update({
+      where: { id: intervention.id },
+      data: { finalizationStep: "INVOICE_CREATED" },
     });
 
     return NextResponse.json({ invoice }, { status: 201 });

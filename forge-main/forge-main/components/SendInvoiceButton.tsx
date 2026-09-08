@@ -12,6 +12,7 @@ type SendInvoiceButtonProps = {
   invoiceId: string;
   clientId: string;
   clientEmail: string | null;
+  interventionId?: string | null;
 };
 
 
@@ -19,6 +20,7 @@ export default function SendInvoiceButton({
   invoiceId,
   clientId,
   clientEmail,
+  interventionId,
 }: SendInvoiceButtonProps) {
 
   const router = useRouter();
@@ -144,7 +146,14 @@ export default function SendInvoiceButton({
 
   }
 
-  function handleFinish() {
+  async function handleFinish() {
+    if (interventionId) {
+      await fetch("/api/interventions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ operation: "finalize", interventionId }),
+      });
+    }
     router.push("/app");
     router.refresh();
   }
@@ -235,7 +244,7 @@ export default function SendInvoiceButton({
           {sentSuccessfully && (
             <button
               type="button"
-              onClick={handleFinish}
+              onClick={() => void handleFinish()}
               className="mt-3 min-h-12 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
             >
               Terminé

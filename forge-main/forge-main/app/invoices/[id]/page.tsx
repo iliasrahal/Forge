@@ -522,6 +522,7 @@ export default async function InvoicePage({
               invoiceId={invoice.id}
               clientId={invoice.clientId}
               clientEmail={clientEmail}
+              interventionId={invoice.interventionId}
             />
           ) : null}
 

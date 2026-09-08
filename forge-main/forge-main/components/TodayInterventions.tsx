@@ -32,6 +32,7 @@ export default function TodayInterventions({
         {visibleAppointments.map((appointment) => {
           const selected = appointment.id === selectedAppointmentId;
           const inProgress = appointment.status === "inProgress";
+          const finalizing = appointment.status === "completed" && Boolean(appointment.finalizationStep);
           const subject = getAppointmentSubject(appointment) || "Intervention";
 
           return (
@@ -65,7 +66,7 @@ export default function TodayInterventions({
                     : "text-blue-600 dark:text-blue-300"
                 }`}
               >
-                {inProgress ? "En cours" : "À faire"}
+                {inProgress ? "En cours" : finalizing ? "À finaliser" : "À faire"}
               </span>
             </button>
           );

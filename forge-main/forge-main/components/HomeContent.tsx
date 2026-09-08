@@ -63,6 +63,8 @@ type HomeContentProps = {
   isValidatingReport?: boolean;
   savedClientName?: string;
   completedWithReport?: boolean;
+  initialReportDraft?: string;
+  onReportDraftChange?: (draft: string) => void;
 
   onStartIntervention: () => void;
   onEditIntervention: () => void;
@@ -101,6 +103,8 @@ export default function HomeContent({
   isValidatingReport = false,
   savedClientName,
   completedWithReport = true,
+  initialReportDraft = "",
+  onReportDraftChange,
   onStartIntervention,
   onEditIntervention,
   onDeleteIntervention,
@@ -154,7 +158,17 @@ export default function HomeContent({
     useState("");
 
   const [reportDraft, setReportDraft] =
-    useState("");
+    useState(initialReportDraft);
+
+  useEffect(() => {
+    setReportDraft(initialReportDraft);
+  }, [currentAppointment?.id, initialReportDraft]);
+
+  useEffect(() => {
+    if (!onReportDraftChange) return;
+    const timer = window.setTimeout(() => onReportDraftChange(reportDraft), 600);
+    return () => window.clearTimeout(timer);
+  }, [onReportDraftChange, reportDraft]);
 
   const [reportMedia, setReportMedia] =
     useState<File[]>([]);

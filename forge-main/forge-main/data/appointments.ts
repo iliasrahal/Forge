@@ -26,6 +26,9 @@ export type Appointment = {
   status: AppointmentStatus;
   notes?: string;
   report?: InterventionReport;
+  finalizationStep?: string | null;
+  reportDraft?: string;
+  invoiceId?: string | null;
 };
 
 function getUsefulText(value?: string) {

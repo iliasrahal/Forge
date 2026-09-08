@@ -5,17 +5,18 @@ export type CalendarAppointment = {
 };
 
 export function sortActiveTodayAppointments<
-  T extends { date: string; time: string; status: string },
+  T extends { date: string; time: string; status: string; finalizationStep?: string | null },
 >(appointments: T[]) {
   return [...appointments]
     .filter(
       (appointment) =>
         appointment.status === "inProgress" ||
-        appointment.status === "scheduled",
+        appointment.status === "scheduled" ||
+        (appointment.status === "completed" && Boolean(appointment.finalizationStep)),
     )
     .sort((first, second) => {
-      const firstPriority = first.status === "inProgress" ? 0 : 1;
-      const secondPriority = second.status === "inProgress" ? 0 : 1;
+      const firstPriority = first.status === "inProgress" ? 0 : first.status === "completed" ? 1 : 2;
+      const secondPriority = second.status === "inProgress" ? 0 : second.status === "completed" ? 1 : 2;
 
       if (firstPriority !== secondPriority) {
         return firstPriority - secondPriority;
