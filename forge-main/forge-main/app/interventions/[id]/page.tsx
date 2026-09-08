@@ -94,9 +94,19 @@ export default async function InterventionPage({
         dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
         quote: { select: { status: true, amountCents: true, totalCostCents: true } },
-        invoices: { select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } } },
-        expenses: { orderBy: { expenseDate: "desc" } },
-        workTimes: { include: { user: { select: { firstName: true, lastName: true } } }, orderBy: { startedAt: "desc" } },
+        invoices: {
+          where: { organizationId: workspaceContext.workspace.id },
+          select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } },
+        },
+        expenses: {
+          where: { organizationId: workspaceContext.workspace.id },
+          orderBy: { expenseDate: "desc" },
+        },
+        workTimes: {
+          where: { organizationId: workspaceContext.workspace.id },
+          include: { user: { select: { firstName: true, lastName: true } } },
+          orderBy: { startedAt: "desc" },
+        },
       },
     });
 

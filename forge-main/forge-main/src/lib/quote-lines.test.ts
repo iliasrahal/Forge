@@ -17,6 +17,7 @@ test("copie le nom et le prix courant dans une ligne indépendante", () => {
     unitPrice: "90.00",
     discount: "",
     cost: "",
+    details: [],
   });
 });
 
@@ -37,5 +38,6 @@ test("emptyQuoteLine : une ligne vierge exploitable", () => {
     unitPrice: "",
     discount: "",
     cost: "",
+    details: [],
   });
 });

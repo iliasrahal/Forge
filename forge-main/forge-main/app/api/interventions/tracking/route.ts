@@ -50,10 +50,23 @@ export async function POST(request: Request) {
       } });
       return NextResponse.json({ message: "Le temps passé a été ajouté au chantier.", interventionId: intervention.id, entry });
     }
-    const full = await prisma.intervention.findUnique({ where: { id: intervention.id }, include: {
+    const full = await prisma.intervention.findFirst({ where: {
+      id: intervention.id,
+      organizationId: workspace.workspace.id,
+    }, include: {
       quote: { select: { status: true, amountCents: true, totalCostCents: true } },
-      invoices: { select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } } },
-      expenses: { select: { amountCents: true } }, workTimes: { select: { durationMinutes: true, hourlyCostCents: true } },
+      invoices: {
+        where: { organizationId: workspace.workspace.id },
+        select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } },
+      },
+      expenses: {
+        where: { organizationId: workspace.workspace.id },
+        select: { amountCents: true },
+      },
+      workTimes: {
+        where: { organizationId: workspace.workspace.id },
+        select: { durationMinutes: true, hourlyCostCents: true },
+      },
     } });
     if (!full) return NextResponse.json({ error: "Chantier introuvable." }, { status: 404 });
     return NextResponse.json({ interventionId: full.id, profitability: computeInterventionProfitability(full) });
