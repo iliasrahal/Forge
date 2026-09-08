@@ -66,6 +66,13 @@ function resolveYear(month: number, day: number, todayKey: string) {
   return inCurrentYear && inCurrentYear >= todayKey ? currentYear : currentYear + 1;
 }
 
+function dateFromRelativeWord(word: string, today: Date) {
+  const date = new Date(today);
+  if (word === "demain") date.setUTCDate(date.getUTCDate() + 1);
+  if (word === "apres-demain") date.setUTCDate(date.getUTCDate() + 2);
+  return date;
+}
+
 export function parseFrenchInterventionRange(
   message: string,
   now = new Date(),
@@ -75,6 +82,36 @@ export function parseFrenchInterventionRange(
   const time = "(?:\\s+(?:a|à)\\s*(\\d{1,2})\\s*h(?:\\s*(\\d{2}))?)?";
 
   const today = new Date(`${todayKey}T00:00:00Z`);
+
+  const relativeToNamed = /\b(?:de\s+)?(aujourd'hui|demain|apres-demain)\s+jusqu(?:'|e\s+)?a(?:u)?\s+(?:(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)|(?:le\s+)?(\d{1,2})\s+(janvier|fevrier|mars|avril|mai|juin|juillet|aout|septembre|octobre|novembre|decembre)(?:\s+(\d{4}))?)/.exec(text);
+  if (relativeToNamed) {
+    const start = dateFromRelativeWord(relativeToNamed[1], today);
+    let end: Date | null = null;
+    if (relativeToNamed[2]) {
+      let offset = (weekdays[relativeToNamed[2]] - start.getUTCDay() + 7) % 7;
+      if (offset === 0) offset = 7;
+      end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + offset);
+    } else {
+      const month = months[relativeToNamed[4]];
+      const day = Number(relativeToNamed[3]);
+      const explicitYear = relativeToNamed[5] ? Number(relativeToNamed[5]) : null;
+      let year = explicitYear ?? start.getUTCFullYear();
+      let key = validDateKey(year, month, day);
+      if (key && key < start.toISOString().slice(0, 10) && !explicitYear) {
+        year += 1;
+        key = validDateKey(year, month, day);
+      }
+      end = key ? new Date(`${key}T00:00:00Z`) : null;
+    }
+    if (!end || end < start) return null;
+    return {
+      scheduledDate: start.toISOString().slice(0, 10),
+      scheduledTime: null,
+      scheduledEndDate: end.toISOString().slice(0, 10),
+      scheduledEndTime: null,
+    };
+  }
   const duration = /\bpendant\s+(\d{1,3})\s+jours?\s+a\s+partir\s+(?:de\s+|d')(aujourd'hui|demain|apres-demain)\b/.exec(text);
   if (duration) {
     const length = Number(duration[1]);
@@ -93,6 +130,16 @@ export function parseFrenchInterventionRange(
     start.setUTCDate(start.getUTCDate() + (8 - currentWeekday));
     const end = new Date(start);
     end.setUTCDate(end.getUTCDate() + 4);
+    return { scheduledDate: start.toISOString().slice(0, 10), scheduledTime: null, scheduledEndDate: end.toISOString().slice(0, 10), scheduledEndTime: null };
+  }
+
+  if (/\b(?:toute\s+)?la\s+semaine\b/.test(text)) {
+    const currentWeekday = today.getUTCDay() || 7;
+    const start = new Date(today);
+    if (currentWeekday > 5) start.setUTCDate(start.getUTCDate() + (8 - currentWeekday));
+    const end = new Date(start);
+    const startWeekday = start.getUTCDay() || 7;
+    end.setUTCDate(end.getUTCDate() + Math.max(0, 5 - startWeekday));
     return { scheduledDate: start.toISOString().slice(0, 10), scheduledTime: null, scheduledEndDate: end.toISOString().slice(0, 10), scheduledEndTime: null };
   }
 

@@ -43,3 +43,45 @@ test("comprend toute la semaine prochaine", () => {
 test("comprend de lundi à vendredi", () => {
   assert.deepEqual(parseFrenchInterventionRange("Chantier de lundi à vendredi", now), { scheduledDate: "2026-09-07", scheduledTime: null, scheduledEndDate: "2026-09-11", scheduledEndTime: null });
 });
+
+for (const message of [
+  "rdv aujourd'hui jusqu'au 20 septembre",
+  "intervention aujourd'hui jusqu'au 20 septembre",
+  "chantier aujourd'hui jusqu'au 20 septembre",
+]) {
+  test(`comprend la borne jusqu'au dans : ${message}`, () => {
+    assert.deepEqual(parseFrenchInterventionRange(message, now), {
+      scheduledDate: "2026-09-02",
+      scheduledTime: null,
+      scheduledEndDate: "2026-09-20",
+      scheduledEndTime: null,
+    });
+  });
+}
+
+test("comprend demain jusqu'à vendredi", () => {
+  assert.deepEqual(parseFrenchInterventionRange("chantier de demain jusqu'à vendredi", now), {
+    scheduledDate: "2026-09-03",
+    scheduledTime: null,
+    scheduledEndDate: "2026-09-04",
+    scheduledEndTime: null,
+  });
+});
+
+test("comprend toute la semaine en partant du jour courant", () => {
+  assert.deepEqual(parseFrenchInterventionRange("chantier toute la semaine", now), {
+    scheduledDate: "2026-09-02",
+    scheduledTime: null,
+    scheduledEndDate: "2026-09-04",
+    scheduledEndTime: null,
+  });
+});
+
+test("comprend une période précédée d'un client", () => {
+  assert.deepEqual(parseFrenchInterventionRange("chez Charles du 15 au 30 septembre", now), {
+    scheduledDate: "2026-09-15",
+    scheduledTime: null,
+    scheduledEndDate: "2026-09-30",
+    scheduledEndTime: null,
+  });
+});

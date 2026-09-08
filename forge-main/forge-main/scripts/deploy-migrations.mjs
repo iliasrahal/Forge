@@ -36,6 +36,7 @@ const requiredDeployMigrations = new Set([
   "20260907160000_add_smart_reminders_preference",
   "20260908140000_add_document_line_details",
   "20260908150000_add_intervention_day_tasks",
+  "20260908160000_add_intervention_day_states",
 ]);
 
 if (!databaseUrl) {

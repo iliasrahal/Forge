@@ -473,6 +473,21 @@ model InterventionDayTask {
   @@index([interventionId, date, position])
 }
 
+model InterventionDayState {
+  id String @id @default(cuid())
+  interventionId String
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  date DateTime
+  startedAt DateTime?
+  completedAt DateTime?
+  report String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([interventionId, date])
+  @@index([interventionId, date])
+}
+
 model Intervention {
   id String @id @default(cuid())
 
@@ -518,6 +533,7 @@ model Intervention {
   invoices Invoice[]
 
   dayTasks InterventionDayTask[]
+  dayStates InterventionDayState[]
 
   userId String?
 

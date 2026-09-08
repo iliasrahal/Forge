@@ -808,14 +808,18 @@ if (
       );
 
     const resolvedIntent: AssistantIntent =
-      deleteAllRequested
+      parsedRange
+        ? "intervention"
+        : deleteAllRequested
         ? "intervention"
         : hasRdvAlias
         ? "intervention"
         : intent;
 
     const resolvedAction: AssistantAction =
-      deleteAllRequested
+      parsedRange
+        ? "create"
+        : deleteAllRequested
         ? "deleteAll"
         : hasRdvAlias
         ? "create"

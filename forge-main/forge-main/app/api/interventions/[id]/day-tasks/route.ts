@@ -56,7 +56,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     if (typeof body.completed === "boolean") {
       const task = await prisma.interventionDayTask.update({
         where: { id: taskId },
-        data: { completedAt: body.completed ? new Date() : null },
+        data: {
+          completedAt: body.completed ? new Date() : null,
+        },
       });
       return NextResponse.json({ task });
     }

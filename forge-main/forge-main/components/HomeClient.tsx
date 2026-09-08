@@ -244,13 +244,17 @@ const newInterventionExists =
 
     setReport(null);
     setReportError("");
-    setHomeState("intervention");
+    const openedAppointment = [
+      ...(todayAppointments ?? []),
+      ...(upcomingAppointments ?? []),
+    ].find((appointment) => appointment.id === newInterventionId);
+    setHomeState(openedAppointment?.status === "inProgress" ? "inProgress" : "intervention");
 
     const futureAppointment = upcomingAppointments.find(
       (appointment) => appointment.id === newInterventionId,
     );
 
-    if (futureAppointment) {
+    if (futureAppointment && futureAppointment.status !== "inProgress") {
       setCalendarFocusDate(futureAppointment.date);
       setShowUpcomingCalendar(true);
     }
@@ -703,6 +707,10 @@ const handleSaveNotes = async (notes: string) => {
     const selected = [...appointmentsList, ...upcomingAppointmentsList].find(
       (appointment) => appointment.id === appointmentId,
     );
+    if (selected?.endDate) {
+      router.push(`/interventions/${selected.id}`);
+      return;
+    }
     if (selected?.status === "completed" && selected.finalizationStep) {
       setCompletedInterventionId(selected.id);
       setSavedClientId(selected.hasClient ? "associated" : null);
@@ -1305,7 +1313,7 @@ const handleCreateInvoice = async () => {
       todayDateKey={todayDateKey}
       focusDate={calendarFocusDate}
       onClose={handleCloseUpcomingCalendar}
-      onSelectAppointment={handleSelectAppointment}
+      onSelectAppointment={(appointmentId) => router.push(`/interventions/${appointmentId}`)}
       onInterventionCreated={handlePlanningInterventionCreated}
       canWrite={canWrite}
     />
