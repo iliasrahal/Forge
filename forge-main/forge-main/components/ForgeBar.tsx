@@ -117,6 +117,7 @@ type AssistantDecision = {
     discount?: string;
     cost?: string;
     vatRateBp?: number;
+    details?: Array<{ label: string; amount?: string; description?: string }>;
   }>;
 };
 

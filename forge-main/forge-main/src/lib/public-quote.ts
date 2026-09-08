@@ -44,7 +44,16 @@ export async function getPublicQuoteByToken(rawToken: unknown) {
             },
           },
           lines: {
-            select: { id: true, category: true, label: true, amountCents: true },
+            select: {
+              id: true,
+              category: true,
+              label: true,
+              amountCents: true,
+              details: {
+                select: { id: true, label: true, description: true, amountCents: true },
+                orderBy: { position: "asc" },
+              },
+            },
             orderBy: { createdAt: "asc" },
           },
         },

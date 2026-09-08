@@ -14,6 +14,14 @@ export type EditableQuoteLine = {
   cost: string;
   /** Taux de TVA en points de base. Absent = repli sur le taux par défaut. */
   vatRateBp?: number;
+  details?: EditableLineDetail[];
+};
+
+export type EditableLineDetail = {
+  label: string;
+  /** Montant informatif en euros ; chaîne vide = aucun montant. */
+  amount: string;
+  description: string;
 };
 
 export type QuoteServiceSnapshotSource = {
@@ -32,6 +40,7 @@ export function emptyQuoteLine(
     unitPrice: "",
     discount: "",
     cost: "",
+    details: [],
     ...(defaultVatRateBp !== undefined
       ? { vatRateBp: normalizeVatRateBp(defaultVatRateBp, 2000) }
       : {}),
@@ -49,6 +58,7 @@ export function createQuoteLineSnapshot(
     unitPrice: (service.priceCents / 100).toFixed(2),
     discount: "",
     cost: "",
+    details: [],
     ...(defaultVatRateBp !== undefined
       ? { vatRateBp: normalizeVatRateBp(defaultVatRateBp, 2000) }
       : {}),

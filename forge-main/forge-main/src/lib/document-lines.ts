@@ -116,7 +116,23 @@ export type PersistableDocumentLine = {
   discountBp: number;
   amountCents: number;
   vatRateBp: number;
+  details: PersistableDocumentLineDetail[];
 };
+
+export type PersistableDocumentLineDetail = {
+  label: string;
+  description: string | null;
+  amountCents: number | null;
+  position: number;
+};
+
+export function documentLineCreateData(line: PersistableDocumentLine) {
+  const { details, ...accountingLine } = line;
+  return {
+    ...accountingLine,
+    ...(details.length > 0 ? { details: { create: details } } : {}),
+  };
+}
 
 /**
  * Transforme le JSON du champ caché du formulaire (lignes éditables, tout en
@@ -157,6 +173,31 @@ export function buildDocumentLinesFromForm(
         unitPriceCents,
         discountBp,
       });
+      const details = Array.isArray(line.details)
+        ? line.details
+            .map((rawDetail, position): PersistableDocumentLineDetail | null => {
+              if (!rawDetail || typeof rawDetail !== "object") return null;
+              const detail = rawDetail as Record<string, unknown>;
+              const label = typeof detail.label === "string" ? detail.label.trim() : "";
+              if (!label) return null;
+              const rawAmount = typeof detail.amount === "string" ? detail.amount.trim() : "";
+              const normalizedAmount = rawAmount.replace(",", ".");
+              return {
+                label: label.slice(0, 200),
+                description:
+                  typeof detail.description === "string" && detail.description.trim()
+                    ? detail.description.trim().slice(0, 500)
+                    : null,
+                amountCents:
+                  rawAmount && /^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)
+                    ? Math.max(0, eurosToCents(normalizedAmount))
+                    : null,
+                position,
+              };
+            })
+            .filter((detail): detail is PersistableDocumentLineDetail => detail !== null)
+            .slice(0, 30)
+        : [];
 
       return {
         category: category.slice(0, 200),
@@ -168,6 +209,7 @@ export function buildDocumentLinesFromForm(
         discountBp,
         amountCents,
         vatRateBp: normalizeVatRateBp(line.vatRateBp, orgDefaultVatRateBp),
+        details,
       };
     })
     .filter((line): line is PersistableDocumentLine => line !== null)

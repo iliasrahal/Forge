@@ -32,6 +32,12 @@ export type QuoteSignatureSnapshot = {
     category: string;
     label: string | null;
     amountCents: number;
+    details?: Array<{
+      label: string;
+      description: string | null;
+      amountCents: number | null;
+      position: number;
+    }>;
   }>;
   amountCents: number;
 };
@@ -125,7 +131,17 @@ export function buildQuoteSignatureSnapshot(quote: {
   amountCents: number;
   organization: { name: string } | null;
   client: QuoteSignatureSnapshot["client"];
-  lines: Array<{ category: string; label: string | null; amountCents: number }>;
+  lines: Array<{
+    category: string;
+    label: string | null;
+    amountCents: number;
+    details?: Array<{
+      label: string;
+      description: string | null;
+      amountCents: number | null;
+      position: number;
+    }>;
+  }>;
 }): QuoteSignatureSnapshot {
   return {
     version: 1,

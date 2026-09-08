@@ -88,6 +88,24 @@ function getExplicitPriceCents(message: string, matchEnd: number) {
     : null;
 }
 
+function getLineDetails(message: string, matchEnd: number) {
+  const tail = message.slice(matchEnd, matchEnd + 320);
+  const clause = tail.match(/\bdont\s+([^.!?]+)/iu)?.[1];
+  if (!clause) return [];
+
+  return clause
+    .replace(/\s+et\s+(?=\d+(?:[.,]\d{1,2})?\s*(?:€|euros?))/giu, ",")
+    .split(/[,;]/)
+    .map((part) => part.trim().match(/^(\d+(?:[.,]\d{1,2})?)\s*(?:€|euros?)\s+(?:de\s+|d['’])?(.+)$/iu))
+    .filter((match): match is RegExpMatchArray => match !== null)
+    .map((match) => ({
+      label: match[2].trim().replace(/^(?:de\s+|d['’])/iu, "").slice(0, 160),
+      amount: match[1].replace(",", "."),
+      description: "",
+    }))
+    .filter((detail) => detail.label);
+}
+
 /**
  * Matching volontairement prudent : les mots significatifs du libellé doivent
  * tous apparaître, dans le même ordre et à la suite dans la demande. Aucun
@@ -120,6 +138,7 @@ export function matchCatalogServicesForQuote(
 
     const explicitPriceCents = getExplicitPriceCents(message, range.end);
     const priceCents = explicitPriceCents ?? service.priceCents;
+    const details = getLineDetails(message, range.end);
 
     occupiedRanges.push(range);
     matches.push({
@@ -131,6 +150,7 @@ export function matchCatalogServicesForQuote(
         unitPrice: (priceCents / 100).toFixed(2),
         discount: "",
         cost: "",
+        ...(details.length > 0 ? { details } : {}),
       },
     });
   }
@@ -189,6 +209,28 @@ export function parseSerializedQuoteLines(
           typeof line.cost === "string" && PRICE_PATTERN.test(line.cost.trim())
             ? line.cost.trim().replace(",", ".")
             : "";
+        const details = Array.isArray(line.details)
+          ? line.details
+              .map((rawDetail) => {
+                if (!rawDetail || typeof rawDetail !== "object") return null;
+                const detail = rawDetail as Record<string, unknown>;
+                const label = typeof detail.label === "string" ? detail.label.trim() : "";
+                if (!label) return null;
+                const amount = typeof detail.amount === "string"
+                  ? detail.amount.trim().replace(",", ".")
+                  : "";
+                return {
+                  label: label.slice(0, 160),
+                  amount: amount && PRICE_PATTERN.test(amount) ? amount : "",
+                  description:
+                    typeof detail.description === "string"
+                      ? detail.description.trim().slice(0, 500)
+                      : "",
+                };
+              })
+              .filter((detail): detail is NonNullable<typeof detail> => detail !== null)
+              .slice(0, 30)
+          : [];
 
         return {
           category: category.slice(0, 160),
@@ -197,6 +239,7 @@ export function parseSerializedQuoteLines(
           unitPrice,
           discount: PRICE_PATTERN.test(discount) ? discount : "",
           cost,
+          ...(details.length > 0 ? { details } : {}),
           ...(typeof line.vatRateBp === "number"
             ? { vatRateBp: line.vatRateBp }
             : {}),

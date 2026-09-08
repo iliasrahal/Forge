@@ -1,4 +1,5 @@
 import ForgeLogo from "@/components/ForgeLogo";
+import DocumentLineDetails from "@/components/DocumentLineDetails";
 import PublicQuoteAcceptance from "@/components/PublicQuoteAcceptance";
 import { getPublicQuoteByToken } from "@/src/lib/public-quote";
 import { getQuoteIssuer } from "@/src/lib/quote-issuer";
@@ -33,7 +34,7 @@ export default async function PublicQuotePage({ params }: Props) {
           <div className="mt-6"><PublicQuoteAcceptance token={token} initialAccepted={acceptance.alreadyAccepted} initialSignature={quote.signature} canAccept={acceptance.canAccept} unavailableReason={acceptance.reason} /></div>
           <details className="mt-5 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)]">
             <summary className="cursor-pointer px-4 py-3 text-center text-sm font-semibold text-[var(--forge-text-primary)]">Voir le devis</summary>
-            <div className="divide-y divide-[var(--forge-border)] border-t border-[var(--forge-border)]">{quote.lines.map((line) => <div key={line.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm"><span className="min-w-0 break-words text-[var(--forge-text-primary)]">{line.label || line.category}</span><strong className="shrink-0 text-[var(--forge-text-primary)]">{formatAmount(line.amountCents)}</strong></div>)}</div>
+            <div className="divide-y divide-[var(--forge-border)] border-t border-[var(--forge-border)]">{quote.lines.map((line) => <div key={line.id} className="px-4 py-3 text-sm"><div className="flex items-center justify-between gap-3"><span className="min-w-0 break-words text-[var(--forge-text-primary)]">{line.label || line.category}</span><strong className="shrink-0 text-[var(--forge-text-primary)]">{formatAmount(line.amountCents)}</strong></div><DocumentLineDetails details={line.details} formatAmount={formatAmount} /></div>)}</div>
           </details>
         </article>
       </div>

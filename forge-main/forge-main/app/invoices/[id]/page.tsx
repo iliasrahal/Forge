@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DocumentLineDetails from "@/components/DocumentLineDetails";
 
 import SendInvoiceButton from "@/components/SendInvoiceButton";
 import InvoiceAmountForm from "@/components/InvoiceAmountForm";
@@ -115,7 +116,7 @@ export default async function InvoicePage({
 
         intervention: true,
 
-        lines: true,
+        lines: { include: { details: { orderBy: { position: "asc" } } } },
 
         payments: {
 
@@ -344,9 +345,9 @@ export default async function InvoicePage({
               {invoice.lines.map((line) => (
                 <div
                   key={line.id}
-                  className="flex items-baseline justify-between gap-3 px-4 py-3 text-sm"
+                  className="flex items-start justify-between gap-3 px-4 py-3 text-sm"
                 >
-                  <span className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
                       {line.label || line.category}
                     </span>
@@ -357,7 +358,11 @@ export default async function InvoicePage({
                         ? ` · −${(line.discountBp / 100).toLocaleString("fr-FR")} %`
                         : ""}
                     </span>
-                  </span>
+                    <DocumentLineDetails
+                      details={line.details}
+                      formatAmount={formatEur}
+                    />
+                  </div>
                   <span className="shrink-0 font-semibold text-slate-900 dark:text-white">
                     {formatEur(line.amountCents)}
                   </span>

@@ -34,7 +34,11 @@ export async function POST(request: Request) {
         organizationId: workspaceContext.workspace.id,
       },
       include: {
-        quote: { include: { lines: true } },
+        quote: {
+          include: {
+            lines: { include: { details: { orderBy: { position: "asc" } } } },
+          },
+        },
       },
     });
 
@@ -103,7 +107,7 @@ export async function POST(request: Request) {
             }
           : {}),
       },
-      include: { lines: true },
+      include: { lines: { include: { details: true } } },
     });
 
     await prisma.intervention.update({

@@ -4,6 +4,7 @@ import CreateDepositInvoice from "@/components/CreateDepositInvoice";
 import QuoteReminderPanel from "@/components/QuoteReminderPanel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DocumentLineDetails from "@/components/DocumentLineDetails";
 
 
 import { requireCurrentUser } from "@/src/lib/auth";
@@ -110,7 +111,7 @@ export default async function QuotePage({
         organization: {
           select: quoteIssuerOrganizationSelect,
         },
-        lines: true,
+        lines: { include: { details: { orderBy: { position: "asc" } } } },
         invoices: {
           select: {
             type: true,
@@ -324,9 +325,9 @@ export default async function QuotePage({
               {quote.lines.map((line) => (
                 <div
                   key={line.id}
-                  className="flex items-baseline justify-between gap-3 px-4 py-3 text-sm"
+                  className="flex items-start justify-between gap-3 px-4 py-3 text-sm"
                 >
-                  <span className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
                       {line.label || line.category}
                     </span>
@@ -337,7 +338,11 @@ export default async function QuotePage({
                         ? ` · −${(line.discountBp / 100).toLocaleString("fr-FR")} %`
                         : ""}
                     </span>
-                  </span>
+                    <DocumentLineDetails
+                      details={line.details}
+                      formatAmount={formatAmount}
+                    />
+                  </div>
                   <span className="shrink-0 font-semibold text-slate-900 dark:text-white">
                     {formatAmount(line.amountCents)}
                   </span>

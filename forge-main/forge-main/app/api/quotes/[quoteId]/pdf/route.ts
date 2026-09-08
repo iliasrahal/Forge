@@ -158,7 +158,7 @@ export async function GET(
         organization: {
           select: quoteIssuerOrganizationSelect,
         },
-        lines: true,
+        lines: { include: { details: { orderBy: { position: "asc" } } } },
         signature: true,
       },
     });
@@ -420,9 +420,20 @@ export async function GET(
         9,
         designationWidth - 20,
       );
+      const detailLines = (quoteLine.details ?? []).flatMap((detail) =>
+        wrapText(
+          `  - ${detail.label}${detail.description ? ` — ${detail.description}` : ""}`,
+          regularFont,
+          8,
+          designationWidth - 24,
+        ).map((text, index) => ({
+          text,
+          amount: index === 0 ? detail.amountCents : null,
+        })),
+      );
       const rowHeight = Math.max(
         32,
-        designationLines.length * 13 + 14,
+        designationLines.length * 13 + detailLines.length * 11 + 14,
       );
 
       if (y - rowHeight < 70) {
@@ -461,6 +472,27 @@ export async function GET(
           color: dark,
         });
         lineY -= 13;
+      }
+      for (const detail of detailLines) {
+        page.drawText(detail.text, {
+          x: margin + 14,
+          y: lineY,
+          size: 8,
+          font: regularFont,
+          color: grey,
+        });
+        if (detail.amount != null) {
+          const detailAmount = cleanPdfText(formatAmount(detail.amount));
+          const detailAmountWidth = regularFont.widthOfTextAtSize(detailAmount, 8);
+          page.drawText(detailAmount, {
+            x: rightEdge - 10 - detailAmountWidth,
+            y: lineY,
+            size: 8,
+            font: regularFont,
+            color: grey,
+          });
+        }
+        lineY -= 11;
       }
 
       const amount = cleanPdfText(

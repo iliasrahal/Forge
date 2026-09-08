@@ -2,6 +2,7 @@ import { CheckCircle2, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 
 import ForgeLogo from "@/components/ForgeLogo";
+import DocumentLineDetails from "@/components/DocumentLineDetails";
 import PublicInvoicePayment from "@/components/PublicInvoicePayment";
 import { getPublicInvoiceByToken } from "@/src/lib/public-invoice";
 import { computeInvoicePaymentState } from "@/src/lib/payments";
@@ -127,14 +128,17 @@ export default async function PublicInvoicePage({
                 {invoice.lines.map((line) => (
                   <div
                     key={line.id}
-                    className="flex items-center justify-between gap-4 px-4 py-3.5"
+                    className="px-4 py-3.5"
                   >
-                    <span className="min-w-0 break-words text-[var(--forge-text-primary)]">
-                      {line.label || line.category}
-                    </span>
-                    <strong className="shrink-0 text-[var(--forge-text-primary)]">
-                      {formatAmount(line.amountCents)}
-                    </strong>
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="min-w-0 break-words text-[var(--forge-text-primary)]">
+                        {line.label || line.category}
+                      </span>
+                      <strong className="shrink-0 text-[var(--forge-text-primary)]">
+                        {formatAmount(line.amountCents)}
+                      </strong>
+                    </div>
+                    <DocumentLineDetails details={line.details} formatAmount={formatAmount} />
                   </div>
                 ))}
               </div>

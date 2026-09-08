@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
       include: {
         client: true,
-        lines: true,
+        lines: { include: { details: { orderBy: { position: "asc" } } } },
       },
     });
 
@@ -120,6 +120,7 @@ export async function POST(request: Request) {
             discountBp: line.discountBp,
             amountCents: line.amountCents,
             vatRateBp: line.vatRateBp,
+            ...(line.details ? { details: line.details } : {}),
           })),
         },
 
@@ -131,7 +132,7 @@ export async function POST(request: Request) {
       },
 
       include: {
-        lines: true,
+        lines: { include: { details: true } },
       },
     });
 

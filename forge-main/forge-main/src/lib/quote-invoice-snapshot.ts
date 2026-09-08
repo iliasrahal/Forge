@@ -8,6 +8,12 @@ type QuoteLineSnapshot = {
   discountBp: number;
   amountCents: number;
   vatRateBp: number;
+  details?: Array<{
+    label: string;
+    description: string | null;
+    amountCents: number | null;
+    position: number;
+  }>;
 };
 
 type QuoteSnapshotSource = {
@@ -45,6 +51,18 @@ export function buildInvoiceSnapshotFromQuote(quote: QuoteSnapshotSource) {
       discountBp: line.discountBp,
       amountCents: line.amountCents,
       vatRateBp: line.vatRateBp,
+      ...(line.details?.length
+        ? {
+            details: {
+              create: line.details.map((detail) => ({
+                label: detail.label,
+                description: detail.description,
+                amountCents: detail.amountCents,
+                position: detail.position,
+              })),
+            },
+          }
+        : {}),
     })),
   };
 }

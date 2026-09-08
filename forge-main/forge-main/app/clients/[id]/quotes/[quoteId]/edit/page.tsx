@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-
+import QuoteLinesForm from "@/components/QuoteLinesForm";
 import { prisma } from "@/src/lib/prisma";
 import { QuoteStatus } from "@/src/generated/prisma/client";
 import { requireCurrentUser } from "@/src/lib/auth";
@@ -11,6 +11,14 @@ import {
 } from "@/src/lib/document-numbering";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { canTransitionQuoteStatus, isQuoteContractLocked } from "@/src/lib/quote-status";
+import {
+  buildDocumentLinesFromForm,
+  computeDocumentMargin,
+  documentLineCreateData,
+  normalizeDiscountBp,
+} from "@/src/lib/document-lines";
+import type { EditableQuoteLine } from "@/src/lib/quote-lines";
+import { computeDocumentTotals, normalizeVatRateBp } from "@/src/lib/vat";
 import {
   getQuoteClientName,
   getQuotePath,
@@ -24,6 +32,32 @@ type EditQuotePageProps = {
     quoteId: string;
   }>;
 };
+
+function editableLine(line: {
+  category: string;
+  quantityMilli: number;
+  unit: string;
+  unitPriceCents: number;
+  costCents: number | null;
+  discountBp: number;
+  vatRateBp: number;
+  details: Array<{ label: string; description: string | null; amountCents: number | null }>;
+}): EditableQuoteLine {
+  return {
+    category: line.category,
+    quantity: String(line.quantityMilli / 1000),
+    unit: line.unit,
+    unitPrice: (line.unitPriceCents / 100).toFixed(2),
+    discount: line.discountBp ? String(line.discountBp / 100) : "",
+    cost: line.costCents == null ? "" : (line.costCents / 100).toFixed(2),
+    vatRateBp: line.vatRateBp,
+    details: line.details.map((detail) => ({
+      label: detail.label,
+      description: detail.description ?? "",
+      amount: detail.amountCents == null ? "" : (detail.amountCents / 100).toFixed(2),
+    })),
+  };
+}
 
 
 
@@ -45,6 +79,10 @@ export default async function EditQuotePage({
     include: {
       client: true,
       signature: { select: { id: true } },
+      lines: {
+        orderBy: { createdAt: "asc" },
+        include: { details: { orderBy: { position: "asc" } } },
+      },
     },
   });
 
@@ -72,6 +110,12 @@ export default async function EditQuotePage({
     },
   });
 
+  const services = await prisma.serviceCatalogItem.findMany({
+    where: { organizationId: workspaceContext.workspace.id },
+    orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+    select: { id: true, name: true, priceCents: true, pricingType: true },
+  });
+
   const clientName = getQuoteClientName(quote.client);
 
 
@@ -88,11 +132,7 @@ export default async function EditQuotePage({
       .trim();
 
 
-    const amountValue = formData
-      .get("amount")
-      ?.toString()
-      .replace(",", ".")
-      .trim();
+    const rawLines = formData.get("quoteLines")?.toString();
 
 
     const status = formData
@@ -102,7 +142,7 @@ export default async function EditQuotePage({
 
 
 
-    if (!title || !amountValue || !status) {
+    if (!title || !rawLines || !status) {
       throw new Error(
         "Tous les champs obligatoires doivent être remplis.",
       );
@@ -161,17 +201,13 @@ export default async function EditQuotePage({
 
 
 
-    const amount = Number(amountValue);
-
-
-
-    if (!Number.isFinite(amount) || amount < 0) {
-      throw new Error("Le montant du devis est invalide.");
-    }
-
-
-
-    const amountCents = Math.round(amount * 100);
+    const defaultVatRateBp = normalizeVatRateBp(writeContext.workspace.defaultVatRateBp, 2000);
+    const lines = buildDocumentLinesFromForm(rawLines, defaultVatRateBp);
+    if (lines.length === 0) throw new Error("Ajoute au moins une ligne au devis.");
+    const vatApplicable = formData.get("vatApplicable")?.toString() === "true";
+    const discountBp = normalizeDiscountBp(formData.get("documentDiscount"));
+    const totals = computeDocumentTotals(lines, vatApplicable, discountBp);
+    const margin = computeDocumentMargin(lines, discountBp);
 
     // Numéro définitif à la première sortie de « Brouillon ».
     const leavingDraft =
@@ -192,20 +228,34 @@ export default async function EditQuotePage({
 
 
 
-    const updated = await prisma.quote.updateMany({
-      where: {
-        id: quoteId,
-        organizationId: writeContext.workspace.id,
-        signature: { is: null },
-        status: currentQuote.status,
-      },
-      data: {
-        title,
-        amountCents,
-        status: quoteStatus,
-        clientId: selectedClientId,
-        ...(finalReference ? { reference: finalReference } : {}),
-      },
+    const updated = await prisma.$transaction(async (transaction) => {
+      const result = await transaction.quote.updateMany({
+        where: {
+          id: quoteId,
+          organizationId: writeContext.workspace.id,
+          signature: { is: null },
+          status: currentQuote.status,
+        },
+        data: {
+          title,
+          amountCents: totals.totalTtcCents,
+          totalHtCents: totals.totalHtCents,
+          totalVatCents: totals.totalVatCents,
+          vatApplicable,
+          discountBp,
+          totalCostCents: margin.totalCostCents,
+          status: quoteStatus,
+          clientId: selectedClientId,
+          ...(finalReference ? { reference: finalReference } : {}),
+        },
+      });
+      if (result.count !== 1) return result;
+      await transaction.quoteLine.deleteMany({ where: { quoteId } });
+      await transaction.quote.update({
+        where: { id: quoteId },
+        data: { lines: { create: lines.map(documentLineCreateData) } },
+      });
+      return result;
     });
 
     if (updated.count !== 1) notFound();
@@ -299,44 +349,17 @@ export default async function EditQuotePage({
 
 
 
-        <div>
-
-
-          <label
-            htmlFor="amount"
-            className="mb-2 block text-sm font-semibold text-blue-700 dark:text-blue-400"
-          >
-            Montant estimé
-          </label>
-
-
-
-          <div className="relative">
-
-
-            <input
-              id="amount"
-              name="amount"
-              type="number"
-              required
-              min="0"
-              step="0.01"
-              inputMode="decimal"
-              defaultValue={(quote.amountCents / 100).toFixed(2)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 pr-20 text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
-            />
-
-
-
-            <span className="pointer-events-none absolute inset-y-0 right-10 flex items-center font-semibold text-slate-500 dark:text-slate-400">
-              €
-            </span>
-
-
-          </div>
-
-
-        </div>
+        <QuoteLinesForm
+          initialTitle={quote.title}
+          initialLines={quote.lines.map(editableLine)}
+          initialVatApplicable={quote.vatApplicable}
+          initialDocumentDiscount={quote.discountBp ? String(quote.discountBp / 100) : ""}
+          initialTrackMargins={quote.lines.some((line) => line.costCents != null)}
+          defaultVatApplicable={workspaceContext.workspace.vatScheme === "SUBJECT"}
+          defaultVatRateBp={workspaceContext.workspace.defaultVatRateBp}
+          services={services}
+          canWrite
+        />
 
 
 

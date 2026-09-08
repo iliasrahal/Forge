@@ -8,6 +8,7 @@ import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
 import {
   buildDocumentLinesFromForm,
   computeDocumentMargin,
+  documentLineCreateData,
   normalizeDiscountBp,
 } from "@/src/lib/document-lines";
 import { draftReference } from "@/src/lib/document-numbering";
@@ -135,17 +136,7 @@ export default async function NewInvoicePage({
         clientId: ownedClient.id,
         organizationId: writeContext.workspace.id,
         lines: {
-          create: cleanLines.map((line) => ({
-            category: line.category,
-            label: line.label,
-            quantityMilli: line.quantityMilli,
-            unit: line.unit,
-            unitPriceCents: line.unitPriceCents,
-            costCents: line.costCents,
-            discountBp: line.discountBp,
-            amountCents: line.amountCents,
-            vatRateBp: line.vatRateBp,
-          })),
+          create: cleanLines.map(documentLineCreateData),
         },
       },
     });

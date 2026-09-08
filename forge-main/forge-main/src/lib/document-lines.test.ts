@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildDocumentLinesFromForm,
   computeDocumentMargin,
   computeLineAmountCents,
   computeLineCostCents,
@@ -113,4 +114,19 @@ test("normalizeUnit / formatUnit", () => {
   assert.equal(normalizeUnit("bidon"), "forfait");
   assert.equal(formatUnit("m2"), "m²");
   assert.equal(formatUnit("j"), "jour");
+});
+
+test("les sous-détails sont persistés mais exclus du montant comptable", () => {
+  const [line] = buildDocumentLinesFromForm(
+    JSON.stringify([{ category: "Matériaux", quantity: "1", unit: "forfait", unitPrice: "100", discount: "", cost: "", details: [
+      { label: "Peinture", amount: "20", description: "Pièce humide" },
+      { label: "Visserie", amount: "", description: "" },
+    ] }]),
+    2000,
+  );
+  assert.equal(line.amountCents, 10000);
+  assert.deepEqual(line.details, [
+    { label: "Peinture", amountCents: 2000, description: "Pièce humide", position: 0 },
+    { label: "Visserie", amountCents: null, description: null, position: 1 },
+  ]);
 });

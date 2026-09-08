@@ -6,6 +6,7 @@ import { prisma } from "@/src/lib/prisma";
 import {
   buildDocumentLinesFromForm,
   computeDocumentMargin,
+  documentLineCreateData,
   normalizeDiscountBp,
 } from "@/src/lib/document-lines";
 import type { EditableQuoteLine } from "@/src/lib/quote-lines";
@@ -22,6 +23,11 @@ function editableLine(line: {
   costCents: number | null;
   discountBp: number;
   vatRateBp: number;
+  details: Array<{
+    label: string;
+    description: string | null;
+    amountCents: number | null;
+  }>;
 }): EditableQuoteLine {
   return {
     category: line.category,
@@ -31,6 +37,14 @@ function editableLine(line: {
     discount: line.discountBp ? String(line.discountBp / 100) : "",
     cost: line.costCents == null ? "" : (line.costCents / 100).toFixed(2),
     vatRateBp: line.vatRateBp,
+    details: line.details.map((detail) => ({
+      label: detail.label,
+      description: detail.description ?? "",
+      amount:
+        detail.amountCents == null
+          ? ""
+          : (detail.amountCents / 100).toFixed(2),
+    })),
   };
 }
 
@@ -40,7 +54,12 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
   const [invoice, services] = await Promise.all([
     prisma.invoice.findFirst({
       where: { id, organizationId: context.workspace.id },
-      include: { lines: { orderBy: { createdAt: "asc" } } },
+      include: {
+        lines: {
+          orderBy: { createdAt: "asc" },
+          include: { details: { orderBy: { position: "asc" } } },
+        },
+      },
     }),
     prisma.serviceCatalogItem.findMany({
       where: { organizationId: context.workspace.id },
@@ -88,7 +107,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
         totalCostCents: margin.totalCostCents,
         lines: {
           deleteMany: {},
-          create: lines,
+          create: lines.map(documentLineCreateData),
         },
       },
     });

@@ -43,7 +43,23 @@ export async function POST(request: Request) {
             include: {
               organization: { select: { name: true } },
               client: { select: { type: true, firstName: true, lastName: true, companyName: true, phone: true, email: true, street: true, postalCode: true, city: true } },
-              lines: { select: { category: true, label: true, amountCents: true }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
+              lines: {
+                select: {
+                  category: true,
+                  label: true,
+                  amountCents: true,
+                  details: {
+                    select: {
+                      label: true,
+                      description: true,
+                      amountCents: true,
+                      position: true,
+                    },
+                    orderBy: { position: "asc" },
+                  },
+                },
+                orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+              },
               signature: { select: { signerFirstName: true, signerLastName: true, signedAt: true } },
             },
           },

@@ -34,6 +34,7 @@ const requiredDeployMigrations = new Set([
   "20260907130000_repair_quote_invoice_links",
   "20260907150000_allow_quote_without_client",
   "20260907160000_add_smart_reminders_preference",
+  "20260908140000_add_document_line_details",
 ]);
 
 if (!databaseUrl) {

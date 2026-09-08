@@ -12,6 +12,7 @@ const services = [
   { id: "leak", name: "Recherche de fuite", priceCents: 9000 },
   { id: "tap", name: "Remplacement robinet", priceCents: 12000 },
   { id: "labor", name: "Main d'œuvre", priceCents: 6000 },
+  { id: "materials", name: "Matériaux", priceCents: 10000 },
 ];
 
 const line = (category: string, unitPrice: string) => ({
@@ -106,5 +107,18 @@ test("conserve quantité, unité, remise et coût quand ils sont fournis", () =>
   };
   assert.deepEqual(parseSerializedQuoteLines(JSON.stringify([rich])), [
     { ...rich, quantity: "12.5" },
+  ]);
+});
+
+test("reconnaît les détails tarifés introduits par dont", () => {
+  const [result] = matchCatalogServicesForQuote(
+    "Matériaux 100 €, dont 40 € de chauffe-eau, 20 € de raccords et 40 € de fournitures.",
+    services,
+  );
+  assert.equal(result.category, "Matériaux");
+  assert.deepEqual(result.details, [
+    { label: "chauffe-eau", amount: "40", description: "" },
+    { label: "raccords", amount: "20", description: "" },
+    { label: "fournitures", amount: "40", description: "" },
   ]);
 });
