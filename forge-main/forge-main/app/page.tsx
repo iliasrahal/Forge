@@ -6,6 +6,7 @@ import CustomerReply from "@/components/landing/CustomerReply";
 import Features from "@/components/landing/Features";
 import Footer from "@/components/landing/Footer";
 import Hero from "@/components/landing/Hero";
+import JobProfitability from "@/components/landing/JobProfitability";
 import Payments from "@/components/landing/Payments";
 import Problem from "@/components/landing/Problem";
 import Pricing from "@/components/landing/Pricing";
@@ -29,6 +30,7 @@ export default async function LandingPage() {
       <Problem />
       <Workflow />
       <Features group="operations" />
+      <JobProfitability />
       <Features group="documents" showHeading={false} />
       <Payments />
       <SmartReminders />
