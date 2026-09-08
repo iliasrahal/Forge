@@ -19,6 +19,7 @@ type Props = {
   days: string[];
   tasks: DayTask[];
   dayStates: Array<{ date: string; startedAt: string | null; completedAt: string | null; report: string | null }>;
+  dailyTracking: Array<{ date: string; expenseCents: number; durationMinutes: number }>;
   canWrite: boolean;
 };
 
@@ -26,7 +27,7 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris",
 });
 
-export default function InterventionDayPlanning({ interventionId, days, tasks, dayStates, canWrite }: Props) {
+export default function InterventionDayPlanning({ interventionId, days, tasks, dayStates, dailyTracking, canWrite }: Props) {
   const router = useRouter();
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<DayTask | null>(null);
@@ -114,6 +115,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
         {days.map((date) => {
           const dailyTasks = tasks.filter((task) => task.date === date);
           const dayState = dayStates.find((state) => state.date === date);
+          const tracking = dailyTracking.find((entry) => entry.date === date);
           const showForm = openDate === date || editing?.date === date;
           return (
             <article key={date} className="rounded-2xl border border-blue-200/70 bg-white/45 p-4 dark:border-blue-800/60 dark:bg-slate-900/35">
@@ -121,6 +123,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                 <div>
                   <h3 className="font-semibold capitalize text-slate-900 dark:text-white">{dateFormatter.format(new Date(`${date}T12:00:00Z`))}</h3>
                   <p className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">{dayState?.completedAt ? "Journée terminée" : dayState?.startedAt ? "Journée en cours" : "Journée planifiée"}</p>
+                  {tracking && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{Math.floor(tracking.durationMinutes / 60)}h{String(tracking.durationMinutes % 60).padStart(2, "0")} · {(tracking.expenseCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} de dépenses</p>}
                 </div>
                 {canWrite && <div className="flex flex-wrap justify-end gap-2">
                   {!dayState?.startedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "start")} className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50">Commencer la journée</button>}

@@ -69,6 +69,9 @@ type AssistantIntent =
   | "invoice"
   | "client"
   | "intervention"
+  | "expense"
+  | "workTime"
+  | "profitability"
   | "unknown";
 
 type AssistantAction =
@@ -118,6 +121,10 @@ type AssistantDecision = {
   city: string | null;
   email: string | null;
   notes: string | null;
+  amountCents: number | null;
+  expenseCategory: string | null;
+  supplier: string | null;
+  durationMinutes: number | null;
   quoteLines: Array<{
     category: string;
     unitPrice?: string;
@@ -555,6 +562,10 @@ export default function ForgeBar({
         data.notes.trim()
           ? data.notes.trim()
           : null,
+      amountCents: typeof data.amountCents === "number" ? data.amountCents : null,
+      expenseCategory: typeof data.expenseCategory === "string" ? data.expenseCategory : null,
+      supplier: typeof data.supplier === "string" ? data.supplier : null,
+      durationMinutes: typeof data.durationMinutes === "number" ? data.durationMinutes : null,
 
       quoteLines: Array.isArray(data.quoteLines)
         ? data.quoteLines.filter(
@@ -634,6 +645,10 @@ export default function ForgeBar({
       notes:
         newDecision.notes ??
         baseDecision.notes,
+      amountCents: newDecision.amountCents ?? baseDecision.amountCents,
+      expenseCategory: newDecision.expenseCategory ?? baseDecision.expenseCategory,
+      supplier: newDecision.supplier ?? baseDecision.supplier,
+      durationMinutes: newDecision.durationMinutes ?? baseDecision.durationMinutes,
       dayTasks: newDecision.dayTasks.length
         ? newDecision.dayTasks
         : baseDecision.dayTasks,
@@ -1435,6 +1450,33 @@ export default function ForgeBar({
     router.push(`/invoices/${invoice.id}`);
   }
 
+  async function handleInterventionTracking(decision: AssistantDecision) {
+    if (!decision.entity) throw new Error("Précise le chantier concerné.");
+    const type = decision.intent === "expense" ? "expense" : decision.intent === "workTime" ? "time" : "query";
+    if (type === "expense" && !decision.amountCents) throw new Error("Précise le montant de la dépense.");
+    if (type === "time" && !decision.durationMinutes) throw new Error("Précise le temps travaillé.");
+    const response = await fetch("/api/interventions/tracking", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type, entity: decision.entity, amountCents: decision.amountCents,
+        category: decision.expenseCategory, supplier: decision.supplier,
+        description: decision.description, durationMinutes: decision.durationMinutes,
+        date: decision.scheduledDate,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Impossible de mettre à jour ce chantier.");
+    setMessage("");
+    if (type !== "query") {
+      showNotice(data.message);
+      router.refresh();
+      return;
+    }
+    const result = data.profitability;
+    const formatMoney = (cents: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
+    showNotice(`Chantier ${decision.entity} : ${Math.floor(result.workedMinutes / 60)}h${String(result.workedMinutes % 60).padStart(2, "0")} travaillées, ${formatMoney(result.expenseCents)} de dépenses, ${formatMoney(result.billedRevenueCents)} facturés, marge réelle ${formatMoney(result.actualMarginCents)}.`);
+  }
+
   async function handleSubmit(
     messageOverride?: string,
   ) {
@@ -1701,6 +1743,12 @@ export default function ForgeBar({
           await deleteAllInterventions(
             decision,
           );
+          break;
+
+        case "expense:create":
+        case "workTime:create":
+        case "profitability:search":
+          await handleInterventionTracking(decision);
           break;
 
         default:

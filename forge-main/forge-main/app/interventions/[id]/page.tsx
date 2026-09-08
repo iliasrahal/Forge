@@ -14,6 +14,8 @@ import InterventionDayPlanning from "@/components/InterventionDayPlanning";
 import InterventionDetailActions from "@/components/InterventionDetailActions";
 import { listInterventionDateKeys } from "@/src/lib/intervention-day-tasks";
 import { formatParisDateKey } from "@/src/lib/paris-datetime";
+import { computeInterventionProfitability } from "@/src/lib/intervention-profitability";
+import InterventionProfitability from "@/components/InterventionProfitability";
 
 
 type InterventionPageProps = {
@@ -91,6 +93,10 @@ export default async function InterventionPage({
         client: true,
         dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
+        quote: { select: { status: true, amountCents: true, totalCostCents: true } },
+        invoices: { select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } } },
+        expenses: { orderBy: { expenseDate: "desc" } },
+        workTimes: { include: { user: { select: { firstName: true, lastName: true } } }, orderBy: { startedAt: "desc" } },
       },
     });
 
@@ -111,6 +117,25 @@ export default async function InterventionPage({
         orderBy: { createdAt: "asc" },
       })
     : [];
+  const currentMembership = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId: workspaceContext.user.id, organizationId: workspaceContext.workspace.id } },
+    select: { hourlyCostCents: true },
+  });
+
+  const profitability = computeInterventionProfitability({
+    quote: intervention.quote,
+    invoices: intervention.invoices,
+    expenses: intervention.expenses,
+    workTimes: intervention.workTimes,
+  });
+  const dailyTracking = Array.from(new Set([
+    ...intervention.expenses.map((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate)),
+    ...intervention.workTimes.map((entry) => formatParisDateKey(entry.dayDate ?? entry.startedAt)),
+  ])).map((date) => ({
+    date,
+    expenseCents: intervention.expenses.filter((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate) === date).reduce((sum, entry) => sum + entry.amountCents, 0),
+    durationMinutes: intervention.workTimes.filter((entry) => formatParisDateKey(entry.dayDate ?? entry.startedAt) === date).reduce((sum, entry) => sum + (entry.durationMinutes ?? 0), 0),
+  }));
 
 
   const clientName = !intervention.client
@@ -279,9 +304,36 @@ export default async function InterventionPage({
               completedAt: state.completedAt?.toISOString() ?? null,
               report: state.report,
             }))}
+            dailyTracking={dailyTracking}
             canWrite={workspaceContext.permissions.canWrite}
           />
         )}
+
+        <InterventionProfitability
+          interventionId={intervention.id}
+          canWrite={workspaceContext.permissions.canWrite}
+          hourlyCostCents={currentMembership?.hourlyCostCents ?? null}
+          metrics={profitability}
+          expenses={intervention.expenses.map((expense) => ({
+            id: expense.id,
+            date: formatParisDateKey(expense.expenseDate),
+            dayDate: expense.dayDate ? formatParisDateKey(expense.dayDate) : null,
+            amountCents: expense.amountCents,
+            category: expense.category,
+            supplier: expense.supplier,
+            description: expense.description,
+          }))}
+          workTimes={intervention.workTimes.map((entry) => ({
+            id: entry.id,
+            date: formatParisDateKey(entry.dayDate ?? entry.startedAt),
+            startedAt: entry.startedAt.toISOString(),
+            endedAt: entry.endedAt?.toISOString() ?? null,
+            durationMinutes: entry.durationMinutes,
+            hourlyCostCents: entry.hourlyCostCents,
+            memberName: `${entry.user.firstName} ${entry.user.lastName ?? ""}`.trim(),
+            isCurrentUser: entry.userId === workspaceContext.user.id,
+          }))}
+        />
 
 
 

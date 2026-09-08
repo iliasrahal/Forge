@@ -21,6 +21,9 @@ type AssistantIntent =
   | "invoice"
   | "client"
   | "intervention"
+  | "expense"
+  | "workTime"
+  | "profitability"
   | "unknown";
 
 type AssistantAction =
@@ -73,6 +76,10 @@ type AssistantDecision = {
   city: string | null;
   email: string | null;
   notes: string | null;
+  amountCents: number | null;
+  expenseCategory: string | null;
+  supplier: string | null;
+  durationMinutes: number | null;
 };
 
 function getCurrentFrenchDate() {
@@ -405,6 +412,14 @@ Règles documents :
   "Le client préfère être appelé après 17h."
 - Ne mets pas les autres informations de la demande dans notes.
 - Si aucune note n’est indiquée, retourne null.
+
+15. Suivi de chantier :
+- « Ajoute 250 € de matériaux au chantier Dupont » : intent="expense", action="create", entity="Dupont", amountCents=25000, expenseCategory="MATERIALS".
+- Catégories : MATERIALS, SUPPLIES, TRAVEL, RENTAL, SUBCONTRACTING, OTHER.
+- « J’ai dépensé 80 € chez Leroy Merlin pour le chantier Charles » : supplier="Leroy Merlin".
+- « J’ai travaillé 7h30 sur le chantier Dupont aujourd’hui » : intent="workTime", action="create", durationMinutes=450, scheduledDate=date concernée.
+- Une question sur le coût, les heures, le gain ou la rentabilité : intent="profitability", action="search".
+- N’invente jamais de montant, durée ou résultat.
 
 Le JSON doit toujours contenir dayTasks. Utilise [] lorsqu’aucune tâche journalière n’est donnée.
 
@@ -764,6 +779,9 @@ if (
         "invoice",
         "client",
         "intervention",
+        "expense",
+        "workTime",
+        "profitability",
         "unknown",
       ];
 
@@ -899,6 +917,10 @@ if (
     const notes = cleanOptionalString(
       parsed.notes,
     );
+    const amountCents = typeof parsed.amountCents === "number" && parsed.amountCents > 0 ? Math.round(parsed.amountCents) : null;
+    const expenseCategory = cleanOptionalString(parsed.expenseCategory);
+    const supplier = cleanOptionalString(parsed.supplier);
+    const durationMinutes = typeof parsed.durationMinutes === "number" && parsed.durationMinutes > 0 ? Math.round(parsed.durationMinutes) : null;
 
     const quoteLines =
       resolvedIntent === "quote" && resolvedAction === "create"
@@ -930,6 +952,10 @@ if (
       city,
       email,
       notes,
+      amountCents,
+      expenseCategory,
+      supplier,
+      durationMinutes,
       quoteLines,
     });
   } catch (error) {

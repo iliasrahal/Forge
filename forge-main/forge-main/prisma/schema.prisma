@@ -126,6 +126,15 @@ enum TeamInvitationStatus {
   REVOKED
 }
 
+enum InterventionExpenseCategory {
+  MATERIALS
+  SUPPLIES
+  TRAVEL
+  RENTAL
+  SUBCONTRACTING
+  OTHER
+}
+
 model User {
   id String @id @default(cuid())
 
@@ -191,6 +200,10 @@ model User {
   quoteReminders QuoteReminder[] @relation("QuoteReminderCreator")
 
   recordedPayments Payment[] @relation("PaymentRecorder")
+
+  workTimeEntries InterventionWorkTime[]
+
+  createdInterventionExpenses InterventionExpense[] @relation("InterventionExpenseCreator")
 
   createdAt DateTime @default(now())
 
@@ -262,6 +275,8 @@ model Organization {
   stripeDetailsSubmitted Boolean            @default(false)
   stripeOnboardedAt      DateTime?
   payments               Payment[]
+  interventionWorkTimes  InterventionWorkTime[]
+  interventionExpenses   InterventionExpense[]
   members             OrganizationMember[]
   invitations         TeamInvitation[]
   clients             Client[]
@@ -312,6 +327,8 @@ model OrganizationMember {
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // Coût interne par heure, utilisé uniquement pour la rentabilité.
+  hourlyCostCents Int?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -488,6 +505,51 @@ model InterventionDayState {
   @@index([interventionId, date])
 }
 
+model InterventionWorkTime {
+  id String @id @default(cuid())
+  interventionId String
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  // Journée Europe/Paris facultative du chantier.
+  dayDate DateTime?
+  startedAt DateTime
+  endedAt DateTime?
+  // Figée à la fermeture ou à la saisie manuelle.
+  durationMinutes Int?
+  // Snapshot : une modification future du coût membre ne change pas l'historique.
+  hourlyCostCents Int?
+  manual Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([interventionId, dayDate])
+  @@index([organizationId, userId])
+}
+
+model InterventionExpense {
+  id String @id @default(cuid())
+  interventionId String
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUserId String
+  createdByUser User @relation("InterventionExpenseCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  dayDate DateTime?
+  amountCents Int
+  category InterventionExpenseCategory @default(OTHER)
+  supplier String?
+  description String?
+  expenseDate DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([interventionId, expenseDate])
+  @@index([organizationId])
+}
+
 model Intervention {
   id String @id @default(cuid())
 
@@ -534,6 +596,8 @@ model Intervention {
 
   dayTasks InterventionDayTask[]
   dayStates InterventionDayState[]
+  workTimes InterventionWorkTime[]
+  expenses InterventionExpense[]
 
   userId String?
 
