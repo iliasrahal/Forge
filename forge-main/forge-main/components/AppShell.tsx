@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 
 import BottomNavigation from "@/components/BottomNavigation";
+import StatusAutoRefresh from "@/components/StatusAutoRefresh";
 
 
 type AppShellProps = {
@@ -41,6 +42,7 @@ export default function AppShell({
 
   return (
     <>
+      {!hideNavigation ? <StatusAutoRefresh /> : null}
       <div
         className={
           hideNavigation

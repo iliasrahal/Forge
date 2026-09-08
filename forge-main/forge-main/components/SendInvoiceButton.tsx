@@ -123,6 +123,10 @@ export default function SendInvoiceButton({
 
       setSentSuccessfully(true);
 
+      // La réponse serveur est la source de vérité : refléter immédiatement
+      // le nouveau statut sans attendre le prochain cycle automatique.
+      router.refresh();
+
 
 
     } catch (error) {
