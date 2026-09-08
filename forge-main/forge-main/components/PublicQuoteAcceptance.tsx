@@ -27,11 +27,9 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
-    // La zone de signature est sombre dans l'interface publique : le trait
-    // doit rester immédiatement visible, quel que soit le périphérique.
-    // Seules les coordonnées sont enregistrées ; le PDF les redessine ensuite
-    // avec sa propre couleur sombre sur son fond clair.
-    context.strokeStyle = "#ffffff";
+    // Signature naturelle sur feuille blanche. Seules les coordonnées sont
+    // enregistrées ; le PDF les redessine lui aussi en sombre sur fond clair.
+    context.strokeStyle = "#000000";
     context.lineWidth = 5;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -91,7 +89,7 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
 
   return (
     <div>
-      <div className="overflow-hidden rounded-2xl border border-white/15 bg-slate-950 shadow-inner">
+      <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-inner">
         <canvas
           ref={canvasRef}
           width={900}
@@ -113,8 +111,6 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
 
 export default function PublicQuoteAcceptance({ token, initialAccepted, initialSignature, canAccept, unavailableReason }: Props) {
   const [signed, setSigned] = useState<SignedDetails | null>(initialSignature);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [signature, setSignature] = useState<DrawnSignature | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,7 +124,7 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
       const response = await fetch("/api/public/quotes/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, firstName, lastName, confirmed, signature }),
+        body: JSON.stringify({ token, confirmed, signature }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Votre signature n’a pas pu être enregistrée.");
@@ -163,16 +159,7 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
   return (
     <section className="rounded-3xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 sm:p-5">
       <h2 className="text-center text-xl font-bold text-[var(--forge-text-primary)]">Accepter et signer</h2>
-      <p className="mt-2 text-center text-sm text-[var(--forge-text-secondary)]">Renseignez votre identité puis signez dans la zone prévue.</p>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <label className="text-sm font-semibold text-[var(--forge-text-primary)]">Prénom
-          <input value={firstName} onChange={(event) => setFirstName(event.target.value)} autoComplete="given-name" maxLength={100} className="mt-2 min-h-12 w-full rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-input-background)] px-4 text-base outline-none focus:border-blue-500" />
-        </label>
-        <label className="text-sm font-semibold text-[var(--forge-text-primary)]">Nom
-          <input value={lastName} onChange={(event) => setLastName(event.target.value)} autoComplete="family-name" maxLength={100} className="mt-2 min-h-12 w-full rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-input-background)] px-4 text-base outline-none focus:border-blue-500" />
-        </label>
-      </div>
-      <div className="mt-5">
+      <div className="mt-4">
         <p className="mb-2 text-sm font-semibold text-[var(--forge-text-primary)]">Votre signature</p>
         <SignatureCanvas onChange={setSignature} />
       </div>

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { cleanQuotePublicToken, getQuoteAcceptanceState, hashQuotePublicToken } from "@/src/lib/quote-public-access";
-import { buildQuoteSignatureSnapshot, createQuoteIntegrityHash, validateDrawnSignature, validateSignerName } from "@/src/lib/quote-signature";
+import { buildQuoteSignatureSnapshot, createQuoteIntegrityHash, validateDrawnSignature } from "@/src/lib/quote-signature";
 import { checkRateLimit } from "@/src/lib/rate-limit";
 
 async function findExistingSignature(tokenHash: string) {
@@ -31,10 +31,6 @@ export async function POST(request: Request) {
     const limit = checkRateLimit(`quote-sign:${tokenHash}`, 12, 60_000);
     if (!limit.allowed) return NextResponse.json({ error: "Trop de tentatives. Réessayez dans un instant." }, { status: 429 });
 
-    const firstName = validateSignerName(body.firstName, "Le prénom");
-    if (firstName.error) return NextResponse.json({ error: firstName.error }, { status: 400 });
-    const lastName = validateSignerName(body.lastName, "Le nom");
-    if (lastName.error) return NextResponse.json({ error: lastName.error }, { status: 400 });
     if (body.confirmed !== true) return NextResponse.json({ error: "Vous devez confirmer l’acceptation du devis." }, { status: 400 });
     const drawn = validateDrawnSignature(body.signature);
     if (drawn.error) return NextResponse.json({ error: drawn.error }, { status: 400 });
@@ -62,12 +58,20 @@ export async function POST(request: Request) {
       if (state.alreadyAccepted) return { kind: "accepted-before-signatures" as const };
       if (!state.canAccept) return { kind: "unavailable" as const, reason: state.reason };
 
+      const client = access.quote.client;
+      const signerFirstName = client.type === "PROFESSIONNEL"
+        ? client.companyName?.trim() || client.firstName?.trim() || client.lastName?.trim() || ""
+        : client.firstName?.trim() || client.lastName?.trim() || "";
+      const signerLastName = client.type === "PROFESSIONNEL" || !client.firstName?.trim()
+        ? ""
+        : client.lastName?.trim() || "";
+
       const signedAt = new Date();
       const snapshot = buildQuoteSignatureSnapshot({
         ...access.quote,
         client: access.quote.client,
       });
-      const integrityHash = createQuoteIntegrityHash({ snapshot, signerFirstName: firstName.value!, signerLastName: lastName.value!, signedAt });
+      const integrityHash = createQuoteIntegrityHash({ snapshot, signerFirstName, signerLastName, signedAt });
       const updated = await transaction.quote.updateMany({
         where: { id: access.quote.id, status: "ENVOYE", signature: { is: null } },
         data: { status: "ACCEPTE", acceptedAt: signedAt, acceptanceMethod: "CLIENT_LINK" },
@@ -78,8 +82,8 @@ export async function POST(request: Request) {
         data: {
           quoteId: access.quote.id,
           publicAccessId: access.id,
-          signerFirstName: firstName.value!,
-          signerLastName: lastName.value!,
+          signerFirstName,
+          signerLastName,
           method: "DRAWN",
           signatureData: drawn.signature as Prisma.InputJsonValue,
           quoteSnapshot: snapshot as unknown as Prisma.InputJsonValue,
@@ -88,7 +92,7 @@ export async function POST(request: Request) {
         },
       });
       await transaction.quotePublicAccess.update({ where: { id: access.id }, data: { acceptedAt: signedAt } });
-      return { kind: "signed" as const, alreadySigned: false, signerFirstName: firstName.value!, signerLastName: lastName.value!, signedAt };
+      return { kind: "signed" as const, alreadySigned: false, signerFirstName, signerLastName, signedAt };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     if (result.kind === "invalid") return NextResponse.json({ error: "Ce lien est invalide." }, { status: 404 });
