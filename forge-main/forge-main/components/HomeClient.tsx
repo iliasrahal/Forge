@@ -126,7 +126,7 @@ const [actionError, setActionError] = useState("");
 const [isSavingAction, setIsSavingAction] = useState(false);
 const [showAddClientModal, setShowAddClientModal] = useState(false);
 const [startClientMode, setStartClientMode] = useState<"existing" | "new">(
-  planningClients.length > 0 ? "existing" : "new",
+  "new",
 );
 const [startExistingClientId, setStartExistingClientId] = useState(
   planningClients[0]?.id ?? "",
@@ -1185,7 +1185,9 @@ const handleCreateInvoice = async () => {
   }
 
   if (!savedClientId) {
-    setStartClientMode(planningClients.length > 0 ? "existing" : "new");
+    // Cette étape n'est affichée que pour une intervention réellement sans
+    // client : la création rapide est donc le choix naturel par défaut.
+    setStartClientMode("new");
     setStartExistingClientId(planningClients[0]?.id ?? "");
     setStartClientType("PARTICULIER");
     setStartClientFirstName("");
@@ -1311,7 +1313,7 @@ const handleCreateInvoice = async () => {
 
 
   {showAddClientModal && (
-    <div className="forge-modal-overlay fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-transparent p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
       <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Ajouter un client
