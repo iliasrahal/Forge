@@ -22,10 +22,10 @@ import ForgeSymbol from "@/components/ForgeSymbol";
 
 const features = [
   {
-    title: "Interventions",
+    title: "Une intervention d’une heure ou un chantier de plusieurs semaines.",
     description:
-      "Planifiez une intervention ou un chantier de plusieurs jours avec une simple demande. Forge l’organise dans votre planning comme un seul rendez-vous, sur toute la période.",
-    eyebrow: "Du planning au terrain",
+      "Forge s’adapte à votre planning. Créez une intervention ponctuelle ou planifiez un chantier sur plusieurs jours, puis détaillez ce qui est prévu chaque journée.",
+    eyebrow: "Interventions et chantiers multi-jours",
   },
   {
     title: "Comptes rendus",
@@ -316,32 +316,39 @@ function FeatureIllustration({
       <div className="relative mx-auto w-full max-w-md py-6">
         <div className="absolute left-8 top-0 h-40 w-40 rounded-full bg-blue-500/20 blur-3xl" />
         <div className="relative space-y-3">
-          {["09:00", "14:00", "17:30"].map(
-            (time, itemIndex) => (
-              <div
-                key={time}
-                className={`flex items-center gap-4 rounded-3xl border bg-white/90 p-4 shadow-lg backdrop-blur transition duration-500 dark:bg-slate-900/90 ${
-                  itemIndex === 1
-                    ? "ml-6 border-blue-300 shadow-blue-600/10 dark:border-blue-700"
-                    : "mr-6 border-slate-200 dark:border-slate-700"
-                }`}
-              >
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                  <CalendarDays size={20} />
-                </span>
-                <div className="flex-1">
-                  <p className="text-xs font-semibold text-slate-400">{time}</p>
-                  <p className="mt-1 font-semibold">Intervention planifiée</p>
-                </div>
-                <Check size={18} className="text-emerald-500" />
+          <div className="mr-6 flex items-center gap-4 rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-lg backdrop-blur transition duration-500 dark:border-slate-700 dark:bg-slate-900/90">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              <CalendarDays size={20} />
+            </span>
+            <div className="flex-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Intervention simple</p>
+              <p className="mt-1 font-semibold">Demain à 10 h</p>
+            </div>
+            <Check size={18} className="text-emerald-500" />
+          </div>
+
+          <div className="ml-3 rounded-3xl border border-violet-200 bg-violet-50/90 p-4 shadow-lg shadow-violet-600/10 backdrop-blur dark:border-violet-800 dark:bg-violet-950/70">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-violet-600 dark:text-violet-300">Chantier multi-jours</p>
+                <p className="mt-1 font-bold text-violet-950 dark:text-violet-100">Rénovation salle de bain</p>
               </div>
-            ),
-          )}
-          <div className="mx-3 rounded-2xl border border-violet-200 bg-violet-50/90 px-4 py-3 text-sm font-semibold text-violet-800 shadow-sm dark:border-violet-900 dark:bg-violet-950/70 dark:text-violet-200">
-            <p>Chantier chez Martin</p>
-            <p className="mt-1 text-xs font-medium text-violet-600 dark:text-violet-300">
-              Du 10 au 15 septembre · une seule intervention
-            </p>
+              <span className="shrink-0 rounded-full bg-white/75 px-3 py-1 text-xs font-bold text-violet-700 dark:bg-violet-900/70 dark:text-violet-200">15 → 18 mai</span>
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {[
+                ["15 mai", "Mur"],
+                ["16 mai", "Câbles"],
+                ["17 mai", "Peinture"],
+                ["18 mai", "Finitions"],
+              ].map(([date, task]) => (
+                <div key={date} className="flex items-center gap-3 rounded-xl border border-violet-200/70 bg-white/65 px-3 py-2 text-sm dark:border-violet-800/70 dark:bg-slate-900/45">
+                  <span className="w-14 shrink-0 text-xs font-bold text-violet-600 dark:text-violet-300">{date}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">{task}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -526,8 +533,10 @@ export default function Features({
                 <h3 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">{feature.title}</h3>
                 <p className="mt-6 max-w-xl text-xl leading-8 text-slate-600 dark:text-slate-300">{feature.description}</p>
                 {index === 0 && (
-                  <div className="mt-8 max-w-xl rounded-2xl border border-violet-200 bg-violet-50/70 px-4 py-3 text-sm font-semibold leading-6 text-violet-800 shadow-sm dark:border-violet-900 dark:bg-violet-950/45 dark:text-violet-200">
-                    « J’ai un chantier chez Martin du 10 au 15 septembre. »
+                  <div className="mt-8 max-w-xl rounded-2xl border border-violet-200 bg-violet-50/70 px-4 py-3 text-sm leading-6 text-violet-800 shadow-sm dark:border-violet-900 dark:bg-violet-950/45 dark:text-violet-200">
+                    <p className="font-semibold">« J’ai un chantier du 15 au 30 mai, le 15 je fais le mur, le 16 les câbles et le 17 la peinture. »</p>
+                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-violet-600 dark:text-violet-300">À l’écrit comme à l’oral</p>
+                    <p className="mt-1 text-sm">Créez d’abord votre chantier, puis ajoutez les tâches de chaque journée au fur et à mesure.</p>
                   </div>
                 )}
                 {index === 1 && (
