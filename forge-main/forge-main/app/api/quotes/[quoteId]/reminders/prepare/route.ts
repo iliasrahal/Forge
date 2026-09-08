@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { buildStandardReminderMessage, getManualReminderLevel, validateReminderMessage } from "@/src/lib/quote-reminders";
+import { buildStandardReminderMessage, getQuoteReminderState, validateReminderMessage } from "@/src/lib/quote-reminders";
 import { checkRateLimit } from "@/src/lib/rate-limit";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -11,6 +11,9 @@ type RouteProps = { params: Promise<{ quoteId: string }> };
 export async function POST(_request: Request, { params }: RouteProps) {
   try {
     const context = await requireWorkspaceContext("write");
+    if (!context.user.smartRemindersEnabled) {
+      return NextResponse.json({ error: "Les rappels intelligents sont désactivés." }, { status: 403 });
+    }
     const { quoteId } = await params;
     const limit = checkRateLimit(`quote-reminder-prepare:${context.user.id}:${quoteId}`, 10, 60_000);
     if (!limit.allowed) return NextResponse.json({ error: "Trop de demandes. Réessayez dans un instant." }, { status: 429 });
@@ -19,19 +22,27 @@ export async function POST(_request: Request, { params }: RouteProps) {
       where: { id: quoteId, organizationId: context.workspace.id },
       include: {
         client: true,
-        reminders: { select: { id: true } },
+        reminders: { select: { sentAt: true } },
       },
     });
     if (!quote) return NextResponse.json({ error: "Devis introuvable." }, { status: 404 });
     if (quote.status !== "ENVOYE") return NextResponse.json({ error: "Seul un devis envoyé peut être relancé." }, { status: 409 });
     if (!quote.client) return NextResponse.json({ error: "Associez un client au devis avant de préparer une relance." }, { status: 400 });
     if (!quote.client.email) return NextResponse.json({ error: "Aucune adresse e-mail n’est renseignée pour ce client." }, { status: 400 });
+    const reminderState = getQuoteReminderState({
+      status: quote.status,
+      sentAt: quote.sentAt,
+      reminders: quote.reminders,
+    });
+    if (!reminderState.eligible || !reminderState.level) {
+      return NextResponse.json({ error: "Ce devis n’est pas encore éligible à une relance." }, { status: 409 });
+    }
 
     const clientName = quote.client.type === "PROFESSIONNEL"
       ? quote.client.companyName?.trim() || "Madame, Monsieur"
       : `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim() || "Madame, Monsieur";
     const artisanSignature = context.user.emailSignature?.trim() || context.user.firstName.trim() || "L’équipe Forge";
-    const level = getManualReminderLevel(quote.reminders.length);
+    const level = reminderState.level;
     const fallback = buildStandardReminderMessage({ level, clientName, reference: quote.reference, sentAt: quote.sentAt, artisanSignature });
     let message = fallback;
 

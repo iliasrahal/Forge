@@ -86,7 +86,7 @@ export default async function QuotePage({
 }: QuotePageProps) {
 
 
-  await requireCurrentUser();
+  const currentUser = await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
 
 
@@ -297,11 +297,12 @@ export default async function QuotePage({
           </div>
         ) : null}
 
-        {quote.status === "ENVOYE" || quote.reminders.length > 0 ? (
+        {currentUser.smartRemindersEnabled &&
+        (reminderState.eligible || quote.reminders.length > 0) ? (
           <QuoteReminderPanel
             quoteId={quote.id}
             canWrite={workspaceContext.permissions.canWrite}
-            canPrepare={quote.status === "ENVOYE"}
+            canPrepare={quote.status === "ENVOYE" && reminderState.eligible}
             hasEmail={Boolean(quote.client?.email)}
             automaticLevel={reminderState.eligible ? reminderState.level : null}
             daysSinceActivity={reminderState.daysSinceActivity}
