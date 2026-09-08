@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
+import { Prisma } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { getStripe, isStripeConfigured } from "@/src/lib/stripe";
 import { syncInvoicePaymentStatus } from "@/src/lib/invoice-payment-sync";
@@ -44,24 +45,37 @@ async function finalizeSucceeded(
   invoiceId: string,
   paymentIntentId: string | null,
   connectedAccountId: string | null,
+  existingPaidAt: Date | null,
 ) {
   const fees = paymentIntentId
     ? await readIntentFees(paymentIntentId, connectedAccountId)
     : null;
 
-  await prisma.payment.update({
-    where: { id: paymentId },
-    data: {
-      status: "SUCCEEDED",
-      paidAt: new Date(),
-      ...(paymentIntentId ? { stripePaymentIntentId: paymentIntentId } : {}),
-      ...(fees
-        ? { feeCents: fees.feeCents, netCents: fees.netCents }
-        : {}),
-    },
-  });
+  await prisma.$transaction(async (transaction) => {
+    await transaction.payment.update({
+      where: { id: paymentId },
+      data: {
+        status: "SUCCEEDED",
+        // Une relivraison Stripe ne doit pas déplacer la date d'encaissement.
+        paidAt: existingPaidAt ?? new Date(),
+        errorMessage: null,
+        ...(paymentIntentId ? { stripePaymentIntentId: paymentIntentId } : {}),
+        ...(fees
+          ? { feeCents: fees.feeCents, netCents: fees.netCents }
+          : {}),
+      },
+    });
 
-  await syncInvoicePaymentStatus(prisma, invoiceId);
+    // Paiement et statut de facture forment une seule écriture atomique.
+    await syncInvoicePaymentStatus(transaction, invoiceId);
+  });
+}
+
+function isDuplicateEventError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 export async function POST(request: Request) {
@@ -99,15 +113,23 @@ export async function POST(request: Request) {
         accountId: event.account ?? null,
       },
     });
-  } catch {
-    return NextResponse.json({ received: true, duplicate: true });
+  } catch (error) {
+    if (isDuplicateEventError(error)) {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    console.error("STRIPE WEBHOOK IDEMPOTENCE ERROR", event.type, error);
+    return NextResponse.json(
+      { error: "Enregistrement du webhook impossible." },
+      { status: 500 },
+    );
   }
 
   const connectedAccountId = event.account ?? null;
 
   try {
     switch (event.type) {
-      case "checkout.session.completed": {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
         const payment = await prisma.payment.findFirst({
           where: {
@@ -126,12 +148,16 @@ export async function POST(request: Request) {
             ? session.payment_intent
             : (session.payment_intent?.id ?? null);
 
-        if (session.payment_status === "paid") {
+        if (
+          session.payment_status === "paid" ||
+          event.type === "checkout.session.async_payment_succeeded"
+        ) {
           await finalizeSucceeded(
             payment.id,
             payment.invoiceId,
             paymentIntentId,
             connectedAccountId,
+            payment.paidAt,
           );
         } else if (paymentIntentId) {
           // Virement bancaire : fonds pas encore reçus, on garde le lien.
@@ -155,31 +181,109 @@ export async function POST(request: Request) {
             ],
           },
         });
-        if (!payment || payment.status === "SUCCEEDED") break;
+        if (!payment) break;
+        // Même déjà SUCCEEDED, on resynchronise la facture : cela répare une
+        // éventuelle ancienne exécution interrompue entre les deux écritures.
         await finalizeSucceeded(
           payment.id,
           payment.invoiceId,
           intent.id,
           connectedAccountId,
+          payment.paidAt,
         );
+        break;
+      }
+
+      case "checkout.session.async_payment_failed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [
+              { stripeCheckoutSessionId: session.id },
+              ...(session.metadata?.paymentId
+                ? [{ id: session.metadata.paymentId }]
+                : []),
+            ],
+          },
+        });
+        if (!payment) break;
+        if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
+          await syncInvoicePaymentStatus(prisma, payment.invoiceId);
+          break;
+        }
+        await prisma.$transaction(async (transaction) => {
+          await transaction.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "FAILED",
+              errorMessage: "Le paiement différé a échoué.",
+            },
+          });
+          await syncInvoicePaymentStatus(transaction, payment.invoiceId);
+        });
         break;
       }
 
       case "payment_intent.payment_failed": {
         const intent = event.data.object as Stripe.PaymentIntent;
         const payment = await prisma.payment.findFirst({
-          where: { stripePaymentIntentId: intent.id },
-        });
-        if (!payment) break;
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            status: "FAILED",
-            errorMessage:
-              intent.last_payment_error?.message ?? "Paiement refusé.",
+          where: {
+            OR: [
+              { stripePaymentIntentId: intent.id },
+              ...(intent.metadata?.paymentId
+                ? [{ id: intent.metadata.paymentId }]
+                : []),
+            ],
           },
         });
-        await syncInvoicePaymentStatus(prisma, payment.invoiceId);
+        if (!payment) break;
+        // Un événement d'échec livré tardivement ne peut pas annuler un
+        // encaissement déjà confirmé ou remboursé.
+        if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
+          await syncInvoicePaymentStatus(prisma, payment.invoiceId);
+          break;
+        }
+        await prisma.$transaction(async (transaction) => {
+          await transaction.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "FAILED",
+              errorMessage:
+                intent.last_payment_error?.message ?? "Paiement refusé.",
+            },
+          });
+          await syncInvoicePaymentStatus(transaction, payment.invoiceId);
+        });
+        break;
+      }
+
+      case "payment_intent.canceled": {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        const payment = await prisma.payment.findFirst({
+          where: {
+            OR: [
+              { stripePaymentIntentId: intent.id },
+              ...(intent.metadata?.paymentId
+                ? [{ id: intent.metadata.paymentId }]
+                : []),
+            ],
+          },
+        });
+        if (!payment) break;
+        if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
+          await syncInvoicePaymentStatus(prisma, payment.invoiceId);
+          break;
+        }
+        await prisma.$transaction(async (transaction) => {
+          await transaction.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: "CANCELED",
+              errorMessage: "Paiement annulé.",
+            },
+          });
+          await syncInvoicePaymentStatus(transaction, payment.invoiceId);
+        });
         break;
       }
 
@@ -194,14 +298,16 @@ export async function POST(request: Request) {
           where: { stripePaymentIntentId: paymentIntentId },
         });
         if (!payment) break;
-        await prisma.payment.update({
-          where: { id: payment.id },
-          data: {
-            refundedCents: charge.amount_refunded ?? 0,
-            status: charge.refunded ? "REFUNDED" : "SUCCEEDED",
-          },
+        await prisma.$transaction(async (transaction) => {
+          await transaction.payment.update({
+            where: { id: payment.id },
+            data: {
+              refundedCents: charge.amount_refunded ?? 0,
+              status: charge.refunded ? "REFUNDED" : "SUCCEEDED",
+            },
+          });
+          await syncInvoicePaymentStatus(transaction, payment.invoiceId);
         });
-        await syncInvoicePaymentStatus(prisma, payment.invoiceId);
         break;
       }
 
@@ -221,6 +327,14 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("STRIPE WEBHOOK HANDLER ERROR", event.type, error);
+    // L'événement ne doit rester marqué comme traité que si tout son handler
+    // a réussi. Sa suppression permet à Stripe de le relivrer sans perdre la
+    // synchronisation du paiement ou de la facture.
+    try {
+      await prisma.stripeEvent.delete({ where: { id: event.id } });
+    } catch (cleanupError) {
+      console.error("STRIPE WEBHOOK RETRY CLEANUP ERROR", event.id, cleanupError);
+    }
     return NextResponse.json(
       { error: "Traitement du webhook impossible." },
       { status: 500 },
