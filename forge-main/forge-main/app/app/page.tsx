@@ -36,7 +36,7 @@ function mapStatus(status: string): AppointmentStatus {
 }
 
 type HomeIntervention = Prisma.InterventionGetPayload<{
-  include: { client: true; invoices: { select: { id: true; status: true } } };
+  include: { client: true; invoices: { select: { id: true; status: true } }; dayTasks: true };
 }>;
 
 function mapIntervention(intervention: HomeIntervention): Appointment {
@@ -98,6 +98,14 @@ function mapIntervention(intervention: HomeIntervention): Appointment {
     finalizationStep: intervention.finalizationStep,
     reportDraft: intervention.reportDraft ?? "",
     invoiceId: intervention.invoices[0]?.id ?? null,
+    dayTasks: intervention.dayTasks.map((task) => ({
+      id: task.id,
+      date: formatParisDateKey(task.date),
+      title: task.title,
+      description: task.description ?? undefined,
+      startTime: task.startTime ?? undefined,
+      completed: Boolean(task.completedAt),
+    })),
   };
 }
 
@@ -116,7 +124,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           { status: "TERMINEE", finalizedAt: null, finalizationStep: { not: null } },
         ],
       },
-      include: { client: true, invoices: { select: { id: true, status: true }, take: 1 } },
+      include: {
+        client: true,
+        invoices: { select: { id: true, status: true }, take: 1 },
+        dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
+      },
       orderBy: {
         scheduledAt: "asc",
       },

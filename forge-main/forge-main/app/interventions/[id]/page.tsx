@@ -10,6 +10,9 @@ import {
 } from "@/src/lib/intervention-display-status";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import AssignmentSelect from "@/components/team/AssignmentSelect";
+import InterventionDayPlanning from "@/components/InterventionDayPlanning";
+import { listInterventionDateKeys } from "@/src/lib/intervention-day-tasks";
+import { formatParisDateKey } from "@/src/lib/paris-datetime";
 
 
 type InterventionPageProps = {
@@ -85,6 +88,7 @@ export default async function InterventionPage({
       },
       include: {
         client: true,
+        dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
       },
     });
 
@@ -245,6 +249,24 @@ export default async function InterventionPage({
 
           </div>
 
+        )}
+
+        {(intervention.endDate || intervention.dayTasks.length > 0) && (
+          <InterventionDayPlanning
+            interventionId={intervention.id}
+            days={listInterventionDateKeys(intervention.scheduledAt, intervention.endDate)}
+            tasks={intervention.dayTasks.map((task) => ({
+              id: task.id,
+              date: formatParisDateKey(task.date),
+              title: task.title,
+              description: task.description,
+              startTime: task.startTime,
+              endTime: task.endTime,
+              completedAt: task.completedAt?.toISOString() ?? null,
+              report: task.report,
+            }))}
+            canWrite={workspaceContext.permissions.canWrite}
+          />
         )}
 
 

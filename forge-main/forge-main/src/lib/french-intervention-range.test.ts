@@ -31,3 +31,15 @@ test("comprend deux jours de semaine", () => {
 test("comprend les jours numérotés avec un mois partagé", () => {
   assert.deepEqual(parseFrenchInterventionRange("Du lundi 14 au vendredi 18 septembre", now), { scheduledDate: "2026-09-14", scheduledTime: null, scheduledEndDate: "2026-09-18", scheduledEndTime: null });
 });
+
+test("comprend une durée à partir de demain", () => {
+  assert.deepEqual(parseFrenchInterventionRange("Chantier pendant 3 jours à partir de demain", now), { scheduledDate: "2026-09-03", scheduledTime: null, scheduledEndDate: "2026-09-05", scheduledEndTime: null });
+});
+
+test("comprend toute la semaine prochaine", () => {
+  assert.deepEqual(parseFrenchInterventionRange("Chantier toute la semaine prochaine", now), { scheduledDate: "2026-09-07", scheduledTime: null, scheduledEndDate: "2026-09-11", scheduledEndTime: null });
+});
+
+test("comprend de lundi à vendredi", () => {
+  assert.deepEqual(parseFrenchInterventionRange("Chantier de lundi à vendredi", now), { scheduledDate: "2026-09-07", scheduledTime: null, scheduledEndDate: "2026-09-11", scheduledEndTime: null });
+});

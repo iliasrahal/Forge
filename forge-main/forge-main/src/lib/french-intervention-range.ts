@@ -74,6 +74,28 @@ export function parseFrenchInterventionRange(
   const todayKey = formatParisDateKey(now);
   const time = "(?:\\s+(?:a|à)\\s*(\\d{1,2})\\s*h(?:\\s*(\\d{2}))?)?";
 
+  const today = new Date(`${todayKey}T00:00:00Z`);
+  const duration = /\bpendant\s+(\d{1,3})\s+jours?\s+a\s+partir\s+(?:de\s+|d')(aujourd'hui|demain|apres-demain)\b/.exec(text);
+  if (duration) {
+    const length = Number(duration[1]);
+    if (length < 1 || length > 732) return null;
+    const offset = duration[2] === "demain" ? 1 : duration[2] === "apres-demain" ? 2 : 0;
+    const start = new Date(today);
+    start.setUTCDate(start.getUTCDate() + offset);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + length - 1);
+    return { scheduledDate: start.toISOString().slice(0, 10), scheduledTime: null, scheduledEndDate: end.toISOString().slice(0, 10), scheduledEndTime: null };
+  }
+
+  if (/\b(?:toute\s+)?la\s+semaine\s+prochaine\b/.test(text)) {
+    const currentWeekday = today.getUTCDay() || 7;
+    const start = new Date(today);
+    start.setUTCDate(start.getUTCDate() + (8 - currentWeekday));
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 4);
+    return { scheduledDate: start.toISOString().slice(0, 10), scheduledTime: null, scheduledEndDate: end.toISOString().slice(0, 10), scheduledEndTime: null };
+  }
+
   const slash = new RegExp(
     `\\bdu\\s+(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?${time}\\s+au\\s+(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?${time}`,
   ).exec(text);
@@ -127,10 +149,9 @@ export function parseFrenchInterventionRange(
     };
   }
 
-  const weekday = /\bdu\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+au\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/.exec(text);
+  const weekday = /\b(?:du|de)\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+(?:au|a)\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/.exec(text);
   if (!weekday) return null;
 
-  const today = new Date(`${todayKey}T00:00:00Z`);
   const startWeekday = weekdays[weekday[1]];
   const endWeekday = weekdays[weekday[2]];
   let startOffset = (startWeekday - today.getUTCDay() + 7) % 7;

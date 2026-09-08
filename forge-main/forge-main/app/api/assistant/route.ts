@@ -40,7 +40,16 @@ type AssistantAction =
 type InterventionOperation =
   | "reschedule"
   | "cancel"
+  | "addDayTasks"
   | null;
+
+type AssistantDayTask = {
+  date: string;
+  title: string;
+  description: string | null;
+  startTime: string | null;
+  endTime: string | null;
+};
 
 type AssistantDecision = {
   intent: AssistantIntent;
@@ -56,6 +65,7 @@ type AssistantDecision = {
   scheduledEndTime: string | null;
 
   interventionOperation: InterventionOperation;
+  dayTasks: AssistantDayTask[];
 
   phone: string | null;
   street: string | null;
@@ -154,7 +164,8 @@ function cleanInterventionOperation(
 ): InterventionOperation {
   if (
     value === "reschedule" ||
-    value === "cancel"
+    value === "cancel" ||
+    value === "addDayTasks"
   ) {
     return value;
   }
@@ -345,9 +356,18 @@ Règles documents :
 - Pour une intervention sur une seule journée, retourne null pour ces deux champs.
 - Ne crée jamais plusieurs interventions pour une plage : il s’agit d’une seule intervention avec un début et une fin.
 
+7 ter. dayTasks :
+- Pour un chantier multi-jours, retourne toutes les tâches journalières explicitement données par l’artisan.
+- Chaque entrée contient date (YYYY-MM-DD), title, description, startTime et endTime. Les champs absents valent null.
+- Plusieurs tâches peuvent avoir la même date et doivent rester dans l’ordre dicté.
+- Résous « premier jour », « deuxième jour », « dernier jour » et les jours de semaine à l’intérieur de la période.
+- N’invente aucune tâche pour les jours non détaillés.
+- Pour ajouter ensuite des tâches à un chantier existant : intent = "intervention", action = "update", interventionOperation = "addDayTasks".
+
 8. interventionOperation :
 - "reschedule" lorsque l’artisan veut reporter ou déplacer une intervention.
 - "cancel" lorsque l’artisan veut annuler une intervention.
+- "addDayTasks" lorsque l’artisan ajoute des tâches à un chantier existant.
 - null pour les créations, recherches, ouvertures, démarrages et fins d’intervention.
 
 9. phone :
@@ -386,6 +406,8 @@ Règles documents :
 - Ne mets pas les autres informations de la demande dans notes.
 - Si aucune note n’est indiquée, retourne null.
 
+Le JSON doit toujours contenir dayTasks. Utilise [] lorsqu’aucune tâche journalière n’est donnée.
+
 Règles pour une mise à jour client :
 - Une phrase qui donne un nouveau téléphone, un e-mail, une adresse ou une note pour un client existant correspond à :
   intent = "client"
@@ -395,6 +417,56 @@ Règles pour une mise à jour client :
 - N’utilise pas title ou description pour une mise à jour de fiche client.
 
 Exemples :
+
+"J’ai un chantier du 15 au 30 mai chez Charles. Le 15 préparation des murs. Le 16 à 9h passage des câbles."
+{
+  "intent": "intervention",
+  "action": "create",
+  "entity": "Charles",
+  "title": "Chantier",
+  "description": null,
+  "currentScheduledDate": null,
+  "scheduledDate": "DATE_CALCULÉE_DU_15_MAI",
+  "scheduledTime": null,
+  "scheduledEndDate": "DATE_CALCULÉE_DU_30_MAI",
+  "scheduledEndTime": null,
+  "interventionOperation": null,
+  "dayTasks": [
+    { "date": "DATE_CALCULÉE_DU_15_MAI", "title": "Préparation des murs", "description": null, "startTime": null, "endTime": null },
+    { "date": "DATE_CALCULÉE_DU_16_MAI", "title": "Passage des câbles", "description": null, "startTime": "09:00", "endTime": null }
+  ],
+  "phone": null,
+  "street": null,
+  "postalCode": null,
+  "city": null,
+  "email": null,
+  "notes": null
+}
+
+"Pour le chantier de Charles, ajoute lundi la préparation du mur et mardi le passage des câbles."
+{
+  "intent": "intervention",
+  "action": "update",
+  "entity": "Charles",
+  "title": null,
+  "description": null,
+  "currentScheduledDate": null,
+  "scheduledDate": null,
+  "scheduledTime": null,
+  "scheduledEndDate": null,
+  "scheduledEndTime": null,
+  "interventionOperation": "addDayTasks",
+  "dayTasks": [
+    { "date": "DATE_CALCULÉE_DU_LUNDI_DANS_LA_PÉRIODE", "title": "Préparation du mur", "description": null, "startTime": null, "endTime": null },
+    { "date": "DATE_CALCULÉE_DU_MARDI_DANS_LA_PÉRIODE", "title": "Passage des câbles", "description": null, "startTime": null, "endTime": null }
+  ],
+  "phone": null,
+  "street": null,
+  "postalCode": null,
+  "city": null,
+  "email": null,
+  "notes": null
+}
 
 "Crée une intervention demain à 9h chez Marc Leroy pour une fuite."
 {
@@ -783,6 +855,23 @@ if (
         parsed.interventionOperation,
       );
 
+    const dayTasks: AssistantDayTask[] = Array.isArray(parsed.dayTasks)
+      ? parsed.dayTasks.flatMap((raw) => {
+          if (!raw || typeof raw !== "object") return [];
+          const task = raw as unknown as Record<string, unknown>;
+          const date = cleanDate(task.date);
+          const taskTitle = cleanOptionalString(task.title);
+          if (!date || !taskTitle) return [];
+          return [{
+            date,
+            title: taskTitle,
+            description: cleanOptionalString(task.description),
+            startTime: cleanTime(task.startTime ?? task.time),
+            endTime: cleanTime(task.endTime),
+          }];
+        }).slice(0, 150)
+      : [];
+
     const phone = cleanOptionalString(
       parsed.phone,
     );
@@ -830,6 +919,7 @@ if (
       scheduledEndDate,
       scheduledEndTime,
       interventionOperation,
+      dayTasks,
       phone,
       street,
       postalCode,

@@ -29,6 +29,14 @@ export type Appointment = {
   finalizationStep?: string | null;
   reportDraft?: string;
   invoiceId?: string | null;
+  dayTasks?: Array<{
+    id: string;
+    date: string;
+    title: string;
+    description?: string;
+    startTime?: string;
+    completed: boolean;
+  }>;
 };
 
 function getUsefulText(value?: string) {

@@ -454,6 +454,25 @@ model Client {
   @@index([organizationId])
 }
 
+model InterventionDayTask {
+  id String @id @default(cuid())
+  interventionId String
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  // Journée calendaire stockée au début du jour Europe/Paris.
+  date DateTime
+  title String
+  description String?
+  startTime String?
+  endTime String?
+  completedAt DateTime?
+  report String?
+  position Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([interventionId, date, position])
+}
+
 model Intervention {
   id String @id @default(cuid())
 
@@ -497,6 +516,8 @@ model Intervention {
   quote Quote? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
 
   invoices Invoice[]
+
+  dayTasks InterventionDayTask[]
 
   userId String?
 

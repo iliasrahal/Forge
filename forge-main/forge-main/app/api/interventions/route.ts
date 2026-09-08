@@ -9,8 +9,13 @@ import {
 } from "@/src/lib/workspace-access";
 import {
   createParisInterventionPeriod,
+  formatParisDateKey,
   getParisDayBounds,
 } from "@/src/lib/paris-datetime";
+import {
+  interventionDayTaskCreateData,
+  normalizeInterventionDayTasks,
+} from "@/src/lib/intervention-day-tasks";
 
 type InterventionOperation =
   | "reschedule"
@@ -22,7 +27,8 @@ type InterventionOperation =
   | "saveFinalization"
   | "finalize"
   | "start"
-  | "complete";
+  | "complete"
+  | "addDayTasks";
 
 function normalize(value: string) {
   return value
@@ -126,6 +132,12 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    const dayTasks = normalizeInterventionDayTasks(
+      body.dayTasks,
+      period.start,
+      period.end,
+    );
 
     let client = requestedClientId
       ? await prisma.client.findFirst({
@@ -237,8 +249,11 @@ export async function POST(request: Request) {
         scheduledAt: period.start,
         endDate: period.end,
         status: "PLANIFIEE",
+        dayTasks: dayTasks.length
+          ? { create: dayTasks.map(interventionDayTaskCreateData) }
+          : undefined,
       },
-      include: { client: true },
+      include: { client: true, dayTasks: true },
     });
 
     return NextResponse.json(
@@ -290,7 +305,8 @@ export async function PATCH(request: Request) {
       body.operation === "saveFinalization" ||
       body.operation === "finalize" ||
       body.operation === "start" ||
-      body.operation === "complete"
+      body.operation === "complete" ||
+      body.operation === "addDayTasks"
         ? body.operation
         : null;
 
@@ -299,6 +315,72 @@ export async function PATCH(request: Request) {
         { error: "L’action demandée est invalide." },
         { status: 400 },
       );
+    }
+
+
+    if (operation === "addDayTasks") {
+      const requestedId = cleanOptionalString(body.interventionId);
+      const clientName = cleanOptionalString(body.clientName);
+      const taskDates = Array.isArray(body.dayTasks)
+        ? body.dayTasks
+            .map((task: unknown) => task && typeof task === "object" && typeof (task as Record<string, unknown>).date === "string"
+              ? String((task as Record<string, unknown>).date)
+              : null)
+            .filter((date: string | null): date is string => Boolean(date))
+            .sort()
+        : [];
+      const dateBounds = taskDates[0] ? getParisDayBounds(taskDates[0]) : null;
+
+      let candidates = await prisma.intervention.findMany({
+        where: {
+          organizationId: workspaceContext.workspace.id,
+          status: { in: ["PLANIFIEE", "EN_COURS"] },
+          ...(requestedId ? { id: requestedId } : {}),
+          ...(dateBounds ? {
+            OR: [
+              { scheduledAt: { gte: dateBounds.start, lte: dateBounds.end } },
+              { scheduledAt: { lte: dateBounds.end }, endDate: { gte: dateBounds.start } },
+            ],
+          } : {}),
+        },
+        include: { client: true, dayTasks: true },
+        orderBy: { scheduledAt: "asc" },
+      });
+
+      if (!requestedId && clientName) {
+        const searchedName = normalize(clientName);
+        candidates = candidates.filter((candidate) =>
+          candidate.client && normalize(getClientDisplayName(candidate.client)).includes(searchedName),
+        );
+      }
+      if (candidates.length !== 1) {
+        return NextResponse.json(
+          { error: candidates.length ? "Plusieurs chantiers correspondent. Précise le client ou la date." : "Aucun chantier actif correspondant n’a été trouvé." },
+          { status: candidates.length ? 409 : 404 },
+        );
+      }
+
+      const target = candidates[0];
+      const tasks = normalizeInterventionDayTasks(body.dayTasks, target.scheduledAt, target.endDate);
+      const existingKeys = new Set(target.dayTasks.map((task) =>
+        `${formatParisDateKey(task.date)}\u0000${normalize(task.title)}`,
+      ));
+      const newTasks = tasks.filter((task) => !existingKeys.has(`${task.date}\u0000${normalize(task.title)}`));
+      if (!newTasks.length) {
+        return NextResponse.json({ intervention: target, operation, createdCount: 0 });
+      }
+      await prisma.interventionDayTask.createMany({
+        data: newTasks.map((task, index) => ({
+          ...interventionDayTaskCreateData(task),
+          interventionId: target.id,
+          position: target.dayTasks.length + index,
+        })),
+      });
+      const intervention = await prisma.intervention.findUnique({
+        where: { id: target.id },
+        include: { client: true, dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] } },
+      });
+      return NextResponse.json({ intervention, operation, createdCount: newTasks.length });
     }
 
     const interventionId =

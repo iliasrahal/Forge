@@ -311,6 +311,11 @@ export default function UpcomingCalendar({
                   <span className="mt-1 block text-sm text-slate-600 dark:text-slate-300">
                     {getAppointmentSubject(appointment) || "Intervention"}
                   </span>
+                  {(appointment.dayTasks?.filter((task) => task.date === selectedDateKey) ?? []).map((task) => (
+                    <span key={task.id} className="mt-1 block text-xs font-medium text-blue-700 dark:text-blue-300">
+                      {task.startTime ? `${task.startTime} · ` : ""}{task.title}
+                    </span>
+                  ))}
                   <span className="mt-2 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                     {getStatusLabel(
                       appointment.status,

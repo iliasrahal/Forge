@@ -88,7 +88,16 @@ type AssistantAction =
 type InterventionOperation =
   | "reschedule"
   | "cancel"
+  | "addDayTasks"
   | null;
+
+type AssistantDayTask = {
+  date: string;
+  title: string;
+  description: string | null;
+  startTime: string | null;
+  endTime: string | null;
+};
 
 type AssistantDecision = {
   intent: AssistantIntent;
@@ -102,6 +111,7 @@ type AssistantDecision = {
   scheduledEndDate: string | null;
   scheduledEndTime: string | null;
   interventionOperation: InterventionOperation;
+  dayTasks: AssistantDayTask[];
   phone: string | null;
   street: string | null;
   postalCode: string | null;
@@ -488,9 +498,26 @@ export default function ForgeBar({
         data.interventionOperation ===
           "reschedule" ||
         data.interventionOperation ===
-          "cancel"
+          "cancel" ||
+        data.interventionOperation ===
+          "addDayTasks"
           ? data.interventionOperation
           : null,
+
+      dayTasks: Array.isArray(data.dayTasks)
+        ? data.dayTasks.flatMap((raw: unknown) => {
+            if (!raw || typeof raw !== "object") return [];
+            const task = raw as Record<string, unknown>;
+            if (typeof task.date !== "string" || typeof task.title !== "string" || !task.title.trim()) return [];
+            return [{
+              date: task.date,
+              title: task.title.trim(),
+              description: typeof task.description === "string" && task.description.trim() ? task.description.trim() : null,
+              startTime: typeof (task.startTime ?? task.time) === "string" ? String(task.startTime ?? task.time) : null,
+              endTime: typeof task.endTime === "string" ? task.endTime : null,
+            }];
+          })
+        : [],
 
       phone:
         typeof data.phone === "string" &&
@@ -607,6 +634,9 @@ export default function ForgeBar({
       notes:
         newDecision.notes ??
         baseDecision.notes,
+      dayTasks: newDecision.dayTasks.length
+        ? newDecision.dayTasks
+        : baseDecision.dayTasks,
     };
 
     if (
@@ -766,6 +796,7 @@ export default function ForgeBar({
       street,
       postalCode,
       city,
+      dayTasks,
     } = decision;
 
     const missingFields =
@@ -803,6 +834,7 @@ export default function ForgeBar({
           street,
           postalCode,
           city,
+          dayTasks,
         }),
       },
     );
@@ -902,6 +934,7 @@ export default function ForgeBar({
       scheduledEndDate,
       scheduledEndTime,
       interventionOperation,
+      dayTasks,
     } = decision;
 
     if (!entity) {
@@ -914,6 +947,10 @@ export default function ForgeBar({
       throw new Error(
         "Précise si tu souhaites reporter ou annuler l’intervention.",
       );
+    }
+
+    if (interventionOperation === "addDayTasks" && dayTasks.length === 0) {
+      throw new Error("Précise au moins une tâche et sa journée.");
     }
 
     if (
@@ -953,6 +990,7 @@ export default function ForgeBar({
           scheduledTime,
           scheduledEndDate,
           scheduledEndTime,
+          dayTasks,
         }),
       },
     );
