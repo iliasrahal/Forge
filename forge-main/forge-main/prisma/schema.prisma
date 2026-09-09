@@ -303,6 +303,7 @@ model Organization {
   quotes              Quote[]
   invoices            Invoice[]
   creditNotes         CreditNote[]
+  quoteTemplates      QuoteTemplate[]
   serviceCatalogItems ServiceCatalogItem[]
   activeSessions      Session[]            @relation("ActiveOrganization")
 
@@ -1100,4 +1101,48 @@ model CreditNoteLine {
   createdAt DateTime @default(now())
 
   @@index([creditNoteId])
+}
+
+// Modèle de devis réutilisable : titre, réglages et lignes types.
+model QuoteTemplate {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name        String
+  title       String
+  description String?
+
+  vatApplicable Boolean @default(false)
+  discountBp    Int     @default(0)
+  retentionBp   Int     @default(0)
+
+  lines QuoteTemplateLine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+}
+
+model QuoteTemplateLine {
+  id String @id @default(cuid())
+
+  category String
+  label    String?
+
+  quantityMilli  Int @default(1000)
+  unit           String @default("forfait")
+  unitPriceCents Int @default(0)
+  costCents      Int?
+  discountBp     Int @default(0)
+  vatRateBp      Int @default(0)
+  position       Int @default(0)
+
+  templateId String
+  template   QuoteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([templateId, position])
 }

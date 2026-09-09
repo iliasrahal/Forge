@@ -3,6 +3,7 @@ import DeleteQuoteButton from "@/components/DeleteQuoteButton";
 import CreateDepositInvoice from "@/components/CreateDepositInvoice";
 import QuoteBillingPanel from "@/components/QuoteBillingPanel";
 import QuoteReminderPanel from "@/components/QuoteReminderPanel";
+import SaveQuoteAsTemplateButton from "@/components/SaveQuoteAsTemplateButton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import DocumentLineDetails from "@/components/DocumentLineDetails";
@@ -537,6 +538,13 @@ export default async function QuotePage({
   >
     Modifier le devis
   </Link>) : null}
+
+  {workspaceContext.permissions.canWrite && quote.lines.length > 0 ? (
+    <SaveQuoteAsTemplateButton
+      quoteId={quote.id}
+      defaultName={quote.title}
+    />
+  ) : null}
 
 
   <a
