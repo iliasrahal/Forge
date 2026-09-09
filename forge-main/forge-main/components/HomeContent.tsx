@@ -675,11 +675,11 @@ export default function HomeContent({
                 Salut{firstName ? ` ${firstName}` : ""},
               </h2>
 
-              <p className="mx-auto mt-7 max-w-lg text-2xl leading-9 text-[var(--ink-2)] sm:text-3xl sm:leading-10">
+              <p className="mx-auto mt-7 max-w-lg text-2xl font-medium leading-9 text-[var(--forge-text-primary)] sm:text-3xl sm:leading-10">
                 Décris-moi ta prochaine intervention.
               </p>
 
-              <p className="mx-auto mt-5 max-w-xl text-base italic leading-8 text-[var(--ink-3)] sm:text-lg">
+              <p className="mx-auto mt-5 max-w-xl text-base italic leading-8 text-[var(--forge-text-secondary)] sm:text-lg">
                 {getInterventionExample()}
               </p>
             </div>
@@ -781,7 +781,7 @@ export default function HomeContent({
 
   return (
     <section
-      className="flex min-h-0 shrink-0 flex-col items-center px-2 pb-3 pt-1 sm:px-4 lg:items-start"
+      className="flex min-h-0 shrink-0 flex-col items-center px-2 pb-3 pt-1 sm:px-4"
     >
       <div className="w-full max-w-2xl">
        {replyStatus === "idle" && !hideMainContent && (

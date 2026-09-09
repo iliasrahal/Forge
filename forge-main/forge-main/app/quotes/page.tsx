@@ -177,9 +177,11 @@ export default async function QuotesPage() {
                         {quote.title}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-[var(--forge-text-muted)]">
-                        {displayDocumentReference(quote.reference)}
-                        {clientName ? ` · ${clientName}` : ""} ·{" "}
-                        {formatDate(quote.createdAt)}
+                        <span className="tabular-nums">
+                          {displayDocumentReference(quote.reference)} ·{" "}
+                          {formatDate(quote.createdAt)}
+                        </span>
+                        {clientName ? ` · ${clientName}` : ""}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2.5">
@@ -188,7 +190,7 @@ export default async function QuotesPage() {
                           À relancer
                         </span>
                       ) : null}
-                      <span className="text-sm font-bold text-[var(--forge-text-primary)]">
+                      <span className="text-sm font-bold forge-num text-[var(--forge-text-primary)]">
                         {formatCurrency(quote.amountCents)}
                       </span>
                       <span className={statusChipClasses(quote.status)}>

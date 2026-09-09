@@ -62,7 +62,7 @@ export default function AppShell({
         <div className="fixed inset-x-0 bottom-0 z-50 isolate px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
 
 
-          <div className="forge-navbar mx-auto w-full max-w-md rounded-[1.75rem] border px-1.5 py-1.5 backdrop-blur-xl sm:px-2 sm:py-2">
+          <div className="forge-navbar mx-auto w-full max-w-md rounded-[1.75rem] border px-1.5 py-1.5 sm:px-2 sm:py-2">
 
             <BottomNavigation />
 

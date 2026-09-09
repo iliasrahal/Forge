@@ -285,19 +285,11 @@ export default async function InvoicePage({
 
 
 
-        <div className="mt-6 rounded-2xl bg-slate-50 p-5 dark:bg-slate-800">
-
-
-          <p className="text-sm text-slate-500">
-            Client
-          </p>
-
-
+        <div className="mt-6">
+          <p className="text-sm text-slate-500">Client</p>
           <p className="mt-1 text-lg font-semibold text-blue-700">
             {clientName}
           </p>
-
-
         </div>
 
 
@@ -315,14 +307,14 @@ export default async function InvoicePage({
               invoice.discountBp,
             );
             return (
-              <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
+              <div className="mt-6 border-t border-[var(--line)] pt-6">
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   Montant TTC
                 </p>
-                <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
+                <p className="mt-1 text-3xl font-bold forge-num text-blue-700 dark:text-blue-300">
                   {formatEur(invoice.amountCents)}
                 </p>
-                <dl className="mt-4 space-y-1.5 border-t border-blue-200/70 pt-4 text-sm text-blue-700 dark:border-blue-800 dark:text-blue-300">
+                <dl className="mt-4 space-y-1.5 border-t border-[var(--line)] pt-4 text-sm tabular-nums text-blue-700 dark:text-blue-300">
                   <div className="flex items-center justify-between">
                     <dt>Total HT</dt>
                     <dd className="font-semibold">{formatEur(vt.totalHtCents)}</dd>
@@ -358,11 +350,11 @@ export default async function InvoicePage({
             }
           />
         ) : (
-          <div className="mt-6 rounded-2xl bg-blue-50 p-5 dark:bg-blue-950">
+          <div className="mt-6 border-t border-[var(--line)] pt-6">
             <p className="text-sm text-blue-700 dark:text-blue-300">
               Montant total
             </p>
-            <p className="mt-1 text-3xl font-bold text-blue-700 dark:text-blue-300">
+            <p className="mt-1 text-3xl font-bold forge-num text-blue-700 dark:text-blue-300">
               {formatEur(invoice.amountCents)}
             </p>
           </div>
@@ -381,19 +373,19 @@ export default async function InvoicePage({
         ) : null}
 
         {invoice.lines.length > 0 ? (
-          <div className="mt-6">
+          <div className="mt-6 border-t border-[var(--line)] pt-6">
             <p className="text-sm font-semibold text-slate-500">Détail</p>
-            <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 dark:divide-slate-700 dark:border-slate-700">
+            <div className="mt-2 divide-y divide-[var(--line)]">
               {invoice.lines.map((line) => (
                 <div
                   key={line.id}
-                  className="flex items-start justify-between gap-3 px-4 py-3 text-sm"
+                  className="flex items-start justify-between gap-3 py-3 text-sm"
                 >
                   <div className="min-w-0 flex-1">
                     <span className="block truncate font-medium text-slate-800 dark:text-slate-100">
                       {line.label || line.category}
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
                       {formatQuantity(line.quantityMilli)} {formatUnit(line.unit)} ×{" "}
                       {formatEur(line.unitPriceCents)}
                       {line.discountBp > 0
@@ -405,7 +397,7 @@ export default async function InvoicePage({
                       formatAmount={formatEur}
                     />
                   </div>
-                  <span className="shrink-0 font-semibold text-slate-900 dark:text-white">
+                  <span className="shrink-0 font-semibold forge-num text-slate-900 dark:text-white">
                     {formatEur(line.amountCents)}
                   </span>
                 </div>
@@ -460,23 +452,23 @@ export default async function InvoicePage({
         ) : null}
 
         {invoice.creditNotes.length > 0 ? (
-          <div className="mt-6">
+          <div className="mt-6 border-t border-[var(--line)] pt-6">
             <p className="text-sm font-semibold text-slate-500">Avoirs</p>
-            <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 dark:divide-slate-700 dark:border-slate-700">
+            <div className="mt-2 divide-y divide-[var(--line)]">
               {invoice.creditNotes.map((creditNote) => (
                 <Link
                   key={creditNote.id}
                   href={`/credit-notes/${creditNote.id}`}
-                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 text-sm transition hover:bg-slate-500/10"
                 >
-                  <span className="text-slate-800 dark:text-slate-100">
+                  <span className="tabular-nums text-slate-800 dark:text-slate-100">
                     {displayDocumentReference(creditNote.reference)}
                     <span className="ml-2 text-xs text-slate-500">
                       {CREDIT_NOTE_STATUS_LABELS[creditNote.status] ??
                         creditNote.status}
                     </span>
                   </span>
-                  <span className="font-semibold text-pink-600 dark:text-pink-400">
+                  <span className="font-semibold forge-num text-pink-600 dark:text-pink-400">
                     − {formatEur(creditNote.amountCents)}
                   </span>
                 </Link>

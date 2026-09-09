@@ -30,7 +30,7 @@ export default function BottomNavigation() {
             href={href}
             aria-current={active ? "page" : undefined}
             data-active={active ? "true" : undefined}
-            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-all duration-200 sm:min-h-16 sm:text-[0.74rem]"
+            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.72rem] font-semibold tracking-[-0.005em] transition-all duration-200 sm:min-h-16 sm:text-[0.78rem]"
           >
             <Icon
               size={22}

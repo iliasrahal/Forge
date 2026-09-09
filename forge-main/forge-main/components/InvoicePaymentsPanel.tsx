@@ -163,7 +163,7 @@ export default function InvoicePaymentsPanel({
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 sm:p-5">
+    <section className="mt-6 border-t border-[var(--line)] pt-6">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
           <Wallet size={19} />
@@ -180,15 +180,15 @@ export default function InvoicePaymentsPanel({
         </div>
       </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-        <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+      <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm tabular-nums sm:grid-cols-4">
+        <div>
           <dt className="text-xs text-[var(--forge-text-muted)]">Encaissé</dt>
           <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
             {formatEur(state.collectedCents)}
           </dd>
         </div>
         {retentionCents > 0 ? (
-          <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+          <div>
             <dt className="text-xs text-[var(--forge-text-muted)]">
               Retenue garantie
             </dt>
@@ -198,26 +198,26 @@ export default function InvoicePaymentsPanel({
           </div>
         ) : null}
         {state.creditedCents > 0 ? (
-          <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+          <div>
             <dt className="text-xs text-[var(--forge-text-muted)]">Avoirs</dt>
             <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
               − {formatEur(state.creditedCents)}
             </dd>
           </div>
         ) : null}
-        <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+        <div>
           <dt className="text-xs text-[var(--forge-text-muted)]">Reste dû</dt>
           <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
             {formatEur(state.remainingCents)}
           </dd>
         </div>
-        <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+        <div>
           <dt className="text-xs text-[var(--forge-text-muted)]">Frais</dt>
           <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
             {hasFees ? `− ${formatEur(state.feeCents)}` : "—"}
           </dd>
         </div>
-        <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+        <div>
           <dt className="text-xs text-[var(--forge-text-muted)]">Net reçu</dt>
           <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
             {hasFees ? formatEur(state.netCents) : formatEur(state.collectedCents)}

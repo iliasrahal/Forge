@@ -1274,7 +1274,7 @@ const handleCreateInvoice = async () => {
             : "pt-4 sm:pt-6"
       }`}
     >
-      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : showDashboard ? "max-w-xl lg:max-w-6xl" : "max-w-xl lg:max-w-3xl"}`}>
+      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : showDashboard && showDashboardAside ? "max-w-xl lg:max-w-6xl" : "max-w-xl lg:max-w-3xl"}`}>
 
   <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 flex-col items-end gap-2`}>
     <WorkspaceSwitcher />
@@ -1293,7 +1293,7 @@ const handleCreateInvoice = async () => {
           onSelect={handleSelectAppointment}
         />
 
-        <section className="mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2 lg:justify-start">
+        <section className="mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2">
           {canWrite ? (
             <button
               type="button"
@@ -1324,10 +1324,10 @@ const handleCreateInvoice = async () => {
               <h2 className="text-3xl text-blue-600">
                 Salut{userFirstName ? ` ${userFirstName}` : ""},
               </h2>
-              <p className="mx-auto mt-3 max-w-xs text-lg leading-7 text-[var(--ink-2)]">
+              <p className="mx-auto mt-3 max-w-xs text-lg font-medium leading-7 text-[var(--forge-text-primary)]">
                 Décris-moi ta prochaine intervention.
               </p>
-              <p className="mx-auto mt-3 max-w-xs text-sm italic leading-6 text-[var(--ink-3)]">
+              <p className="mx-auto mt-3 max-w-xs text-sm italic leading-6 text-[var(--forge-text-secondary)]">
                 Exemple&nbsp;: J’ai une intervention demain à 10h chez Charles
               </p>
             </div>

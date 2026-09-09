@@ -1898,7 +1898,7 @@ export default function ForgeBar({
        aria-disabled={isWorkspaceLocked}
        className={`flex h-20 w-full items-center gap-3 px-1 transition sm:px-2 ${isWorkspaceLocked ? "pointer-events-none opacity-60" : ""} ${
          variant === "floating"
-           ? "forge-bar rounded-3xl border px-5 backdrop-blur-xl"
+           ? "forge-bar rounded-3xl border px-5"
            : "h-16 gap-2 bg-transparent [&_button]:!h-10 [&_button]:!w-10 [&_button_svg]:!h-5 [&_button_svg]:!w-5 sm:h-20 sm:gap-3 sm:[&_button]:!h-12 sm:[&_button]:!w-12 sm:[&_button_svg]:!h-auto sm:[&_button_svg]:!w-auto"
        }`}
      >

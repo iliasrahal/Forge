@@ -43,7 +43,7 @@ export default function UseQuoteTemplateButton({ templateId }: Props) {
         type="button"
         onClick={create}
         disabled={busy}
-        className="rounded-xl bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+        className="rounded-xl border border-blue-600 px-3 py-1.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-60 dark:text-blue-400"
       >
         {busy ? "Création…" : "Créer un devis"}
       </button>

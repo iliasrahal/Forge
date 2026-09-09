@@ -218,13 +218,10 @@ export default function UpcomingCalendar({
     >
       {!modalOnly ? (
       <>
-      <div className="rounded-[2rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.42)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90 sm:p-5">
+      <div className="rounded-[2rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.42)] dark:border-slate-800 dark:bg-slate-900/90 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">
-              Planning
-            </p>
-            <h1 className="mt-1 text-xl font-bold capitalize sm:text-2xl">{monthLabel}</h1>
+            <h1 className="text-xl font-bold capitalize sm:text-2xl">{monthLabel}</h1>
           </div>
           {canWrite ? (<button
             type="button"
@@ -372,8 +369,7 @@ export default function UpcomingCalendar({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">Planning</p>
-                <h2 className="mt-1 text-xl font-bold">Nouvelle intervention</h2>
+                <h2 className="text-xl font-bold">Nouvelle intervention</h2>
               </div>
               <button
                 type="button"

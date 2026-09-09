@@ -49,7 +49,7 @@ export default function DesktopSidebar() {
               aria-current={active ? "page" : undefined}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                 active
-                  ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_18%,transparent)] text-[var(--forge-text-primary)]"
+                  ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_20%,var(--forge-surface))] text-[var(--forge-text-primary)]"
                   : "text-[var(--forge-text-secondary)] hover:bg-[var(--forge-surface-hover)] hover:text-[var(--forge-text-primary)]"
               }`}
             >
@@ -65,7 +65,7 @@ export default function DesktopSidebar() {
         aria-current={settingsActive ? "page" : undefined}
         className={`mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
           settingsActive
-            ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_18%,transparent)] text-[var(--forge-text-primary)]"
+            ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_20%,var(--forge-surface))] text-[var(--forge-text-primary)]"
             : "text-[var(--forge-text-secondary)] hover:bg-[var(--forge-surface-hover)] hover:text-[var(--forge-text-primary)]"
         }`}
       >

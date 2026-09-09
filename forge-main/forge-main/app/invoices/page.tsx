@@ -122,13 +122,13 @@ export default async function InvoicesPage() {
                         </span>
                       ) : null}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-[var(--forge-text-muted)]">
+                    <p className="mt-0.5 truncate text-xs tabular-nums text-[var(--forge-text-muted)]">
                       {displayDocumentReference(invoice.reference)} ·{" "}
                       {formatDate(invoice.createdAt)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2.5">
-                    <span className="text-sm font-bold text-[var(--forge-text-primary)]">
+                    <span className="text-sm font-bold forge-num text-[var(--forge-text-primary)]">
                       {formatAmount(invoice.amountCents)}
                     </span>
                     <span className={statusChipClasses(invoice.status)}>

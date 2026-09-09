@@ -30,7 +30,7 @@ export default function TodayInterventions({
         Aujourd&apos;hui
       </h2>
 
-      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
+      <div className="flex flex-wrap justify-center gap-2">
         {visibleAppointments.map((appointment) => {
           const selected = appointment.id === selectedAppointmentId;
           const inProgress = appointment.status === "inProgress";
@@ -45,7 +45,7 @@ export default function TodayInterventions({
               type="button"
               aria-pressed={selected}
               onClick={() => onSelect(appointment.id)}
-              className={`forge-surface flex min-h-[8.5rem] min-w-0 flex-col rounded-2xl border px-3.5 py-3 text-left transition ${
+              className={`forge-surface flex min-h-[8.5rem] w-full min-w-0 flex-col rounded-2xl border px-3.5 py-3 text-left transition min-[360px]:w-[calc(50%-0.25rem)] sm:w-56 ${
                 selected
                   ? "border-blue-500 bg-blue-500/15 shadow-md shadow-blue-500/15 ring-1 ring-inset ring-blue-500/25"
                   : "hover:border-blue-300 hover:bg-blue-500/5 dark:hover:border-blue-700"
