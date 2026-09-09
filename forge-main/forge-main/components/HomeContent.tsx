@@ -58,6 +58,7 @@ type HomeContentProps = {
   canWrite: boolean;
   currentAppointment?: Appointment;
   hideMainContent?: boolean;
+  hideGreetingOnDesktop?: boolean;
   report?: InterventionReport | null;
   error?: string;
   isValidatingReport?: boolean;
@@ -98,6 +99,7 @@ export default function HomeContent({
   canWrite,
   currentAppointment,
   hideMainContent = false,
+  hideGreetingOnDesktop = false,
   report,
   error,
   isValidatingReport = false,
@@ -660,10 +662,10 @@ export default function HomeContent({
 
   if (!currentAppointment) {
     return (
-      <section className={`flex flex-1 flex-col items-center justify-center px-2 sm:px-4 ${hideMainContent ? "min-h-0 pb-0 pt-0" : "min-h-[32rem] pb-32 pt-12 sm:pb-36"}`}>
+      <section className={`flex flex-1 flex-col items-center justify-center px-2 sm:px-4 ${hideMainContent ? "min-h-0 pb-0 pt-0" : hideGreetingOnDesktop ? "min-h-[32rem] pb-32 pt-12 sm:pb-36 lg:min-h-0 lg:flex-none lg:pb-6 lg:pt-0" : "min-h-[32rem] pb-32 pt-12 sm:pb-36"}`}>
         <div className="w-full max-w-2xl">
           {replyStatus === "idle" && !hideMainContent && (
-            <div className="text-center">
+            <div className={`text-center ${hideGreetingOnDesktop ? "lg:hidden" : ""}`}>
               <span
                 aria-hidden="true"
                 className="mx-auto mb-5 block h-[3px] w-10 rounded-full bg-[#4c6ef5]"
@@ -777,7 +779,7 @@ export default function HomeContent({
 
   return (
     <section
-      className="flex min-h-0 shrink-0 flex-col items-center px-2 pb-3 pt-1 sm:px-4"
+      className="flex min-h-0 shrink-0 flex-col items-center px-2 pb-3 pt-1 sm:px-4 lg:items-start"
     >
       <div className="w-full max-w-2xl">
        {replyStatus === "idle" && !hideMainContent && (

@@ -14,6 +14,7 @@ import UpcomingCalendar, {
   type PlanningClient,
 } from "@/components/UpcomingCalendar";
 import { type Appointment } from "@/data/appointments";
+import { sortActiveTodayAppointments } from "@/src/lib/intervention-calendar";
 import type { SmartReminder } from "@/src/lib/smart-reminders";
 
 type HomeState =
@@ -751,6 +752,14 @@ const handleSaveNotes = async (notes: string) => {
     setShowUpcomingCalendar(true);
   };
 
+  const openCalendar = () => {
+    setAutoOpenNewIntervention(false);
+    setCalendarFocusDate(
+      upcomingAppointmentsList[0]?.date ?? todayDateKey,
+    );
+    setShowUpcomingCalendar(true);
+  };
+
   const handleCloseUpcomingCalendar = () => {
     setShowUpcomingCalendar(false);
     setAutoOpenNewIntervention(false);
@@ -1248,6 +1257,13 @@ const handleCreateInvoice = async () => {
   }
 };
 
+  const showDashboard =
+    homeState === "intervention" &&
+    !showUpcomingCalendar &&
+    (sortActiveTodayAppointments(appointmentsList).length > 0 ||
+      reminders.length > 0);
+  const showDashboardAside = !currentAppointment || reminders.length > 0;
+
   return (
     <main
       className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible px-3 pb-4 sm:px-6 ${
@@ -1258,7 +1274,7 @@ const handleCreateInvoice = async () => {
             : "pt-4 sm:pt-6"
       }`}
     >
-      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : "max-w-xl"}`}>
+      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : showDashboard ? "max-w-xl lg:max-w-6xl" : "max-w-xl lg:max-w-3xl"}`}>
 
   <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 flex-col items-end gap-2`}>
     <WorkspaceSwitcher />
@@ -1268,59 +1284,93 @@ const handleCreateInvoice = async () => {
     />
   </div>
 
-  {homeState === "intervention" && !showUpcomingCalendar ? (
-    <HomeReminders reminders={reminders} canWrite={canWrite} />
-  ) : null}
+  {showDashboard ? (
+    <div className={showDashboardAside ? "lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8" : ""}>
+      <div className="min-w-0">
+        <TodayInterventions
+          appointments={appointmentsList}
+          selectedAppointmentId={selectedAppointmentId}
+          onSelect={handleSelectAppointment}
+        />
 
-
-  {homeState === "intervention" && !showUpcomingCalendar ? (
-    <TodayInterventions
-      appointments={appointmentsList}
-      selectedAppointmentId={selectedAppointmentId}
-      onSelect={handleSelectAppointment}
-    />
-  ) : null}
-
-
-
-  {homeState === "intervention" && (
-
-      <section className="mb-3 flex min-w-0 shrink-0 flex-wrap items-center justify-center gap-2">
-        {canWrite && !showUpcomingCalendar ? (
+        <section className="mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2 lg:justify-start">
+          {canWrite ? (
+            <button
+              type="button"
+              onClick={openNewInterventionForm}
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
+            >
+              + Nouvelle intervention
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={openNewInterventionForm}
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
+            onClick={openCalendar}
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 sm:text-base"
           >
-            + Nouvelle intervention
+            Prochainement ({upcomingAppointmentsList.length})
           </button>
-        ) : null}
+        </section>
+      </div>
+
+      {showDashboardAside ? (
+        <div className="mt-8 min-w-0 lg:mt-0">
+          {!currentAppointment ? (
+            <div className="mb-5 hidden text-center lg:block">
+              <span
+                aria-hidden="true"
+                className="mx-auto mb-4 block h-[3px] w-10 rounded-full bg-[#4c6ef5]"
+              />
+              <h2 className="text-3xl text-blue-600">
+                Salut{userFirstName ? ` ${userFirstName}` : ""},
+              </h2>
+              <p className="mx-auto mt-3 max-w-xs text-lg leading-7 text-[var(--ink-2)]">
+                Décris-moi ta prochaine intervention.
+              </p>
+              <p className="mx-auto mt-3 max-w-xs text-sm italic leading-6 text-[var(--ink-3)]">
+                Exemple&nbsp;: J’ai une intervention demain à 10h chez Charles
+              </p>
+            </div>
+          ) : null}
+          <HomeReminders reminders={reminders} canWrite={canWrite} />
+        </div>
+      ) : null}
+    </div>
+  ) : null}
+
+  {homeState === "intervention" && !showUpcomingCalendar && !showDashboard ? (
+    <section className="mb-3 flex min-w-0 shrink-0 flex-wrap items-center justify-center gap-2">
+      {canWrite ? (
         <button
           type="button"
-          aria-expanded={showUpcomingCalendar}
-          onClick={() => {
-            if (showUpcomingCalendar) {
-              handleCloseUpcomingCalendar();
-              return;
-            }
-
-            setAutoOpenNewIntervention(false);
-            setCalendarFocusDate(
-              upcomingAppointmentsList[0]?.date ?? todayDateKey,
-            );
-            setShowUpcomingCalendar(true);
-          }}
-          className={`inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-2.5 text-sm font-semibold transition sm:text-base ${
-            showUpcomingCalendar
-              ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-              : "border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700"
-          }`}
+          onClick={openNewInterventionForm}
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
         >
-          Prochainement ({upcomingAppointmentsList.length})
+          + Nouvelle intervention
         </button>
-      </section>
+      ) : null}
+      <button
+        type="button"
+        onClick={openCalendar}
+        className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 sm:text-base"
+      >
+        Prochainement ({upcomingAppointmentsList.length})
+      </button>
+    </section>
+  ) : null}
 
-    )}
+  {homeState === "intervention" && showUpcomingCalendar ? (
+    <section className="mb-3 flex min-w-0 shrink-0 items-center justify-center">
+      <button
+        type="button"
+        aria-expanded={true}
+        onClick={handleCloseUpcomingCalendar}
+        className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-600 bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition sm:text-base"
+      >
+        Prochainement ({upcomingAppointmentsList.length})
+      </button>
+    </section>
+  ) : null}
 
   {homeState === "intervention" && showUpcomingCalendar && (
     <UpcomingCalendar
@@ -1592,6 +1642,7 @@ const handleCreateInvoice = async () => {
     canWrite={canWrite}
 
     hideMainContent={showUpcomingCalendar}
+    hideGreetingOnDesktop={showDashboard}
 
     currentAppointment={
       currentAppointment
