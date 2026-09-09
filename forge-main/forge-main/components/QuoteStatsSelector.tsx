@@ -318,45 +318,21 @@ export default function QuoteStatsSelector({
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]">
-        {monthlyTotals.map((item, index) => {
-          const isSelected = index === selectedMonth;
-
-          return (
-            <button
-              key={item.month}
-              type="button"
-              onClick={() => {
-                setSelectedMonth(index);
-                setAppliedRange(null);
-              }}
-              aria-pressed={isSelected}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                isSelected
-                  ? "border-blue-600 bg-blue-600 text-white shadow-sm"
-                  : "border-slate-200 bg-white/70 text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-300"
-              }`}
-            >
-              {item.month} ({item.count})
-            </button>
-          );
-        })}
-      </div>
-
       <section aria-live="polite" className="space-y-3">
-        <div>
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-            {appliedRange
-              ? `Du ${formatDateKey(appliedRange.from)} au ${formatDateKey(appliedRange.to)}`
-              : `${months[selectedMonth]} ${selectedYear}`}
-          </p>
-          <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-            {displayedDocuments.length} {documentLabel}
-            {documentLabel === "facture" && displayedDocuments.length !== 1
-              ? "s"
-              : ""}
-          </h2>
-        </div>
+        {appliedRange ? (
+          <div>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+              Du {formatDateKey(appliedRange.from)} au{" "}
+              {formatDateKey(appliedRange.to)}
+            </p>
+            <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+              {displayedDocuments.length} {documentLabel}
+              {documentLabel === "facture" && displayedDocuments.length !== 1
+                ? "s"
+                : ""}
+            </h2>
+          </div>
+        ) : null}
 
         {displayedLoading ? (
           <p className="py-8 text-center text-slate-500 dark:text-slate-400">
