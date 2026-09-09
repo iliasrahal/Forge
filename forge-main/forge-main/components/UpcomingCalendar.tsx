@@ -135,6 +135,15 @@ export default function UpcomingCalendar({
 
   const goToToday = () => selectDate(todayDateKey);
 
+  // Quand le formulaire a été ouvert directement depuis l'accueil, le refermer
+  // sans créer ramène à l'accueil plutôt que d'échouer dans le planning.
+  const closeCreationForm = () => {
+    setShowCreationForm(false);
+    if (autoOpenCreationForm) {
+      onClose();
+    }
+  };
+
   const openCreationForm = () => {
     setScheduledDate(selectedDateKey);
     setCreationError("");
@@ -356,7 +365,7 @@ export default function UpcomingCalendar({
               </div>
               <button
                 type="button"
-                onClick={() => setShowCreationForm(false)}
+                onClick={closeCreationForm}
                 aria-label="Fermer"
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300"
               >
@@ -493,7 +502,7 @@ export default function UpcomingCalendar({
             <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
               <button
                 type="button"
-                onClick={() => setShowCreationForm(false)}
+                onClick={closeCreationForm}
                 disabled={isCreating}
                 className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200"
               >

@@ -733,6 +733,7 @@ export default function HomeContent({
           )}
         </div>
 
+        {!hideMainContent ? (
         <FixedForgeBar
           context="home"
           initialMessage={replyDraft}
@@ -773,6 +774,7 @@ export default function HomeContent({
           }}
           onReplyError={handleForgeError}
         />
+        ) : null}
       </section>
     );
   }
@@ -850,6 +852,7 @@ export default function HomeContent({
         )}
       </div>
 
+      {!hideMainContent ? (
       <FixedForgeBar
         context="home"
         initialMessage={replyDraft}
@@ -881,6 +884,7 @@ export default function HomeContent({
         }}
         onReplyError={handleForgeError}
       />
+      ) : null}
     </section>
   );
 }
