@@ -49,7 +49,7 @@ export default function DeleteQuoteButton({
           setError("");
           setOpen(true);
         }}
-        className="min-h-12 w-full rounded-2xl border border-red-500/60 px-5 py-3 font-semibold text-red-600 transition hover:bg-red-500/10 dark:text-red-400"
+        className="min-h-12 w-full rounded-2xl bg-red-50 px-5 py-3 font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950 dark:text-red-200 dark:hover:bg-red-900"
       >
         Supprimer le devis
       </button>

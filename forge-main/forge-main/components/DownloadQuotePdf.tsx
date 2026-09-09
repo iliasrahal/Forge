@@ -28,7 +28,7 @@ export default function DownloadQuotePdf({
   const initialClientEmail = isValidClientEmail(clientEmail)
     ? normalizeClientEmail(clientEmail)
     : "";
-  const [missingEmail, setMissingEmail] = useState(Boolean(clientId) && !initialClientEmail);
+  const [missingEmail, setMissingEmail] = useState(!initialClientEmail);
   const [missingClient, setMissingClient] = useState(false);
   const [email, setEmail] = useState(initialClientEmail);
   const [recipientEmail, setRecipientEmail] = useState(initialClientEmail);
@@ -73,7 +73,9 @@ export default function DownloadQuotePdf({
         ) {
 
           setMessage(
-            "⚠️ Ce client n'a pas encore d'adresse email.",
+            clientId
+              ? "⚠️ Ce client n'a pas encore d'adresse e-mail."
+              : "Ajoute une adresse e-mail pour envoyer le devis.",
           );
 
           setMissingEmail(true);
@@ -157,7 +159,7 @@ export default function DownloadQuotePdf({
         type="button"
         onClick={() => void handleSendQuote()}
         disabled={loading}
-        className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
+        className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
       >
 
         {loading
@@ -200,13 +202,15 @@ export default function DownloadQuotePdf({
 
       )}
 
-      {missingEmail && clientId ? (
+      {missingEmail ? (
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-left dark:border-blue-900 dark:bg-blue-950">
           <label
             htmlFor="quote-client-email"
             className="block text-sm font-semibold text-blue-700 dark:text-blue-300"
           >
-            Adresse e-mail du client
+            {clientId
+              ? "Adresse e-mail du client"
+              : "Adresse e-mail du destinataire"}
           </label>
           <input
             id="quote-client-email"

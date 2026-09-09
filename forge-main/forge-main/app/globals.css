@@ -927,17 +927,18 @@ html.dark body {
   box-shadow: 0 20px 40px -14px color-mix(in srgb, var(--cobalt) 78%, transparent);
 }
 
-/* Action secondaire : contour cobalt discret, texte clair, fond nul.
-   Toute action « contour de couleur » (bleu, rose, émeraude...) rejoint ce
-   seul style secondaire — un écran = une seule couleur d'action. Le rouge
-   reste réservé au destructif. */
+/* Action secondaire : contour cobalt discret, texte clair, fond plein
+   (jamais transparent : les boutons doivent rester lisibles sur n'importe
+   quel arrière-plan). Toute action « contour de couleur » (bleu, rose,
+   émeraude...) rejoint ce seul style secondaire — un écran = une seule
+   couleur d'action. Le rouge reste réservé au destructif. */
 .forge-app-shell :is(button, a)[class*="border-blue"]:not([class*="bg-blue-600"]),
 .forge-app-shell :is(button, a)[class*="border-pink"]:not([class*="bg-"]),
 .forge-app-shell :is(button, a)[class*="border-emerald"]:not([class*="bg-"]),
 .forge-app-shell :is(button, a)[class*="border-green"]:not([class*="bg-"]) {
-  border-color: color-mix(in srgb, var(--cobalt) 55%, var(--line-strong)) !important;
+  border-color: color-mix(in srgb, var(--cobalt) 45%, var(--line-strong)) !important;
   color: var(--ink) !important;
-  background-color: transparent !important;
+  background-color: color-mix(in srgb, var(--cobalt) 14%, var(--panel)) !important;
 }
 
 .forge-app-shell :is(button, a)[class*="border-pink"]:not([class*="bg-"]) :is(svg, span),
@@ -951,7 +952,7 @@ html.dark body {
 .forge-app-shell :is(button, a)[class*="border-emerald"]:not([class*="bg-"]):hover,
 .forge-app-shell :is(button, a)[class*="border-green"]:not([class*="bg-"]):hover {
   border-color: var(--cobalt) !important;
-  background-color: color-mix(in srgb, var(--cobalt) 10%, transparent) !important;
+  background-color: color-mix(in srgb, var(--cobalt) 24%, var(--panel)) !important;
 }
 
 /* Liens et libelles bleus de l'ancienne identite. */

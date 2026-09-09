@@ -149,25 +149,21 @@ export async function POST(
       );
     }
 
-    if (!quote.client) {
-      return NextResponse.json(
-        {
-          error: "client_missing",
-          message: "Associez un client au devis avant de l’envoyer.",
-        },
-        { status: 400 },
-      );
-    }
-
-    if (quote.client.organizationId !== workspaceContext.workspace.id) {
+    if (
+      quote.client &&
+      quote.client.organizationId !== workspaceContext.workspace.id
+    ) {
       return NextResponse.json({ error: "Devis introuvable" }, { status: 404 });
     }
 
-    const { recipientEmail, shouldPersist } =
+    // Un devis peut être envoyé sans client associé : dans ce cas l'adresse
+    // du destinataire est saisie à l'envoi et n'est jamais persistée.
+    const { recipientEmail, shouldPersist: shouldPersistEmail } =
       resolveStoredOrProvidedClientEmail({
-        clientEmail: quote.client.email,
+        clientEmail: quote.client?.email,
         explicitEmail,
       });
+    const shouldPersist = Boolean(quote.client) && shouldPersistEmail;
 
     if (!recipientEmail) {
       return NextResponse.json(
@@ -175,8 +171,10 @@ export async function POST(
           error: explicitEmail ? "email_invalid" : "email_missing",
           message: explicitEmail
             ? "Saisis une adresse e-mail valide."
-            : "Ce client n'a pas encore d'adresse e-mail.",
-          clientId: quote.client.id,
+            : quote.client
+              ? "Ce client n'a pas encore d'adresse e-mail."
+              : "Ajoute une adresse e-mail pour envoyer le devis.",
+          clientId: quote.client?.id ?? null,
         },
         { status: 400 },
       );
@@ -227,8 +225,9 @@ export async function POST(
 
 
 
-    const clientName =
-      quote.client.type === "PARTICULIER"
+    const clientName = !quote.client
+      ? "Madame, Monsieur"
+      : quote.client.type === "PARTICULIER"
         ? quote.client.firstName?.trim() ||
           `${quote.client.firstName ?? ""} ${
             quote.client.lastName ?? ""
@@ -291,7 +290,7 @@ export async function POST(
       }),
     ];
 
-    if (shouldPersist) {
+    if (shouldPersist && quote.client) {
       finalizationOperations.push(
         prisma.client.updateMany({
           where: {

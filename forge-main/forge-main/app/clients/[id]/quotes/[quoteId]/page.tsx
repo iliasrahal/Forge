@@ -518,64 +518,64 @@ export default async function QuotePage({
 
       <aside className="mt-4 space-y-3 lg:mt-0 lg:sticky lg:top-6">
 
-  {workspaceContext.permissions.canWrite ? (
-    <DownloadQuotePdf
-      clientId={quote.clientId}
-      clientEmail={quote.client?.email}
-      quoteId={quoteId}
-      quoteEditUrl={getQuoteEditPath(quote)}
-    />
-  ) : null}
+        {workspaceContext.permissions.canWrite ? (
+          <div className="forge-surface space-y-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
+            <DownloadQuotePdf
+              clientId={quote.clientId}
+              clientEmail={quote.client?.email}
+              quoteId={quoteId}
+              quoteEditUrl={getQuoteEditPath(quote)}
+            />
 
+            {quote.clientId ? (
+              <Link
+                href={{
+                  pathname: `/clients/${id}/interventions/new`,
+                  query: {
+                    title: quote.title,
+                    quoteId: quote.id,
+                    ...(quote.description
+                      ? { description: quote.description }
+                      : {}),
+                  },
+                }}
+                className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+              >
+                Créer une intervention
+              </Link>
+            ) : null}
 
-  {workspaceContext.permissions.canWrite && quote.clientId ? (<Link
-    href={{
-      pathname: `/clients/${id}/interventions/new`,
-      query: {
-        title: quote.title,
-        quoteId: quote.id,
-        ...(quote.description
-          ? {
-              description:
-                quote.description,
-            }
-          : {}),
-      },
-    }}
-    className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-  >
-    Créer une intervention
-  </Link>) : null}
+            {quote.status !== "ACCEPTE" && !quote.signature ? (
+              <Link
+                href={getQuoteEditPath(quote)}
+                className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+              >
+                Modifier le devis
+              </Link>
+            ) : null}
 
+            {quote.lines.length > 0 ? (
+              <SaveQuoteAsTemplateButton
+                quoteId={quote.id}
+                defaultName={quote.title}
+              />
+            ) : null}
 
-  {workspaceContext.permissions.canWrite && quote.status !== "ACCEPTE" && !quote.signature ? (<Link
-    href={getQuoteEditPath(quote)}
-    className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-  >
-    Modifier le devis
-  </Link>) : null}
+            <a
+              href={`/api/quotes/${quoteId}/pdf`}
+              download={`devis-${quote.reference}.pdf`}
+              className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+            >
+              Télécharger le devis
+            </a>
 
-  {workspaceContext.permissions.canWrite && quote.lines.length > 0 ? (
-    <SaveQuoteAsTemplateButton
-      quoteId={quote.id}
-      defaultName={quote.title}
-    />
-  ) : null}
+            {quote.status === "BROUILLON" ? (
+              <DeleteQuoteButton quoteId={quote.id} />
+            ) : null}
 
-
-  <a
-    href={`/api/quotes/${quoteId}/pdf`}
-    download={`devis-${quote.reference}.pdf`}
-    className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
-  >
-    Télécharger le devis
-  </a>
-
-  {workspaceContext.permissions.canWrite &&
-  quote.status === "BROUILLON" ? (
-    <DeleteQuoteButton quoteId={quote.id} />
-  ) : null}
+          </div>
+        ) : null}
 
         <p className="hidden text-sm text-slate-500 lg:block dark:text-slate-400">
           Créé le {formatDate(quote.createdAt)}
