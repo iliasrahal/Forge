@@ -29,6 +29,7 @@ type Props = {
   invoiceTtcCents: number;
   canRecord: boolean;
   payments: InvoicePaymentRow[];
+  creditedCents?: number;
 };
 
 const METHOD_OPTIONS: Array<{ value: (typeof MANUAL_PAYMENT_METHODS)[number]; label: string }> = [
@@ -62,6 +63,7 @@ export default function InvoicePaymentsPanel({
   invoiceTtcCents,
   canRecord,
   payments,
+  creditedCents = 0,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -84,6 +86,7 @@ export default function InvoicePaymentsPanel({
       refundedCents: payment.refundedCents,
       paidAt: payment.paidAt,
     })),
+    creditedCents,
   );
 
   const hasFees = state.feeCents > 0;
@@ -180,6 +183,14 @@ export default function InvoicePaymentsPanel({
             {formatEur(state.collectedCents)}
           </dd>
         </div>
+        {state.creditedCents > 0 ? (
+          <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+            <dt className="text-xs text-[var(--forge-text-muted)]">Avoirs</dt>
+            <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
+              − {formatEur(state.creditedCents)}
+            </dd>
+          </div>
+        ) : null}
         <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
           <dt className="text-xs text-[var(--forge-text-muted)]">Reste dû</dt>
           <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">

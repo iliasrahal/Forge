@@ -23,7 +23,15 @@ import {
   formatQuantity,
   formatUnit,
 } from "@/src/lib/document-lines";
-import { isDraftReference } from "@/src/lib/document-numbering";
+import {
+  displayDocumentReference,
+  isDraftReference,
+} from "@/src/lib/document-numbering";
+import {
+  canCreateCreditNote,
+  CREDIT_NOTE_STATUS_LABELS,
+  sumIssuedCreditsCents,
+} from "@/src/lib/credit-notes";
 import {
   isValidClientEmail,
   normalizeClientEmail,
@@ -134,6 +142,24 @@ export default async function InvoicePage({
 
         },
 
+        creditNotes: {
+
+          orderBy: { createdAt: "asc" },
+
+          select: {
+
+            id: true,
+
+            reference: true,
+
+            status: true,
+
+            amountCents: true,
+
+          },
+
+        },
+
       },
 
     });
@@ -192,6 +218,13 @@ export default async function InvoicePage({
     workspaceContext.permissions.canWrite &&
     invoice.status !== "BROUILLON" &&
     invoice.status !== "ANNULEE";
+
+  const creditedCents = sumIssuedCreditsCents(invoice.creditNotes);
+  const canAddCreditNote =
+    workspaceContext.permissions.canWrite &&
+    canCreateCreditNote(invoice.status) &&
+    invoice.lines.length > 0 &&
+    creditedCents < invoice.amountCents;
 
 
 
@@ -432,7 +465,43 @@ export default async function InvoicePage({
             invoiceTtcCents={invoice.amountCents}
             canRecord={canRecordPayment}
             payments={paymentRows}
+            creditedCents={creditedCents}
           />
+        ) : null}
+
+        {invoice.creditNotes.length > 0 ? (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-slate-500">Avoirs</p>
+            <div className="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-100 dark:divide-slate-700 dark:border-slate-700">
+              {invoice.creditNotes.map((creditNote) => (
+                <Link
+                  key={creditNote.id}
+                  href={`/credit-notes/${creditNote.id}`}
+                  className="flex items-center justify-between gap-3 px-4 py-3 text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <span className="text-slate-800 dark:text-slate-100">
+                    {displayDocumentReference(creditNote.reference)}
+                    <span className="ml-2 text-xs text-slate-500">
+                      {CREDIT_NOTE_STATUS_LABELS[creditNote.status] ??
+                        creditNote.status}
+                    </span>
+                  </span>
+                  <span className="font-semibold text-pink-600 dark:text-pink-400">
+                    − {formatEur(creditNote.amountCents)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {canAddCreditNote ? (
+          <Link
+            href={`/invoices/${invoice.id}/credit-notes/new`}
+            className="mt-4 block w-full rounded-2xl border border-pink-400/50 px-5 py-3 text-center font-semibold text-pink-600 transition hover:bg-pink-50 dark:text-pink-400 dark:hover:bg-pink-950/40"
+          >
+            Créer un avoir
+          </Link>
         ) : null}
 
 
