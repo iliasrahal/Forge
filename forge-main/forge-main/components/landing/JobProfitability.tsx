@@ -10,8 +10,8 @@ const pillars = [
     description: "Suivez les heures réellement passées sur chaque chantier, seul ou en équipe.",
     content: (
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span>Mohamed</span><strong>38 h</strong></div>
-        <div className="flex justify-between"><span>Ilias</span><strong>32 h</strong></div>
+        <div className="flex justify-between"><span>Thomas</span><strong>38 h</strong></div>
+        <div className="flex justify-between"><span>Julien</span><strong>32 h</strong></div>
         <div className="flex justify-between border-t border-slate-200 pt-2 dark:border-slate-700"><span>Total</span><strong className="text-blue-700 dark:text-blue-300">70 h</strong></div>
       </div>
     ),
