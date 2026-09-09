@@ -315,6 +315,92 @@ export default function QuoteLinesForm({
               ) : null}
             </div>
 
+            {(line.details ?? []).length > 0 ? (
+              <div className="space-y-2 border-l-2 border-blue-300/60 pl-3 dark:border-blue-700/60">
+                {(line.details ?? []).map((detail, detailIndex) => (
+                  <div
+                    key={detailIndex}
+                    className="grid gap-2 rounded-xl bg-white/65 p-3 dark:bg-slate-900/55 sm:grid-cols-[minmax(0,1fr)_7rem_auto]"
+                  >
+                    <div className="min-w-0 space-y-2">
+                      <input
+                        type="text"
+                        value={detail.label}
+                        placeholder="Nom du détail"
+                        aria-label="Nom du détail"
+                        onChange={(event) =>
+                          patchDetail(index, detailIndex, { label: event.target.value })
+                        }
+                        disabled={!canWrite}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                      />
+                      <input
+                        type="text"
+                        value={detail.description}
+                        placeholder="Description facultative"
+                        aria-label="Description facultative du détail"
+                        onChange={(event) =>
+                          patchDetail(index, detailIndex, { description: event.target.value })
+                        }
+                        disabled={!canWrite}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                      />
+                    </div>
+                    <label className="relative block">
+                      <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
+                        Montant facultatif
+                      </span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={detail.amount}
+                        placeholder="—"
+                        onChange={(event) =>
+                          patchDetail(index, detailIndex, { amount: event.target.value })
+                        }
+                        disabled={!canWrite}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-7 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+                      />
+                      <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-slate-400">€</span>
+                    </label>
+                    {canWrite ? (
+                      <button
+                        type="button"
+                        onClick={() => removeDetail(index, detailIndex)}
+                        aria-label="Supprimer le détail"
+                        className="grid h-10 w-10 place-items-center self-end rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
+                      >
+                        <X size={17} />
+                      </button>
+                    ) : null}
+                  </div>
+                ))}
+                {(() => {
+                  const detailedCents = (line.details ?? []).reduce(
+                    (sum, detail) =>
+                      sum + (detail.amount.trim() ? eurosToCents(detail.amount) : 0),
+                    0,
+                  );
+                  return detailedCents > 0 ? (
+                    <p className="text-right text-xs text-slate-500 dark:text-slate-400">
+                      Détails : {formatEuros(detailedCents)} € sur{" "}
+                      {formatEuros(computedLines[index].amountCents)} €
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+            ) : null}
+
+            {canWrite ? (
+              <button
+                type="button"
+                onClick={() => addDetail(index)}
+                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                + Ajouter un détail
+              </button>
+            ) : null}
+
             <div className="flex flex-wrap items-end gap-2 text-sm">
               <label className="flex flex-col gap-1">
                 <span className="text-xs text-slate-500 dark:text-slate-400">Qté</span>
@@ -440,92 +526,6 @@ export default function QuoteLinesForm({
                 </span>
               </div>
             </div>
-
-            {(line.details ?? []).length > 0 ? (
-              <div className="space-y-2 border-l-2 border-blue-300/60 pl-3 dark:border-blue-700/60">
-                {(line.details ?? []).map((detail, detailIndex) => (
-                  <div
-                    key={detailIndex}
-                    className="grid gap-2 rounded-xl bg-white/65 p-3 dark:bg-slate-900/55 sm:grid-cols-[minmax(0,1fr)_7rem_auto]"
-                  >
-                    <div className="min-w-0 space-y-2">
-                      <input
-                        type="text"
-                        value={detail.label}
-                        placeholder="Nom du détail"
-                        aria-label="Nom du détail"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { label: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                      />
-                      <input
-                        type="text"
-                        value={detail.description}
-                        placeholder="Description facultative"
-                        aria-label="Description facultative du détail"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { description: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-                      />
-                    </div>
-                    <label className="relative block">
-                      <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
-                        Montant facultatif
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={detail.amount}
-                        placeholder="—"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { amount: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-7 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                      />
-                      <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-slate-400">€</span>
-                    </label>
-                    {canWrite ? (
-                      <button
-                        type="button"
-                        onClick={() => removeDetail(index, detailIndex)}
-                        aria-label="Supprimer le détail"
-                        className="grid h-10 w-10 place-items-center self-end rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
-                      >
-                        <X size={17} />
-                      </button>
-                    ) : null}
-                  </div>
-                ))}
-                {(() => {
-                  const detailedCents = (line.details ?? []).reduce(
-                    (sum, detail) =>
-                      sum + (detail.amount.trim() ? eurosToCents(detail.amount) : 0),
-                    0,
-                  );
-                  return detailedCents > 0 ? (
-                    <p className="text-right text-xs text-slate-500 dark:text-slate-400">
-                      Détails : {formatEuros(detailedCents)} € sur{" "}
-                      {formatEuros(computedLines[index].amountCents)} €
-                    </p>
-                  ) : null;
-                })()}
-              </div>
-            ) : null}
-
-            {canWrite ? (
-              <button
-                type="button"
-                onClick={() => addDetail(index)}
-                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                + Ajouter un détail
-              </button>
-            ) : null}
           </div>
         ))}
       </div>
