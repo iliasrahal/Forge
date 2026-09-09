@@ -2,8 +2,9 @@ import Link from "next/link";
 
 
 import FixedForgeBar from "@/components/FixedForgeBar";
-import ClientCard from "@/components/clients/ClientCard";
+import ClientSearch from "@/components/clients/ClientSearch";
 import { requireCurrentUser } from "@/src/lib/auth";
+import { compareClientsByName } from "@/src/lib/client-name";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { clientService } from "@/src/services/client.service";
 
@@ -21,10 +22,9 @@ export default async function ClientsPage() {
 
 
 
-  const clients =
-    await clientService.getAll(
-      workspaceContext.workspace.id,
-    );
+  const clients = [
+    ...(await clientService.getAll(workspaceContext.workspace.id)),
+  ].sort(compareClientsByName);
 
 
 
@@ -77,61 +77,27 @@ export default async function ClientsPage() {
 
 
       <div className="flex-1">
-
-
-
         {clients.length > 0 ? (
-
-
-
-          <div className="space-y-3">
-
-
-
-            {clients.map((client) => (
-
-
-
-              <ClientCard
-                key={client.id}
-                client={client}
-              />
-
-
-
-            ))}
-
-
-
-          </div>
-
-
-
-
+          <ClientSearch clients={clients} />
         ) : (
-
-
-
-
-          <div className="text-center text-slate-500 dark:text-slate-400">
-
-
-
-            <p>
-              Aucun client créé.
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
+            <p className="text-base font-semibold text-[var(--forge-text-primary)]">
+              Aucun client pour l’instant
             </p>
-
-
-
+            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
+              Ajoute ton premier client pour créer un devis ou une facture à son
+              nom.
+            </p>
+            {workspaceContext.permissions.canWrite ? (
+              <Link
+                href="/clients/new"
+                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
+              >
+                + Nouveau client
+              </Link>
+            ) : null}
           </div>
-
-
-
-
         )}
-
-
-
       </div>
 
 
