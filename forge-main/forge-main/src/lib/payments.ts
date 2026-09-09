@@ -37,11 +37,13 @@ export type PaymentRecord = {
 export type InvoicePaymentState = {
   /** Net encaissé : Σ (montant − remboursé) des paiements réussis, borné à 0. */
   collectedCents: number;
+  /** Montant couvert par des avoirs émis (n'est pas de l'argent encaissé). */
+  creditedCents: number;
   /** Frais prestataire cumulés sur les paiements réussis. */
   feeCents: number;
   /** Ce qui revient réellement à l'artisan : encaissé − frais. */
   netCents: number;
-  /** Reste dû par le client. */
+  /** Reste dû par le client (TTC − encaissé − avoirs). */
   remainingCents: number;
   isFullyPaid: boolean;
   isPartiallyPaid: boolean;
@@ -51,6 +53,7 @@ export type InvoicePaymentState = {
 export function computeInvoicePaymentState(
   invoiceTtcCents: number,
   payments: PaymentRecord[],
+  creditedCents = 0,
 ): InvoicePaymentState {
   let collected = 0;
   let fee = 0;
@@ -69,15 +72,19 @@ export function computeInvoicePaymentState(
   }
 
   collected = Math.max(0, collected);
-  const remaining = Math.max(0, invoiceTtcCents - collected);
+  const credited = Math.max(0, Math.round(creditedCents || 0));
+  // Les avoirs éteignent une part de la dette au même titre qu'un paiement.
+  const settled = collected + credited;
+  const remaining = Math.max(0, invoiceTtcCents - settled);
 
   return {
     collectedCents: collected,
+    creditedCents: credited,
     feeCents: fee,
     netCents: Math.max(0, collected - fee),
     remainingCents: remaining,
-    isFullyPaid: invoiceTtcCents > 0 && collected >= invoiceTtcCents,
-    isPartiallyPaid: collected > 0 && collected < invoiceTtcCents,
+    isFullyPaid: invoiceTtcCents > 0 && settled >= invoiceTtcCents,
+    isPartiallyPaid: settled > 0 && settled < invoiceTtcCents,
     lastPaidAt: last,
   };
 }

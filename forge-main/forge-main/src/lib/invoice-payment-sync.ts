@@ -3,6 +3,7 @@ import {
   resolveInvoiceStatusAfterPayment,
   type InvoicePaymentState,
 } from "@/src/lib/payments";
+import { sumIssuedCreditsCents } from "@/src/lib/credit-notes";
 
 // Adaptateur minimal : un client Prisma (ou une transaction) exposant les
 // modèles Invoice et Payment. Volontairement lâche pour accepter le vrai
@@ -19,6 +20,10 @@ type PrismaLikeInvoicePaymentClient = {
     findMany: (args: any) => Promise<any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findFirst: (args: any) => Promise<any>;
+  };
+  creditNote: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    findMany: (args: any) => Promise<any>;
   };
 };
 
@@ -62,7 +67,18 @@ export async function syncInvoicePaymentStatus(
     },
   });
 
-  const state = computeInvoicePaymentState(invoice.amountCents, payments);
+  const creditNotes: Array<{ status: string; amountCents: number }> =
+    await client.creditNote.findMany({
+      where: { invoiceId },
+      select: { status: true, amountCents: true },
+    });
+  const creditedCents = sumIssuedCreditsCents(creditNotes);
+
+  const state = computeInvoicePaymentState(
+    invoice.amountCents,
+    payments,
+    creditedCents,
+  );
   const next = resolveInvoiceStatusAfterPayment({
     currentStatus: invoice.status,
     dueDate: invoice.dueDate,

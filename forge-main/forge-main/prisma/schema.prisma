@@ -51,6 +51,19 @@ enum InvoiceType {
   DEPOSIT
 }
 
+enum CreditNoteStatus {
+  BROUILLON
+  EMISE
+  ANNULEE
+}
+
+// FULL : avoir total, reprend toutes les lignes de la facture.
+// PARTIAL : avoir partiel, lignes / montant choisis à la création.
+enum CreditNoteMode {
+  FULL
+  PARTIAL
+}
+
 // Régime de TVA de l'organisation.
 // SUBJECT : assujettie, elle facture la TVA.
 // FRANCHISE_BASE : franchise en base (art. 293 B du CGI), aucune TVA facturée.
@@ -283,6 +296,7 @@ model Organization {
   interventions       Intervention[]
   quotes              Quote[]
   invoices            Invoice[]
+  creditNotes         CreditNote[]
   serviceCatalogItems ServiceCatalogItem[]
   activeSessions      Session[]            @relation("ActiveOrganization")
 
@@ -462,6 +476,8 @@ model Client {
   quotes Quote[]
 
   invoices Invoice[]
+
+  creditNotes CreditNote[]
 
   createdAt DateTime @default(now())
 
@@ -855,6 +871,7 @@ model Invoice {
 
   payments       Payment[]
   publicAccesses InvoicePublicAccess[]
+  creditNotes    CreditNote[]
 
   status InvoiceStatus @default(BROUILLON)
 
@@ -1003,4 +1020,65 @@ model InvoiceLineDetail {
   createdAt DateTime @default(now())
 
   @@index([invoiceLineId, position])
+}
+
+// Avoir (note de crédit) rattaché à une facture émise. Réduit le montant
+// effectivement dû par le client. Numéro définitif attribué à l'émission.
+model CreditNote {
+  id String @id @default(cuid())
+
+  reference String @unique
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  mode   CreditNoteMode   @default(PARTIAL)
+  status CreditNoteStatus @default(BROUILLON)
+
+  // Motif de l'avoir (obligatoire à l'émission).
+  reason String?
+
+  // Totaux figés, cohérents avec le régime de TVA de la facture d'origine.
+  vatApplicable Boolean @default(false)
+  amountCents   Int     @default(0)
+  totalHtCents  Int     @default(0)
+  totalVatCents Int     @default(0)
+  discountBp    Int     @default(0)
+
+  lines CreditNoteLine[]
+
+  issuedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([invoiceId])
+  @@index([organizationId])
+  @@index([clientId])
+}
+
+model CreditNoteLine {
+  id String @id @default(cuid())
+
+  category String
+  label    String?
+
+  quantityMilli  Int @default(1000)
+  unit           String @default("forfait")
+  unitPriceCents Int @default(0)
+  discountBp     Int @default(0)
+  amountCents    Int @default(0)
+  vatRateBp      Int @default(0)
+
+  creditNoteId String
+  creditNote   CreditNote @relation(fields: [creditNoteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([creditNoteId])
 }

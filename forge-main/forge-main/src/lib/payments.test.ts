@@ -40,6 +40,24 @@ test("paiement partiel puis solde", () => {
   assert.equal(full.isPartiallyPaid, false);
 });
 
+test("avoir : le montant crédité éteint une part de la dette", () => {
+  const s = computeInvoicePaymentState(136400, [ok(50000)], 40000);
+  assert.equal(s.collectedCents, 50000);
+  assert.equal(s.creditedCents, 40000);
+  assert.equal(s.remainingCents, 46400);
+  assert.equal(s.isPartiallyPaid, true);
+  assert.equal(s.isFullyPaid, false);
+
+  const settled = computeInvoicePaymentState(136400, [ok(96400)], 40000);
+  assert.equal(settled.remainingCents, 0);
+  assert.equal(settled.isFullyPaid, true);
+
+  const fullyCredited = computeInvoicePaymentState(136400, [], 136400);
+  assert.equal(fullyCredited.collectedCents, 0);
+  assert.equal(fullyCredited.remainingCents, 0);
+  assert.equal(fullyCredited.isFullyPaid, true);
+});
+
 test("frais Stripe : net = encaissé − frais", () => {
   const s = computeInvoicePaymentState(136400, [
     ok(136400, { feeCents: 1240 }),
