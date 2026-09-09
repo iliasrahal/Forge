@@ -146,11 +146,11 @@ html.dark {
 
   --background: #0f172a;
   --foreground: #f8fafc;
-  --forge-surface: rgb(12 16 36 / 0.82);
-  --forge-surface-elevated: rgb(16 22 49 / 0.9);
-  --forge-surface-secondary: rgb(18 24 56 / 0.76);
-  --forge-surface-strong: rgb(25 33 73 / 0.88);
-  --forge-surface-hover: rgb(24 32 71 / 0.9);
+  --forge-surface: rgb(14 19 44 / 0.97);
+  --forge-surface-elevated: rgb(19 26 56 / 0.98);
+  --forge-surface-secondary: rgb(20 27 60 / 0.94);
+  --forge-surface-strong: rgb(27 36 78 / 0.96);
+  --forge-surface-hover: rgb(26 35 76 / 0.98);
   --forge-modal-background: rgb(13 18 43 / 0.93);
   --forge-modal-overlay: rgb(4 5 10 / 0.24);
   --forge-background-accent: #06070f;
@@ -160,9 +160,9 @@ html.dark {
   --forge-text-primary: #eef1fa;
   --forge-text-secondary: #b3bcd8;
   --forge-text-muted: #8b95bd;
-  --forge-border: rgb(124 144 226 / 0.22);
-  --forge-border-strong: rgb(124 144 226 / 0.42);
-  --forge-card-border: rgb(124 144 226 / 0.34);
+  --forge-border: rgb(124 144 226 / 0.28);
+  --forge-border-strong: rgb(124 144 226 / 0.5);
+  --forge-card-border: rgb(132 152 236 / 0.5);
   --forge-accent-blue: #4c6ef5;
   --forge-accent-blue-lit: #93a8ff;
   --forge-accent-pink: #ff7db0;
@@ -195,8 +195,8 @@ html.dark body {
   --sky-top: #94a9e7;
   --sky-horizon: #ffc6da;
   --sky-low: #d6ddf3;
-  --panel: color-mix(in srgb, var(--forge-surface) 90%, transparent);
-  --panel-2: color-mix(in srgb, var(--forge-surface-secondary) 88%, transparent);
+  --panel: var(--forge-surface);
+  --panel-2: var(--forge-surface-secondary);
   --ink: #0a1230;
   --ink-2: #363f6d;
   --ink-3: #4a5486;
@@ -560,8 +560,8 @@ html.dark body {
   --sky-top: #04050a;
   --sky-horizon: #1b2d69;
   --sky-low: #06070f;
-  --panel: color-mix(in srgb, var(--forge-surface) 92%, transparent);
-  --panel-2: color-mix(in srgb, var(--forge-surface-secondary) 90%, transparent);
+  --panel: var(--forge-surface);
+  --panel-2: var(--forge-surface-secondary);
   --sky-mid: #13214f;
   --ink: #eef1fa;
   --ink-2: #b3bcd8;
@@ -642,7 +642,13 @@ html.dark body {
    occupe donc uniquement l’espace restant au lieu d’ajouter un second 100dvh
    et de créer un scroll vide. */
 .forge-app-shell > main {
-  min-height: calc(100dvh - 7.5rem - env(safe-area-inset-bottom)) !important;
+  min-height: calc(100dvh - 8.75rem - env(safe-area-inset-bottom)) !important;
+}
+
+@media (min-width: 1024px) {
+  .forge-app-shell > main {
+    min-height: calc(100dvh - 4rem) !important;
+  }
 }
 
 /* Les wrappers de page ne doivent jamais masquer le cyclorama. Les cartes
@@ -664,18 +670,22 @@ html.dark body {
   min-width: 0;
 }
 
-/* Affichage : Anton capitales — la lettre du logo Forge. */
-.forge-app-shell :is(h1, h2) {
+/* Affichage : Anton capitales — la lettre du logo Forge. Réservé au titre
+   de page (h1). Les titres de section (h2+) restent en Geist, lisibles. */
+.forge-app-shell h1 {
   font-family: var(--font-display), "Arial Narrow", system-ui, sans-serif;
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.005em;
-  line-height: 1.03;
+  line-height: 1.05;
   color: var(--ink);
 }
 
-.forge-app-shell :is(h3, h4) {
-  letter-spacing: -0.02em;
+.forge-app-shell :is(h2, h3, h4) {
+  font-family: inherit;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 
@@ -754,8 +764,9 @@ html.dark body {
   border: 1px solid var(--forge-card-border) !important;
   background-color: var(--panel) !important;
   box-shadow:
-    inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
-    0 1px 0 0 color-mix(in srgb, var(--cobalt) 22%, transparent) !important;
+    inset 0 1px 0 0 color-mix(in srgb, white 8%, transparent),
+    0 22px 44px -28px rgb(0 0 0 / 0.55),
+    0 4px 12px -8px rgb(0 0 0 / 0.4) !important;
 }
 
 /* Gradients bleus decoratifs : neutralises (aucun degrade de facade). */
@@ -823,8 +834,9 @@ html.dark body {
   background-color: var(--panel) !important;
   background-image: none !important;
   box-shadow:
-    inset 0 10px 30px -18px color-mix(in srgb, var(--cobalt) 40%, transparent),
-    0 1px 0 0 color-mix(in srgb, var(--cobalt) 22%, transparent) !important;
+    inset 0 1px 0 0 color-mix(in srgb, white 8%, transparent),
+    0 22px 44px -28px rgb(0 0 0 / 0.55),
+    0 4px 12px -8px rgb(0 0 0 / 0.4) !important;
 }
 
 /* Le <main> est le canevas de page, jamais une carte. Certaines routes
@@ -870,28 +882,21 @@ html.dark body {
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Action primaire : barre degrade cobalt -> rose (le lever du jour), capitales. */
+/* Action primaire : barre degrade cobalt -> rose (le lever du jour). */
 .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled) {
   background-color: var(--cobalt) !important;
   background-image: linear-gradient(90deg, var(--cobalt-lit) 0%, var(--cobalt) 44%, var(--rose) 100%) !important;
   color: #fff !important;
   border: 0 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  font-weight: 650;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-weight: 600;
   /* Ne jamais couper un mot : retour a la ligne sur l'espace seulement. */
   overflow-wrap: normal;
   word-break: normal;
   hyphens: none;
   text-wrap: balance;
   box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--cobalt) 65%, transparent);
-}
-
-@media (max-width: 430px) {
-  .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled) {
-    letter-spacing: 0.005em;
-    font-size: 0.9rem;
-  }
 }
 
 .forge-app-shell :is(button, a)[class*="bg-blue-600"]:not(:disabled):hover {

@@ -47,7 +47,7 @@ export default function AppShell({
         className={
           hideNavigation
             ? "forge-public-shell min-h-screen text-slate-950 dark:text-white"
-            : "forge-app-shell min-h-dvh pb-[calc(7.5rem+env(safe-area-inset-bottom))]"
+            : "forge-app-shell min-h-dvh pb-[calc(8.75rem+env(safe-area-inset-bottom))] lg:pb-16"
         }
       >
         {children}
