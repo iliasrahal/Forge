@@ -492,7 +492,7 @@ export default async function InvoicePage({
         {canAddCreditNote ? (
           <Link
             href={`/invoices/${invoice.id}/credit-notes/new`}
-            className="mt-4 block w-full rounded-2xl border border-pink-400/50 px-5 py-3 text-center font-semibold text-pink-600 transition hover:bg-pink-50 dark:text-pink-400 dark:hover:bg-pink-950/40"
+            className="mt-4 block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
           >
             Créer un avoir
           </Link>

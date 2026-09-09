@@ -295,7 +295,7 @@ export default function InvoicePaymentsPanel({
         <button
           type="button"
           onClick={openForm}
-          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-500/50 px-4 font-semibold text-emerald-600 transition hover:bg-emerald-500/10 dark:text-emerald-400"
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-[var(--forge-border-strong)] px-4 font-semibold text-[var(--forge-text-primary)] transition hover:border-[var(--forge-accent-blue)] hover:bg-[color-mix(in_srgb,var(--forge-accent-blue)_10%,transparent)]"
         >
           <Plus size={17} />
           Enregistrer un paiement
