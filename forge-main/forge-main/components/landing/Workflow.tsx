@@ -48,7 +48,7 @@ export default function Workflow() {
     : "translate-y-8 opacity-0";
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-white px-6 py-24 text-slate-950 sm:py-32 lg:px-8 dark:bg-slate-950 dark:text-white">
+    <section ref={sectionRef} className="landing-section-spacing relative overflow-hidden bg-white px-6 text-slate-950 lg:px-8 dark:bg-slate-950 dark:text-white">
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[34rem] w-[70rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-100/70 blur-3xl dark:bg-blue-950/35" />
 
       <div className="mx-auto max-w-7xl">

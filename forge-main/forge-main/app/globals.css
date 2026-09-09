@@ -1379,3 +1379,13 @@ html.dark body {
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
   }
 }
+/* Rythme vertical commun aux sections de la landing. */
+.landing-section-spacing {
+  padding-block: 4rem;
+}
+
+@media (min-width: 640px) {
+  .landing-section-spacing {
+    padding-block: 5rem;
+  }
+}

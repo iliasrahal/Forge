@@ -11,7 +11,7 @@ const forgeOffer = FORGE_PRICING;
 
 export default function Pricing() {
   return (
-    <section className="relative isolate overflow-hidden bg-slate-50 px-6 py-24 text-slate-950 sm:py-32 lg:px-8 dark:bg-slate-900/40 dark:text-white">
+    <section className="landing-section-spacing relative isolate overflow-hidden bg-slate-50 px-6 text-slate-950 lg:px-8 dark:bg-slate-900/40 dark:text-white">
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[42rem] w-[52rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-200/55 blur-3xl dark:bg-blue-950/45" />
 
       <div className="mx-auto max-w-6xl">

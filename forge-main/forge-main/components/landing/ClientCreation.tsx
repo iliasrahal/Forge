@@ -175,7 +175,7 @@ export default function ClientCreation() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate overflow-hidden bg-white px-6 py-24 text-slate-950 sm:py-32 lg:px-8 dark:bg-slate-950 dark:text-white"
+      className="landing-section-spacing relative isolate overflow-hidden bg-white px-6 text-slate-950 lg:px-8 dark:bg-slate-950 dark:text-white"
     >
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[42rem] w-[62rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-100/70 blur-3xl dark:bg-blue-950/35" />
 

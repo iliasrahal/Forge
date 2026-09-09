@@ -66,7 +66,7 @@ export default function JobProfitability() {
   const reveal = isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0";
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-white px-6 py-24 text-slate-950 dark:bg-slate-950 dark:text-white sm:py-32 lg:px-8">
+    <section ref={sectionRef} className="landing-section-spacing relative overflow-hidden bg-white px-6 text-slate-950 dark:bg-slate-950 dark:text-white lg:px-8">
       <div className="pointer-events-none absolute left-[-8rem] top-24 h-80 w-80 rounded-full bg-pink-300/20 blur-3xl dark:bg-pink-700/15" />
       <div className="pointer-events-none absolute right-[-7rem] top-1/3 h-96 w-96 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-700/20" />
 

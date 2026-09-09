@@ -9,7 +9,7 @@ import ForgeSymbol from "@/components/ForgeSymbol";
 
 export default function CTA() {
   return (
-    <section className="relative overflow-hidden bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-950">
+    <section className="landing-section-spacing relative overflow-hidden bg-white px-6 lg:px-8 dark:bg-slate-950">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-[radial-gradient(circle_at_bottom,#dbeafe,transparent_68%)] dark:bg-[radial-gradient(circle_at_bottom,#172554,transparent_68%)]" />
 
       <div className="landing-cyclorama-cta relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] border border-blue-400/20 bg-[linear-gradient(135deg,#172554_0%,#1d4ed8_52%,#2563eb_100%)] px-6 py-16 text-center text-white shadow-[0_35px_100px_-35px_rgba(37,99,235,0.65)] sm:px-12 sm:py-20 lg:px-20 lg:py-24 dark:border-blue-500/20 dark:bg-[linear-gradient(135deg,#020617_0%,#172554_48%,#1e40af_100%)]">

@@ -504,7 +504,7 @@ export default function Features({
   return (
     <section
       ref={sectionRef}
-      className="overflow-hidden bg-slate-50 py-24 text-slate-950 sm:py-32 dark:bg-slate-950 dark:text-white"
+      className={`overflow-hidden bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white ${showHeading ? "landing-section-spacing" : ""}`}
     >
       {showHeading && (
         <div className="mx-auto max-w-3xl px-6 text-center lg:px-8">
@@ -513,7 +513,7 @@ export default function Features({
         </div>
       )}
 
-      <div className={`mx-auto max-w-7xl ${showHeading ? "mt-20" : ""}`}>
+      <div className={`mx-auto max-w-7xl ${showHeading ? "mt-12 sm:mt-14" : ""}`}>
         {featureEntries.map(({ feature, index }) => {
           const isVisible = visibleItems.includes(index);
           const isReversed = index % 2 === 1;
@@ -523,7 +523,7 @@ export default function Features({
               key={feature.title}
               data-feature-item
               data-index={index}
-              className="relative grid min-h-[34rem] items-center gap-12 border-t border-slate-200 px-6 py-20 last:border-b dark:border-slate-800 lg:grid-cols-2 lg:px-12"
+              className="relative grid items-center gap-12 border-t border-slate-200 px-6 py-14 last:border-b dark:border-slate-800 sm:py-16 lg:grid-cols-2 lg:px-12"
             >
               <div className={`landing-reveal-motion duration-1000 motion-reduce:transition-none ${isReversed ? "lg:order-2" : ""} ${isVisible ? "translate-x-0 opacity-100" : isReversed ? "translate-x-10 opacity-0" : "-translate-x-10 opacity-0"}`}>
                 <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">

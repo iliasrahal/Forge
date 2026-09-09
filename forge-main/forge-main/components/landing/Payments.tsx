@@ -55,7 +55,7 @@ export default function Payments() {
       ref={sectionRef}
       className="overflow-hidden bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white"
     >
-      <div className="mx-auto grid min-h-[34rem] max-w-7xl items-center gap-12 border-b border-slate-200 px-6 py-20 dark:border-slate-800 lg:grid-cols-2 lg:px-12">
+      <div className="landing-section-spacing mx-auto grid max-w-7xl items-center gap-12 border-b border-slate-200 px-6 dark:border-slate-800 lg:grid-cols-2 lg:px-12">
         <div
           className={`landing-reveal-motion duration-1000 motion-reduce:transition-none ${
             isVisible ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"

@@ -84,7 +84,7 @@ export default function Problem() {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-white px-6 py-24 text-slate-950 sm:py-32 lg:px-8 dark:bg-slate-950 dark:text-white"
+      className="landing-section-spacing relative overflow-hidden bg-white px-6 text-slate-950 lg:px-8 dark:bg-slate-950 dark:text-white"
     >
       <div className="pointer-events-none absolute left-[-10rem] top-1/3 -z-10 h-80 w-80 rounded-full bg-slate-200/70 blur-3xl dark:bg-slate-800/60" />
 

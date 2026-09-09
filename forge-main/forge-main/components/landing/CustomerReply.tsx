@@ -159,7 +159,7 @@ export default function CustomerReply() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate overflow-hidden bg-white px-6 py-24 text-slate-950 dark:bg-slate-950 dark:text-white sm:py-32 lg:px-8"
+      className="landing-section-spacing relative isolate overflow-hidden bg-white px-6 text-slate-950 dark:bg-slate-950 dark:text-white lg:px-8"
     >
       <div className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[100px] dark:bg-blue-600/15" />
 

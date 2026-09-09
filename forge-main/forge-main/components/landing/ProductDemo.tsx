@@ -133,7 +133,7 @@ export default function ProductDemo() {
     <section
       ref={sectionRef}
       id="product-demo"
-      className="bg-slate-50 px-6 py-20 text-slate-950 sm:py-24 lg:px-8 dark:bg-slate-900/40 dark:text-white"
+      className="landing-section-spacing bg-slate-50 px-6 text-slate-950 lg:px-8 dark:bg-slate-900/40 dark:text-white"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">
