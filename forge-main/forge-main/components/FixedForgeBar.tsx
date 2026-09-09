@@ -46,7 +46,7 @@ export default function FixedForgeBar({
     <>
       <div aria-hidden="true" className="h-28 shrink-0 sm:h-32" />
       {isMounted ? createPortal(
-    <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-40 mx-auto w-full max-w-xl px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6">
+    <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-40 mx-auto w-full max-w-xl px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 lg:left-60 lg:bottom-6">
       <ForgeBar
         context={context}
         clientId={clientId}

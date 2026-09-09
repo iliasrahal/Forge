@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 
 import BottomNavigation from "@/components/BottomNavigation";
+import DesktopSidebar from "@/components/DesktopSidebar";
 import StatusAutoRefresh from "@/components/StatusAutoRefresh";
 
 
@@ -43,11 +44,12 @@ export default function AppShell({
   return (
     <>
       {!hideNavigation ? <StatusAutoRefresh /> : null}
+      {!hideNavigation ? <DesktopSidebar /> : null}
       <div
         className={
           hideNavigation
             ? "forge-public-shell min-h-screen text-slate-950 dark:text-white"
-            : "forge-app-shell min-h-dvh pb-[calc(8.75rem+env(safe-area-inset-bottom))] lg:pb-16"
+            : "forge-app-shell min-h-dvh pb-[calc(8.75rem+env(safe-area-inset-bottom))] lg:pb-16 lg:pl-60"
         }
       >
         {children}
@@ -57,7 +59,7 @@ export default function AppShell({
 
 
       {!hideNavigation && (
-        <div className="fixed inset-x-0 bottom-0 z-50 isolate px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-0 z-50 isolate px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:px-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden">
 
 
           <div className="forge-navbar mx-auto w-full max-w-md rounded-[1.75rem] border px-1.5 py-1.5 backdrop-blur-xl sm:px-2 sm:py-2">
