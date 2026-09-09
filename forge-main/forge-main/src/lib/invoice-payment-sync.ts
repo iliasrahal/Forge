@@ -45,10 +45,23 @@ export async function syncInvoicePaymentStatus(
 ): Promise<InvoicePaymentSyncResult | null> {
   const invoice = await client.invoice.findUnique({
     where: { id: invoiceId },
-    select: { id: true, amountCents: true, status: true, dueDate: true },
+    select: {
+      id: true,
+      amountCents: true,
+      retentionCents: true,
+      status: true,
+      dueDate: true,
+    },
   });
 
   if (!invoice) return null;
+
+  // Le client ne règle que le net : total − retenue de garantie. La retenue
+  // est une créance différée, pas un impayé.
+  const netDueCents = Math.max(
+    0,
+    invoice.amountCents - Math.max(0, invoice.retentionCents || 0),
+  );
 
   const payments: Array<{
     status: string;
@@ -75,7 +88,7 @@ export async function syncInvoicePaymentStatus(
   const creditedCents = sumIssuedCreditsCents(creditNotes);
 
   const state = computeInvoicePaymentState(
-    invoice.amountCents,
+    netDueCents,
     payments,
     creditedCents,
   );

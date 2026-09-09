@@ -1,6 +1,7 @@
 import DownloadQuotePdf from "@/components/DownloadQuotePdf";
 import DeleteQuoteButton from "@/components/DeleteQuoteButton";
 import CreateDepositInvoice from "@/components/CreateDepositInvoice";
+import QuoteBillingPanel from "@/components/QuoteBillingPanel";
 import QuoteReminderPanel from "@/components/QuoteReminderPanel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +11,7 @@ import DocumentLineDetails from "@/components/DocumentLineDetails";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { getQuoteDepositSummary } from "@/src/lib/deposits";
+import { getQuoteBillingLedger } from "@/src/lib/quote-billing";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import {
   computeDocumentTotals,
@@ -114,10 +116,15 @@ export default async function QuotePage({
         lines: { include: { details: { orderBy: { position: "asc" } } } },
         invoices: {
           select: {
+            id: true,
+            reference: true,
             type: true,
             status: true,
             amountCents: true,
+            retentionCents: true,
+            situationProgressBp: true,
           },
+          orderBy: { createdAt: "asc" },
         },
         signature: {
           select: {
@@ -148,6 +155,14 @@ export default async function QuotePage({
     quote.amountCents,
     quote.invoices,
   );
+  const billingLedger = getQuoteBillingLedger(
+    quote.amountCents,
+    quote.invoices,
+  );
+  const canBillProgress =
+    workspaceContext.permissions.canWrite &&
+    Boolean(quote.clientId) &&
+    (quote.status === "ENVOYE" || quote.status === "ACCEPTE");
   const vatTotals = computeDocumentTotals(
     quote.lines.map((line) => ({
       amountCents: line.amountCents,
@@ -457,6 +472,30 @@ export default async function QuotePage({
       quoteId={quote.id}
       quoteTotalCents={quote.amountCents}
       alreadyDepositedCents={depositSummary.depositedCents}
+    />
+  ) : null}
+
+  {quote.clientId &&
+  quote.status !== "REFUSE" &&
+  quote.status !== "BROUILLON" ? (
+    <QuoteBillingPanel
+      quoteId={quote.id}
+      quoteTtcCents={quote.amountCents}
+      retentionPercent={quote.retentionBp / 100}
+      billedCents={billingLedger.billedCents}
+      billedBp={billingLedger.billedBp}
+      remainingCents={billingLedger.remainingCents}
+      retentionWithheldCents={billingLedger.retentionWithheldCents}
+      isFullyBilled={billingLedger.isFullyBilled}
+      canWrite={workspaceContext.permissions.canWrite}
+      canBill={canBillProgress}
+      invoices={quote.invoices.map((invoice) => ({
+        id: invoice.id,
+        reference: invoice.reference,
+        type: invoice.type,
+        status: invoice.status,
+        amountCents: invoice.amountCents,
+      }))}
     />
   ) : null}
 

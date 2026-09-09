@@ -30,6 +30,7 @@ type Props = {
   canRecord: boolean;
   payments: InvoicePaymentRow[];
   creditedCents?: number;
+  retentionCents?: number;
 };
 
 const METHOD_OPTIONS: Array<{ value: (typeof MANUAL_PAYMENT_METHODS)[number]; label: string }> = [
@@ -64,6 +65,7 @@ export default function InvoicePaymentsPanel({
   canRecord,
   payments,
   creditedCents = 0,
+  retentionCents = 0,
 }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -77,8 +79,10 @@ export default function InvoicePaymentsPanel({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  // Le client ne règle que le net à payer : TTC − retenue de garantie.
+  const netDueCents = Math.max(0, invoiceTtcCents - retentionCents);
   const state = computeInvoicePaymentState(
-    invoiceTtcCents,
+    netDueCents,
     payments.map((payment) => ({
       status: payment.status,
       amountCents: payment.amountCents,
@@ -183,6 +187,16 @@ export default function InvoicePaymentsPanel({
             {formatEur(state.collectedCents)}
           </dd>
         </div>
+        {retentionCents > 0 ? (
+          <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
+            <dt className="text-xs text-[var(--forge-text-muted)]">
+              Retenue garantie
+            </dt>
+            <dd className="mt-0.5 font-bold text-[var(--forge-text-primary)]">
+              − {formatEur(retentionCents)}
+            </dd>
+          </div>
+        ) : null}
         {state.creditedCents > 0 ? (
           <div className="rounded-xl bg-[var(--forge-surface)] px-3 py-2">
             <dt className="text-xs text-[var(--forge-text-muted)]">Avoirs</dt>

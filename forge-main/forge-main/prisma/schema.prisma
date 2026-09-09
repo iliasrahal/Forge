@@ -49,6 +49,10 @@ enum InvoiceStatus {
 enum InvoiceType {
   STANDARD
   DEPOSIT
+  // Facturation à l'avancement d'un devis.
+  SITUATION
+  // Facture de solde : clôture la facturation d'un devis.
+  BALANCE
 }
 
 enum CreditNoteStatus {
@@ -671,6 +675,10 @@ model Quote {
   // Somme des déboursés secs des lignes (pour le calcul de marge).
   totalCostCents Int @default(0)
 
+  // Retenue de garantie appliquée aux factures de ce devis, en points de
+  // base (ex. 500 = 5 %). 0 = aucune retenue.
+  retentionBp Int @default(0)
+
   status QuoteStatus @default(BROUILLON)
 
   acceptedAt DateTime?
@@ -875,8 +883,17 @@ model Invoice {
 
   status InvoiceStatus @default(BROUILLON)
 
-  // STANDARD pour les factures historiques/finales, DEPOSIT pour un acompte.
+  // STANDARD pour les factures historiques/finales, DEPOSIT pour un acompte,
+  // SITUATION pour une facturation à l'avancement, BALANCE pour le solde.
   type InvoiceType @default(STANDARD)
+
+  // SITUATION uniquement : avancement cumulé du devis facturé par cette
+  // situation, en points de base (ex. 6000 = 60 %).
+  situationProgressBp Int?
+
+  // Retenue de garantie retenue sur cette facture, en centimes. Le client
+  // règle amountCents − retentionCents ; la retenue est libérée plus tard.
+  retentionCents Int @default(0)
 
   dueDate DateTime?
 

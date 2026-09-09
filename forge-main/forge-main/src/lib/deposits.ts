@@ -3,7 +3,7 @@ export const DEPOSIT_MODES = ["PERCENTAGE", "FIXED"] as const;
 export type DepositMode = (typeof DEPOSIT_MODES)[number];
 
 export type DepositInvoiceSummarySource = {
-  type: "STANDARD" | "DEPOSIT";
+  type: string; // InvoiceType
   status: string;
   amountCents: number;
 };

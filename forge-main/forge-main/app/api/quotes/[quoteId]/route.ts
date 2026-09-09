@@ -12,6 +12,49 @@ type QuoteRouteProps = {
   params: Promise<{ quoteId: string }>;
 };
 
+export async function PATCH(
+  request: Request,
+  { params }: QuoteRouteProps,
+) {
+  try {
+    const workspaceContext = await requireWorkspaceContext("write");
+    const { quoteId } = await params;
+    const body = await request.json().catch(() => ({}));
+
+    const percent = Number(String(body.retentionPercent ?? "").replace(",", "."));
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      return NextResponse.json(
+        { error: "La retenue doit être comprise entre 0 et 100 %." },
+        { status: 400 },
+      );
+    }
+
+    const updated = await prisma.quote.updateMany({
+      where: { id: quoteId, organizationId: workspaceContext.workspace.id },
+      data: { retentionBp: Math.round(percent * 100) },
+    });
+
+    if (updated.count !== 1) {
+      return NextResponse.json(
+        { error: "Devis introuvable." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) {
+      return NextResponse.json(accessError.body, { status: accessError.status });
+    }
+    console.error("PATCH QUOTE ERROR", error);
+    return NextResponse.json(
+      { error: "Impossible de mettre à jour le devis." },
+      { status: 500 },
+    );
+  }
+}
+
 export async function DELETE(
   _request: Request,
   { params }: QuoteRouteProps,

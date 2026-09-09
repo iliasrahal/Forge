@@ -124,8 +124,12 @@ export async function GET(
       });
     }
 
+    const netDueCents = Math.max(
+      0,
+      invoice.amountCents - Math.max(0, invoice.retentionCents),
+    );
     const paymentState = computeInvoicePaymentState(
-      invoice.amountCents,
+      netDueCents,
       invoice.payments,
     );
 
@@ -243,7 +247,13 @@ export async function GET(
 
     const rightEdge = pageSize[0] - margin;
     const invoiceLabel =
-      invoice.type === "DEPOSIT" ? "FACTURE D'ACOMPTE" : "FACTURE";
+      invoice.type === "DEPOSIT"
+        ? "FACTURE D'ACOMPTE"
+        : invoice.type === "SITUATION"
+          ? "SITUATION DE TRAVAUX"
+          : invoice.type === "BALANCE"
+            ? "FACTURE DE SOLDE"
+            : "FACTURE";
     const invoiceLabelWidth = boldFont.widthOfTextAtSize(
       invoiceLabel,
       18,
@@ -561,6 +571,34 @@ export async function GET(
       color: dark,
     });
     currentY -= amountBoxHeight + 12;
+
+    if (invoice.retentionCents > 0) {
+      ensureSpace(34);
+      drawLines(
+        [
+          `Retenue de garantie : - ${cleanPdfText(
+            formatAmount(invoice.retentionCents),
+          )}`,
+        ],
+        { x: margin, size: 10, lineHeight: 15, color: grey },
+      );
+      page.drawText("Net a payer", {
+        x: margin,
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: dark,
+      });
+      const netText = cleanPdfText(formatAmount(netDueCents));
+      page.drawText(netText, {
+        x: rightEdge - boldFont.widthOfTextAtSize(netText, 11),
+        y: currentY,
+        size: 11,
+        font: boldFont,
+        color: dark,
+      });
+      currentY -= 22;
+    }
 
     if (paymentState.collectedCents > 0) {
       ensureSpace(36);

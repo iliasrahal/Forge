@@ -256,9 +256,17 @@ export default async function InvoicePage({
             {invoice.title}
           </h1>
 
-          {invoice.type === "DEPOSIT" ? (
+          {invoice.type !== "STANDARD" ? (
             <span className="mt-3 inline-flex rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-pink-600 dark:text-pink-300">
-              Facture d’acompte
+              {invoice.type === "DEPOSIT"
+                ? "Facture d’acompte"
+                : invoice.type === "SITUATION"
+                  ? `Situation de travaux${
+                      invoice.situationProgressBp
+                        ? ` · ${invoice.situationProgressBp / 100} %`
+                        : ""
+                    }`
+                  : "Facture de solde"}
             </span>
           ) : null}
 
@@ -466,6 +474,7 @@ export default async function InvoicePage({
             canRecord={canRecordPayment}
             payments={paymentRows}
             creditedCents={creditedCents}
+            retentionCents={invoice.retentionCents}
           />
         ) : null}
 
