@@ -26,6 +26,7 @@ type UpcomingCalendarProps = {
     scheduledDate: string,
   ) => void;
   canWrite: boolean;
+  autoOpenCreationForm?: boolean;
 };
 
 export type PlanningClient = {
@@ -57,6 +58,7 @@ export default function UpcomingCalendar({
   onSelectAppointment,
   onInterventionCreated,
   canWrite,
+  autoOpenCreationForm = false,
 }: UpcomingCalendarProps) {
   const initialDateKey = focusDate || appointments[0]?.date || todayDateKey;
   const initialDate = parseDateKey(initialDateKey);
@@ -65,7 +67,9 @@ export default function UpcomingCalendar({
     month: initialDate.getUTCMonth(),
   }));
   const [selectedDateKey, setSelectedDateKey] = useState(initialDateKey);
-  const [showCreationForm, setShowCreationForm] = useState(false);
+  const [showCreationForm, setShowCreationForm] = useState(
+    () => canWrite && autoOpenCreationForm,
+  );
   const [clientMode, setClientMode] = useState<"none" | "existing" | "new">("none");
   const [clientId, setClientId] = useState(clients[0]?.id ?? "");
   const [newClientName, setNewClientName] = useState("");

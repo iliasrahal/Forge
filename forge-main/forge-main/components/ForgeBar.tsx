@@ -1922,7 +1922,7 @@ export default function ForgeBar({
           ]
   }
   aria-label="Écrire à Forge"
-  className="min-w-0 flex-1 bg-transparent text-lg text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
+  className="min-w-0 flex-1 bg-transparent text-center text-lg text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-500"
 />
    <button
   type="button"

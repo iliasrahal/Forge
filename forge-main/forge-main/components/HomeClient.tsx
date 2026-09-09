@@ -114,6 +114,8 @@ const [showUpcomingCalendar, setShowUpcomingCalendar] =
   useState(false);
 const [calendarFocusDate, setCalendarFocusDate] =
   useState<string | null>(null);
+const [autoOpenNewIntervention, setAutoOpenNewIntervention] =
+  useState(false);
 const [actionMode, setActionMode] =
   useState<"edit" | null>(null);
 const [actionClientName, setActionClientName] = useState("");
@@ -743,8 +745,15 @@ const handleSaveNotes = async (notes: string) => {
     setHomeState("intervention");
   };
 
+  const openNewInterventionForm = () => {
+    setCalendarFocusDate(todayDateKey);
+    setAutoOpenNewIntervention(true);
+    setShowUpcomingCalendar(true);
+  };
+
   const handleCloseUpcomingCalendar = () => {
     setShowUpcomingCalendar(false);
+    setAutoOpenNewIntervention(false);
     setSelectedAppointmentId(
       appointmentsList.find(
         (appointment) => appointment.status === "inProgress",
@@ -914,6 +923,7 @@ const handleSaveNotes = async (notes: string) => {
     scheduledDate: string,
   ) => {
     setIsInitialWelcomeActive(false);
+    setAutoOpenNewIntervention(false);
     setNewInterventionId(interventionId);
     setCalendarFocusDate(scheduledDate);
     setShowUpcomingCalendar(true);
@@ -1275,7 +1285,16 @@ const handleCreateInvoice = async () => {
 
   {homeState === "intervention" && (
 
-      <section className="mb-3 min-w-0 shrink-0 text-center">
+      <section className="mb-3 flex min-w-0 shrink-0 flex-wrap items-center justify-center gap-2">
+        {canWrite && !showUpcomingCalendar ? (
+          <button
+            type="button"
+            onClick={openNewInterventionForm}
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
+          >
+            + Nouvelle intervention
+          </button>
+        ) : null}
         <button
           type="button"
           aria-expanded={showUpcomingCalendar}
@@ -1285,6 +1304,7 @@ const handleCreateInvoice = async () => {
               return;
             }
 
+            setAutoOpenNewIntervention(false);
             setCalendarFocusDate(
               upcomingAppointmentsList[0]?.date ?? todayDateKey,
             );
@@ -1316,6 +1336,7 @@ const handleCreateInvoice = async () => {
       onSelectAppointment={(appointmentId) => router.push(`/interventions/${appointmentId}`)}
       onInterventionCreated={handlePlanningInterventionCreated}
       canWrite={canWrite}
+      autoOpenCreationForm={autoOpenNewIntervention}
     />
   )}
 
