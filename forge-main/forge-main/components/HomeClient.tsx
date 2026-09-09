@@ -1359,7 +1359,7 @@ const handleCreateInvoice = async () => {
     </section>
   ) : null}
 
-  {homeState === "intervention" && showUpcomingCalendar ? (
+  {homeState === "intervention" && showUpcomingCalendar && !autoOpenNewIntervention ? (
     <section className="mb-3 flex min-w-0 shrink-0 items-center justify-center">
       <button
         type="button"
