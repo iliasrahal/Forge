@@ -12,6 +12,7 @@ import {
   quoteIssuerOrganizationSelect,
 } from "@/src/lib/quote-issuer";
 import { parseQuoteSignatureSnapshot, shortIntegrityReference, validateDrawnSignature } from "@/src/lib/quote-signature";
+import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import {
   computeDocumentTotals,
   formatVatRateBp,
@@ -277,13 +278,26 @@ export async function GET(
       y -= 22;
     };
 
-    page.drawText("FORGE", {
-      x: margin,
-      y,
-      size: 24,
-      font: boldFont,
-      color: blue,
-    });
+    const logo = await embedOrgLogo(
+      pdfDocument,
+      quote.organization?.logoDataUrl,
+    );
+    if (logo) {
+      page.drawImage(logo.image, {
+        x: margin,
+        y: y - logo.height + 18,
+        width: logo.width,
+        height: logo.height,
+      });
+    } else {
+      page.drawText("FORGE", {
+        x: margin,
+        y,
+        size: 24,
+        font: boldFont,
+        color: blue,
+      });
+    }
     const heading = "DEVIS";
     const headingWidth = boldFont.widthOfTextAtSize(heading, 18);
     page.drawText(heading, {

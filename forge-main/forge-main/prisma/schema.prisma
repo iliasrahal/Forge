@@ -284,6 +284,8 @@ model Organization {
   quotePrefix         String               @default("D")
   invoicePrefix       String               @default("F")
   creditNotePrefix    String               @default("AV")
+  // Logo de l'entreprise (data URL PNG/JPEG), affiché en tête des PDF.
+  logoDataUrl         String?
   documentCounters    DocumentCounter[]
   // Compte Stripe Connect (Express) de l'artisan pour encaisser en ligne.
   stripeAccountId        String?

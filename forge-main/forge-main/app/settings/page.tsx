@@ -59,6 +59,22 @@ export default async function SettingsPage() {
 
 
           <Link
+            href="/settings/branding"
+            className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+          >
+            Logo et identité
+          </Link>
+
+
+          <Link
+            href="/settings/quote-templates"
+            className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
+          >
+            Modèles de devis
+          </Link>
+
+
+          <Link
             href="/settings/paiement"
             className="block w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-left font-semibold transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:hover:border-blue-500"
           >

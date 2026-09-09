@@ -1,6 +1,7 @@
 export const quoteIssuerOrganizationSelect = {
   name: true,
   type: true,
+  logoDataUrl: true,
   personalOwner: {
     select: {
       firstName: true,

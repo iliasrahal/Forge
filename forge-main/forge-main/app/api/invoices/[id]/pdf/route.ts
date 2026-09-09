@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/invoiceDescription";
 import { prisma } from "@/src/lib/prisma";
 import { computeInvoicePaymentState } from "@/src/lib/payments";
+import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import {
   computeDocumentTotals,
   formatVatRateBp,
@@ -105,6 +106,7 @@ export async function GET(
         client: true,
         intervention: true,
         quote: true,
+        organization: { select: { logoDataUrl: true } },
         lines: { include: { details: { orderBy: { position: "asc" } } } },
         payments: {
           select: {
@@ -237,13 +239,26 @@ export async function GET(
       currentY -= 22;
     };
 
-    page.drawText("FORGE", {
-      x: margin,
-      y: currentY,
-      size: 24,
-      font: boldFont,
-      color: blue,
-    });
+    const logo = await embedOrgLogo(
+      pdfDocument,
+      invoice.organization?.logoDataUrl,
+    );
+    if (logo) {
+      page.drawImage(logo.image, {
+        x: margin,
+        y: currentY - logo.height + 18,
+        width: logo.width,
+        height: logo.height,
+      });
+    } else {
+      page.drawText("FORGE", {
+        x: margin,
+        y: currentY,
+        size: 24,
+        font: boldFont,
+        color: blue,
+      });
+    }
 
     const rightEdge = pageSize[0] - margin;
     const invoiceLabel =

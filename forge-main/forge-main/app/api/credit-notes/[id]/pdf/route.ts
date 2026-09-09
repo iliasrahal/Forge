@@ -7,6 +7,7 @@ import {
   VAT_EXEMPTION_MENTION,
 } from "@/src/lib/vat";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
+import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -78,6 +79,7 @@ export async function GET(request: Request, { params }: PdfRouteProps) {
         lines: { orderBy: { createdAt: "asc" } },
         client: true,
         invoice: { select: { reference: true } },
+        organization: { select: { logoDataUrl: true } },
       },
     });
 
@@ -167,13 +169,23 @@ export async function GET(request: Request, { params }: PdfRouteProps) {
       y -= 22;
     };
 
-    page.drawText("FORGE", {
-      x: margin,
-      y,
-      size: 24,
-      font: bold,
-      color: blue,
-    });
+    const logo = await embedOrgLogo(pdf, creditNote.organization?.logoDataUrl);
+    if (logo) {
+      page.drawImage(logo.image, {
+        x: margin,
+        y: y - logo.height + 18,
+        width: logo.width,
+        height: logo.height,
+      });
+    } else {
+      page.drawText("FORGE", {
+        x: margin,
+        y,
+        size: 24,
+        font: bold,
+        color: blue,
+      });
+    }
     const heading = "AVOIR";
     page.drawText(heading, {
       x: rightEdge - bold.widthOfTextAtSize(heading, 18),
