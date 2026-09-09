@@ -195,8 +195,9 @@ export default async function QuotePage({
   });
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-6">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start lg:gap-6">
 
       <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
@@ -219,8 +220,11 @@ export default async function QuotePage({
 
           {(issuer.companyName ||
             issuer.fullName ||
+            issuer.street ||
+            issuer.cityLine ||
             issuer.phone ||
-            issuer.email) && (
+            issuer.email ||
+            issuer.siret) && (
             <div className="mt-5 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--forge-text-muted)]">
                 Émetteur du devis
@@ -232,8 +236,12 @@ export default async function QuotePage({
               ) : null}
               <div className={`${issuer.companyName ? "mt-1" : "mt-2"} space-y-0.5 text-sm text-[var(--forge-text-secondary)]`}>
                 {issuer.fullName ? <p>{issuer.fullName}</p> : null}
+                {issuer.street ? <p>{issuer.street}</p> : null}
+                {issuer.cityLine ? <p>{issuer.cityLine}</p> : null}
                 {issuer.phone ? <p>{issuer.phone}</p> : null}
                 {issuer.email ? <p className="break-all">{issuer.email}</p> : null}
+                {issuer.siret ? <p>SIRET {issuer.siret}</p> : null}
+                {issuer.vatNumber ? <p>TVA {issuer.vatNumber}</p> : null}
               </div>
             </div>
           )}
@@ -500,6 +508,15 @@ export default async function QuotePage({
     />
   ) : null}
 
+</div>
+
+        <p className="mt-6 text-sm text-slate-500 lg:hidden dark:text-slate-400">
+          Créé le {formatDate(quote.createdAt)}
+        </p>
+
+      </section>
+
+      <aside className="mt-4 space-y-3 lg:mt-0 lg:sticky lg:top-6">
 
   {workspaceContext.permissions.canWrite ? (
     <DownloadQuotePdf
@@ -560,31 +577,13 @@ export default async function QuotePage({
     <DeleteQuoteButton quoteId={quote.id} />
   ) : null}
 
-</div>
+        <p className="hidden text-sm text-slate-500 lg:block dark:text-slate-400">
+          Créé le {formatDate(quote.createdAt)}
+        </p>
 
+      </aside>
 
-
-
-
-
-        <div className="mt-6 border-t border-slate-100 pt-5 dark:border-slate-700">
-
-
-
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Créé le {formatDate(quote.createdAt)}
-          </p>
-
-
-
-        </div>
-
-
-
-
-      </section>
-
-
+      </div>
 
     </main>
   );

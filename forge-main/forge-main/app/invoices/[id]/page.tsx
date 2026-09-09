@@ -232,25 +232,21 @@ export default async function InvoicePage({
 
   return (
 
-    <main className="mx-auto w-full max-w-3xl px-6 py-6">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
 
+      <Link
+        href="/invoices"
+        className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+      >
+        Retour
+      </Link>
+
+      <div className="mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start lg:gap-6">
 
       <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 
-        <Link
-          href="/invoices"
-          className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-        >
-
-          Retour
-
-        </Link>
-
-
-
-
-        <div className="mt-6">
+        <div>
 
           <div className="flex flex-wrap items-start justify-between gap-3">
             <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">
@@ -571,55 +567,51 @@ export default async function InvoicePage({
 
 
 
-        <div className="mt-6 space-y-4 pt-5">
+        <p className="mt-6 text-sm text-slate-500 lg:hidden">
+          Créée le {formatDate(invoice.createdAt)}
+        </p>
 
-          {workspaceContext.permissions.canWrite &&
-          invoice.status === "BROUILLON" &&
-          invoice.type === "STANDARD" ? (
-            <Link
-              href={`/invoices/${invoice.id}/edit`}
-              className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-            >
-              Modifier la facture
-            </Link>
-          ) : null}
+      </section>
 
+      <aside className="mt-4 space-y-4 lg:mt-0 lg:sticky lg:top-6">
 
-          {workspaceContext.permissions.canWrite ? (
+        {workspaceContext.permissions.canWrite ? (
+          <div className="forge-surface space-y-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+
+            {invoice.status === "BROUILLON" && invoice.type === "STANDARD" ? (
+              <Link
+                href={`/invoices/${invoice.id}/edit`}
+                className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+              >
+                Modifier la facture
+              </Link>
+            ) : null}
+
             <SendInvoiceButton
               invoiceId={invoice.id}
               clientId={invoice.clientId}
               clientEmail={clientEmail}
               interventionId={invoice.interventionId}
             />
-          ) : null}
 
+            <a
+              href={`/api/invoices/${invoice.id}/pdf`}
+              download={`facture-${invoice.reference}.pdf`}
+              className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+            >
+              Télécharger la facture
+            </a>
 
+          </div>
+        ) : null}
 
-          <a
-            href={`/api/invoices/${invoice.id}/pdf`}
-            download={`facture-${invoice.reference}.pdf`}
-            className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
-          >
-            Télécharger la facture
-          </a>
+        <p className="hidden text-sm text-slate-500 lg:block">
+          Créée le {formatDate(invoice.createdAt)}
+        </p>
 
+      </aside>
 
-
-          <p className="text-sm text-slate-500">
-
-            Créée le {formatDate(invoice.createdAt)}
-
-          </p>
-
-
-        </div>
-
-
-
-      </section>
-
-
+      </div>
 
     </main>
 

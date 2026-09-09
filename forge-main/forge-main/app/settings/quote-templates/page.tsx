@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LayoutTemplate } from "lucide-react";
 
 import UseQuoteTemplateButton from "@/components/UseQuoteTemplateButton";
 import { requireCurrentUser } from "@/src/lib/auth";
@@ -45,9 +46,27 @@ export default async function QuoteTemplatesPage() {
         </p>
 
         {templates.length === 0 ? (
-          <p className="mt-8 rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
-            Aucun modèle pour l’instant.
-          </p>
+          <div className="mt-8 flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
+            <LayoutTemplate
+              className="h-8 w-8 text-[var(--forge-text-muted)]"
+              strokeWidth={1.5}
+            />
+            <p className="mt-4 text-base font-semibold text-[var(--forge-text-primary)]">
+              Aucun modèle pour l’instant
+            </p>
+            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
+              Prépare un devis type (prestations, TVA, retenue) et réutilise-le en
+              un clic.
+            </p>
+            {context.permissions.canWrite ? (
+              <Link
+                href="/settings/quote-templates/new"
+                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
+              >
+                Nouveau modèle
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <ul className="mt-6 space-y-3">
             {templates.map((template) => (

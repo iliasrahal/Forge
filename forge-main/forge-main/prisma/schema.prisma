@@ -286,6 +286,16 @@ model Organization {
   creditNotePrefix    String               @default("AV")
   // Logo de l'entreprise (data URL PNG/JPEG), affiché en tête des PDF.
   logoDataUrl         String?
+  // Identité de l'entreprise reprise en tête des devis / factures / avoirs.
+  legalName          String?
+  siret              String?
+  vatNumber          String?
+  apeCode            String?
+  addressStreet      String?
+  addressPostalCode  String?
+  addressCity        String?
+  contactPhone       String?
+  contactEmail       String?
   documentCounters    DocumentCounter[]
   // Compte Stripe Connect (Express) de l'artisan pour encaisser en ligne.
   stripeAccountId        String?

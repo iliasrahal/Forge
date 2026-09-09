@@ -64,9 +64,11 @@ export default function SmartRemindersSetting({
           />
         </button>
       </div>
-      <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
-        {saving ? "Enregistrement…" : enabled ? "Activé" : "Désactivé"}
-      </p>
+      {saving ? (
+        <p className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          Enregistrement…
+        </p>
+      ) : null}
       {error ? <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
     </div>
   );

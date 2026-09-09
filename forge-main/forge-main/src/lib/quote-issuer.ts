@@ -2,6 +2,15 @@ export const quoteIssuerOrganizationSelect = {
   name: true,
   type: true,
   logoDataUrl: true,
+  legalName: true,
+  siret: true,
+  vatNumber: true,
+  apeCode: true,
+  addressStreet: true,
+  addressPostalCode: true,
+  addressCity: true,
+  contactPhone: true,
+  contactEmail: true,
   personalOwner: {
     select: {
       firstName: true,
@@ -39,6 +48,15 @@ type IssuerUser = {
 type IssuerOrganization = {
   name: string;
   type: "PERSONAL" | "TEAM";
+  legalName?: string | null;
+  siret?: string | null;
+  vatNumber?: string | null;
+  apeCode?: string | null;
+  addressStreet?: string | null;
+  addressPostalCode?: string | null;
+  addressCity?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
   personalOwner: IssuerUser | null;
   members: Array<{ user: IssuerUser }>;
 };
@@ -58,15 +76,26 @@ export function getQuoteIssuer(
     ? clean(`${user.firstName} ${user.lastName ?? ""}`)
     : null;
   const companyName =
-    organization?.type === "TEAM"
+    clean(organization?.legalName) ??
+    (organization?.type === "TEAM"
       ? clean(organization.name)
-      : clean(user?.companyName);
+      : clean(user?.companyName));
+  const cityLine = clean(
+    [clean(organization?.addressPostalCode), clean(organization?.addressCity)]
+      .filter(Boolean)
+      .join(" "),
+  );
 
   return {
     companyName,
     fullName,
-    phone: clean(user?.phone),
-    email: clean(user?.email),
+    street: clean(organization?.addressStreet),
+    cityLine,
+    phone: clean(organization?.contactPhone) ?? clean(user?.phone),
+    email: clean(organization?.contactEmail) ?? clean(user?.email),
+    siret: clean(organization?.siret),
+    vatNumber: clean(organization?.vatNumber),
+    apeCode: clean(organization?.apeCode),
   };
 }
 
@@ -78,7 +107,12 @@ export function getQuoteIssuerLines(
   return [
     issuer.companyName,
     issuer.fullName,
+    issuer.street,
+    issuer.cityLine,
     issuer.phone,
     issuer.email,
+    issuer.siret ? `SIRET ${issuer.siret}` : null,
+    issuer.vatNumber ? `TVA ${issuer.vatNumber}` : null,
+    issuer.apeCode ? `APE ${issuer.apeCode}` : null,
   ].filter((value): value is string => Boolean(value));
 }

@@ -14,6 +14,10 @@ import { prisma } from "@/src/lib/prisma";
 import { computeInvoicePaymentState } from "@/src/lib/payments";
 import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import {
+  getQuoteIssuerLines,
+  quoteIssuerOrganizationSelect,
+} from "@/src/lib/quote-issuer";
+import {
   computeDocumentTotals,
   formatVatRateBp,
   VAT_EXEMPTION_MENTION,
@@ -106,7 +110,7 @@ export async function GET(
         client: true,
         intervention: true,
         quote: true,
-        organization: { select: { logoDataUrl: true } },
+        organization: { select: quoteIssuerOrganizationSelect },
         lines: { include: { details: { orderBy: { position: "asc" } } } },
         payments: {
           select: {
@@ -693,11 +697,16 @@ export async function GET(
       currentY -= 12;
     }
 
-    const artisanDetails = [
-      workspaceContext.user.firstName?.trim(),
-      workspaceContext.user.email?.trim(),
-      workspaceContext.user.phone?.trim(),
-    ].filter((value): value is string => Boolean(value));
+    const issuerLines = getQuoteIssuerLines(invoice.organization);
+    const artisanDetails = (
+      issuerLines.length > 0
+        ? issuerLines
+        : [
+            workspaceContext.user.firstName?.trim(),
+            workspaceContext.user.email?.trim(),
+            workspaceContext.user.phone?.trim(),
+          ]
+    ).filter((value): value is string => Boolean(value));
 
     if (artisanDetails.length > 0) {
       ensureSpace(54);

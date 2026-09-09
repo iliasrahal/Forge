@@ -9,6 +9,10 @@ import {
 import { displayDocumentReference } from "@/src/lib/document-numbering";
 import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import {
+  getQuoteIssuerLines,
+  quoteIssuerOrganizationSelect,
+} from "@/src/lib/quote-issuer";
+import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
@@ -79,7 +83,7 @@ export async function GET(request: Request, { params }: PdfRouteProps) {
         lines: { orderBy: { createdAt: "asc" } },
         client: true,
         invoice: { select: { reference: true } },
-        organization: { select: { logoDataUrl: true } },
+        organization: { select: quoteIssuerOrganizationSelect },
       },
     });
 
@@ -315,6 +319,15 @@ export async function GET(request: Request, { params }: PdfRouteProps) {
         lineHeight: 12,
         color: grey,
       });
+    }
+
+    const issuerLines = getQuoteIssuerLines(creditNote.organization).map(
+      (line) => cleanPdfText(line),
+    );
+    if (issuerLines.length > 0) {
+      y -= 24;
+      section("Émetteur");
+      drawLines(issuerLines, { size: 9, lineHeight: 13, color: grey });
     }
 
     void request;

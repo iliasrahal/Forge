@@ -1,10 +1,21 @@
 import Link from "next/link";
+import { Receipt } from "lucide-react";
 
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
+import { statusChipClasses } from "@/src/lib/document-status-style";
+
+
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
 
 
 function formatAmount(amountCents: number) {
@@ -72,81 +83,63 @@ export default async function InvoicesPage() {
       </div>
 
 
-      <div className="mt-6 space-y-4">
-
+      <div className="mt-6">
 
         {invoices.length === 0 ? (
-
-
-          <div className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-
-
-            <p className="text-slate-500 dark:text-slate-400">
-              Aucune facture créée.
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
+            <Receipt
+              className="h-8 w-8 text-[var(--forge-text-muted)]"
+              strokeWidth={1.5}
+            />
+            <p className="mt-4 text-base font-semibold text-[var(--forge-text-primary)]">
+              Aucune facture pour l’instant
             </p>
-
-
-          </div>
-
-
-
-        ) : (
-
-
-          invoices.map((invoice) => (
-
-
+            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
+              Crée une facture directement ou depuis un devis accepté.
+            </p>
             <Link
-              key={invoice.id}
-              href={`/invoices/${invoice.id}`}
-              aria-label={`Ouvrir la facture ${invoice.reference}`}
-              className="forge-surface block min-w-0 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 sm:p-6"
+              href="/invoices/new"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
             >
-
-
-              <h2 className="break-words text-lg font-bold text-blue-700 dark:text-blue-400 sm:text-xl">
-                {invoice.title}
-              </h2>
-
-              {invoice.type === "DEPOSIT" ? (
-                <span className="mt-2 inline-flex rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-pink-600 dark:text-pink-300">
-                  Facture d’acompte
-                </span>
-              ) : null}
-
-
-
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Facture {displayDocumentReference(invoice.reference)}
-              </p>
-
-
-
-              <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">
-                {formatAmount(
-                  invoice.amountCents,
-                )}
-              </p>
-
-
-
-              <span className="mt-3 inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-                {formatStatus(
-                  invoice.status,
-                )}
-              </span>
-
-
-
+              Nouvelle facture
             </Link>
-
-
-          ))
-
-
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {invoices.map((invoice) => (
+              <li key={invoice.id}>
+                <Link
+                  href={`/invoices/${invoice.id}`}
+                  aria-label={`Ouvrir la facture ${invoice.reference}`}
+                  className="forge-surface flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950/50"
+                >
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-2 truncate text-sm font-semibold text-[var(--forge-text-primary)]">
+                      <span className="truncate">{invoice.title}</span>
+                      {invoice.type === "DEPOSIT" ? (
+                        <span className="shrink-0 rounded-full border border-[var(--forge-border)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--forge-text-muted)]">
+                          Acompte
+                        </span>
+                      ) : null}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-[var(--forge-text-muted)]">
+                      {displayDocumentReference(invoice.reference)} ·{" "}
+                      {formatDate(invoice.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2.5">
+                    <span className="text-sm font-bold text-[var(--forge-text-primary)]">
+                      {formatAmount(invoice.amountCents)}
+                    </span>
+                    <span className={statusChipClasses(invoice.status)}>
+                      {formatStatus(invoice.status)}
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
-
-
 
       </div>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FileText } from "lucide-react";
 
 
 import FixedForgeBar from "@/components/FixedForgeBar";
@@ -9,6 +10,7 @@ import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
 import { getQuoteClientName, getQuotePath } from "@/src/lib/quote-routes";
+import { statusChipClasses } from "@/src/lib/document-status-style";
 
 
 
@@ -154,136 +156,72 @@ export default async function QuotesPage() {
 
       <div className="flex-1">
 
-
         {quotes.length > 0 ? (
-
-
-          <div className="space-y-3">
-
-
+          <ul className="space-y-2">
             {quotes.map((quote) => {
-
               const reminderState = getQuoteReminderState({
                 status: quote.status,
                 sentAt: quote.sentAt,
                 reminders: quote.reminders,
               });
-
-
               const clientName = getQuoteClientName(quote.client);
 
-
-
               return (
-
-
-                <Link
-                  key={quote.id}
-                  href={getQuotePath(quote)}
-                  className="forge-surface block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950"
-                >
-
-
-                  <div className="flex min-w-0 flex-col items-start gap-3 min-[380px]:flex-row min-[380px]:justify-between">
-
-
-
+                <li key={quote.id}>
+                  <Link
+                    href={getQuotePath(quote)}
+                    className="forge-surface flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/60 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950/50"
+                  >
                     <div className="min-w-0">
-
-
-                      <p className="text-lg font-semibold text-blue-700 dark:text-blue-400">
+                      <p className="truncate text-sm font-semibold text-[var(--forge-text-primary)]">
                         {quote.title}
                       </p>
-
-
-
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      <p className="mt-0.5 truncate text-xs text-[var(--forge-text-muted)]">
                         {displayDocumentReference(quote.reference)}
+                        {clientName ? ` · ${clientName}` : ""} ·{" "}
+                        {formatDate(quote.createdAt)}
                       </p>
-
-
-
-                      <p className="mt-3 text-sm font-semibold text-blue-700 dark:text-blue-400">
-                        {clientName}
-                      </p>
-
-
-
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Créé le{" "}
-                        {formatDate(
-                          quote.createdAt,
-                        )}
-                      </p>
-
-
-
                     </div>
-
-
-
-
-                    <div className="shrink-0 text-left min-[380px]:text-right">
-
-
-
-                      <p className="text-lg font-bold text-blue-700 dark:text-blue-400">
-                        {formatCurrency(
-                          quote.amountCents,
-                        )}
-                      </p>
-
-
-
-
-                      <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-
-
-                        {formatStatus(
-                          quote.status,
-                        )}
-
-
-                      </span>
-
+                    <div className="flex shrink-0 items-center gap-2.5">
                       {reminderState.eligible ? (
-                        <span className="mt-2 block text-xs font-bold text-amber-700 dark:text-amber-300">
+                        <span className="hidden text-xs font-semibold text-amber-600 sm:inline dark:text-amber-400">
                           À relancer
                         </span>
                       ) : null}
-
-
-
+                      <span className="text-sm font-bold text-[var(--forge-text-primary)]">
+                        {formatCurrency(quote.amountCents)}
+                      </span>
+                      <span className={statusChipClasses(quote.status)}>
+                        {formatStatus(quote.status)}
+                      </span>
                     </div>
-
-
-
-                  </div>
-
-
-
-                </Link>
-
-
+                  </Link>
+                </li>
               );
-
-
             })}
-
-
-          </div>
-
-
+          </ul>
         ) : (
-
-
-          <p className="text-center text-slate-500 dark:text-slate-400">
-            Aucun devis créé.
-          </p>
-
-
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
+            <FileText
+              className="h-8 w-8 text-[var(--forge-text-muted)]"
+              strokeWidth={1.5}
+            />
+            <p className="mt-4 text-base font-semibold text-[var(--forge-text-primary)]">
+              Aucun devis pour l’instant
+            </p>
+            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
+              Crée ton premier devis, ou pars d’un modèle enregistré.
+            </p>
+            {workspaceContext.permissions.canWrite ? (
+              <Link
+                href="/quotes/new"
+                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
+              >
+                + Nouveau devis
+              </Link>
+            ) : null}
+          </div>
         )}
-
 
       </div>
 
