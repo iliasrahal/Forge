@@ -32,6 +32,7 @@ import {
   CREDIT_NOTE_STATUS_LABELS,
   sumIssuedCreditsCents,
 } from "@/src/lib/credit-notes";
+import { statusChipClasses } from "@/src/lib/document-status-style";
 import {
   isValidClientEmail,
   normalizeClientEmail,
@@ -251,31 +252,35 @@ export default async function InvoicePage({
 
         <div className="mt-6">
 
-
-          <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">
-            {invoice.title}
-          </h1>
-
-          {invoice.type !== "STANDARD" ? (
-            <span className="mt-3 inline-flex rounded-full border border-pink-400/30 bg-pink-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-pink-600 dark:text-pink-300">
-              {invoice.type === "DEPOSIT"
-                ? "Facture d’acompte"
-                : invoice.type === "SITUATION"
-                  ? `Situation de travaux${
-                      invoice.situationProgressBp
-                        ? ` · ${invoice.situationProgressBp / 100} %`
-                        : ""
-                    }`
-                  : "Facture de solde"}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">
+              {invoice.title}
+            </h1>
+            <span className={statusChipClasses(invoice.status)}>
+              {formatStatus(invoice.status)}
             </span>
-          ) : null}
+          </div>
 
-
-          <p className="mt-2 text-slate-500">
-            {isDraftReference(invoice.reference)
-              ? "Brouillon — numéro attribué à l’émission"
-              : `Facture ${invoice.reference}`}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+            <span>
+              {isDraftReference(invoice.reference)
+                ? "Brouillon — numéro attribué à l’émission"
+                : `Facture ${invoice.reference}`}
+            </span>
+            {invoice.type !== "STANDARD" ? (
+              <span className="inline-flex rounded-full border border-[var(--forge-border)] px-2.5 py-0.5 text-xs font-semibold text-[var(--forge-text-secondary)]">
+                {invoice.type === "DEPOSIT"
+                  ? "Acompte"
+                  : invoice.type === "SITUATION"
+                    ? `Situation${
+                        invoice.situationProgressBp
+                          ? ` · ${invoice.situationProgressBp / 100} %`
+                          : ""
+                      }`
+                    : "Solde"}
+              </span>
+            ) : null}
+          </div>
 
 
         </div>
@@ -447,26 +452,6 @@ export default async function InvoicePage({
 
 
 
-        <div className="mt-6">
-
-
-          <p className="text-sm text-slate-500">
-            Statut
-          </p>
-
-
-          <span className="mt-2 inline-flex rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-
-            {formatStatus(
-              invoice.status
-            )}
-
-          </span>
-
-
-        </div>
-
-
         {invoice.status !== "BROUILLON" || paymentRows.length > 0 ? (
           <InvoicePaymentsPanel
             invoiceId={invoice.id}
@@ -614,7 +599,7 @@ export default async function InvoicePage({
           <a
             href={`/api/invoices/${invoice.id}/pdf`}
             download={`facture-${invoice.reference}.pdf`}
-            className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+            className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
           >
             Télécharger la facture
           </a>

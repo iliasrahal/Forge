@@ -226,7 +226,7 @@ export default function SendInvoiceButton({
             type="button"
             onClick={() => void handleSendInvoice()}
             disabled={loading}
-            className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 dark:text-blue-400 dark:hover:bg-blue-950"
+            className="block w-full rounded-2xl bg-blue-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? "Envoi en cours..." : "Envoyer la facture"}
           </button>

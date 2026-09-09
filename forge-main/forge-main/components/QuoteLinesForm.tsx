@@ -308,7 +308,7 @@ export default function QuoteLinesForm({
                   type="button"
                   onClick={() => removeLine(index)}
                   aria-label="Supprimer la ligne"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-[var(--forge-text-muted)] transition hover:bg-red-500/10 hover:text-red-500"
                 >
                   <X size={18} />
                 </button>
