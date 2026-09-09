@@ -2,6 +2,7 @@ import Link from "next/link";
 
 
 import FixedForgeBar from "@/components/FixedForgeBar";
+import UseQuoteTemplateButton from "@/components/UseQuoteTemplateButton";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -71,6 +72,14 @@ export default async function QuotesPage() {
       },
     });
 
+  const templates = workspaceContext.permissions.canWrite
+    ? await prisma.quoteTemplate.findMany({
+        where: { organizationId: workspaceContext.workspace.id },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, _count: { select: { lines: true } } },
+      })
+    : [];
+
 
 
   return (
@@ -103,6 +112,42 @@ export default async function QuotesPage() {
 
 
       </div>
+
+
+      {templates.length > 0 ? (
+        <div className="mb-6 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-[var(--forge-text-primary)]">
+              Partir d’un modèle
+            </p>
+            <Link
+              href="/settings/quote-templates"
+              className="text-xs font-semibold text-[var(--forge-accent-blue-lit)] hover:underline"
+            >
+              Gérer
+            </Link>
+          </div>
+          <ul className="mt-3 divide-y divide-[var(--forge-border)]">
+            {templates.map((template) => (
+              <li
+                key={template.id}
+                className="flex items-center justify-between gap-3 py-2.5 text-sm"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-[var(--forge-text-primary)]">
+                    {template.name}
+                  </span>
+                  <span className="text-xs text-[var(--forge-text-muted)]">
+                    {template._count.lines} ligne
+                    {template._count.lines > 1 ? "s" : ""}
+                  </span>
+                </span>
+                <UseQuoteTemplateButton templateId={template.id} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
 
 
