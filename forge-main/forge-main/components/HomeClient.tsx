@@ -1557,7 +1557,7 @@ const handleCreateInvoice = async () => {
 
 
   {actionMode && currentAppointment && (
-    <div className="fixed inset-x-0 top-0 z-[70] flex h-[calc(100dvh-4.75rem-max(0.5rem,env(safe-area-inset-bottom)))] items-start justify-center overflow-y-auto overscroll-contain bg-slate-950/50 px-2 py-2 sm:h-[calc(100dvh-6rem-max(1rem,env(safe-area-inset-bottom)))] sm:px-4 sm:py-4 lg:inset-0 lg:h-dvh lg:items-center">
+    <div className="fixed inset-x-0 top-0 z-[70] flex h-[calc(100dvh-4.75rem-max(0.5rem,env(safe-area-inset-bottom)))] items-start justify-center overflow-y-auto overscroll-contain bg-slate-950/50 px-2 py-2 sm:h-[calc(100dvh-6rem-max(1rem,env(safe-area-inset-bottom)))] sm:px-4 sm:py-4 lg:left-60 lg:h-dvh lg:items-center">
       <section className="forge-surface my-auto w-full max-w-md rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:p-6">
         <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
           Modifier l’intervention
