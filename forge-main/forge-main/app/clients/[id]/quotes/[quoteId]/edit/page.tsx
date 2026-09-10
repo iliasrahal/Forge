@@ -275,8 +275,8 @@ export default async function EditQuotePage({
 
 
         <Link
-          href={getQuotePath(quote)}
-          aria-label="Retour au devis"
+          href="/quotes"
+          aria-label="Retour aux devis"
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>

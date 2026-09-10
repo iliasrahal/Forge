@@ -219,8 +219,8 @@ export default async function NewQuotePage({
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <div>
         <Link
-          href={client ? `/clients/${id}` : "/quotes"}
-          aria-label="Retour au dossier client"
+          href="/quotes"
+          aria-label="Retour aux devis"
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>
