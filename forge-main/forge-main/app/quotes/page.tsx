@@ -3,6 +3,9 @@ import { FileText } from "lucide-react";
 
 
 import FixedForgeBar from "@/components/FixedForgeBar";
+import DocumentSearchList, {
+  type SearchableDocument,
+} from "@/components/DocumentSearchList";
 import UseQuoteTemplateButton from "@/components/UseQuoteTemplateButton";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
@@ -10,7 +13,6 @@ import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
 import { getQuoteClientName, getQuotePath } from "@/src/lib/quote-routes";
-import { statusChipClasses } from "@/src/lib/document-status-style";
 
 
 
@@ -81,6 +83,38 @@ export default async function QuotesPage() {
         select: { id: true, name: true, _count: { select: { lines: true } } },
       })
     : [];
+
+  const searchableQuotes: SearchableDocument[] = quotes.map((quote) => {
+    const reminderState = getQuoteReminderState({
+      status: quote.status,
+      sentAt: quote.sentAt,
+      reminders: quote.reminders,
+    });
+    const clientName = getQuoteClientName(quote.client);
+
+    return {
+      id: quote.id,
+      href: getQuotePath(quote),
+      title: quote.title,
+      reference: displayDocumentReference(quote.reference),
+      date: formatDate(quote.createdAt),
+      amount: formatCurrency(quote.amountCents),
+      status: quote.status,
+      statusLabel: formatStatus(quote.status),
+      clientLabel: clientName,
+      searchValues: [
+        clientName,
+        quote.client?.firstName ?? "",
+        quote.client?.lastName ?? "",
+        `${quote.client?.firstName ?? ""} ${quote.client?.lastName ?? ""}`,
+        quote.client?.companyName ?? "",
+        quote.title,
+        quote.reference,
+        displayDocumentReference(quote.reference),
+      ],
+      attention: reminderState.eligible ? "À relancer" : undefined,
+    };
+  });
 
 
 
@@ -157,51 +191,11 @@ export default async function QuotesPage() {
       <div className="flex-1">
 
         {quotes.length > 0 ? (
-          <ul className="space-y-2">
-            {quotes.map((quote) => {
-              const reminderState = getQuoteReminderState({
-                status: quote.status,
-                sentAt: quote.sentAt,
-                reminders: quote.reminders,
-              });
-              const clientName = getQuoteClientName(quote.client);
-
-              return (
-                <li key={quote.id}>
-                  <Link
-                    href={getQuotePath(quote)}
-                    className="forge-surface flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/60 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950/50"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[var(--forge-text-primary)]">
-                        {quote.title}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-[var(--forge-text-muted)]">
-                        <span className="tabular-nums">
-                          {displayDocumentReference(quote.reference)} ·{" "}
-                          {formatDate(quote.createdAt)}
-                        </span>
-                        {clientName ? ` · ${clientName}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2.5">
-                      {reminderState.eligible ? (
-                        <span className="hidden text-xs font-semibold text-amber-600 sm:inline dark:text-amber-400">
-                          À relancer
-                        </span>
-                      ) : null}
-                      <span className="text-sm font-bold forge-num text-[var(--forge-text-primary)]">
-                        {formatCurrency(quote.amountCents)}
-                      </span>
-                      <span className={statusChipClasses(quote.status)}>
-                        {formatStatus(quote.status)}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <DocumentSearchList
+            documents={searchableQuotes}
+            documentLabel="devis"
+            placeholder="Rechercher un devis…"
+          />
         ) : (
           <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
             <FileText

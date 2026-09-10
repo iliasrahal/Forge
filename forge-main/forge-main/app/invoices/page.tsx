@@ -2,11 +2,13 @@ import Link from "next/link";
 import { Receipt } from "lucide-react";
 
 import FixedForgeBar from "@/components/FixedForgeBar";
+import DocumentSearchList, {
+  type SearchableDocument,
+} from "@/components/DocumentSearchList";
 import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
-import { statusChipClasses } from "@/src/lib/document-status-style";
 
 
 function formatDate(date: Date) {
@@ -59,7 +61,48 @@ export default async function InvoicesPage() {
         createdAt: "desc",
       },
 
+      include: {
+        client: {
+          select: {
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        },
+      },
+
     });
+
+  const searchableInvoices: SearchableDocument[] = invoices.map((invoice) => {
+    const clientName =
+      invoice.client.type === "PROFESSIONNEL"
+        ? invoice.client.companyName?.trim() || "Client professionnel"
+        : `${invoice.client.firstName ?? ""} ${invoice.client.lastName ?? ""}`.trim() ||
+          "Client sans nom";
+
+    return {
+      id: invoice.id,
+      href: `/invoices/${invoice.id}`,
+      title: invoice.title,
+      reference: displayDocumentReference(invoice.reference),
+      date: formatDate(invoice.createdAt),
+      amount: formatAmount(invoice.amountCents),
+      status: invoice.status,
+      statusLabel: formatStatus(invoice.status),
+      searchValues: [
+        clientName,
+        invoice.client.firstName ?? "",
+        invoice.client.lastName ?? "",
+        `${invoice.client.firstName ?? ""} ${invoice.client.lastName ?? ""}`,
+        invoice.client.companyName ?? "",
+        invoice.title,
+        invoice.reference,
+        displayDocumentReference(invoice.reference),
+      ],
+      badge: invoice.type === "DEPOSIT" ? "Acompte" : undefined,
+    };
+  });
 
 
 
@@ -105,40 +148,11 @@ export default async function InvoicesPage() {
             </Link>
           </div>
         ) : (
-          <ul className="space-y-2">
-            {invoices.map((invoice) => (
-              <li key={invoice.id}>
-                <Link
-                  href={`/invoices/${invoice.id}`}
-                  aria-label={`Ouvrir la facture ${invoice.reference}`}
-                  className="forge-surface flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950/50"
-                >
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate text-sm font-semibold text-[var(--forge-text-primary)]">
-                      <span className="truncate">{invoice.title}</span>
-                      {invoice.type === "DEPOSIT" ? (
-                        <span className="shrink-0 rounded-full border border-[var(--forge-border)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--forge-text-muted)]">
-                          Acompte
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="mt-0.5 truncate text-xs tabular-nums text-[var(--forge-text-muted)]">
-                      {displayDocumentReference(invoice.reference)} ·{" "}
-                      {formatDate(invoice.createdAt)}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2.5">
-                    <span className="text-sm font-bold forge-num text-[var(--forge-text-primary)]">
-                      {formatAmount(invoice.amountCents)}
-                    </span>
-                    <span className={statusChipClasses(invoice.status)}>
-                      {formatStatus(invoice.status)}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <DocumentSearchList
+            documents={searchableInvoices}
+            documentLabel="facture"
+            placeholder="Rechercher une facture…"
+          />
         )}
 
       </div>
