@@ -41,7 +41,7 @@ export default function ClientSearch({ clients }: { clients: Client[] }) {
       <InstantSearchInput
         value={query}
         onChange={setQuery}
-        placeholder="Rechercher un client par son nom"
+        placeholder="Rechercher un client"
         ariaLabel="Rechercher un client"
       />
 
