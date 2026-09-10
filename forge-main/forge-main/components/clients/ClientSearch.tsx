@@ -42,7 +42,7 @@ export default function ClientSearch({ clients }: { clients: Client[] }) {
         value={query}
         onChange={setQuery}
         placeholder="Rechercher un client"
-        ariaLabel="Rechercher un client"
+        ariaLabel="Rechercher un client..."
       />
 
       {query ? (
