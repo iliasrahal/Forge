@@ -1114,6 +1114,27 @@ export async function DELETE(request: Request) {
           lt: dateBounds.nextStart,
         },
         organizationId: workspaceContext.workspace.id,
+        invoices: { none: {} },
+        workTimes: { none: {} },
+        expenses: { none: {} },
+        dayStates: {
+          none: {
+            OR: [
+              { startedAt: { not: null } },
+              { completedAt: { not: null } },
+              { report: { not: null } },
+            ],
+          },
+        },
+        dayTasks: {
+          none: {
+            OR: [{ completedAt: { not: null } }, { report: { not: null } }],
+          },
+        },
+        reportIntervention: null,
+        reportDiagnostic: null,
+        reportTravaux: null,
+        reportRecommendation: null,
       };
 
       const count =
@@ -1150,13 +1171,73 @@ export async function DELETE(request: Request) {
           id: interventionId,
           organizationId: workspaceContext.workspace.id,
         },
-        select: { id: true },
+        select: {
+          id: true,
+          status: true,
+          startedAt: true,
+          finishedAt: true,
+          reportIntervention: true,
+          reportDiagnostic: true,
+          reportTravaux: true,
+          reportRecommendation: true,
+          invoices: { select: { id: true } },
+          workTimes: { select: { id: true }, take: 1 },
+          expenses: { select: { id: true }, take: 1 },
+          dayStates: {
+            where: {
+              OR: [
+                { startedAt: { not: null } },
+                { completedAt: { not: null } },
+                { report: { not: null } },
+              ],
+            },
+            select: { id: true },
+            take: 1,
+          },
+          dayTasks: {
+            where: {
+              OR: [{ completedAt: { not: null } }, { report: { not: null } }],
+            },
+            select: { id: true },
+            take: 1,
+          },
+        },
       });
 
     if (!intervention) {
       return NextResponse.json(
         { error: "Cette intervention est introuvable." },
         { status: 404 },
+      );
+    }
+
+    if (intervention.invoices.length > 0) {
+      return NextResponse.json(
+        { error: "Ce chantier ne peut pas être supprimé car une facture lui est associée." },
+        { status: 409 },
+      );
+    }
+
+    const hasHistoricalData =
+      intervention.status === "EN_COURS" ||
+      intervention.status === "TERMINEE" ||
+      intervention.startedAt !== null ||
+      intervention.finishedAt !== null ||
+      intervention.workTimes.length > 0 ||
+      intervention.expenses.length > 0 ||
+      intervention.dayStates.length > 0 ||
+      intervention.dayTasks.length > 0 ||
+      Boolean(
+        intervention.reportIntervention ||
+        intervention.reportDiagnostic ||
+        intervention.reportTravaux ||
+        intervention.reportRecommendation,
+      );
+
+    if (hasHistoricalData) {
+      return NextResponse.json(
+        { error: "Ce chantier contient déjà un historique de travail. Il ne peut pas être supprimé." },
+        { status: 409 },
       );
     }
 

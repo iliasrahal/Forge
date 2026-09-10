@@ -538,6 +538,17 @@ model InterventionDayState {
   @@index([interventionId, date])
 }
 
+model InterventionExcludedDay {
+  id String @id @default(cuid())
+  interventionId String
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  date DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([interventionId, date])
+  @@index([interventionId, date])
+}
+
 model InterventionWorkTime {
   id String @id @default(cuid())
   interventionId String
@@ -629,6 +640,7 @@ model Intervention {
 
   dayTasks InterventionDayTask[]
   dayStates InterventionDayState[]
+  excludedDays InterventionExcludedDay[]
   workTimes InterventionWorkTime[]
   expenses InterventionExpense[]
 

@@ -75,15 +75,18 @@ export function interventionDayTaskCreateData(
 export function listInterventionDateKeys(
   periodStart: Date,
   periodEnd: Date | null,
+  excludedDates: Iterable<string> = [],
 ) {
   const startKey = formatParisDateKey(periodStart);
   const endKey = formatParisDateKey(periodEnd ?? periodStart);
   const current = new Date(`${startKey}T12:00:00Z`);
   const end = new Date(`${endKey}T12:00:00Z`);
   const keys: string[] = [];
+  const excluded = new Set(excludedDates);
 
   while (current <= end && keys.length < 732) {
-    keys.push(current.toISOString().slice(0, 10));
+    const key = current.toISOString().slice(0, 10);
+    if (!excluded.has(key)) keys.push(key);
     current.setUTCDate(current.getUTCDate() + 1);
   }
 

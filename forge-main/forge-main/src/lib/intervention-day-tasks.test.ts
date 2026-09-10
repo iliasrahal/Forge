@@ -30,6 +30,17 @@ test("énumère chaque journée d'une période traversant deux mois", () => {
   );
 });
 
+test("conserve l'exclusion d'une journée située au milieu de la période", () => {
+  assert.deepEqual(
+    listInterventionDateKeys(
+      new Date("2027-05-14T22:00:00Z"),
+      new Date("2027-05-18T21:59:59Z"),
+      ["2027-05-17"],
+    ),
+    ["2027-05-15", "2027-05-16", "2027-05-18"],
+  );
+});
+
 test("ignore les tâches hors période ou invalides", () => {
   const tasks = normalizeInterventionDayTasks(
     [

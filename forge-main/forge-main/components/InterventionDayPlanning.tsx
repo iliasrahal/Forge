@@ -32,6 +32,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<DayTask | null>(null);
   const [reportDate, setReportDate] = useState<string | null>(null);
+  const [deleteDate, setDeleteDate] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,6 +70,26 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       setError(typeof data.error === "string" ? data.error : "Impossible de mettre à jour cette journée.");
       return;
     }
+    router.refresh();
+  }
+
+  async function deleteDay() {
+    if (!deleteDate) return;
+    setPending(true);
+    setError("");
+    const response = await fetch(`/api/interventions/${interventionId}/days`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: deleteDate }),
+    });
+    const data = await response.json().catch(() => ({}));
+    setPending(false);
+    if (!response.ok) {
+      setError(typeof data.error === "string" ? data.error : "Impossible de supprimer cette journée.");
+      setDeleteDate(null);
+      return;
+    }
+    setDeleteDate(null);
     router.refresh();
   }
 
@@ -130,6 +151,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                   {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "complete")} className="rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50">Terminer la journée</button>}
                   {dayState?.completedAt && <button type="button" onClick={() => setReportDate(reportDate === date ? null : date)} className="rounded-full border border-emerald-300 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">Compte rendu facultatif</button>}
                   <button type="button" onClick={() => { setEditing(null); setOpenDate(openDate === date ? null : date); }} className="rounded-full border border-blue-300 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">Ajouter une tâche</button>
+                  <button type="button" onClick={() => { setError(""); setDeleteDate(date); }} className="px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400">Supprimer la journée</button>
                 </div>}
               </div>
               {dailyTasks.length ? (
@@ -175,6 +197,19 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           );
         })}
       </div>
+      {deleteDate && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <section role="dialog" aria-modal="true" aria-labelledby="delete-day-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">
+            <h2 id="delete-day-title" className="text-xl font-bold text-[var(--forge-text-primary)]">Supprimer cette journée du chantier ?</h2>
+            <p className="mt-2 capitalize text-sm font-semibold text-[var(--forge-text-primary)]">{dateFormatter.format(new Date(`${deleteDate}T12:00:00Z`))}</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--forge-text-secondary)]">Les tâches et le planning de cette journée seront supprimés.</p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button type="button" disabled={pending} onClick={() => setDeleteDate(null)} className="min-h-12 rounded-2xl border border-[var(--forge-border-strong)] px-4 font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">Annuler</button>
+              <button type="button" disabled={pending} onClick={() => void deleteDay()} className="min-h-12 rounded-2xl bg-red-600 px-4 font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">{pending ? "Suppression…" : "Supprimer"}</button>
+            </div>
+          </section>
+        </div>
+      )}
     </section>
   );
 }

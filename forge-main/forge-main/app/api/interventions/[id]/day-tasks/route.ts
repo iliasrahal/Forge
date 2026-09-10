@@ -16,8 +16,12 @@ type RouteContext = { params: Promise<{ id: string }> };
 async function getWritableIntervention(id: string, organizationId: string) {
   return prisma.intervention.findFirst({
     where: { id, organizationId },
-    select: { id: true, scheduledAt: true, endDate: true },
+    select: { id: true, scheduledAt: true, endDate: true, excludedDays: { select: { date: true } } },
   });
+}
+
+function isExcluded(intervention: Awaited<ReturnType<typeof getWritableIntervention>>, date: string) {
+  return intervention?.excludedDays.some((day) => formatParisDateKey(day.date) === date) ?? false;
 }
 
 export async function POST(request: Request, { params }: RouteContext) {
@@ -29,6 +33,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     const body = await request.json();
     const [task] = normalizeInterventionDayTasks([body], intervention.scheduledAt, intervention.endDate);
     if (!task) return NextResponse.json({ error: "La journée et le titre de la tâche sont obligatoires et doivent appartenir au chantier." }, { status: 400 });
+    if (isExcluded(intervention, task.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
     const position = await prisma.interventionDayTask.count({ where: { interventionId: id } });
     const created = await prisma.interventionDayTask.create({
       data: { ...interventionDayTaskCreateData(task), interventionId: id, position },
@@ -72,6 +77,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       report: body.report ?? existing.report,
     }], intervention.scheduledAt, intervention.endDate);
     if (!normalized) return NextResponse.json({ error: "Les informations de la tâche sont invalides." }, { status: 400 });
+    if (isExcluded(intervention, normalized.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
     const task = await prisma.interventionDayTask.update({
       where: { id: taskId },
       data: interventionDayTaskCreateData(normalized),

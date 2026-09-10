@@ -16,6 +16,7 @@ import { listInterventionDateKeys } from "@/src/lib/intervention-day-tasks";
 import { formatParisDateKey } from "@/src/lib/paris-datetime";
 import { computeInterventionProfitability } from "@/src/lib/intervention-profitability";
 import InterventionProfitability from "@/components/InterventionProfitability";
+import DeleteInterventionButton from "@/components/DeleteInterventionButton";
 
 
 type InterventionPageProps = {
@@ -93,6 +94,7 @@ export default async function InterventionPage({
         client: true,
         dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
+        excludedDays: { orderBy: { date: "asc" } },
         quote: { select: { status: true, amountCents: true, totalCostCents: true } },
         invoices: {
           where: { organizationId: workspaceContext.workspace.id },
@@ -297,7 +299,11 @@ export default async function InterventionPage({
         {(intervention.endDate || intervention.dayTasks.length > 0) && (
           <InterventionDayPlanning
             interventionId={intervention.id}
-            days={listInterventionDateKeys(intervention.scheduledAt, intervention.endDate)}
+            days={listInterventionDateKeys(
+              intervention.scheduledAt,
+              intervention.endDate,
+              intervention.excludedDays.map((day) => formatParisDateKey(day.date)),
+            )}
             tasks={intervention.dayTasks.map((task) => ({
               id: task.id,
               date: formatParisDateKey(task.date),
@@ -344,6 +350,12 @@ export default async function InterventionPage({
             isCurrentUser: entry.userId === workspaceContext.user.id,
           }))}
         />
+
+        {workspaceContext.permissions.canWrite && (
+          <div className="mx-auto mt-10 max-w-2xl border-t border-[var(--forge-border)] pt-6 text-center">
+            <DeleteInterventionButton interventionId={intervention.id} />
+          </div>
+        )}
 
 
 

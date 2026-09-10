@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { normalizeInterventionDayTasks } from "@/src/lib/intervention-day-tasks";
+import { listInterventionDateKeys, normalizeInterventionDayTasks } from "@/src/lib/intervention-day-tasks";
 import { prisma } from "@/src/lib/prisma";
+import { formatParisDateKey, formatParisTime, parseParisDateTime } from "@/src/lib/paris-datetime";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -13,7 +14,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const body = await request.json();
     const intervention = await prisma.intervention.findFirst({
       where: { id, organizationId: workspace.workspace.id },
-      select: { id: true, scheduledAt: true, endDate: true, startedAt: true },
+      select: { id: true, scheduledAt: true, endDate: true, startedAt: true, excludedDays: { select: { date: true } } },
     });
     if (!intervention) return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
 
@@ -24,6 +25,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       intervention.endDate,
     );
     if (!validDay) return NextResponse.json({ error: "Cette journée n’appartient pas au chantier." }, { status: 400 });
+    if (intervention.excludedDays.some((day) => formatParisDateKey(day.date) === date)) {
+      return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
+    }
 
     const operation = body.operation;
     if (operation !== "start" && operation !== "complete" && operation !== "report") {
@@ -61,5 +65,70 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
     console.error("UPDATE INTERVENTION DAY STATE ERROR", error);
     return NextResponse.json({ error: "Impossible de mettre à jour cette journée." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: RouteContext) {
+  try {
+    const workspace = await requireWorkspaceContext("write");
+    const { id } = await params;
+    const body = await request.json();
+    const date = typeof body.date === "string" ? body.date : "";
+    const intervention = await prisma.intervention.findFirst({
+      where: { id, organizationId: workspace.workspace.id },
+      select: {
+        id: true,
+        scheduledAt: true,
+        endDate: true,
+        excludedDays: { select: { date: true } },
+        dayStates: { where: { date: parseParisDateTime(date, "00:00") ?? undefined } },
+        dayTasks: { where: { date: parseParisDateTime(date, "00:00") ?? undefined } },
+        workTimes: { where: { dayDate: parseParisDateTime(date, "00:00") ?? undefined }, select: { id: true }, take: 1 },
+        expenses: { where: { dayDate: parseParisDateTime(date, "00:00") ?? undefined }, select: { id: true }, take: 1 },
+      },
+    });
+    if (!intervention) return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
+
+    const excludedKeys = intervention.excludedDays.map((day) => formatParisDateKey(day.date));
+    const days = listInterventionDateKeys(intervention.scheduledAt, intervention.endDate, excludedKeys);
+    if (!days.includes(date)) return NextResponse.json({ error: "Cette journée n’appartient pas au chantier." }, { status: 400 });
+    if (days.length === 1) return NextResponse.json({ error: "La dernière journée ne peut pas être supprimée. Supprimez plutôt le chantier." }, { status: 409 });
+
+    const hasHistoricalData =
+      intervention.workTimes.length > 0 ||
+      intervention.expenses.length > 0 ||
+      intervention.dayStates.some((state) => state.startedAt || state.completedAt || state.report) ||
+      intervention.dayTasks.some((task) => task.completedAt || task.report);
+    if (hasHistoricalData) {
+      return NextResponse.json({ error: "Cette journée contient déjà du temps, des dépenses ou un historique réalisé. Elle ne peut pas être supprimée." }, { status: 409 });
+    }
+
+    const remaining = days.filter((day) => day !== date);
+    const isBoundary = date === days[0] || date === days[days.length - 1];
+    await prisma.$transaction(async (transaction) => {
+      await transaction.interventionDayTask.deleteMany({ where: { interventionId: id, date: parseParisDateTime(date, "00:00")! } });
+      await transaction.interventionDayState.deleteMany({ where: { interventionId: id, date: parseParisDateTime(date, "00:00")! } });
+      if (isBoundary) {
+        const scheduledAt = parseParisDateTime(remaining[0], formatParisTime(intervention.scheduledAt))!;
+        const currentEnd = intervention.endDate ?? intervention.scheduledAt;
+        const endDate = parseParisDateTime(remaining[remaining.length - 1], formatParisTime(currentEnd))!;
+        await transaction.intervention.update({ where: { id }, data: { scheduledAt, endDate } });
+        await transaction.interventionExcludedDay.deleteMany({
+          where: { interventionId: id, OR: [{ date: { lt: scheduledAt } }, { date: { gt: endDate } }] },
+        });
+      } else {
+        await transaction.interventionExcludedDay.upsert({
+          where: { interventionId_date: { interventionId: id, date: parseParisDateTime(date, "00:00")! } },
+          update: {},
+          create: { interventionId: id, date: parseParisDateTime(date, "00:00")! },
+        });
+      }
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
+    console.error("DELETE INTERVENTION DAY ERROR", error);
+    return NextResponse.json({ error: "Impossible de supprimer cette journée." }, { status: 500 });
   }
 }
