@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { listInterventionDateKeys, normalizeInterventionDayTasks } from "@/src/lib/intervention-day-tasks";
 import { prisma } from "@/src/lib/prisma";
-import { formatParisDateKey, formatParisTime, parseParisDateTime } from "@/src/lib/paris-datetime";
+import { formatParisDateKey, formatParisTime, getParisDayBounds, parseParisDateTime } from "@/src/lib/paris-datetime";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -144,7 +144,13 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     const workspace = await requireWorkspaceContext("write");
     const { id } = await params;
     const body = await request.json();
-    const date = typeof body.date === "string" ? body.date : "";
+    const date = typeof body.date === "string" ? body.date.trim() : "";
+    const dateBounds = /^\d{4}-\d{2}-\d{2}$/.test(date) ? getParisDayBounds(date) : null;
+    if (!dateBounds) {
+      return NextResponse.json({ error: "Choisissez une journée valide." }, { status: 400 });
+    }
+    const dateValue = dateBounds.start;
+    const dateRange = { gte: dateBounds.start, lt: dateBounds.nextStart };
     const intervention = await prisma.intervention.findFirst({
       where: { id, organizationId: workspace.workspace.id },
       select: {
@@ -152,10 +158,10 @@ export async function DELETE(request: Request, { params }: RouteContext) {
         scheduledAt: true,
         endDate: true,
         excludedDays: { select: { date: true } },
-        dayStates: { where: { date: parseParisDateTime(date, "00:00") ?? undefined } },
-        dayTasks: { where: { date: parseParisDateTime(date, "00:00") ?? undefined } },
-        workTimes: { where: { dayDate: parseParisDateTime(date, "00:00") ?? undefined }, select: { id: true }, take: 1 },
-        expenses: { where: { dayDate: parseParisDateTime(date, "00:00") ?? undefined }, select: { id: true }, take: 1 },
+        dayStates: { where: { date: dateRange } },
+        dayTasks: { where: { date: dateRange } },
+        workTimes: { where: { dayDate: dateRange }, select: { id: true }, take: 1 },
+        expenses: { where: { dayDate: dateRange }, select: { id: true }, take: 1 },
       },
     });
     if (!intervention) return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
@@ -177,8 +183,8 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     const remaining = days.filter((day) => day !== date);
     const isBoundary = date === days[0] || date === days[days.length - 1];
     await prisma.$transaction(async (transaction) => {
-      await transaction.interventionDayTask.deleteMany({ where: { interventionId: id, date: parseParisDateTime(date, "00:00")! } });
-      await transaction.interventionDayState.deleteMany({ where: { interventionId: id, date: parseParisDateTime(date, "00:00")! } });
+      await transaction.interventionDayTask.deleteMany({ where: { interventionId: id, date: dateRange } });
+      await transaction.interventionDayState.deleteMany({ where: { interventionId: id, date: dateRange } });
       if (isBoundary) {
         const scheduledAt = parseParisDateTime(remaining[0], formatParisTime(intervention.scheduledAt))!;
         const currentEnd = intervention.endDate ?? intervention.scheduledAt;
@@ -189,9 +195,9 @@ export async function DELETE(request: Request, { params }: RouteContext) {
         });
       } else {
         await transaction.interventionExcludedDay.upsert({
-          where: { interventionId_date: { interventionId: id, date: parseParisDateTime(date, "00:00")! } },
+          where: { interventionId_date: { interventionId: id, date: dateValue } },
           update: {},
-          create: { interventionId: id, date: parseParisDateTime(date, "00:00")! },
+          create: { interventionId: id, date: dateValue },
         });
       }
     });

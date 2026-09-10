@@ -35,6 +35,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   const [deleteDate, setDeleteDate] = useState<string | null>(null);
   const [showAddDay, setShowAddDay] = useState(false);
   const [newDayDate, setNewDayDate] = useState("");
+  const [removedDays, setRemovedDays] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -78,6 +79,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   async function addDay(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!newDayDate) return;
+    const dateToAdd = newDayDate;
     setPending(true);
     setError("");
     const response = await fetch(`/api/interventions/${interventionId}/days`, {
@@ -91,6 +93,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       setError(typeof data.error === "string" ? data.error : "Impossible d’ajouter cette journée.");
       return;
     }
+    setRemovedDays((current) => current.filter((date) => date !== dateToAdd));
     setNewDayDate("");
     setShowAddDay(false);
     router.refresh();
@@ -98,6 +101,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
 
   async function deleteDay() {
     if (!deleteDate) return;
+    const dateToDelete = deleteDate;
     setPending(true);
     setError("");
     const response = await fetch(`/api/interventions/${interventionId}/days`, {
@@ -112,6 +116,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       setDeleteDate(null);
       return;
     }
+    setRemovedDays((current) => current.includes(dateToDelete) ? current : [...current, dateToDelete]);
     setDeleteDate(null);
     router.refresh();
   }
@@ -156,7 +161,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       </div>
       {error && <p className="mt-4 text-center text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
       <div className="mt-5 space-y-3">
-        {days.map((date) => {
+        {days.filter((date) => !removedDays.includes(date)).map((date) => {
           const dailyTasks = tasks.filter((task) => task.date === date);
           const dayState = dayStates.find((state) => state.date === date);
           const tracking = dailyTracking.find((entry) => entry.date === date);
