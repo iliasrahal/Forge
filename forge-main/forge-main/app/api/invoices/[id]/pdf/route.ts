@@ -156,6 +156,17 @@ export async function GET(
         .join(" "),
     ].filter((value): value is string => Boolean(value?.trim()));
 
+    const issuerLines = getQuoteIssuerLines(invoice.organization);
+    const artisanDetails = (
+      issuerLines.length > 0
+        ? issuerLines
+        : [
+            workspaceContext.user.firstName?.trim(),
+            workspaceContext.user.email?.trim(),
+            workspaceContext.user.phone?.trim(),
+          ]
+    ).filter((value): value is string => Boolean(value));
+
     const usefulServiceDetails = invoice.intervention
       ? buildInvoiceDescriptionSections(
           invoice.intervention,
@@ -309,7 +320,7 @@ export async function GET(
     }
 
     currentY -= 56;
-    page.drawText(`Créée le ${formatDate(invoice.createdAt)}`, {
+    page.drawText(`Créé le ${formatDate(invoice.createdAt)}`, {
       x: margin,
       y: currentY,
       size: 9,
@@ -331,7 +342,22 @@ export async function GET(
       );
     }
 
-    currentY -= 48;
+    if (artisanDetails.length > 0) {
+      currentY -= 34;
+      drawSectionTitle("Émetteur");
+      drawLines(
+        artisanDetails.flatMap((detail) =>
+          wrapText(detail, regularFont, 10, contentWidth),
+        ),
+        {
+          x: margin,
+          size: 10,
+          lineHeight: 16,
+        },
+      );
+    }
+
+    currentY -= artisanDetails.length > 0 ? 24 : 48;
     drawSectionTitle("Client");
 
     if (clientName) {
@@ -695,28 +721,6 @@ export async function GET(
         color: grey,
       });
       currentY -= 12;
-    }
-
-    const issuerLines = getQuoteIssuerLines(invoice.organization);
-    const artisanDetails = (
-      issuerLines.length > 0
-        ? issuerLines
-        : [
-            workspaceContext.user.firstName?.trim(),
-            workspaceContext.user.email?.trim(),
-            workspaceContext.user.phone?.trim(),
-          ]
-    ).filter((value): value is string => Boolean(value));
-
-    if (artisanDetails.length > 0) {
-      ensureSpace(54);
-      drawSectionTitle("Artisan");
-      drawLines(artisanDetails, {
-        x: margin,
-        size: 9,
-        lineHeight: 13,
-        color: grey,
-      });
     }
 
     const pages = pdfDocument.getPages();
