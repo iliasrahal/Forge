@@ -26,6 +26,7 @@ type ClientFormProps = {
   submitLabel?: string;
   cancelHref?: string;
   afterCreate?: "client" | "invoice";
+  stickyActionsOnMobile?: boolean;
 };
 
 const inputClassName =
@@ -38,6 +39,7 @@ export default function ClientForm({
   submitLabel = "Ajouter le client",
   cancelHref,
   afterCreate = "client",
+  stickyActionsOnMobile = false,
 }: ClientFormProps) {
 
 
@@ -369,7 +371,13 @@ export default function ClientForm({
 
 
 
-      <div className={`grid gap-2 pt-1 sm:gap-3 ${cancelHref ? "min-[360px]:grid-cols-2" : ""}`}>
+      <div className={`grid gap-2 sm:gap-3 ${
+        cancelHref ? "min-[360px]:grid-cols-2" : ""
+      } ${
+        stickyActionsOnMobile
+          ? "sticky bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-30 -mx-2 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-2 shadow-lg sm:bottom-[calc(6rem+max(1rem,env(safe-area-inset-bottom)))] lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:pt-1 lg:shadow-none"
+          : "pt-1"
+      }`}>
         {cancelHref ? (
           <Link
             href={cancelHref}

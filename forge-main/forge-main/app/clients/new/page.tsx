@@ -157,7 +157,7 @@ export default async function NewClientPage({
 
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3 text-slate-950 sm:px-6 sm:pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pt-6 lg:pb-6 dark:text-white">
+    <main className="mx-auto w-full max-w-3xl scroll-pb-[calc(10rem+env(safe-area-inset-bottom))] px-3 pb-[calc(10rem+env(safe-area-inset-bottom))] pt-3 text-slate-950 sm:scroll-pb-[calc(12rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-[calc(12rem+env(safe-area-inset-bottom))] sm:pt-6 lg:scroll-pb-6 lg:pb-6 dark:text-white">
       <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
         <div className="flex items-center">
@@ -172,12 +172,27 @@ export default async function NewClientPage({
           </Link>
         </div>
 
+        {fromInvoices ? (
+          <div className="mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+            <Link
+              href="/invoices/new"
+              className="flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-center text-sm font-semibold text-slate-600 transition hover:bg-white/70 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-900/70 dark:hover:text-blue-300"
+            >
+              Client existant
+            </Link>
+            <span className="flex min-h-11 items-center justify-center rounded-xl bg-white px-3 py-2 text-center text-sm font-semibold text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300">
+              Nouveau client
+            </span>
+          </div>
+        ) : null}
+
 
         <ClientForm
           onSubmit={createClient}
           initialValues={initialClient}
           cancelHref={fromInvoices ? "/invoices/new" : "/clients"}
           afterCreate={fromInvoices ? "invoice" : "client"}
+          stickyActionsOnMobile={fromInvoices}
         />
 
 
