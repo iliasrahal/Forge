@@ -12,6 +12,7 @@ import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/wo
 import {
   resolveStoredOrProvidedClientEmail,
 } from "@/src/lib/client-email";
+import { resolveDocumentEmailSignature } from "@/src/lib/document-email-signature";
 
 async function ensureQuoteReference(params: {
   quoteId: string;
@@ -236,10 +237,10 @@ export async function POST(
         : quote.client.companyName?.trim() ||
           "Madame, Monsieur";
 
-    const artisanSignature =
-      currentUser.emailSignature?.trim() ||
-      currentUser.firstName?.trim() ||
-      "L'équipe Forge";
+    const artisanSignature = resolveDocumentEmailSignature(
+      workspaceContext.workspace,
+      currentUser,
+    );
 
     const rawPublicToken = createQuotePublicToken();
     const publicAccess = await prisma.quotePublicAccess.create({

@@ -13,6 +13,7 @@ import {
   hashInvoicePublicToken,
 } from "@/src/lib/invoice-public-access";
 import { resolveClientEmail } from "@/src/lib/client-email";
+import { resolveDocumentEmailSignature } from "@/src/lib/document-email-signature";
 
 async function ensureInvoiceReference(params: {
   invoiceId: string;
@@ -250,10 +251,10 @@ export async function POST(
         : invoice.client.companyName?.trim() ||
           "Madame, Monsieur";
 
-    const artisanSignature =
-      currentUser.emailSignature?.trim() ||
-      currentUser.firstName?.trim() ||
-      "L'équipe Forge";
+    const artisanSignature = resolveDocumentEmailSignature(
+      workspaceContext.workspace,
+      currentUser,
+    );
 
     const invoiceTitle =
       invoice.title.trim() ||
