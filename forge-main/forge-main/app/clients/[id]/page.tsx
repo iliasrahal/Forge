@@ -206,7 +206,7 @@ export default async function ClientPage({
             {client.phone ? (
               <a
                 href={`tel:${client.phone}`}
-                className="font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400"
+                className="block text-center font-semibold text-blue-700 transition hover:text-blue-800 dark:text-blue-400"
               >
                 {client.phone}
               </a>
