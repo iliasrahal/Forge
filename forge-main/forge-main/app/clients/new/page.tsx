@@ -59,6 +59,10 @@ async function createClient(formData: FormData) {
     formData.get("city") ?? "",
   ).trim();
 
+  const afterCreate = formData.get("afterCreate") === "invoice"
+    ? "invoice"
+    : "client";
+
 
   if (
     type === "PARTICULIER" &&
@@ -112,7 +116,11 @@ async function createClient(formData: FormData) {
     });
 
 
-  redirect(`/clients/${client.id}`);
+  redirect(
+    afterCreate === "invoice"
+      ? `/clients/${client.id}/invoices/new`
+      : `/clients/${client.id}`,
+  );
 }
 
 
@@ -127,12 +135,14 @@ export default async function NewClientPage({
     postalCode?: string;
     city?: string;
     notes?: string;
+    from?: string;
   }>;
 }) {
   await requireCurrentUser();
   await requireWorkspaceContext("write");
 
   const params = await searchParams;
+  const fromInvoices = params.from === "invoices";
 
 
   const initialClient = {
@@ -147,13 +157,13 @@ export default async function NewClientPage({
 
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-6 text-slate-950 dark:text-white">
-      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <main className="mx-auto w-full max-w-3xl px-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-3 text-slate-950 sm:px-6 sm:pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pt-6 lg:pb-6 dark:text-white">
+      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
         <div className="flex items-center">
           <Link
-            href="/clients"
-            aria-label="Retour à la liste des clients"
+            href={fromInvoices ? "/invoices/new" : "/clients"}
+            aria-label={fromInvoices ? "Retour au choix du client" : "Retour à la liste des clients"}
             className="forge-back-link text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             <span className="text-sm font-semibold">
@@ -166,6 +176,8 @@ export default async function NewClientPage({
         <ClientForm
           onSubmit={createClient}
           initialValues={initialClient}
+          cancelHref={fromInvoices ? "/invoices/new" : "/clients"}
+          afterCreate={fromInvoices ? "invoice" : "client"}
         />
 
 

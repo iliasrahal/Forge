@@ -88,6 +88,18 @@ export default async function NewInvoicePage({
           Choisis le client de la facture.
         </p>
 
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+          <span className="flex min-h-11 items-center justify-center rounded-xl bg-white px-3 py-2 text-center text-sm font-semibold text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300">
+            Client existant
+          </span>
+          <Link
+            href="/clients/new?from=invoices"
+            className="flex min-h-11 items-center justify-center rounded-xl px-3 py-2 text-center text-sm font-semibold text-slate-600 transition hover:bg-white/70 hover:text-blue-700 dark:text-slate-300 dark:hover:bg-slate-900/70 dark:hover:text-blue-300"
+          >
+            Nouveau client
+          </Link>
+        </div>
+
         {cleanSearch && (
           <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
             Résultats pour « {cleanSearch} »
@@ -128,7 +140,7 @@ export default async function NewInvoicePage({
                 : "Aucun client enregistré."}
             </p>
             <Link
-              href="/clients/new"
+              href="/clients/new?from=invoices"
               className="mt-4 inline-flex rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
             >
               Créer un client

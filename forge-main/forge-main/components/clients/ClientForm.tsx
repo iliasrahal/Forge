@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { splitPersonalClientName } from "@/src/lib/client-name";
@@ -23,6 +24,8 @@ type ClientFormProps = {
   onSubmit: (formData: FormData) => Promise<void>;
   initialValues?: ClientFormValues;
   submitLabel?: string;
+  cancelHref?: string;
+  afterCreate?: "client" | "invoice";
 };
 
 const inputClassName =
@@ -33,6 +36,8 @@ export default function ClientForm({
   onSubmit,
   initialValues,
   submitLabel = "Ajouter le client",
+  cancelHref,
+  afterCreate = "client",
 }: ClientFormProps) {
 
 
@@ -67,7 +72,7 @@ export default function ClientForm({
 
     <form
       action={onSubmit}
-      className="space-y-5"
+      className="space-y-3 sm:space-y-5"
     >
 
 
@@ -76,6 +81,8 @@ export default function ClientForm({
         name="type"
         value={clientType}
       />
+
+      <input type="hidden" name="afterCreate" value={afterCreate} />
 
 
 
@@ -86,7 +93,7 @@ export default function ClientForm({
         </p>
 
 
-        <div className="grid gap-3 min-[360px]:grid-cols-2">
+        <div className="grid gap-2 min-[360px]:grid-cols-2 sm:gap-3">
 
 
           <button
@@ -130,7 +137,7 @@ export default function ClientForm({
 
       {isParticulier ? (
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-5">
 
 
           <div>
@@ -302,7 +309,7 @@ export default function ClientForm({
 
 
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-5">
 
 
         <div>
@@ -362,12 +369,22 @@ export default function ClientForm({
 
 
 
-      <button
-        type="submit"
-        className="w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-      >
-        {submitLabel}
-      </button>
+      <div className={`grid gap-2 pt-1 sm:gap-3 ${cancelHref ? "min-[360px]:grid-cols-2" : ""}`}>
+        {cancelHref ? (
+          <Link
+            href={cancelHref}
+            className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 font-semibold text-slate-700 transition hover:border-blue-300 dark:border-slate-700 dark:text-slate-200"
+          >
+            Annuler
+          </Link>
+        ) : null}
+        <button
+          type="submit"
+          className="min-h-12 w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+        >
+          {submitLabel}
+        </button>
+      </div>
 
 
 
