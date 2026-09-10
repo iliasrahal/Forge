@@ -196,9 +196,9 @@ export default async function NewInterventionPage({
 
   return (
 
-    <main className="mx-auto w-full max-w-3xl px-6 py-6">
+    <main className="mx-auto w-full max-w-3xl px-3 py-3 sm:px-6 sm:py-6">
 
-      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
 
         <Link
@@ -223,23 +223,28 @@ export default async function NewInterventionPage({
 
         <form
           action={createIntervention}
-          className="mt-6 space-y-5"
+          className="mt-4 space-y-3 sm:mt-6 sm:space-y-5"
         >
 
 
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-3 min-[360px]:grid-cols-2 sm:gap-5">
             <div>
               <label htmlFor="date" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Date de début</label>
-              <input id="date" name="date" type="date" required className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              <input id="date" name="date" type="date" required className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
             </div>
             <div>
               <label htmlFor="time" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Heure de début</label>
-              <input id="time" name="time" type="time" step={60} required defaultValue="09:00" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              <input id="time" name="time" type="time" step={60} required defaultValue="09:00" className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
             </div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <input id="show-period-fields" type="checkbox" className="peer sr-only" />
+          <label htmlFor="show-period-fields" className="flex min-h-11 cursor-pointer items-center justify-center rounded-2xl border border-blue-200 px-3 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300 sm:hidden">
+            + Ajouter une période de chantier
+          </label>
+
+          <div className="hidden gap-3 peer-checked:grid min-[360px]:grid-cols-2 sm:grid sm:gap-5">
             <div>
               <label htmlFor="endDate" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">
                 Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
@@ -287,7 +292,7 @@ export default async function NewInterventionPage({
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+            className="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] z-10 min-h-12 w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-950/20 transition hover:bg-blue-700 lg:static"
           >
             Créer l’intervention
           </button>

@@ -79,6 +79,7 @@ export default function UpcomingCalendar({
   const [scheduledEndDate, setScheduledEndDate] = useState("");
   const [scheduledEndTime, setScheduledEndTime] = useState("");
   const [description, setDescription] = useState("");
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [creationError, setCreationError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
@@ -139,6 +140,7 @@ export default function UpcomingCalendar({
   // sans créer ramène à l'accueil plutôt que d'échouer dans le planning.
   const closeCreationForm = () => {
     setShowCreationForm(false);
+    setShowOptionalFields(false);
     if (autoOpenCreationForm) {
       onClose();
     }
@@ -147,6 +149,7 @@ export default function UpcomingCalendar({
   const openCreationForm = () => {
     setScheduledDate(selectedDateKey);
     setCreationError("");
+    setShowOptionalFields(false);
     setShowCreationForm(true);
   };
 
@@ -191,6 +194,7 @@ export default function UpcomingCalendar({
       setShowCreationForm(false);
       setTitle("");
       setDescription("");
+      setShowOptionalFields(false);
       setScheduledEndDate("");
       setScheduledEndTime("");
       setNewClientName("");
@@ -362,12 +366,12 @@ export default function UpcomingCalendar({
       ) : null}
 
       {canWrite && showCreationForm && (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-slate-950/80 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-hidden bg-slate-950/80 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-4">
           <form
             onSubmit={createIntervention}
-            className="max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg sm:p-6"
+            className="flex max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex shrink-0 items-start justify-between gap-3 px-4 pb-2 pt-4 sm:px-6 sm:pt-6">
               <div>
                 <h2 className="text-xl font-bold">Nouvelle intervention</h2>
               </div>
@@ -381,7 +385,41 @@ export default function UpcomingCalendar({
               </button>
             </div>
 
-            <div className="mt-5 space-y-4">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-2 sm:space-y-4 sm:px-6 sm:py-3">
+              <div className="grid gap-3 min-[360px]:grid-cols-2 sm:gap-4">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Date
+                  <input
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(event) => setScheduledDate(event.target.value)}
+                    required
+                    className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:mt-2 sm:py-3"
+                  />
+                </label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                  Heure
+                  <input
+                    type="time"
+                    step={60}
+                    value={scheduledTime}
+                    onChange={(event) => setScheduledTime(event.target.value)}
+                    required
+                    className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:mt-2 sm:py-3"
+                  />
+                </label>
+              </div>
+
+              <button
+                type="button"
+                aria-expanded={showOptionalFields}
+                onClick={() => setShowOptionalFields((current) => !current)}
+                className="flex min-h-11 w-full items-center justify-center rounded-xl border border-blue-200 px-3 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300 sm:hidden"
+              >
+                {showOptionalFields ? "Masquer les informations facultatives" : "+ Ajouter des informations"}
+              </button>
+
+              <div className={`${showOptionalFields ? "space-y-3" : "hidden"} sm:block sm:space-y-4`}>
               <div className={`grid gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800 ${clients.length > 0 ? "grid-cols-3" : "grid-cols-2"}`}>
                   <button
                     type="button"
@@ -446,30 +484,6 @@ export default function UpcomingCalendar({
 
               <div className="grid gap-4 min-[360px]:grid-cols-2">
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Date
-                  <input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(event) => setScheduledDate(event.target.value)}
-                    required
-                    className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  />
-                </label>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                  Heure
-                  <input
-                    type="time"
-                    step={60}
-                    value={scheduledTime}
-                    onChange={(event) => setScheduledTime(event.target.value)}
-                    required
-                    className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 min-[360px]:grid-cols-2">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
                   <input
                     type="date"
@@ -501,13 +515,14 @@ export default function UpcomingCalendar({
                   className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </label>
+              </div>
 
               {creationError && (
                 <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:bg-red-950 dark:text-red-300">{creationError}</p>
               )}
             </div>
 
-            <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
+            <div className="grid shrink-0 gap-2 border-t border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 min-[360px]:grid-cols-2 sm:gap-3 sm:px-6 sm:pb-6 sm:pt-4">
               <button
                 type="button"
                 onClick={closeCreationForm}
