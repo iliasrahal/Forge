@@ -38,11 +38,11 @@ export default function CurrentInterventionCard({
 
   return (
     <article className="forge-surface w-full overflow-hidden rounded-[2.25rem] border">
-      <div className="px-4 pb-4 pt-5 text-center sm:px-8 sm:pb-5 sm:pt-7">
+      <div className="px-3.5 pb-3 pt-3.5 text-center sm:px-8 sm:pb-5 sm:pt-7">
 
 
       <div
-        className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.08em] shadow-sm ${
+        className={`mb-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.65rem] font-bold uppercase tracking-[0.08em] shadow-sm sm:mb-4 sm:px-3.5 sm:py-1.5 sm:text-[0.7rem] ${
           isInProgress
             ? "border-emerald-200/80 bg-emerald-50/80 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/70 dark:text-emerald-300"
             : "border-blue-200/80 bg-blue-50/80 text-blue-700 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300"
@@ -66,7 +66,7 @@ export default function CurrentInterventionCard({
 
 
       {mainTitle && (
-        <h2 className="text-balance text-center text-2xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-3xl">
+        <h2 className="text-balance text-center text-xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-3xl">
           {mainTitle}
         </h2>
       )}
@@ -74,12 +74,12 @@ export default function CurrentInterventionCard({
 
 
       {appointment.client && subject && (
-        <p className="mx-auto mt-2 max-w-xl text-center text-base font-semibold leading-6 text-blue-700 dark:text-blue-400 sm:text-lg">
+        <p className="mx-auto mt-1 max-w-xl text-center text-sm font-semibold leading-5 text-blue-700 dark:text-blue-400 sm:mt-2 sm:text-lg sm:leading-6">
           {subject}
         </p>
       )}
 
-      <div className="mx-auto mt-4 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+      <div className="mx-auto mt-2 flex max-w-xl flex-wrap items-center justify-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 sm:mt-4 sm:gap-2 sm:text-sm">
         {appointment.date && (
           <span className="forge-surface-subtle inline-flex items-center rounded-full border px-3.5 py-1.5">
             <span className="capitalize">
@@ -109,7 +109,7 @@ export default function CurrentInterventionCard({
       {canWrite ? (<button
         type="button"
         onClick={onStart}
-        className="mt-4 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:w-auto sm:px-6 sm:text-base"
+          className="mt-2.5 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/30 sm:mt-4 sm:w-auto sm:px-6 sm:py-2.5 sm:text-base"
       >
         {isInProgress
           ? "Continuer l'intervention"
@@ -121,13 +121,13 @@ export default function CurrentInterventionCard({
       {isMultiDay ? (
         <Link
           href={buildInterventionHref(appointment.id, "home")}
-          className="mx-auto mt-2.5 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl border border-blue-300 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-400 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/60 sm:w-auto sm:px-6"
+          className="mx-auto mt-1.5 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-400 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/60 sm:mt-2.5 sm:w-auto sm:px-6 sm:py-2.5"
         >
           {canWrite ? "Gérer le chantier" : "Voir le chantier"}
         </Link>
       ) : null}
 
-      {canWrite ? (<div className="mx-auto mt-2.5 grid max-w-xs grid-cols-2 gap-2">
+      {canWrite ? (<div className="mx-auto mt-1.5 grid max-w-xs grid-cols-2 gap-2 sm:mt-2.5">
         <button
           type="button"
           onClick={onEdit}

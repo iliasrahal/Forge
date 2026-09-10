@@ -1300,17 +1300,17 @@ const handleCreateInvoice = async () => {
 
   return (
     <main
-      className={`flex min-h-[calc(100dvh-8rem)] flex-col overflow-visible px-3 pb-4 sm:px-6 ${
+      className={`flex min-h-0 flex-col overflow-visible px-3 pb-0 sm:min-h-[calc(100dvh-8rem)] sm:px-6 sm:pb-4 ${
         showGreeting
-          ? "pt-8 sm:pt-12"
+          ? "pt-3 sm:pt-12"
           : showUpcomingCalendar
             ? "pt-2 sm:pt-3"
-            : "pt-4 sm:pt-6"
+            : "pt-2 sm:pt-6"
       }`}
     >
-      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-4 ${showUpcomingCalendar ? "max-w-3xl" : showDashboard && showDashboardAside ? "max-w-xl lg:max-w-6xl" : "max-w-xl lg:max-w-3xl"}`}>
+      <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col pb-0 sm:pb-4 ${showUpcomingCalendar ? "max-w-3xl" : showDashboard && showDashboardAside ? "max-w-xl lg:max-w-6xl" : "max-w-xl lg:max-w-3xl"}`}>
 
-  <div className={`${showUpcomingCalendar ? "mb-1" : "mb-3"} flex shrink-0 flex-col items-end gap-2`}>
+  <div className={`${showUpcomingCalendar ? "mb-1" : "mb-2 sm:mb-3"} flex shrink-0 flex-row items-center justify-end gap-2 sm:flex-col sm:items-end`}>
     <WorkspaceSwitcher />
     <UserMenu
       firstName={userFirstName}
@@ -1327,12 +1327,12 @@ const handleCreateInvoice = async () => {
           onSelect={handleSelectAppointment}
         />
 
-        <section className="mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2">
+        <section className={`mt-2 grid min-w-0 gap-2 sm:mt-4 sm:flex sm:flex-wrap sm:items-center sm:justify-center ${canWrite ? "grid-cols-2" : "grid-cols-1"}`}>
           {canWrite ? (
             <button
               type="button"
               onClick={openNewInterventionForm}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
             >
               + Nouvelle intervention
             </button>
@@ -1340,7 +1340,7 @@ const handleCreateInvoice = async () => {
           <button
             type="button"
             onClick={openCalendar}
-            className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 sm:text-base"
+            className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
           >
             Prochainement ({upcomingAppointmentsList.length})
           </button>
@@ -1369,12 +1369,12 @@ const handleCreateInvoice = async () => {
   ) : null}
 
   {homeState === "intervention" && !showUpcomingCalendar && !showDashboard ? (
-    <section className="mb-3 flex min-w-0 shrink-0 flex-wrap items-center justify-center gap-2">
+    <section className={`mb-2 grid min-w-0 shrink-0 gap-2 sm:mb-3 sm:flex sm:flex-wrap sm:items-center sm:justify-center ${canWrite ? "grid-cols-2" : "grid-cols-1"}`}>
       {canWrite ? (
         <button
           type="button"
           onClick={openNewInterventionForm}
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 sm:text-base"
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-blue-600 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
         >
           + Nouvelle intervention
         </button>
@@ -1382,7 +1382,7 @@ const handleCreateInvoice = async () => {
       <button
         type="button"
         onClick={openCalendar}
-        className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 sm:text-base"
+        className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
       >
         Prochainement ({upcomingAppointmentsList.length})
       </button>

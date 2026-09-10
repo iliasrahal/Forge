@@ -21,6 +21,7 @@ type FixedForgeBarProps = {
   onInterventionsDeleted?: (
     scheduledDate: string,
   ) => void;
+  reserveMobileSpace?: boolean;
 };
 
 export default function FixedForgeBar({
@@ -35,6 +36,7 @@ export default function FixedForgeBar({
   onAssistantNotice,
   onInterventionCreated,
   onInterventionsDeleted,
+  reserveMobileSpace = true,
 }: FixedForgeBarProps) {
   const isMounted = useSyncExternalStore(
     () => () => undefined,
@@ -44,7 +46,10 @@ export default function FixedForgeBar({
 
   return (
     <>
-      <div aria-hidden="true" className="h-28 shrink-0 sm:h-32" />
+      <div
+        aria-hidden="true"
+        className={`${reserveMobileSpace ? "h-28" : "hidden sm:block"} shrink-0 sm:h-32`}
+      />
       {isMounted ? createPortal(
     <div className="fixed inset-x-0 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-40 mx-auto w-full max-w-xl px-2 sm:bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 lg:left-60 lg:bottom-6 lg:max-w-2xl">
       <ForgeBar

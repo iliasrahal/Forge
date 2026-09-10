@@ -650,19 +650,19 @@ export default function HomeContent({
 
   if (!currentAppointment) {
     return (
-      <section className={`flex flex-1 flex-col items-center justify-center px-2 sm:px-4 ${hideMainContent ? "min-h-0 pb-0 pt-0" : hideGreetingOnDesktop ? "min-h-[32rem] pb-32 pt-12 sm:pb-36 lg:min-h-0 lg:flex-none lg:pb-6 lg:pt-0" : "min-h-[32rem] pb-32 pt-12 sm:pb-36"}`}>
+      <section className={`flex flex-1 flex-col items-center justify-center px-2 sm:px-4 ${hideMainContent ? "min-h-0 pb-0 pt-0" : hideGreetingOnDesktop ? "min-h-0 pb-0 pt-5 sm:min-h-[32rem] sm:pb-36 sm:pt-12 lg:min-h-0 lg:flex-none lg:pb-6 lg:pt-0" : "min-h-0 pb-0 pt-5 sm:min-h-[32rem] sm:pb-36 sm:pt-12"}`}>
         <div className="w-full max-w-2xl">
           {replyStatus === "idle" && !hideMainContent && (
             <div className={`text-center ${hideGreetingOnDesktop ? "lg:hidden" : ""}`}>
-              <h2 className="text-4xl text-blue-600 sm:text-5xl">
+              <h2 className="text-3xl text-blue-600 sm:text-5xl">
                 Salut{firstName ? ` ${firstName}` : ""},
               </h2>
 
-              <p className="mx-auto mt-7 max-w-lg text-2xl font-medium leading-9 text-[var(--forge-text-primary)] sm:text-3xl sm:leading-10">
+              <p className="mx-auto mt-3 max-w-lg text-xl font-medium leading-7 text-[var(--forge-text-primary)] sm:mt-7 sm:text-3xl sm:leading-10">
                 Décris-moi ta prochaine intervention.
               </p>
 
-              <p className="mx-auto mt-5 max-w-xl text-base italic leading-8 text-[var(--forge-text-secondary)] sm:text-lg">
+              <p className="mx-auto mt-3 max-w-xl text-sm italic leading-6 text-[var(--forge-text-secondary)] sm:mt-5 sm:text-lg sm:leading-8">
                 {getInterventionExample()}
               </p>
             </div>
@@ -719,6 +719,7 @@ export default function HomeContent({
         {!hideMainContent && !hideForgeBar ? (
         <FixedForgeBar
           context="home"
+          reserveMobileSpace={false}
           initialMessage={replyDraft}
           onInitialMessageUsed={() => {
             setReplyDraft("");
@@ -842,6 +843,7 @@ export default function HomeContent({
       {!hideMainContent && !hideForgeBar ? (
       <FixedForgeBar
         context="home"
+        reserveMobileSpace={false}
         initialMessage={replyDraft}
         onInitialMessageUsed={() => {
           setReplyDraft("");
