@@ -1317,7 +1317,7 @@ const handleCreateInvoice = async () => {
         <div className="mt-8 min-w-0 lg:mt-0">
           {!currentAppointment ? (
             <div className="mb-5 hidden text-center lg:block">
-              <h2 className="mt-[19px] text-3xl text-blue-600">
+              <h2 className="text-3xl text-blue-600">
                 Salut{userFirstName ? ` ${userFirstName}` : ""},
               </h2>
               <p className="mx-auto mt-3 max-w-xs text-lg font-medium leading-7 text-[var(--forge-text-primary)]">

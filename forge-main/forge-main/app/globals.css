@@ -607,14 +607,9 @@ html.dark body {
 :root[data-daypart="jour"].dark .forge-app-shell { --sky-horizon: #3f5fe0; }
 :root[data-daypart="crepuscule"].dark .forge-app-shell { --sky-horizon: #b5527a; }
 
-/* Le ciel : fixe au viewport, derriere tout le contenu de la coque.
-   Degrade nuit->cobalt->aube + grain fin (la matiere du cyclo). */
-.forge-app-shell::before {
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  content: "";
+/* Le ciel est peint directement par la coque : aucune couche négative ne peut
+   laisser apparaître le canevas racine au bord supérieur du viewport. */
+.forge-app-shell {
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
     radial-gradient(
@@ -635,6 +630,7 @@ html.dark body {
   background-size: 160px 160px, 100% 100%, 100% 100%;
   background-repeat: repeat, no-repeat, no-repeat;
   background-blend-mode: overlay, normal, normal;
+  background-attachment: fixed, fixed, fixed;
 }
 
 /* Le cyclorama conserve sa lumière sans ligne artificielle traversant le
@@ -1131,9 +1127,6 @@ html.dark body {
 /* Transparence reduite : la couture d'horizon disparait, tout devient plein
    et les flous decoratifs sont coupes. */
 @media (prefers-reduced-transparency: reduce) {
-  .forge-app-shell::before {
-    display: none;
-  }
   .forge-app-shell {
     background: var(--sky-low);
   }

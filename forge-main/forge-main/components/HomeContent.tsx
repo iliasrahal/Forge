@@ -666,11 +666,6 @@ export default function HomeContent({
         <div className="w-full max-w-2xl">
           {replyStatus === "idle" && !hideMainContent && (
             <div className={`text-center ${hideGreetingOnDesktop ? "lg:hidden" : ""}`}>
-              <span
-                aria-hidden="true"
-                className="mx-auto mb-5 block h-[3px] w-10 rounded-full bg-[#4c6ef5]"
-              />
-
               <h2 className="text-4xl text-blue-600 sm:text-5xl">
                 Salut{firstName ? ` ${firstName}` : ""},
               </h2>
