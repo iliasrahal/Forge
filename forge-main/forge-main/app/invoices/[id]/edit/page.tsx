@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import QuoteLinesForm from "@/components/QuoteLinesForm";
+import DocumentCreateForm, { type DocumentCreateFormState } from "@/components/DocumentCreateForm";
 import { prisma } from "@/src/lib/prisma";
 import {
   buildDocumentLinesFromForm,
@@ -73,7 +74,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
     redirect(`/invoices/${invoice.id}`);
   }
 
-  async function updateInvoice(formData: FormData) {
+  async function updateInvoice(_state: DocumentCreateFormState, formData: FormData): Promise<DocumentCreateFormState> {
     "use server";
     const writeContext = await requireWorkspaceContext("write");
     const current = await prisma.invoice.findFirst({
@@ -84,20 +85,21 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
 
     const title = formData.get("title")?.toString().trim();
     const rawLines = formData.get("invoiceLines")?.toString();
-    if (!title || !rawLines) throw new Error("Le titre et au moins une ligne sont obligatoires.");
+    if (!title || !rawLines) return { error: "Le titre et au moins une ligne sont obligatoires." };
 
     const defaultRate = normalizeVatRateBp(writeContext.workspace.defaultVatRateBp, 2000);
     const lines = buildDocumentLinesFromForm(rawLines, defaultRate);
-    if (lines.length === 0) throw new Error("Ajoute au moins une ligne à la facture.");
+    if (lines.length === 0) return { error: "Ajoutez au moins une ligne avec une désignation et un PU HT supérieur à 0." };
 
     const vatApplicable = formData.get("vatApplicable")?.toString() === "true";
     const discountBp = normalizeDiscountBp(formData.get("documentDiscount"));
     const totals = computeDocumentTotals(lines, vatApplicable, discountBp);
     const margin = computeDocumentMargin(lines, discountBp);
 
-    await prisma.invoice.update({
-      where: { id: current.id },
-      data: {
+    try {
+      await prisma.invoice.update({
+        where: { id: current.id },
+        data: {
         title,
         amountCents: totals.totalTtcCents,
         vatApplicable,
@@ -109,8 +111,12 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
           deleteMany: {},
           create: lines.map(documentLineCreateData),
         },
-      },
-    });
+        },
+      });
+    } catch (error) {
+      console.error("UPDATE INVOICE ERROR", error);
+      return { error: "Impossible d’enregistrer la facture pour le moment. Réessayez." };
+    }
     redirect(`/invoices/${current.id}`);
   }
 
@@ -119,7 +125,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
       <Link href="/invoices" aria-label="Retour aux factures" className="forge-back-link text-base font-semibold text-blue-600 dark:text-blue-400">
         Retour
       </Link>
-      <form action={updateInvoice} className="forge-surface mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <DocumentCreateForm action={updateInvoice} submitLabel="Enregistrer les modifications" pendingLabel="Enregistrement…" cancelHref={`/invoices/${invoice.id}`}>
         <div>
           <label htmlFor="title" className="mb-2 block text-sm font-semibold text-blue-700 dark:text-blue-400">Titre de la facture</label>
           <input id="title" name="title" required defaultValue={invoice.title} className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
@@ -136,8 +142,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
           services={services}
           canWrite
         />
-        <button type="submit" className="w-full rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700">Enregistrer les modifications</button>
-      </form>
+      </DocumentCreateForm>
     </main>
   );
 }

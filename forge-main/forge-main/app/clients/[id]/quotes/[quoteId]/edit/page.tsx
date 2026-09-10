@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import QuoteLinesForm from "@/components/QuoteLinesForm";
+import DocumentCreateForm, { type DocumentCreateFormState } from "@/components/DocumentCreateForm";
 import { prisma } from "@/src/lib/prisma";
 import { QuoteStatus } from "@/src/generated/prisma/client";
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
-  allocateDocumentNumber,
+  allocateAvailableDocumentNumber,
   isDraftReference,
 } from "@/src/lib/document-numbering";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -120,7 +121,7 @@ export default async function EditQuotePage({
 
 
 
-  async function updateQuote(formData: FormData) {
+  async function updateQuote(_state: DocumentCreateFormState, formData: FormData): Promise<DocumentCreateFormState> {
     "use server";
 
     const writeContext = await requireWorkspaceContext("write");
@@ -143,9 +144,7 @@ export default async function EditQuotePage({
 
 
     if (!title || !rawLines || !status) {
-      throw new Error(
-        "Tous les champs obligatoires doivent être remplis.",
-      );
+      return { error: "Tous les champs obligatoires doivent être remplis." };
     }
 
     if (selectedClientId) {
@@ -158,7 +157,7 @@ export default async function EditQuotePage({
         select: { id: true },
       });
       if (!selectedClient) {
-        throw new Error("Le client sélectionné est introuvable.");
+        return { error: "Le client sélectionné est introuvable." };
       }
     }
 
@@ -174,7 +173,7 @@ export default async function EditQuotePage({
 
 
     if (!allowedStatuses.includes(status)) {
-      throw new Error("Le statut du devis est invalide.");
+      return { error: "Le statut du devis est invalide." };
     }
 
     const quoteStatus = status as QuoteStatus;
@@ -193,17 +192,17 @@ export default async function EditQuotePage({
 
     if (!currentQuote) notFound();
     if (isQuoteContractLocked(currentQuote.status, Boolean(currentQuote.signature))) {
-      throw new Error("Un devis accepté ne peut plus être modifié.");
+      return { error: "Un devis accepté ne peut plus être modifié." };
     }
     if (!canTransitionQuoteStatus(currentQuote.status, quoteStatus)) {
-      throw new Error("Cette transition de statut n’est pas autorisée.");
+      return { error: "Cette transition de statut n’est pas autorisée." };
     }
 
 
 
     const defaultVatRateBp = normalizeVatRateBp(writeContext.workspace.defaultVatRateBp, 2000);
     const lines = buildDocumentLinesFromForm(rawLines, defaultVatRateBp);
-    if (lines.length === 0) throw new Error("Ajoute au moins une ligne au devis.");
+    if (lines.length === 0) return { error: "Ajoutez au moins une ligne avec une désignation et un PU HT supérieur à 0." };
     const vatApplicable = formData.get("vatApplicable")?.toString() === "true";
     const discountBp = normalizeDiscountBp(formData.get("documentDiscount"));
     const totals = computeDocumentTotals(lines, vatApplicable, discountBp);
@@ -215,20 +214,22 @@ export default async function EditQuotePage({
       quoteStatus !== "BROUILLON" &&
       isDraftReference(currentQuote.reference);
     let finalReference: string | undefined;
-    if (leavingDraft) {
-      const allocated = await prisma.$transaction((tx) =>
-        allocateDocumentNumber(tx, {
+    try {
+      if (leavingDraft) {
+        const allocated = await prisma.$transaction((tx) =>
+        allocateAvailableDocumentNumber(tx, {
           organizationId: writeContext.workspace.id,
           kind: "QUOTE",
           prefix: writeContext.workspace.quotePrefix,
+          referenceExists: async (reference) => Boolean(await tx.quote.findUnique({ where: { reference }, select: { id: true } })),
         }),
-      );
-      finalReference = allocated.reference;
-    }
+        );
+        finalReference = allocated.reference;
+      }
 
 
 
-    const updated = await prisma.$transaction(async (transaction) => {
+      const updated = await prisma.$transaction(async (transaction) => {
       const result = await transaction.quote.updateMany({
         where: {
           id: quoteId,
@@ -256,9 +257,13 @@ export default async function EditQuotePage({
         data: { lines: { create: lines.map(documentLineCreateData) } },
       });
       return result;
-    });
+      });
 
-    if (updated.count !== 1) notFound();
+      if (updated.count !== 1) notFound();
+    } catch (error) {
+      console.error("UPDATE QUOTE ERROR", error);
+      return { error: "Impossible d’enregistrer le devis pour le moment. Réessayez." };
+    }
 
 
 
@@ -295,9 +300,11 @@ export default async function EditQuotePage({
 
 
 
-      <form
+      <DocumentCreateForm
         action={updateQuote}
-        className="forge-surface mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        submitLabel="Enregistrer les modifications"
+        pendingLabel="Enregistrement…"
+        cancelHref={getQuotePath(quote)}
       >
 
         <div>
@@ -405,30 +412,7 @@ export default async function EditQuotePage({
 
 
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-
-
-          <button
-            type="submit"
-            className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-          >
-            Enregistrer les modifications
-          </button>
-
-
-
-          <Link
-            href={getQuotePath(quote)}
-            className="rounded-2xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Annuler
-          </Link>
-
-
-        </div>
-
-
-      </form>
+      </DocumentCreateForm>
 
 
     </main>

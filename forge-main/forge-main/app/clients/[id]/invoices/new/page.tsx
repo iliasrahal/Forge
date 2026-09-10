@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import QuoteLinesForm from "@/components/QuoteLinesForm";
+import DocumentCreateForm, { type DocumentCreateFormState } from "@/components/DocumentCreateForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { parseSerializedQuoteLines } from "@/src/lib/quote-catalog-matching";
@@ -58,7 +59,7 @@ export default async function NewInvoicePage({
       ? client.companyName
       : `${client.firstName ?? ""} ${client.lastName ?? ""}`.trim();
 
-  async function createInvoice(formData: FormData) {
+  async function createInvoice(_state: DocumentCreateFormState, formData: FormData): Promise<DocumentCreateFormState> {
     "use server";
 
     await requireCurrentUser();
@@ -79,7 +80,7 @@ export default async function NewInvoicePage({
     const invoiceLinesRaw = formData.get("invoiceLines")?.toString();
 
     if (!title || !invoiceLinesRaw) {
-      throw new Error("Le titre et au moins une ligne sont obligatoires.");
+      return { error: "Le titre et au moins une ligne sont obligatoires." };
     }
 
     const orgDefaultRateBp = normalizeVatRateBp(
@@ -98,7 +99,7 @@ export default async function NewInvoicePage({
     );
 
     if (cleanLines.length === 0) {
-      throw new Error("Ajoute au moins une ligne à la facture.");
+      return { error: "Ajoutez au moins une ligne avec une désignation et un PU HT supérieur à 0." };
     }
 
     const totals = computeDocumentTotals(
@@ -119,8 +120,10 @@ export default async function NewInvoicePage({
       }
     }
 
-    const invoice = await prisma.invoice.create({
-      data: {
+    let invoice;
+    try {
+      invoice = await prisma.invoice.create({
+        data: {
         reference: draftReference(),
         title,
         description: description || null,
@@ -138,9 +141,12 @@ export default async function NewInvoicePage({
         lines: {
           create: cleanLines.map(documentLineCreateData),
         },
-      },
-    });
-
+        },
+      });
+    } catch (error) {
+      console.error("CREATE INVOICE ERROR", error);
+      return { error: "Impossible d’enregistrer la facture pour le moment. Réessayez." };
+    }
     redirect(`/invoices/${invoice.id}`);
   }
 
@@ -160,9 +166,11 @@ export default async function NewInvoicePage({
         </p>
       </div>
 
-      <form
+      <DocumentCreateForm
         action={createInvoice}
-        className="forge-surface mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        submitLabel="Enregistrer la facture"
+        pendingLabel="Enregistrement…"
+        cancelHref="/invoices"
       >
         <div>
           <label
@@ -224,21 +232,7 @@ export default async function NewInvoicePage({
           canWrite={workspaceContext.permissions.canWrite}
         />
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
-            className="rounded-2xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
-          >
-            Enregistrer la facture
-          </button>
-          <Link
-            href="/invoices/new"
-            className="rounded-2xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Annuler
-          </Link>
-        </div>
-      </form>
+      </DocumentCreateForm>
     </main>
   );
 }
