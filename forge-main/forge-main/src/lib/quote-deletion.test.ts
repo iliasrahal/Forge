@@ -1,47 +1,34 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getQuoteDeletionBlockReason } from "./quote-deletion";
+import { getQuoteDeletionPlan } from "./quote-deletion";
 
-const draft = {
+const quote = {
   status: "BROUILLON" as const,
   invoiceCount: 0,
-  publicAccessCount: 0,
-  reminderCount: 0,
-  hasSignature: false,
+  interventionCount: 0,
 };
 
-test("autorise un brouillon sans dépendance", () => {
-  assert.equal(getQuoteDeletionBlockReason(draft), null);
-});
-
-test("bloque un devis lié à une facture", () => {
-  assert.match(
-    getQuoteDeletionBlockReason({ ...draft, invoiceCount: 1 }) ?? "",
-    /facture/i,
-  );
-});
-
-test("bloque les devis envoyés, acceptés, refusés ou signés", () => {
-  for (const status of ["ENVOYE", "ACCEPTE", "REFUSE"] as const) {
-    assert.notEqual(
-      getQuoteDeletionBlockReason({ ...draft, status }),
-      null,
+test("autorise la suppression quel que soit le statut", () => {
+  for (const status of ["BROUILLON", "ENVOYE", "ACCEPTE", "REFUSE"] as const) {
+    assert.equal(
+      getQuoteDeletionPlan({ ...quote, status }).statusDoesNotBlockDeletion,
+      true,
     );
   }
-  assert.notEqual(
-    getQuoteDeletionBlockReason({ ...draft, hasSignature: true }),
-    null,
-  );
 });
 
-test("bloque un brouillon possédant déjà une trace d’envoi", () => {
-  assert.notEqual(
-    getQuoteDeletionBlockReason({ ...draft, publicAccessCount: 1 }),
-    null,
-  );
-  assert.notEqual(
-    getQuoteDeletionBlockReason({ ...draft, reminderCount: 1 }),
-    null,
+test("demande de détacher les documents métier liés", () => {
+  assert.deepEqual(
+    getQuoteDeletionPlan({
+      ...quote,
+      invoiceCount: 2,
+      interventionCount: 1,
+    }),
+    {
+      statusDoesNotBlockDeletion: true,
+      detachInvoices: true,
+      detachInterventions: true,
+    },
   );
 });

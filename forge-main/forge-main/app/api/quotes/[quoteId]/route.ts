@@ -2,7 +2,7 @@ import { Prisma } from "@/src/generated/prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { getQuoteDeletionBlockReason } from "@/src/lib/quote-deletion";
+import { getQuoteDeletionPlan } from "@/src/lib/quote-deletion";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -11,6 +11,8 @@ import {
 type QuoteRouteProps = {
   params: Promise<{ quoteId: string }>;
 };
+
+class QuoteDeletionConflictError extends Error {}
 
 export async function PATCH(
   request: Request,
@@ -70,12 +72,10 @@ export async function DELETE(
       select: {
         id: true,
         status: true,
-        signature: { select: { id: true } },
         _count: {
           select: {
             invoices: true,
-            publicAccesses: true,
-            reminders: true,
+            interventions: true,
           },
         },
       },
@@ -88,39 +88,55 @@ export async function DELETE(
       );
     }
 
-    const blockReason = getQuoteDeletionBlockReason({
+    const deletionPlan = getQuoteDeletionPlan({
       status: quote.status,
       invoiceCount: quote._count.invoices,
-      publicAccessCount: quote._count.publicAccesses,
-      reminderCount: quote._count.reminders,
-      hasSignature: Boolean(quote.signature),
+      interventionCount: quote._count.interventions,
     });
 
-    if (blockReason) {
-      return NextResponse.json(
-        { error: blockReason },
-        { status: 409 },
-      );
-    }
+    await prisma.$transaction(async (transaction) => {
+      if (deletionPlan.detachInvoices) {
+        await transaction.invoice.updateMany({
+          where: {
+            quoteId: quote.id,
+            organizationId: workspaceContext.workspace.id,
+          },
+          data: { quoteId: null },
+        });
+      }
 
-    const deleted = await prisma.quote.deleteMany({
-      where: {
-        id: quote.id,
-        organizationId: workspaceContext.workspace.id,
-        status: "BROUILLON",
-        invoices: { none: {} },
-        signature: { is: null },
-        publicAccesses: { none: {} },
-        reminders: { none: {} },
-      },
+      if (deletionPlan.detachInterventions) {
+        await transaction.intervention.updateMany({
+          where: {
+            quoteId: quote.id,
+            organizationId: workspaceContext.workspace.id,
+          },
+          data: { quoteId: null },
+        });
+      }
+
+      await transaction.quoteSignature.deleteMany({
+        where: { quoteId: quote.id },
+      });
+      await transaction.quotePublicAccess.deleteMany({
+        where: { quoteId: quote.id },
+      });
+
+      const result = await transaction.quote.deleteMany({
+        where: {
+          id: quote.id,
+          organizationId: workspaceContext.workspace.id,
+          invoices: { none: {} },
+          interventions: { none: {} },
+        },
+      });
+
+      if (result.count !== 1) {
+        throw new QuoteDeletionConflictError();
+      }
+
+      return result;
     });
-
-    if (deleted.count !== 1) {
-      return NextResponse.json(
-        { error: "Ce devis a changé et ne peut plus être supprimé." },
-        { status: 409 },
-      );
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -129,6 +145,13 @@ export async function DELETE(
       return NextResponse.json(accessError.body, {
         status: accessError.status,
       });
+    }
+
+    if (error instanceof QuoteDeletionConflictError) {
+      return NextResponse.json(
+        { error: "Ce devis a changé et ne peut plus être supprimé." },
+        { status: 409 },
+      );
     }
 
     if (

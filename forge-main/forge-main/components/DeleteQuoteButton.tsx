@@ -29,7 +29,7 @@ export default function DeleteQuoteButton({
         throw new Error(data.error || "Impossible de supprimer ce devis.");
       }
 
-      router.push("/quotes");
+      router.replace("/quotes");
       router.refresh();
     } catch (caughtError) {
       setError(
@@ -49,7 +49,7 @@ export default function DeleteQuoteButton({
           setError("");
           setOpen(true);
         }}
-        className="min-h-12 w-full rounded-2xl bg-red-50 px-5 py-3 font-semibold text-red-700 transition hover:bg-red-100 dark:bg-red-950 dark:text-red-200 dark:hover:bg-red-900"
+        className="min-h-12 w-full rounded-2xl border border-red-500/70 bg-transparent px-5 py-3 font-semibold text-red-700 transition hover:bg-red-50 dark:border-red-500/60 dark:text-red-300 dark:hover:bg-red-950/40"
       >
         Supprimer le devis
       </button>

@@ -570,9 +570,7 @@ export default async function QuotePage({
               Télécharger le devis
             </a>
 
-            {quote.status === "BROUILLON" ? (
-              <DeleteQuoteButton quoteId={quote.id} />
-            ) : null}
+            <DeleteQuoteButton quoteId={quote.id} />
 
           </div>
         ) : null}
