@@ -868,7 +868,7 @@ const handleSaveNotes = async (notes: string) => {
   const handleDeleteIntervention = async () => {
     if (
       !currentAppointment ||
-      !window.confirm("Supprimer définitivement cette intervention ?")
+      !window.confirm("Supprimer définitivement cette intervention ?\n\nLe planning, les tâches, les temps, les dépenses et les comptes rendus liés seront supprimés. Les devis, factures et paiements existants seront conservés.")
     ) {
       return;
     }

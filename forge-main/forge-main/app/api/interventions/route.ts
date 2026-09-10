@@ -1186,34 +1186,7 @@ export async function DELETE(request: Request) {
         },
         select: {
           id: true,
-          status: true,
-          startedAt: true,
-          finishedAt: true,
-          reportIntervention: true,
-          reportDiagnostic: true,
-          reportTravaux: true,
-          reportRecommendation: true,
           invoices: { select: { id: true } },
-          workTimes: { select: { id: true }, take: 1 },
-          expenses: { select: { id: true }, take: 1 },
-          dayStates: {
-            where: {
-              OR: [
-                { startedAt: { not: null } },
-                { completedAt: { not: null } },
-                { report: { not: null } },
-              ],
-            },
-            select: { id: true },
-            take: 1,
-          },
-          dayTasks: {
-            where: {
-              OR: [{ completedAt: { not: null } }, { report: { not: null } }],
-            },
-            select: { id: true },
-            take: 1,
-          },
         },
       });
 
@@ -1224,38 +1197,21 @@ export async function DELETE(request: Request) {
       );
     }
 
-    if (intervention.invoices.length > 0) {
-      return NextResponse.json(
-        { error: "Ce chantier ne peut pas être supprimé car une facture lui est associée." },
-        { status: 409 },
-      );
-    }
+    await prisma.$transaction(async (transaction) => {
+      // Les factures et leurs paiements sont des documents comptables : on les
+      // conserve et on retire seulement leur lien vers le chantier supprimé.
+      if (intervention.invoices.length > 0) {
+        await transaction.invoice.updateMany({
+          where: { interventionId: intervention.id },
+          data: { interventionId: null },
+        });
+      }
 
-    const hasHistoricalData =
-      intervention.status === "EN_COURS" ||
-      intervention.status === "TERMINEE" ||
-      intervention.startedAt !== null ||
-      intervention.finishedAt !== null ||
-      intervention.workTimes.length > 0 ||
-      intervention.expenses.length > 0 ||
-      intervention.dayStates.length > 0 ||
-      intervention.dayTasks.length > 0 ||
-      Boolean(
-        intervention.reportIntervention ||
-        intervention.reportDiagnostic ||
-        intervention.reportTravaux ||
-        intervention.reportRecommendation,
-      );
-
-    if (hasHistoricalData) {
-      return NextResponse.json(
-        { error: "Ce chantier contient déjà un historique de travail. Il ne peut pas être supprimé." },
-        { status: 409 },
-      );
-    }
-
-    await prisma.intervention.delete({
-      where: { id: intervention.id },
+      // Les tâches, états journaliers, exclusions, temps et dépenses sont des
+      // données internes au chantier et suivent ses relations Cascade.
+      await transaction.intervention.delete({
+        where: { id: intervention.id },
+      });
     });
 
     return NextResponse.json({ success: true });

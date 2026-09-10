@@ -370,7 +370,20 @@ export default async function InterventionPage({
 
         {workspaceContext.permissions.canWrite && (
           <div className="mx-auto mt-10 max-w-2xl border-t border-[var(--forge-border)] pt-6 text-center">
-            <DeleteInterventionButton interventionId={intervention.id} />
+            <DeleteInterventionButton
+              interventionId={intervention.id}
+              hasHistory={
+                intervention.status === "EN_COURS" ||
+                intervention.status === "TERMINEE" ||
+                Boolean(intervention.startedAt || intervention.finishedAt) ||
+                intervention.workTimes.length > 0 ||
+                intervention.expenses.length > 0 ||
+                intervention.dayStates.length > 0 ||
+                intervention.dayTasks.some((task) => Boolean(task.completedAt || task.report)) ||
+                Boolean(intervention.reportIntervention || intervention.reportDiagnostic || intervention.reportTravaux || intervention.reportRecommendation)
+              }
+              hasFinancialDocuments={Boolean(intervention.quoteId || intervention.invoices.length > 0)}
+            />
           </div>
         )}
 
