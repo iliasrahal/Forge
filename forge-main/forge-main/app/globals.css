@@ -12,7 +12,7 @@
   --forge-surface-strong: #dbe2f6;
   --forge-surface-hover: #e6ecfa;
   --forge-modal-background: #f2f5fd;
-  --forge-modal-overlay: rgb(10 18 48 / 0.4);
+  --forge-modal-overlay: rgb(10 18 48 / 0.22);
   --forge-background-accent: #d6ddf3;
   --forge-input-background: #f3f6fd;
   --forge-navigation-background: #eaeff9;
@@ -161,7 +161,7 @@ html.dark {
   --forge-surface-strong: #1b244e;
   --forge-surface-hover: #1a234c;
   --forge-modal-background: #0d122b;
-  --forge-modal-overlay: rgb(4 5 10 / 0.62);
+  --forge-modal-overlay: rgb(4 5 10 / 0.28);
   --forge-background-accent: #06070f;
   --forge-input-background: #121838;
   --forge-navigation-background: #0c1024;
@@ -1029,12 +1029,13 @@ html.dark body {
   color: var(--cobalt-lit) !important;
 }
 
-/* Voile de modale : nuit dense + flou. */
+/* Voile de modale commun : le cyclorama reste lisible derrière le dialogue. */
 .forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-black"],
 .forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-950"],
 .forge-app-shell [class*="fixed"][class*="inset-0"][class*="bg-slate-900"] {
-  backdrop-filter: blur(10px) saturate(1.1);
-  background-color: color-mix(in srgb, #04050a 80%, transparent) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  background-color: var(--forge-modal-overlay) !important;
 }
 
 /* Etats : le statut est une couleur du monde, jamais un gris. */
