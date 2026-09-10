@@ -2,6 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import DeleteClientButton from "@/components/clients/DeleteClientButton";
+import ClientHistoryTabs, {
+  ClientHistoryCounters,
+  ClientHistoryProvider,
+  type ClientHistoryItem,
+} from "@/components/clients/ClientHistoryTabs";
 import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
@@ -20,22 +25,19 @@ type ClientPageProps = {
 };
 
 
-type HistoryItem = {
-  id: string;
-  itemId: string;
-  title: string;
-  date: Date;
-  type: "Intervention" | "Devis" | "Facture";
-  status: string;
-};
-
-
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
   }).format(date);
+}
+
+function formatAmount(amountCents: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amountCents / 100);
 }
 
 
@@ -83,28 +85,12 @@ export default async function ClientPage({
 
 
 
-  const interventionCount =
-    client.interventions.length;
-
-
-  const quoteCount =
-    client.quotes.length;
-
-
-  const invoiceCount =
-    client.invoices.length;
-
-
-
-  const history: HistoryItem[] = [
-
-    ...client.interventions.map(
+  const interventions: ClientHistoryItem[] = client.interventions.map(
       (intervention) => ({
-        id: `intervention-${intervention.id}`,
-        itemId: intervention.id,
+        id: intervention.id,
+        href: buildInterventionHref(intervention.id, "client", client.id),
         title: intervention.title,
-        date: intervention.scheduledAt,
-        type: "Intervention" as const,
+        date: formatDate(intervention.scheduledAt),
         status: formatInterventionDisplayStatus(
           getInterventionDisplayStatus(
             intervention.status,
@@ -112,41 +98,31 @@ export default async function ClientPage({
           ),
         ),
       }),
-    ),
+    );
 
-
-    ...client.quotes.map(
+  const quotes: ClientHistoryItem[] = client.quotes.map(
       (quote) => ({
-        id: `quote-${quote.id}`,
-        itemId: quote.id,
+        id: quote.id,
+        href: `/clients/${client.id}/quotes/${quote.id}`,
         title: quote.title,
-        date: quote.createdAt,
-        type: "Devis" as const,
-        status: formatDocumentStatus(
-          quote.status,
-        ),
+        reference: quote.reference,
+        date: formatDate(quote.createdAt),
+        amount: formatAmount(quote.amountCents),
+        status: formatDocumentStatus(quote.status),
       }),
-    ),
+    );
 
-
-    ...client.invoices.map(
+  const invoices: ClientHistoryItem[] = client.invoices.map(
       (invoice) => ({
-        id: `invoice-${invoice.id}`,
-        itemId: invoice.id,
+        id: invoice.id,
+        href: `/invoices/${invoice.id}`,
         title: invoice.title,
-        date: invoice.createdAt,
-        type: "Facture" as const,
-        status: formatDocumentStatus(
-          invoice.status,
-        ),
+        reference: invoice.reference,
+        date: formatDate(invoice.createdAt),
+        amount: formatAmount(invoice.amountCents),
+        status: formatDocumentStatus(invoice.status),
       }),
-    ),
-
-  ].sort(
-    (firstItem, secondItem) =>
-      secondItem.date.getTime() -
-      firstItem.date.getTime(),
-  );
+    );
 
 
 
@@ -197,6 +173,11 @@ export default async function ClientPage({
 
 
 
+        <ClientHistoryProvider
+          interventions={interventions}
+          quotes={quotes}
+          invoices={invoices}
+        >
         <div className="forge-surface mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
 
@@ -240,45 +221,7 @@ export default async function ClientPage({
 
 
 
-          <div className="mt-6 grid grid-cols-3 gap-1 border-y border-slate-100 py-5 text-center dark:border-slate-700 sm:gap-3">
-
-
-            <div>
-              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
-                {interventionCount}
-              </p>
-
-              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
-                Interventions
-              </p>
-            </div>
-
-
-
-            <div>
-              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
-                {quoteCount}
-              </p>
-
-              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
-                Devis
-              </p>
-            </div>
-
-
-
-            <div>
-              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 sm:text-2xl">
-                {invoiceCount}
-              </p>
-
-              <p className="mt-1 text-[0.68rem] leading-tight text-slate-500 dark:text-slate-400 sm:text-sm">
-                Factures
-              </p>
-            </div>
-
-
-          </div>
+          <ClientHistoryCounters />
 
 
 
@@ -355,91 +298,12 @@ export default async function ClientPage({
 
         )}
 
+        <ClientHistoryTabs />
+
+        </ClientHistoryProvider>
 
 
 
-
-        <div className="mt-8">
-
-
-          <h2 className="text-center text-lg font-semibold text-blue-700 dark:text-blue-400">
-            Historique
-          </h2>
-
-
-
-          {history.length > 0 ? (
-
-            <div className="mt-3 space-y-3">
-
-
-              {history.map((item) => (
-
-                <Link
-                  key={item.id}
-                  href={
-                    item.type === "Devis"
-                      ? `/clients/${client.id}/quotes/${item.itemId}`
-                      : item.type === "Facture"
-                        ? `/invoices/${item.itemId}`
-                        : buildInterventionHref(
-                            item.itemId,
-                            "client",
-                            client.id,
-                          )
-                  }
-                  className="forge-surface-subtle block rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.5)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_55px_-36px_rgba(37,99,235,0.35)] dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30 dark:hover:border-blue-700"
-                >
-
-
-                  <div className="flex min-w-0 flex-col items-start gap-3 min-[380px]:flex-row min-[380px]:justify-between">
-
-
-                    <div className="min-w-0">
-
-                      <p className="font-semibold text-slate-800 dark:text-white">
-                        {item.title || "Intervention"}
-                      </p>
-
-
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {item.type} ·{" "}
-                        {formatDate(item.date)}
-                      </p>
-
-                    </div>
-
-
-                    <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-900">
-                      {item.status}
-                    </span>
-
-
-                  </div>
-
-
-                </Link>
-
-              ))}
-
-
-            </div>
-
-
-          ) : (
-
-
-            <div className="mt-3 rounded-2xl border border-dashed border-slate-200 p-6 text-center dark:border-slate-700">
-
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Aucun historique pour ce client.
-              </p>
-
-            </div>
-
-          )}
-
-        </div>
 
 
       </section>
