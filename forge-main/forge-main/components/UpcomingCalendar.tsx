@@ -1,7 +1,14 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
+import { createPortal } from "react-dom";
 
 import {
   getAppointmentSubject,
@@ -82,6 +89,11 @@ export default function UpcomingCalendar({
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [creationError, setCreationError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const isMounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!showCreationForm) return;
@@ -379,11 +391,11 @@ export default function UpcomingCalendar({
       </>
       ) : null}
 
-      {canWrite && showCreationForm && (
-        <div className="forge-modal-overlay forge-viewport-dialog fixed inset-0 z-[70] flex h-dvh items-end justify-center overflow-hidden p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
+      {canWrite && showCreationForm && isMounted ? createPortal(
+        <div className="forge-modal-overlay forge-viewport-dialog fixed inset-0 z-[70] flex h-dvh items-center justify-center overflow-hidden p-2 pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:p-4">
           <form
             onSubmit={createIntervention}
-            className="flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-w-lg"
+            className="flex max-h-[calc(100dvh-1rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg"
           >
             <div className="flex shrink-0 items-start justify-between gap-3 px-4 pb-2 pt-4 sm:px-6 sm:pt-6">
               <div>
@@ -536,7 +548,7 @@ export default function UpcomingCalendar({
               )}
             </div>
 
-            <div className="grid shrink-0 gap-2 border-t border-slate-200/80 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 min-[360px]:grid-cols-2 sm:gap-3 sm:px-6 sm:pb-6 sm:pt-4">
+            <div className="relative z-10 grid shrink-0 gap-2 border-t border-slate-200/80 bg-white/95 px-4 pb-4 pt-3 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 min-[360px]:grid-cols-2 sm:gap-3 sm:px-6 sm:pb-6 sm:pt-4">
               <button
                 type="button"
                 onClick={closeCreationForm}
@@ -554,8 +566,9 @@ export default function UpcomingCalendar({
               </button>
             </div>
           </form>
-        </div>
-      )}
+        </div>,
+        document.body,
+      ) : null}
     </section>
   );
 }
