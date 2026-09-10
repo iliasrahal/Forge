@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import {
   getAppointmentSubject,
@@ -82,6 +82,20 @@ export default function UpcomingCalendar({
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [creationError, setCreationError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (!showCreationForm) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [showCreationForm]);
 
   const appointmentsByDate = useMemo(
     () => groupAppointmentsByDate(appointments),
@@ -366,10 +380,10 @@ export default function UpcomingCalendar({
       ) : null}
 
       {canWrite && showCreationForm && (
-        <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-hidden bg-slate-950/80 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-4">
+        <div className="forge-viewport-dialog fixed inset-0 z-[70] flex h-dvh items-end justify-center overflow-hidden bg-slate-950/80 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-sm sm:items-center sm:p-4">
           <form
             onSubmit={createIntervention}
-            className="flex max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg"
+            className="flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900 sm:max-w-lg"
           >
             <div className="flex shrink-0 items-start justify-between gap-3 px-4 pb-2 pt-4 sm:px-6 sm:pt-6">
               <div>

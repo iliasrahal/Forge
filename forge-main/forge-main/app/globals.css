@@ -1519,7 +1519,7 @@ html.dark body {
     font-size: 16px;
   }
 
-  .forge-app-shell [class*="fixed"][class*="inset-0"] {
+  .forge-app-shell [class*="fixed"][class*="inset-0"]:not(.forge-viewport-dialog) {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-left: 0.75rem !important;
