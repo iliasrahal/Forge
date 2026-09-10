@@ -116,7 +116,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
-      <Link href={`/invoices/${invoice.id}`} className="forge-back-link text-base font-semibold text-blue-600 dark:text-blue-400">
+      <Link href="/invoices" aria-label="Retour aux factures" className="forge-back-link text-base font-semibold text-blue-600 dark:text-blue-400">
         Retour
       </Link>
       <form action={updateInvoice} className="forge-surface mt-6 space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">

@@ -5,6 +5,7 @@ import FixedForgeBar from "@/components/FixedForgeBar";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { buildInterventionHref } from "@/src/lib/intervention-navigation";
 
 
 
@@ -76,7 +77,7 @@ export default async function HistoryPage() {
             return (
               <Link
                 key={intervention.id}
-                href={`/interventions/${intervention.id}`}
+                href={buildInterventionHref(intervention.id, "history")}
                 className="block rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-blue-500 dark:hover:bg-blue-950"
               >
 

@@ -148,8 +148,8 @@ export default async function NewInvoicePage({
     <main className="mx-auto w-full max-w-2xl px-6 py-8">
       <div>
         <Link
-          href={`/clients/${id}`}
-          aria-label="Retour au dossier client"
+          href="/invoices/new"
+          aria-label="Retour au choix du client"
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>Retour</span>
@@ -232,7 +232,7 @@ export default async function NewInvoicePage({
             Enregistrer la facture
           </button>
           <Link
-            href={`/clients/${id}`}
+            href="/invoices/new"
             className="rounded-2xl border border-slate-300 px-6 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Annuler

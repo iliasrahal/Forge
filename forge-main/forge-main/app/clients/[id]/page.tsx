@@ -9,6 +9,7 @@ import {
   getInterventionDisplayStatus,
 } from "@/src/lib/intervention-display-status";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { buildInterventionHref } from "@/src/lib/intervention-navigation";
 import { clientService } from "@/src/services/client.service";
 
 
@@ -381,7 +382,11 @@ export default async function ClientPage({
                       ? `/clients/${client.id}/quotes/${item.itemId}`
                       : item.type === "Facture"
                         ? `/invoices/${item.itemId}`
-                        : `/interventions/${item.itemId}`
+                        : buildInterventionHref(
+                            item.itemId,
+                            "client",
+                            client.id,
+                          )
                   }
                   className="forge-surface-subtle block rounded-3xl border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_50px_-38px_rgba(15,23,42,0.5)] backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_55px_-36px_rgba(37,99,235,0.35)] dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/30 dark:hover:border-blue-700"
                 >

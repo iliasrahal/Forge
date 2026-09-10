@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buildInterventionHref } from "@/src/lib/intervention-navigation";
 
 import {
   getAppointmentDateLabel,
@@ -125,7 +126,7 @@ export default function CurrentInterventionCard({
         </button>
       </div>) : (
         <Link
-          href={`/interventions/${appointment.id}`}
+          href={buildInterventionHref(appointment.id, "home")}
           className="mx-auto mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl border border-blue-200 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950"
         >
           Consulter l’intervention

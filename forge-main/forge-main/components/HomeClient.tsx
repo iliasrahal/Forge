@@ -16,6 +16,7 @@ import UpcomingCalendar, {
 import { type Appointment } from "@/data/appointments";
 import { sortActiveTodayAppointments } from "@/src/lib/intervention-calendar";
 import type { SmartReminder } from "@/src/lib/smart-reminders";
+import { buildInterventionHref } from "@/src/lib/intervention-navigation";
 
 type HomeState =
   | "finished"
@@ -51,6 +52,7 @@ type HomeClientProps = {
   planningClients: PlanningClient[];
   todayDateKey: string;
   newInterventionId?: string | null;
+  initialPlanningOpen?: boolean;
   canWrite: boolean;
 };
 
@@ -63,6 +65,7 @@ export default function HomeClient({
   todayDateKey,
   canWrite,
   newInterventionId: initialNewInterventionId = null,
+  initialPlanningOpen = false,
 }: HomeClientProps) {
   const router = useRouter();
 
@@ -112,7 +115,7 @@ const [
   const [showGreeting, setShowGreeting] =
     useState(false);
 const [showUpcomingCalendar, setShowUpcomingCalendar] =
-  useState(false);
+  useState(initialPlanningOpen);
 const [calendarFocusDate, setCalendarFocusDate] =
   useState<string | null>(null);
 const [autoOpenNewIntervention, setAutoOpenNewIntervention] =
@@ -711,7 +714,7 @@ const handleSaveNotes = async (notes: string) => {
       (appointment) => appointment.id === appointmentId,
     );
     if (selected?.endDate) {
-      router.push(`/interventions/${selected.id}`);
+      router.push(buildInterventionHref(selected.id, "home"));
       return;
     }
     if (selected?.status === "completed" && selected.finalizationStep) {
@@ -1379,7 +1382,9 @@ const handleCreateInvoice = async () => {
       todayDateKey={todayDateKey}
       focusDate={calendarFocusDate}
       onClose={handleCloseUpcomingCalendar}
-      onSelectAppointment={(appointmentId) => router.push(`/interventions/${appointmentId}`)}
+      onSelectAppointment={(appointmentId) =>
+        router.push(buildInterventionHref(appointmentId, "planning"))
+      }
       onInterventionCreated={handlePlanningInterventionCreated}
       canWrite={canWrite}
       autoOpenCreationForm={autoOpenNewIntervention}

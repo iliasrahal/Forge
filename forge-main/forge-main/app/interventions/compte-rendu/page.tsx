@@ -205,7 +205,7 @@ useState(false);
     <main className="min-h-screen px-4 py-8">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/interventions"
+          href="/app"
           className="forge-back-link mb-6 text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>Retour</span>

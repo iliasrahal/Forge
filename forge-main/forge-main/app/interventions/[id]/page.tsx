@@ -17,11 +17,16 @@ import { formatParisDateKey } from "@/src/lib/paris-datetime";
 import { computeInterventionProfitability } from "@/src/lib/intervention-profitability";
 import InterventionProfitability from "@/components/InterventionProfitability";
 import DeleteInterventionButton from "@/components/DeleteInterventionButton";
+import { getInterventionReturnHref } from "@/src/lib/intervention-navigation";
 
 
 type InterventionPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    from?: string;
+    clientId?: string;
   }>;
 };
 
@@ -73,8 +78,10 @@ function getStatusClasses(status: string) {
 
 export default async function InterventionPage({
   params,
+  searchParams,
 }: InterventionPageProps) {
   const { id } = await params;
+  const { from, clientId: requestedClientId } = await searchParams;
   await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
 
@@ -116,6 +123,12 @@ export default async function InterventionPage({
   if (!intervention) {
     notFound();
   }
+
+  const returnHref = getInterventionReturnHref({
+    context: from,
+    requestedClientId,
+    interventionClientId: intervention.clientId,
+  });
 
   const displayStatus = getInterventionDisplayStatus(
     intervention.status,
@@ -180,7 +193,7 @@ export default async function InterventionPage({
 
 
         <Link
-          href="/history"
+          href={returnHref}
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>
