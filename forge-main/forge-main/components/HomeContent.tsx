@@ -44,6 +44,7 @@ type HomeContentProps = {
   canWrite: boolean;
   currentAppointment?: Appointment;
   hideMainContent?: boolean;
+  hideForgeBar?: boolean;
   hideGreetingOnDesktop?: boolean;
   report?: InterventionReport | null;
   error?: string;
@@ -85,6 +86,7 @@ export default function HomeContent({
   canWrite,
   currentAppointment,
   hideMainContent = false,
+  hideForgeBar = false,
   hideGreetingOnDesktop = false,
   report,
   error,
@@ -714,7 +716,7 @@ export default function HomeContent({
           )}
         </div>
 
-        {!hideMainContent ? (
+        {!hideMainContent && !hideForgeBar ? (
         <FixedForgeBar
           context="home"
           initialMessage={replyDraft}
@@ -837,7 +839,7 @@ export default function HomeContent({
         )}
       </div>
 
-      {!hideMainContent ? (
+      {!hideMainContent && !hideForgeBar ? (
       <FixedForgeBar
         context="home"
         initialMessage={replyDraft}
