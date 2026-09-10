@@ -335,6 +335,7 @@ export default async function InterventionPage({
               startedAt: state.startedAt?.toISOString() ?? null,
               completedAt: state.completedAt?.toISOString() ?? null,
               report: state.report,
+              finalizationStep: state.finalizationStep,
             }))}
             dailyTracking={dailyTracking}
             canWrite={workspaceContext.permissions.canWrite}

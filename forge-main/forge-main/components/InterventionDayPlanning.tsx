@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
-import { getInterventionDayDeletionProtection, type InterventionDayDeletionProtection } from "@/src/lib/intervention-day-deletion";
+import { getInterventionDayHistoryKind } from "@/src/lib/intervention-day-deletion";
+import { formatInterventionDayReport } from "@/src/lib/intervention-day-report";
 
 type DayTask = {
   id: string;
@@ -20,7 +21,7 @@ type Props = {
   interventionId: string;
   days: string[];
   tasks: DayTask[];
-  dayStates: Array<{ date: string; startedAt: string | null; completedAt: string | null; report: string | null }>;
+  dayStates: Array<{ date: string; startedAt: string | null; completedAt: string | null; report: string | null; finalizationStep: string | null }>;
   dailyTracking: Array<{ date: string; expenseCents: number; durationMinutes: number; hasExpenses: boolean; hasWorkTimes: boolean }>;
   canWrite: boolean;
 };
@@ -33,9 +34,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   const router = useRouter();
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<DayTask | null>(null);
-  const [reportDate, setReportDate] = useState<string | null>(null);
-  const [deleteDate, setDeleteDate] = useState<string | null>(null);
-  const [protectedDeletion, setProtectedDeletion] = useState<{ date: string; reason: Exclude<InterventionDayDeletionProtection, null> } | null>(null);
+  const [deleteDayRequest, setDeleteDayRequest] = useState<{ date: string; hasHistory: boolean } | null>(null);
   const [showAddDay, setShowAddDay] = useState(false);
   const [newDayDate, setNewDayDate] = useState("");
   const [removedDays, setRemovedDays] = useState<string[]>([]);
@@ -103,44 +102,46 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   }
 
   async function deleteDay() {
-    if (!deleteDate) return;
-    const dateToDelete = deleteDate;
+    if (!deleteDayRequest) return;
+    const dateToDelete = deleteDayRequest.date;
     setPending(true);
     setError("");
     const response = await fetch(`/api/interventions/${interventionId}/days`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: deleteDate }),
+      body: JSON.stringify({ date: dateToDelete }),
     });
     const data = await response.json().catch(() => ({}));
     setPending(false);
     if (!response.ok) {
       setError(typeof data.error === "string" ? data.error : "Impossible de supprimer cette journée.");
-      setDeleteDate(null);
+      setDeleteDayRequest(null);
       return;
     }
     setRemovedDays((current) => current.includes(dateToDelete) ? current : [...current, dateToDelete]);
-    setDeleteDate(null);
+    setDeleteDayRequest(null);
     router.refresh();
   }
 
-  async function saveDayReport(event: FormEvent<HTMLFormElement>, date: string) {
-    event.preventDefault();
-    const report = String(new FormData(event.currentTarget).get("dayReport") ?? "");
+  async function beginDayCompletion(date: string, finalizationStep?: string | null) {
+    if (finalizationStep === "REPORT_INPUT" || finalizationStep === "REPORT_REVIEW") {
+      router.push(`/interventions/${interventionId}/days/${date}/report`);
+      return;
+    }
     setPending(true);
+    setError("");
     const response = await fetch(`/api/interventions/${interventionId}/days`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date, operation: "report", report }),
+      body: JSON.stringify({ date, operation: "beginCompletion" }),
     });
+    const data = await response.json().catch(() => ({}));
     setPending(false);
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      setError(typeof data.error === "string" ? data.error : "Impossible d’enregistrer le compte rendu.");
+      setError(typeof data.error === "string" ? data.error : "Impossible de terminer cette journée.");
       return;
     }
-    setReportDate(null);
-    router.refresh();
+    router.push(`/interventions/${interventionId}/days/${date}/report`);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>, date: string) {
@@ -168,7 +169,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           const dailyTasks = tasks.filter((task) => task.date === date);
           const dayState = dayStates.find((state) => state.date === date);
           const tracking = dailyTracking.find((entry) => entry.date === date);
-          const deletionProtection = getInterventionDayDeletionProtection({
+          const dayHistoryKind = getInterventionDayHistoryKind({
             startedAt: dayState?.startedAt,
             completedAt: dayState?.completedAt,
             report: dayState?.report,
@@ -210,25 +211,17 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                 </div>
                 {canWrite && <div className="grid w-full shrink-0 grid-cols-1 gap-2 self-start">
                   {!dayState?.startedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "start")} className="min-h-10 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Commencer la journée</button>}
-                  {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "complete")} className="min-h-10 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Terminer la journée</button>}
-                  {dayState?.completedAt && <button type="button" onClick={() => setReportDate(reportDate === date ? null : date)} className="min-h-10 rounded-xl border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">Compte rendu facultatif</button>}
+                  {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => void beginDayCompletion(date, dayState.finalizationStep)} className="min-h-10 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{dayState.finalizationStep === "REPORT_INPUT" || dayState.finalizationStep === "REPORT_REVIEW" ? "Reprendre la finalisation" : "Terminer la journée"}</button>}
                   <button type="button" onClick={() => { setEditing(null); setOpenDate(openDate === date ? null : date); }} className="min-h-10 rounded-xl border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">Ajouter une tâche</button>
                   <button type="button" onClick={() => {
                     setError("");
-                    if (deletionProtection) setProtectedDeletion({ date, reason: deletionProtection });
-                    else setDeleteDate(date);
-                  }} className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold ${deletionProtection ? "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400" : "border-red-300 text-red-600 dark:border-red-900 dark:text-red-400"}`}>
-                    {deletionProtection ? "Suppression protégée" : "Supprimer la journée"}
+                    setDeleteDayRequest({ date, hasHistory: Boolean(dayHistoryKind) });
+                  }} className="min-h-10 rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 dark:border-red-900 dark:text-red-400">
+                    Supprimer la journée
                   </button>
                 </div>}
               </div>
-              {dayState?.report && <p className="mt-3 rounded-xl bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">Compte rendu de la journée : {dayState.report}</p>}
-              {reportDate === date && dayState?.completedAt && (
-                <form onSubmit={(event) => saveDayReport(event, date)} className="mt-3 flex flex-col gap-2 sm:flex-row">
-                  <textarea name="dayReport" defaultValue={dayState.report ?? ""} placeholder="Ce qui a été fait aujourd’hui (facultatif)" className="min-h-20 flex-1 rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70" />
-                  <button disabled={pending} className="self-end rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Enregistrer</button>
-                </form>
-              )}
+              {dayState?.report && <p className="mt-3 rounded-xl bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">Compte rendu de la journée : {formatInterventionDayReport(dayState.report)}</p>}
               {showForm && canWrite && (
                 <form onSubmit={(event) => submit(event, date)} className="mt-4 grid gap-3 rounded-xl border border-blue-200/60 p-3 dark:border-blue-800/60 sm:grid-cols-2">
                   <input name="title" required defaultValue={editing?.title ?? ""} placeholder="Tâche" className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70" />
@@ -266,32 +259,16 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           )}
         </div>
       ) : null}
-      {deleteDate && (
+      {deleteDayRequest && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-day-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">
             <h2 id="delete-day-title" className="text-xl font-bold text-[var(--forge-text-primary)]">Supprimer cette journée du chantier ?</h2>
-            <p className="mt-2 capitalize text-sm font-semibold text-[var(--forge-text-primary)]">{dateFormatter.format(new Date(`${deleteDate}T12:00:00Z`))}</p>
-            <p className="mt-2 text-sm leading-6 text-[var(--forge-text-secondary)]">Les tâches et le planning de cette journée seront supprimés.</p>
+            <p className="mt-2 capitalize text-sm font-semibold text-[var(--forge-text-primary)]">{dateFormatter.format(new Date(`${deleteDayRequest.date}T12:00:00Z`))}</p>
+            <p className="mt-2 text-sm leading-6 text-[var(--forge-text-secondary)]">{deleteDayRequest.hasHistory ? "Cette journée contient du temps, des dépenses ou un historique. Ces données liées à cette journée seront également supprimées." : "Les tâches et le planning de cette journée seront supprimés."}</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button type="button" disabled={pending} onClick={() => setDeleteDate(null)} className="min-h-12 rounded-2xl border border-[var(--forge-border-strong)] px-4 font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">Annuler</button>
-              <button type="button" disabled={pending} onClick={() => void deleteDay()} className="min-h-12 rounded-2xl bg-red-600 px-4 font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">{pending ? "Suppression…" : "Supprimer"}</button>
+              <button type="button" disabled={pending} onClick={() => setDeleteDayRequest(null)} className="min-h-12 rounded-2xl border border-[var(--forge-border-strong)] px-4 font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">Annuler</button>
+              <button type="button" disabled={pending} onClick={() => void deleteDay()} className="min-h-12 rounded-2xl bg-red-600 px-4 font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">{pending ? "Suppression…" : deleteDayRequest.hasHistory ? "Supprimer définitivement" : "Supprimer"}</button>
             </div>
-          </section>
-        </div>
-      )}
-      {protectedDeletion && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-          <section role="dialog" aria-modal="true" aria-labelledby="protected-day-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">
-            <h2 id="protected-day-title" className="text-xl font-bold text-[var(--forge-text-primary)]">
-              {protectedDeletion.reason === "IN_PROGRESS" ? "Journée en cours" : "Suppression bloquée"}
-            </h2>
-            <p className="mt-2 capitalize text-sm font-semibold text-[var(--forge-text-primary)]">{dateFormatter.format(new Date(`${protectedDeletion.date}T12:00:00Z`))}</p>
-            <p className="mt-3 text-sm leading-6 text-[var(--forge-text-secondary)]">
-              {protectedDeletion.reason === "IN_PROGRESS"
-                ? "Cette journée est actuellement en cours. Terminez-la depuis sa carte ; son historique restera ensuite protégé."
-                : "Cette journée contient déjà des données réalisées. Pour conserver l’historique du chantier, elle ne peut pas être supprimée."}
-            </p>
-            <button type="button" onClick={() => setProtectedDeletion(null)} className="mt-6 min-h-12 w-full rounded-2xl bg-blue-600 px-4 font-semibold text-white transition hover:bg-blue-700">Compris</button>
           </section>
         </div>
       )}

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { listInterventionDateKeys, normalizeInterventionDayTasks } from "@/src/lib/intervention-day-tasks";
-import { getInterventionDayDeletionProtection } from "@/src/lib/intervention-day-deletion";
 import { prisma } from "@/src/lib/prisma";
 import { formatParisDateKey, formatParisTime, getParisDayBounds, parseParisDateTime } from "@/src/lib/paris-datetime";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -102,12 +101,17 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     }
 
     const operation = body.operation;
-    if (operation !== "start" && operation !== "complete" && operation !== "report") {
+    if (!["start", "complete", "report", "beginCompletion", "saveReportDraft", "saveReportReview", "skipReport"].includes(operation)) {
       return NextResponse.json({ error: "Action de journée invalide." }, { status: 400 });
     }
     const now = new Date();
+    const structuredReport = body.report && typeof body.report === "object"
+      ? JSON.stringify(body.report)
+      : typeof body.report === "string" && body.report.trim()
+        ? body.report.trim()
+        : null;
     const state = await prisma.$transaction(async (transaction) => {
-      if (operation === "start") {
+      if (operation === "start" || operation === "beginCompletion") {
         await transaction.intervention.update({
           where: { id },
           data: { status: "EN_COURS", startedAt: intervention.startedAt ?? now },
@@ -118,16 +122,33 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         create: {
           interventionId: id,
           date: validDay.dateValue,
-          startedAt: operation === "start" || operation === "complete" ? now : null,
-          completedAt: operation === "complete" ? now : null,
-          report: typeof body.report === "string" && body.report.trim() ? body.report.trim() : null,
+          startedAt: operation === "start" || operation === "complete" || operation === "beginCompletion" || operation === "skipReport" ? now : null,
+          completedAt: operation === "complete" || operation === "skipReport" ? now : null,
+          report: operation === "report" || operation === "saveReportReview" || operation === "complete" ? structuredReport : null,
+          finalizationStep: operation === "beginCompletion" || operation === "saveReportDraft"
+            ? "REPORT_INPUT"
+            : operation === "saveReportReview"
+              ? "REPORT_REVIEW"
+              : operation === "complete" || operation === "skipReport"
+                ? "FINALIZED"
+                : null,
+          reportDraft: operation === "saveReportDraft" && typeof body.reportDraft === "string" ? body.reportDraft : null,
+          reportSkippedAt: operation === "skipReport" ? now : null,
         },
         update: operation === "start"
           ? { startedAt: now, completedAt: null }
+          : operation === "beginCompletion"
+            ? { startedAt: now, completedAt: null, finalizationStep: "REPORT_INPUT" }
+            : operation === "saveReportDraft"
+              ? { reportDraft: typeof body.reportDraft === "string" ? body.reportDraft : "", finalizationStep: "REPORT_INPUT" }
+              : operation === "saveReportReview"
+                ? { report: structuredReport, finalizationStep: "REPORT_REVIEW" }
+                : operation === "skipReport"
+                  ? { completedAt: now, report: null, reportDraft: null, reportSkippedAt: now, finalizationStep: "FINALIZED" }
           : operation === "complete"
-            ? { startedAt: now, completedAt: now }
+            ? { startedAt: now, completedAt: now, report: structuredReport, reportDraft: null, reportSkippedAt: null, finalizationStep: "FINALIZED" }
             : operation === "report"
-              ? { report: typeof body.report === "string" && body.report.trim() ? body.report.trim() : null }
+              ? { report: structuredReport }
               : {},
       });
     });
@@ -161,8 +182,6 @@ export async function DELETE(request: Request, { params }: RouteContext) {
         excludedDays: { select: { date: true } },
         dayStates: { where: { date: dateRange } },
         dayTasks: { where: { date: dateRange } },
-        workTimes: { where: { dayDate: dateRange }, select: { id: true }, take: 1 },
-        expenses: { where: { dayDate: dateRange }, select: { id: true }, take: 1 },
       },
     });
     if (!intervention) return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
@@ -172,25 +191,11 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     if (!days.includes(date)) return NextResponse.json({ error: "Cette journée n’appartient pas au chantier." }, { status: 400 });
     if (days.length === 1) return NextResponse.json({ error: "La dernière journée ne peut pas être supprimée. Supprimez plutôt le chantier." }, { status: 409 });
 
-    const dayState = intervention.dayStates[0];
-    const protection = getInterventionDayDeletionProtection({
-      startedAt: dayState?.startedAt,
-      completedAt: dayState?.completedAt,
-      report: dayState?.report,
-      hasWorkTimes: intervention.workTimes.length > 0,
-      hasExpenses: intervention.expenses.length > 0,
-      tasks: intervention.dayTasks,
-    });
-    if (protection === "IN_PROGRESS") {
-      return NextResponse.json({ error: "Cette journée est en cours. Terminez-la avant de poursuivre ; son historique restera protégé." }, { status: 409 });
-    }
-    if (protection === "HISTORY") {
-      return NextResponse.json({ error: "Cette journée contient déjà du temps, des dépenses ou un historique réalisé. Elle ne peut pas être supprimée." }, { status: 409 });
-    }
-
     const remaining = days.filter((day) => day !== date);
     const isBoundary = date === days[0] || date === days[days.length - 1];
     await prisma.$transaction(async (transaction) => {
+      await transaction.interventionWorkTime.deleteMany({ where: { interventionId: id, dayDate: dateRange } });
+      await transaction.interventionExpense.deleteMany({ where: { interventionId: id, dayDate: dateRange } });
       await transaction.interventionDayTask.deleteMany({ where: { interventionId: id, date: dateRange } });
       await transaction.interventionDayState.deleteMany({ where: { interventionId: id, date: dateRange } });
       if (isBoundary) {
