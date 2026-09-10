@@ -159,6 +159,8 @@ export default async function InterventionPage({
     ...intervention.workTimes.map((entry) => formatParisDateKey(entry.dayDate ?? entry.startedAt)),
   ])).map((date) => ({
     date,
+    hasExpenses: intervention.expenses.some((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate) === date),
+    hasWorkTimes: intervention.workTimes.some((entry) => formatParisDateKey(entry.dayDate ?? entry.startedAt) === date),
     expenseCents: intervention.expenses.filter((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate) === date).reduce((sum, entry) => sum + entry.amountCents, 0),
     durationMinutes: intervention.workTimes.filter((entry) => formatParisDateKey(entry.dayDate ?? entry.startedAt) === date).reduce((sum, entry) => sum + (entry.durationMinutes ?? 0), 0),
   }));

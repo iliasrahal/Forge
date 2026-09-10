@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
+import { getInterventionDayDeletionProtection, type InterventionDayDeletionProtection } from "@/src/lib/intervention-day-deletion";
+
 type DayTask = {
   id: string;
   date: string;
@@ -19,7 +21,7 @@ type Props = {
   days: string[];
   tasks: DayTask[];
   dayStates: Array<{ date: string; startedAt: string | null; completedAt: string | null; report: string | null }>;
-  dailyTracking: Array<{ date: string; expenseCents: number; durationMinutes: number }>;
+  dailyTracking: Array<{ date: string; expenseCents: number; durationMinutes: number; hasExpenses: boolean; hasWorkTimes: boolean }>;
   canWrite: boolean;
 };
 
@@ -33,6 +35,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   const [editing, setEditing] = useState<DayTask | null>(null);
   const [reportDate, setReportDate] = useState<string | null>(null);
   const [deleteDate, setDeleteDate] = useState<string | null>(null);
+  const [protectedDeletion, setProtectedDeletion] = useState<{ date: string; reason: Exclude<InterventionDayDeletionProtection, null> } | null>(null);
   const [showAddDay, setShowAddDay] = useState(false);
   const [newDayDate, setNewDayDate] = useState("");
   const [removedDays, setRemovedDays] = useState<string[]>([]);
@@ -165,6 +168,14 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           const dailyTasks = tasks.filter((task) => task.date === date);
           const dayState = dayStates.find((state) => state.date === date);
           const tracking = dailyTracking.find((entry) => entry.date === date);
+          const deletionProtection = getInterventionDayDeletionProtection({
+            startedAt: dayState?.startedAt,
+            completedAt: dayState?.completedAt,
+            report: dayState?.report,
+            hasExpenses: tracking?.hasExpenses ?? false,
+            hasWorkTimes: tracking?.hasWorkTimes ?? false,
+            tasks: dailyTasks,
+          });
           const showForm = openDate === date || editing?.date === date;
           return (
             <article key={date} className="flex min-h-48 flex-col rounded-2xl border border-blue-200/70 bg-white/45 p-4 dark:border-blue-800/60 dark:bg-slate-900/35 sm:p-5">
@@ -202,7 +213,13 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                   {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "complete")} className="min-h-10 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Terminer la journée</button>}
                   {dayState?.completedAt && <button type="button" onClick={() => setReportDate(reportDate === date ? null : date)} className="min-h-10 rounded-xl border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">Compte rendu facultatif</button>}
                   <button type="button" onClick={() => { setEditing(null); setOpenDate(openDate === date ? null : date); }} className="min-h-10 rounded-xl border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">Ajouter une tâche</button>
-                  <button type="button" onClick={() => { setError(""); setDeleteDate(date); }} className="min-h-10 rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 dark:border-red-900 dark:text-red-400">Supprimer la journée</button>
+                  <button type="button" onClick={() => {
+                    setError("");
+                    if (deletionProtection) setProtectedDeletion({ date, reason: deletionProtection });
+                    else setDeleteDate(date);
+                  }} className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold ${deletionProtection ? "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400" : "border-red-300 text-red-600 dark:border-red-900 dark:text-red-400"}`}>
+                    {deletionProtection ? "Suppression protégée" : "Supprimer la journée"}
+                  </button>
                 </div>}
               </div>
               {dayState?.report && <p className="mt-3 rounded-xl bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">Compte rendu de la journée : {dayState.report}</p>}
@@ -259,6 +276,22 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
               <button type="button" disabled={pending} onClick={() => setDeleteDate(null)} className="min-h-12 rounded-2xl border border-[var(--forge-border-strong)] px-4 font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">Annuler</button>
               <button type="button" disabled={pending} onClick={() => void deleteDay()} className="min-h-12 rounded-2xl bg-red-600 px-4 font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">{pending ? "Suppression…" : "Supprimer"}</button>
             </div>
+          </section>
+        </div>
+      )}
+      {protectedDeletion && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <section role="dialog" aria-modal="true" aria-labelledby="protected-day-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">
+            <h2 id="protected-day-title" className="text-xl font-bold text-[var(--forge-text-primary)]">
+              {protectedDeletion.reason === "IN_PROGRESS" ? "Journée en cours" : "Suppression bloquée"}
+            </h2>
+            <p className="mt-2 capitalize text-sm font-semibold text-[var(--forge-text-primary)]">{dateFormatter.format(new Date(`${protectedDeletion.date}T12:00:00Z`))}</p>
+            <p className="mt-3 text-sm leading-6 text-[var(--forge-text-secondary)]">
+              {protectedDeletion.reason === "IN_PROGRESS"
+                ? "Cette journée est actuellement en cours. Terminez-la depuis sa carte ; son historique restera ensuite protégé."
+                : "Cette journée contient déjà des données réalisées. Pour conserver l’historique du chantier, elle ne peut pas être supprimée."}
+            </p>
+            <button type="button" onClick={() => setProtectedDeletion(null)} className="mt-6 min-h-12 w-full rounded-2xl bg-blue-600 px-4 font-semibold text-white transition hover:bg-blue-700">Compris</button>
           </section>
         </div>
       )}

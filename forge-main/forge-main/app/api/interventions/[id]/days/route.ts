@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { listInterventionDateKeys, normalizeInterventionDayTasks } from "@/src/lib/intervention-day-tasks";
+import { getInterventionDayDeletionProtection } from "@/src/lib/intervention-day-deletion";
 import { prisma } from "@/src/lib/prisma";
 import { formatParisDateKey, formatParisTime, getParisDayBounds, parseParisDateTime } from "@/src/lib/paris-datetime";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -171,12 +172,19 @@ export async function DELETE(request: Request, { params }: RouteContext) {
     if (!days.includes(date)) return NextResponse.json({ error: "Cette journée n’appartient pas au chantier." }, { status: 400 });
     if (days.length === 1) return NextResponse.json({ error: "La dernière journée ne peut pas être supprimée. Supprimez plutôt le chantier." }, { status: 409 });
 
-    const hasHistoricalData =
-      intervention.workTimes.length > 0 ||
-      intervention.expenses.length > 0 ||
-      intervention.dayStates.some((state) => state.startedAt || state.completedAt || state.report) ||
-      intervention.dayTasks.some((task) => task.completedAt || task.report);
-    if (hasHistoricalData) {
+    const dayState = intervention.dayStates[0];
+    const protection = getInterventionDayDeletionProtection({
+      startedAt: dayState?.startedAt,
+      completedAt: dayState?.completedAt,
+      report: dayState?.report,
+      hasWorkTimes: intervention.workTimes.length > 0,
+      hasExpenses: intervention.expenses.length > 0,
+      tasks: intervention.dayTasks,
+    });
+    if (protection === "IN_PROGRESS") {
+      return NextResponse.json({ error: "Cette journée est en cours. Terminez-la avant de poursuivre ; son historique restera protégé." }, { status: 409 });
+    }
+    if (protection === "HISTORY") {
       return NextResponse.json({ error: "Cette journée contient déjà du temps, des dépenses ou un historique réalisé. Elle ne peut pas être supprimée." }, { status: 409 });
     }
 
