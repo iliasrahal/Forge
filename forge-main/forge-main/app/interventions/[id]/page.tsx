@@ -176,7 +176,7 @@ export default async function InterventionPage({
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6 pb-36">
 
-      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <section className="p-2 sm:p-6">
 
 
         <Link

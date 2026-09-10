@@ -139,23 +139,14 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           const tracking = dailyTracking.find((entry) => entry.date === date);
           const showForm = openDate === date || editing?.date === date;
           return (
-            <article key={date} className="rounded-2xl border border-blue-200/70 bg-white/45 p-4 dark:border-blue-800/60 dark:bg-slate-900/35">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
+            <article key={date} className="flex min-h-48 flex-col rounded-2xl border border-blue-200/70 bg-white/45 p-4 dark:border-blue-800/60 dark:bg-slate-900/35 sm:p-5">
+              <div className="grid flex-1 items-start gap-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:gap-6">
+                <div className="min-w-0">
                   <h3 className="font-semibold capitalize text-slate-900 dark:text-white">{dateFormatter.format(new Date(`${date}T12:00:00Z`))}</h3>
                   <p className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">{dayState?.completedAt ? "Journée terminée" : dayState?.startedAt ? "Journée en cours" : "Journée planifiée"}</p>
                   {tracking && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{Math.floor(tracking.durationMinutes / 60)}h{String(tracking.durationMinutes % 60).padStart(2, "0")} · {(tracking.expenseCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} de dépenses</p>}
-                </div>
-                {canWrite && <div className="flex flex-wrap justify-end gap-2">
-                  {!dayState?.startedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "start")} className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50">Commencer la journée</button>}
-                  {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "complete")} className="rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50">Terminer la journée</button>}
-                  {dayState?.completedAt && <button type="button" onClick={() => setReportDate(reportDate === date ? null : date)} className="rounded-full border border-emerald-300 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">Compte rendu facultatif</button>}
-                  <button type="button" onClick={() => { setEditing(null); setOpenDate(openDate === date ? null : date); }} className="rounded-full border border-blue-300 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">Ajouter une tâche</button>
-                  <button type="button" onClick={() => { setError(""); setDeleteDate(date); }} className="px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400">Supprimer la journée</button>
-                </div>}
-              </div>
-              {dailyTasks.length ? (
-                <div className="mt-3 space-y-2">
+                  {dailyTasks.length ? (
+                <div className="mt-4 space-y-2">
                   {dailyTasks.map((task) => (
                     <div key={task.id} className="rounded-xl bg-white/55 px-3 py-3 dark:bg-slate-800/55">
                       <div className="flex items-start gap-3">
@@ -176,7 +167,16 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                     </div>
                   ))}
                 </div>
-              ) : <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Aucun détail prévu pour cette journée.</p>}
+                  ) : <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Aucun détail prévu pour cette journée.</p>}
+                </div>
+                {canWrite && <div className="grid w-full shrink-0 grid-cols-1 gap-2 self-start">
+                  {!dayState?.startedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "start")} className="min-h-10 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Commencer la journée</button>}
+                  {dayState?.startedAt && !dayState.completedAt && <button disabled={pending} type="button" onClick={() => updateDay(date, "complete")} className="min-h-10 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">Terminer la journée</button>}
+                  {dayState?.completedAt && <button type="button" onClick={() => setReportDate(reportDate === date ? null : date)} className="min-h-10 rounded-xl border border-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">Compte rendu facultatif</button>}
+                  <button type="button" onClick={() => { setEditing(null); setOpenDate(openDate === date ? null : date); }} className="min-h-10 rounded-xl border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">Ajouter une tâche</button>
+                  <button type="button" onClick={() => { setError(""); setDeleteDate(date); }} className="min-h-10 rounded-xl border border-red-300 px-3 py-2 text-xs font-semibold text-red-600 dark:border-red-900 dark:text-red-400">Supprimer la journée</button>
+                </div>}
+              </div>
               {dayState?.report && <p className="mt-3 rounded-xl bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">Compte rendu de la journée : {dayState.report}</p>}
               {reportDate === date && dayState?.completedAt && (
                 <form onSubmit={(event) => saveDayReport(event, date)} className="mt-3 flex flex-col gap-2 sm:flex-row">
