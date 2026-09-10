@@ -7,6 +7,77 @@ import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/wo
 
 type RouteContext = { params: Promise<{ id: string }> };
 
+export async function POST(request: Request, { params }: RouteContext) {
+  try {
+    const workspace = await requireWorkspaceContext("write");
+    const { id } = await params;
+    const body = await request.json();
+    const date = typeof body.date === "string" ? body.date.trim() : "";
+    const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(date)
+      ? parseParisDateTime(date, "00:00")
+      : null;
+    if (!dateValue) {
+      return NextResponse.json({ error: "Choisissez une date valide." }, { status: 400 });
+    }
+
+    const intervention = await prisma.intervention.findFirst({
+      where: { id, organizationId: workspace.workspace.id },
+      select: {
+        id: true,
+        scheduledAt: true,
+        endDate: true,
+        excludedDays: { select: { date: true } },
+      },
+    });
+    if (!intervention) {
+      return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
+    }
+
+    const startKey = formatParisDateKey(intervention.scheduledAt);
+    const endKey = formatParisDateKey(intervention.endDate ?? intervention.scheduledAt);
+    const excluded = intervention.excludedDays.some(
+      (day) => formatParisDateKey(day.date) === date,
+    );
+    if (date >= startKey && date <= endKey && !excluded) {
+      return NextResponse.json({ error: "Cette journée existe déjà dans le chantier." }, { status: 409 });
+    }
+
+    await prisma.$transaction(async (transaction) => {
+      if (excluded) {
+        await transaction.interventionExcludedDay.delete({
+          where: { interventionId_date: { interventionId: id, date: dateValue } },
+        });
+        return;
+      }
+
+      if (date < startKey) {
+        const scheduledAt = parseParisDateTime(date, formatParisTime(intervention.scheduledAt))!;
+        await transaction.intervention.update({
+          where: { id },
+          data: {
+            scheduledAt,
+            endDate: intervention.endDate ?? intervention.scheduledAt,
+          },
+        });
+        return;
+      }
+
+      const endTime = formatParisTime(intervention.endDate ?? intervention.scheduledAt);
+      await transaction.intervention.update({
+        where: { id },
+        data: { endDate: parseParisDateTime(date, endTime)! },
+      });
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const accessError = getWorkspaceErrorResponse(error);
+    if (accessError) return NextResponse.json(accessError.body, { status: accessError.status });
+    console.error("ADD INTERVENTION DAY ERROR", error);
+    return NextResponse.json({ error: "Impossible d’ajouter cette journée." }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: Request, { params }: RouteContext) {
   try {
     const workspace = await requireWorkspaceContext("write");

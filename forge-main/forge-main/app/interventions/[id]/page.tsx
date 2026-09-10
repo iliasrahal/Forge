@@ -128,6 +128,7 @@ export default async function InterventionPage({
     context: from,
     requestedClientId,
     interventionClientId: intervention.clientId,
+    interventionId: intervention.id,
   });
 
   const displayStatus = getInterventionDisplayStatus(

@@ -54,6 +54,7 @@ type HomeClientProps = {
   todayDateKey: string;
   newInterventionId?: string | null;
   initialPlanningOpen?: boolean;
+  initialSelectedInterventionId?: string | null;
   canWrite: boolean;
 };
 
@@ -67,6 +68,7 @@ export default function HomeClient({
   canWrite,
   newInterventionId: initialNewInterventionId = null,
   initialPlanningOpen = false,
+  initialSelectedInterventionId = null,
 }: HomeClientProps) {
   const router = useRouter();
 
@@ -100,7 +102,11 @@ const [
   selectedAppointmentId,
   setSelectedAppointmentId,
 ] = useState<string | null>(
-  todayAppointments?.find(
+  [...(todayAppointments ?? []), ...(upcomingAppointments ?? [])].some(
+    (appointment) => appointment.id === initialSelectedInterventionId,
+  )
+    ? initialSelectedInterventionId
+    : todayAppointments?.find(
     (appointment) =>
       appointment.status === "inProgress",
   )?.id ??

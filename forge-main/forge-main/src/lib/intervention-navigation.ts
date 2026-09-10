@@ -18,10 +18,12 @@ export function getInterventionReturnHref({
   context,
   requestedClientId,
   interventionClientId,
+  interventionId,
 }: {
   context?: string;
   requestedClientId?: string;
   interventionClientId?: string | null;
+  interventionId?: string;
 }) {
   if (
     context === "client" &&
@@ -32,5 +34,8 @@ export function getInterventionReturnHref({
   }
   if (context === "planning") return "/app?planning=1";
   if (context === "history") return "/history";
+  if (context === "home" && interventionId) {
+    return `/app?selectedIntervention=${encodeURIComponent(interventionId)}`;
+  }
   return "/app";
 }

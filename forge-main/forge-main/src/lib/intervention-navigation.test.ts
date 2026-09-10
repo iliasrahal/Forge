@@ -20,7 +20,10 @@ test("conserve le contexte d'ouverture d'une intervention", () => {
 test("résout un retour interne sûr avec un fallback vers l'accueil", () => {
   assert.equal(getInterventionReturnHref({ context: "planning" }), "/app?planning=1");
   assert.equal(getInterventionReturnHref({ context: "history" }), "/history");
-  assert.equal(getInterventionReturnHref({ context: "home" }), "/app");
+  assert.equal(
+    getInterventionReturnHref({ context: "home", interventionId: "intervention-1" }),
+    "/app?selectedIntervention=intervention-1",
+  );
   assert.equal(getInterventionReturnHref({ context: "external" }), "/app");
 });
 

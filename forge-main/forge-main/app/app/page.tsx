@@ -20,6 +20,7 @@ type HomePageProps = {
     newIntervention?: string;
     invitationAccess?: string;
     planning?: string;
+    selectedIntervention?: string;
   }>;
 };
 
@@ -124,7 +125,7 @@ function mapIntervention(intervention: HomeIntervention): Appointment {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const currentUser = await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
-  const { newIntervention, invitationAccess, planning } = await searchParams;
+  const { newIntervention, invitationAccess, planning, selectedIntervention } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
   const [interventions, clients] = await Promise.all([
@@ -298,6 +299,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       canWrite={workspaceContext.permissions.canWrite}
       newInterventionId={newIntervention ?? null}
       initialPlanningOpen={planning === "1"}
+      initialSelectedInterventionId={selectedIntervention ?? null}
       />
     </>
   );

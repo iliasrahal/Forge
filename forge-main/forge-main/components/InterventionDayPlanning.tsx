@@ -33,6 +33,8 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   const [editing, setEditing] = useState<DayTask | null>(null);
   const [reportDate, setReportDate] = useState<string | null>(null);
   const [deleteDate, setDeleteDate] = useState<string | null>(null);
+  const [showAddDay, setShowAddDay] = useState(false);
+  const [newDayDate, setNewDayDate] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -70,6 +72,27 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       setError(typeof data.error === "string" ? data.error : "Impossible de mettre à jour cette journée.");
       return;
     }
+    router.refresh();
+  }
+
+  async function addDay(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!newDayDate) return;
+    setPending(true);
+    setError("");
+    const response = await fetch(`/api/interventions/${interventionId}/days`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: newDayDate }),
+    });
+    const data = await response.json().catch(() => ({}));
+    setPending(false);
+    if (!response.ok) {
+      setError(typeof data.error === "string" ? data.error : "Impossible d’ajouter cette journée.");
+      return;
+    }
+    setNewDayDate("");
+    setShowAddDay(false);
     router.refresh();
   }
 
@@ -197,6 +220,30 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
           );
         })}
       </div>
+      {canWrite ? (
+        <div className="mt-4 flex flex-col items-center">
+          {showAddDay ? (
+            <form onSubmit={addDay} className="forge-surface grid w-full max-w-md gap-3 rounded-2xl border p-3 min-[380px]:grid-cols-[minmax(0,1fr)_auto_auto] min-[380px]:items-end">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                Date de la journée
+                <input
+                  type="date"
+                  required
+                  value={newDayDate}
+                  onChange={(event) => setNewDayDate(event.target.value)}
+                  className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white/70 px-3 py-2 dark:border-slate-700 dark:bg-slate-900/70"
+                />
+              </label>
+              <button type="button" onClick={() => { setShowAddDay(false); setNewDayDate(""); setError(""); }} className="min-h-10 rounded-xl border border-slate-300 px-3 text-sm font-semibold dark:border-slate-700">Annuler</button>
+              <button disabled={pending} className="min-h-10 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white disabled:opacity-50">{pending ? "Ajout…" : "Ajouter"}</button>
+            </form>
+          ) : (
+            <button type="button" onClick={() => { setError(""); setShowAddDay(true); }} className="min-h-11 rounded-2xl border border-blue-300 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/50">
+              + Ajouter une journée
+            </button>
+          )}
+        </div>
+      ) : null}
       {deleteDate && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-day-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">

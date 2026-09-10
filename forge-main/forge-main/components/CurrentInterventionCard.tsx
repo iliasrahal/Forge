@@ -32,6 +32,9 @@ export default function CurrentInterventionCard({
     getAppointmentSubject(appointment);
   const mainTitle =
     appointment.client || subject;
+  const isMultiDay = Boolean(
+    appointment.endDate && appointment.endDate !== appointment.date,
+  );
 
   return (
     <article className="forge-surface w-full overflow-hidden rounded-[2.25rem] border">
@@ -115,6 +118,15 @@ export default function CurrentInterventionCard({
           : "Commencer l'intervention"}
       </button>) : null}
 
+      {isMultiDay ? (
+        <Link
+          href={buildInterventionHref(appointment.id, "home")}
+          className="mx-auto mt-2.5 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-2xl border border-blue-300 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-400 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-950/60 sm:w-auto sm:px-6"
+        >
+          {canWrite ? "Gérer le chantier" : "Voir le chantier"}
+        </Link>
+      ) : null}
+
       {canWrite ? (<div className="mx-auto mt-2.5 grid max-w-xs grid-cols-2 gap-2">
         <button
           type="button"
@@ -130,14 +142,14 @@ export default function CurrentInterventionCard({
         >
           Supprimer
         </button>
-      </div>) : (
+      </div>) : !isMultiDay ? (
         <Link
           href={buildInterventionHref(appointment.id, "home")}
           className="mx-auto mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl border border-blue-200 px-5 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950"
         >
           Consulter l’intervention
         </Link>
-      )}
+      ) : null}
       </div>
 
     </article>
