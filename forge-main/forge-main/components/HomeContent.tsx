@@ -9,7 +9,10 @@ import ForgeListenCard from "@/components/ForgeListenCard";
 import ForgeProcessingCard from "@/components/ForgeProcessingCard";
 import ForgeReplyCard from "@/components/ForgeReplyCard";
 import ForgeReportCard from "@/components/ForgeReportCard";
-import { getAppointmentDisplayTitle } from "@/data/appointments";
+import {
+  getAppointmentDisplayTitle,
+  type Appointment,
+} from "@/data/appointments";
 
 type HomeState =
   | "finished"
@@ -21,23 +24,6 @@ type HomeState =
   | "saved"
   | "clientChoice"
   | "invoiceChoice";
-
-type Appointment = {
-  id: string;
-  client: string;
-  address: string;
-  date: string;
-  time: string;
-  intervention: string;
-  description?: string;
-  status:
-    | "scheduled"
-    | "inProgress"
-    | "completed"
-    | "postponed"
-    | "cancelled";
-  notes?: string;
-};
 
 type InterventionReport = {
   intervention: string;
@@ -783,6 +769,10 @@ export default function HomeContent({
   <CurrentInterventionCard
   appointment={currentAppointment}
   isInProgress={currentAppointment.status === "inProgress"}
+  isFinalizing={
+    currentAppointment.status === "completed" &&
+    Boolean(currentAppointment.finalizationStep)
+  }
   onStart={onStartIntervention}
   onEdit={onEditIntervention}
   onDelete={onDeleteIntervention}

@@ -10,6 +10,7 @@ import {
 type CurrentInterventionCardProps = {
   appointment: Appointment;
   isInProgress: boolean;
+  isFinalizing: boolean;
   onStart: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -21,6 +22,7 @@ type CurrentInterventionCardProps = {
 export default function CurrentInterventionCard({
   appointment,
   isInProgress,
+  isFinalizing,
   onStart,
   onEdit,
   onDelete,
@@ -53,6 +55,8 @@ export default function CurrentInterventionCard({
         )}
         {isInProgress
           ? "Intervention en cours"
+          : isFinalizing
+            ? "Intervention terminée"
           : "Intervention planifiée"}
       </div>
 
@@ -106,6 +110,8 @@ export default function CurrentInterventionCard({
       >
         {isInProgress
           ? "Continuer l'intervention"
+          : isFinalizing
+            ? "Reprendre la finalisation"
           : "Commencer l'intervention"}
       </button>) : null}
 

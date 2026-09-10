@@ -511,6 +511,48 @@ const handleStartIntervention = async () => {
   await startIntervention();
 };
 
+const handlePrimaryInterventionAction = async () => {
+  if (!currentAppointment) {
+    return;
+  }
+
+  if (
+    currentAppointment.status !== "completed" ||
+    !currentAppointment.finalizationStep
+  ) {
+    await handleStartIntervention();
+    return;
+  }
+
+  setCompletedInterventionId(currentAppointment.id);
+  setSavedClientId(currentAppointment.hasClient ? "associated" : null);
+  setSavedClientName(currentAppointment.client);
+  setCompletedWithReport(
+    !currentAppointment.finalizationStep.includes("SKIPPED"),
+  );
+
+  if (currentAppointment.invoiceId) {
+    router.push(`/invoices/${currentAppointment.invoiceId}`);
+    return;
+  }
+
+  if (currentAppointment.finalizationStep === "REPORT_INPUT") {
+    setHomeState("reportInput");
+    return;
+  }
+
+  if (
+    currentAppointment.finalizationStep === "REPORT_REVIEW" &&
+    currentAppointment.report
+  ) {
+    setReport(currentAppointment.report);
+    setHomeState("review");
+    return;
+  }
+
+  setHomeState("invoiceChoice");
+};
+
 const handleAddClientAndStart = async () => {
   if (isAddingStartClient) {
     return;
@@ -710,37 +752,6 @@ const handleSaveNotes = async (notes: string) => {
   const handleSelectAppointment = (
     appointmentId: string,
   ) => {
-    const selected = [...appointmentsList, ...upcomingAppointmentsList].find(
-      (appointment) => appointment.id === appointmentId,
-    );
-    if (selected?.endDate) {
-      router.push(buildInterventionHref(selected.id, "home"));
-      return;
-    }
-    if (selected?.status === "completed" && selected.finalizationStep) {
-      setCompletedInterventionId(selected.id);
-      setSavedClientId(selected.hasClient ? "associated" : null);
-      setSavedClientName(selected.client);
-      setCompletedWithReport(!selected.finalizationStep.includes("SKIPPED"));
-      if (selected.invoiceId) {
-        router.push(`/invoices/${selected.invoiceId}`);
-        return;
-      }
-      setSelectedAppointmentId(appointmentId);
-      setHomeState("invoiceChoice");
-      return;
-    }
-    if (selected?.finalizationStep === "REPORT_INPUT") {
-      setSelectedAppointmentId(appointmentId);
-      setHomeState("reportInput");
-      return;
-    }
-    if (selected?.finalizationStep === "REPORT_REVIEW" && selected.report) {
-      setSelectedAppointmentId(appointmentId);
-      setReport(selected.report);
-      setHomeState("review");
-      return;
-    }
     setShowUpcomingCalendar(false);
     setIsInitialWelcomeActive(false);
     setSelectedAppointmentId(appointmentId);
@@ -1677,7 +1688,7 @@ const handleCreateInvoice = async () => {
 
 
     onStartIntervention={
-      handleStartIntervention
+      handlePrimaryInterventionAction
     }
 
     onEditIntervention={openInterventionAction}
