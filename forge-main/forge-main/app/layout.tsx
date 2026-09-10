@@ -91,7 +91,7 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
     >
 
-      <body className="min-h-full bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-white">
+      <body className="min-h-full text-slate-950 dark:text-white">
 
         {/*
           Contrat de direction — Impeccable · seed d344fe32 (bolder, relance 2)

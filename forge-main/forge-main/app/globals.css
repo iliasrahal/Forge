@@ -30,6 +30,7 @@
   --forge-dock-text: #363f6d;
   --forge-dock-muted: #66709b;
   --forge-shadow: 0 20px 60px -38px rgb(36 48 143 / 0.38);
+  --forge-canvas-edge: #94a9e7;
 }
 
 html {
@@ -42,6 +43,7 @@ html {
   scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background: var(--forge-canvas-edge);
 }
 
 
@@ -62,7 +64,7 @@ body {
   min-width: 0;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: var(--background);
+  background: var(--forge-canvas-edge);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -177,12 +179,13 @@ html.dark {
   --forge-dock-text: #eef1fa;
   --forge-dock-muted: #8b95bd;
   --forge-shadow: 0 24px 70px -38px rgb(0 0 0 / 0.78);
+  --forge-canvas-edge: #04050a;
 }
 
 
 
 html.dark body {
-  background: var(--background);
+  background: var(--forge-canvas-edge);
   color: var(--foreground);
 }
 
