@@ -50,6 +50,14 @@ type QuoteLinesFormProps = {
   canWrite?: boolean;
 };
 
+type LineDetail = NonNullable<EditableQuoteLine["details"]>[number];
+type DetailEditor = {
+  lineIndex: number;
+  detailIndex: number | null;
+  value: LineDetail;
+  error: string;
+};
+
 
 function eurosToCents(value: string): number {
   return Math.round((Number(String(value).replace(",", ".")) || 0) * 100);
@@ -60,6 +68,39 @@ function formatEuros(cents: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+function DetailEditorFields({
+  editor,
+  onChange,
+  onCancel,
+  onSave,
+  saveLabel,
+}: {
+  editor: DetailEditor;
+  onChange: (patch: Partial<LineDetail>) => void;
+  onCancel: () => void;
+  onSave: () => void;
+  saveLabel: "Ajouter le détail" | "Enregistrer";
+}) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
+      <div className="min-w-0 space-y-2">
+        <input type="text" value={editor.value.label} placeholder="Nom du détail" aria-label="Nom du détail" onChange={(event) => onChange({ label: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+        <input type="text" value={editor.value.description} placeholder="Description facultative" aria-label="Description facultative du détail" onChange={(event) => onChange({ description: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200" />
+      </div>
+      <label className="relative block">
+        <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Montant facultatif</span>
+        <input type="text" inputMode="decimal" value={editor.value.amount} placeholder="—" onChange={(event) => onChange({ amount: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-7 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+        <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-slate-400">€</span>
+      </label>
+      {editor.error && <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400 sm:col-span-2">{editor.error}</p>}
+      <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:col-span-2 sm:flex sm:justify-end">
+        <button type="button" onClick={onCancel} className="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-700 dark:border-slate-600 dark:text-slate-200">Annuler</button>
+        <button type="button" onClick={onSave} className="min-h-11 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">{saveLabel}</button>
+      </div>
+    </div>
+  );
 }
 
 
@@ -103,6 +144,7 @@ export default function QuoteLinesForm({
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [serviceSearch, setServiceSearch] = useState("");
+  const [detailEditor, setDetailEditor] = useState<DetailEditor | null>(null);
 
   const serviceSearchTerm = serviceSearch.trim().toLocaleLowerCase("fr");
   const filteredServices = serviceSearchTerm
@@ -144,44 +186,51 @@ export default function QuoteLinesForm({
     setLines((current) =>
       current.filter((_, lineIndex) => lineIndex !== index),
     );
+    setDetailEditor(null);
   }
 
-  function addDetail(lineIndex: number) {
+  function startAddingDetail(lineIndex: number) {
     if (!canWrite) return;
-    setLines((current) =>
-      current.map((line, index) =>
-        index === lineIndex
-          ? {
-              ...line,
-              details: [
-                ...(line.details ?? []),
-                { label: "", amount: "", description: "" },
-              ],
-            }
-          : line,
-      ),
-    );
+    setDetailEditor({
+      lineIndex,
+      detailIndex: null,
+      value: { label: "", amount: "", description: "" },
+      error: "",
+    });
   }
 
-  function patchDetail(
-    lineIndex: number,
-    detailIndex: number,
-    patch: Partial<NonNullable<EditableQuoteLine["details"]>[number]>,
-  ) {
-    setLines((current) =>
-      current.map((line, index) =>
-        index === lineIndex
-          ? {
-              ...line,
-              details: (line.details ?? []).map((detail, currentDetailIndex) =>
-                currentDetailIndex === detailIndex
-                  ? { ...detail, ...patch }
-                  : detail,
-              ),
-            }
-          : line,
-      ),
-    );
+  function startEditingDetail(lineIndex: number, detailIndex: number, detail: LineDetail) {
+    if (!canWrite) return;
+    setDetailEditor({ lineIndex, detailIndex, value: { ...detail }, error: "" });
+  }
+
+  function patchDetailEditor(patch: Partial<LineDetail>) {
+    setDetailEditor((current) => current ? { ...current, value: { ...current.value, ...patch }, error: "" } : current);
+  }
+
+  function saveDetail() {
+    if (!detailEditor) return;
+    const label = detailEditor.value.label.trim();
+    if (!label) {
+      setDetailEditor({ ...detailEditor, error: "Le nom du détail est obligatoire." });
+      return;
+    }
+    const savedDetail = {
+      label,
+      description: detailEditor.value.description.trim(),
+      amount: detailEditor.value.amount.trim(),
+    };
+    setLines((current) => current.map((line, lineIndex) => {
+      if (lineIndex !== detailEditor.lineIndex) return line;
+      const details = line.details ?? [];
+      return {
+        ...line,
+        details: detailEditor.detailIndex === null
+          ? [...details, savedDetail]
+          : details.map((detail, detailIndex) => detailIndex === detailEditor.detailIndex ? savedDetail : detail),
+      };
+    }));
+    setDetailEditor(null);
   }
 
   function removeDetail(lineIndex: number, detailIndex: number) {
@@ -197,6 +246,7 @@ export default function QuoteLinesForm({
           : line,
       ),
     );
+    setDetailEditor((current) => current?.lineIndex === lineIndex ? null : current);
   }
 
 
@@ -320,59 +370,25 @@ export default function QuoteLinesForm({
                 {(line.details ?? []).map((detail, detailIndex) => (
                   <div
                     key={detailIndex}
-                    className="grid gap-2 rounded-xl bg-white/65 p-3 dark:bg-slate-900/55 sm:grid-cols-[minmax(0,1fr)_7rem_auto]"
+                    className="rounded-xl bg-white/65 p-3 dark:bg-slate-900/55"
                   >
-                    <div className="min-w-0 space-y-2">
-                      <input
-                        type="text"
-                        value={detail.label}
-                        placeholder="Nom du détail"
-                        aria-label="Nom du détail"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { label: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                      />
-                      <input
-                        type="text"
-                        value={detail.description}
-                        placeholder="Description facultative"
-                        aria-label="Description facultative du détail"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { description: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
-                      />
-                    </div>
-                    <label className="relative block">
-                      <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
-                        Montant facultatif
-                      </span>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={detail.amount}
-                        placeholder="—"
-                        onChange={(event) =>
-                          patchDetail(index, detailIndex, { amount: event.target.value })
-                        }
-                        disabled={!canWrite}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-7 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-                      />
-                      <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-slate-400">€</span>
-                    </label>
-                    {canWrite ? (
-                      <button
-                        type="button"
-                        onClick={() => removeDetail(index, detailIndex)}
-                        aria-label="Supprimer le détail"
-                        className="grid h-10 w-10 place-items-center self-end rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"
-                      >
-                        <X size={17} />
-                      </button>
-                    ) : null}
+                    {detailEditor?.lineIndex === index && detailEditor.detailIndex === detailIndex ? (
+                      <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Enregistrer" />
+                    ) : (
+                      <div className="flex items-start gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-900 dark:text-white">{detail.label}</p>
+                          {detail.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{detail.description}</p>}
+                          {detail.amount.trim() && <p className="mt-1 text-sm font-semibold text-blue-700 dark:text-blue-400">{formatEuros(eurosToCents(detail.amount))} €</p>}
+                        </div>
+                        {canWrite && (
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button type="button" onClick={() => startEditingDetail(index, detailIndex, detail)} className="min-h-10 rounded-lg px-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950">Modifier</button>
+                            <button type="button" onClick={() => removeDetail(index, detailIndex)} aria-label="Supprimer le détail" className="grid h-10 w-10 place-items-center rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"><X size={17} /></button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {(() => {
@@ -391,11 +407,18 @@ export default function QuoteLinesForm({
               </div>
             ) : null}
 
+            {detailEditor?.lineIndex === index && detailEditor.detailIndex === null ? (
+              <div className="rounded-xl border border-blue-200 bg-white/65 p-3 dark:border-blue-800 dark:bg-slate-900/55">
+                <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Ajouter le détail" />
+              </div>
+            ) : null}
+
             {canWrite ? (
               <button
                 type="button"
-                onClick={() => addDetail(index)}
-                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                onClick={() => startAddingDetail(index)}
+                disabled={detailEditor?.lineIndex === index && detailEditor.detailIndex === null}
+                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 + Ajouter un détail
               </button>
