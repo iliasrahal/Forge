@@ -228,7 +228,7 @@ useEffect(() => {
 ]);
 
 useEffect(() => {
-  if (!actionMode) {
+  if (!actionMode && !showAddClientModal) {
     return;
   }
 
@@ -238,7 +238,7 @@ useEffect(() => {
   return () => {
     document.body.style.overflow = previousOverflow;
   };
-}, [actionMode]);
+}, [actionMode, showAddClientModal]);
 
   useEffect(() => {
   if (!newInterventionId) {
@@ -1418,17 +1418,19 @@ const handleCreateInvoice = async () => {
 
 
   {showAddClientModal && (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center overflow-y-auto bg-transparent p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:p-4">
-      <section className="forge-surface max-h-[calc(100dvh-1rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl dark:bg-slate-900 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
-        <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
-          Ajouter un client
-        </h2>
+    <div className="forge-modal-overlay fixed inset-x-0 top-0 z-[70] flex h-[calc(100dvh-4.75rem-max(0.5rem,env(safe-area-inset-bottom)))] items-center justify-center overflow-hidden px-2 py-2 sm:h-[calc(100dvh-6rem-max(1rem,env(safe-area-inset-bottom)))] sm:px-4 sm:py-4 lg:left-60 lg:h-dvh">
+      <section className="forge-surface flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-slate-900">
+        <header className="shrink-0 px-4 pb-3 pt-4 sm:px-6 sm:pb-4 sm:pt-6">
+          <h2 className="text-xl font-bold text-blue-700 dark:text-blue-400">
+            Ajouter un client
+          </h2>
 
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Pour créer la facture, associez d’abord un client à cette intervention.
-        </p>
+          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300 sm:mt-2">
+            Pour créer la facture, associez d’abord un client à cette intervention.
+          </p>
+        </header>
 
-        <div className="mt-5 space-y-4">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 pb-4 sm:space-y-4 sm:px-6 sm:pb-5">
           {planningClients.length > 0 && (
             <div className="grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
               <button
@@ -1534,7 +1536,7 @@ const handleCreateInvoice = async () => {
           )}
         </div>
 
-        <div className="mt-6 grid gap-3 min-[360px]:grid-cols-2">
+        <footer className="grid shrink-0 gap-2 border-t border-[var(--forge-border)] bg-[var(--forge-surface)] px-4 py-3 min-[360px]:grid-cols-2 sm:gap-3 sm:px-6 sm:py-4">
           <button
             type="button"
             onClick={() => setShowAddClientModal(false)}
@@ -1551,7 +1553,7 @@ const handleCreateInvoice = async () => {
           >
             {isAddingStartClient ? "Création…" : "Ajouter et créer la facture"}
           </button>
-        </div>
+        </footer>
       </section>
     </div>
   )}
@@ -1668,7 +1670,7 @@ const handleCreateInvoice = async () => {
     canWrite={canWrite}
 
     hideMainContent={showUpcomingCalendar}
-    hideForgeBar={Boolean(actionMode)}
+    hideForgeBar={Boolean(actionMode) || showAddClientModal}
     hideGreetingOnDesktop={showDashboard}
 
     currentAppointment={
