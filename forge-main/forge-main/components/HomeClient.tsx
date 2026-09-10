@@ -17,6 +17,7 @@ import { type Appointment } from "@/data/appointments";
 import { sortActiveTodayAppointments } from "@/src/lib/intervention-calendar";
 import type { SmartReminder } from "@/src/lib/smart-reminders";
 import { buildInterventionHref } from "@/src/lib/intervention-navigation";
+import { resolveFinalizationResumeTarget } from "@/src/lib/intervention-finalization";
 
 type HomeState =
   | "finished"
@@ -541,29 +542,29 @@ const handlePrimaryInterventionAction = async () => {
   setSavedClientId(currentAppointment.hasClient ? "associated" : null);
   setSavedClientName(currentAppointment.client);
   setCompletedWithReport(
-    !currentAppointment.finalizationStep.includes("SKIPPED"),
+    !currentAppointment.reportWasSkipped,
   );
 
-  if (currentAppointment.invoiceId) {
-    router.push(`/invoices/${currentAppointment.invoiceId}`);
-    return;
-  }
+  const resumeTarget = resolveFinalizationResumeTarget({
+    finalizationStep: currentAppointment.finalizationStep,
+    finalized: currentAppointment.finalized,
+    reportWasSkipped: currentAppointment.reportWasSkipped,
+    hasReport: Boolean(currentAppointment.report),
+    invoiceId: currentAppointment.invoiceId,
+    quoteId: currentAppointment.quoteId,
+    clientId: currentAppointment.clientId,
+  });
 
-  if (currentAppointment.finalizationStep === "REPORT_INPUT") {
-    setHomeState("reportInput");
-    return;
-  }
-
-  if (
-    currentAppointment.finalizationStep === "REPORT_REVIEW" &&
-    currentAppointment.report
-  ) {
-    setReport(currentAppointment.report);
+  if (resumeTarget.kind === "invoice" || resumeTarget.kind === "quote") {
+    router.push(resumeTarget.href);
+  } else if (resumeTarget.kind === "reportReview") {
+    setReport(currentAppointment.report ?? null);
     setHomeState("review");
-    return;
+  } else if (resumeTarget.kind === "reportInput") {
+    setHomeState("reportInput");
+  } else if (resumeTarget.kind === "invoiceChoice") {
+    setHomeState("invoiceChoice");
   }
-
-  setHomeState("invoiceChoice");
 };
 
 const handleAddClientAndStart = async () => {

@@ -13,6 +13,7 @@ type SendInvoiceButtonProps = {
   clientId: string;
   clientEmail: string | null;
   interventionId?: string | null;
+  initiallySent?: boolean;
 };
 
 
@@ -21,6 +22,7 @@ export default function SendInvoiceButton({
   clientId,
   clientEmail,
   interventionId,
+  initiallySent = false,
 }: SendInvoiceButtonProps) {
 
   const router = useRouter();
@@ -29,7 +31,7 @@ export default function SendInvoiceButton({
     useState(false);
 
   const [message, setMessage] =
-    useState("");
+    useState(initiallySent ? "✅ Facture envoyée avec succès." : "");
 
   const [missingEmail, setMissingEmail] =
     useState(!clientEmail);
@@ -44,7 +46,7 @@ export default function SendInvoiceButton({
     useState(false);
 
   const [sentSuccessfully, setSentSuccessfully] =
-    useState(false);
+    useState(initiallySent);
 
 
 

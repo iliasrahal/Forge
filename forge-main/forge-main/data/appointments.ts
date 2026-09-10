@@ -15,6 +15,7 @@ export type InterventionReport = {
 export type Appointment = {
   id: string;
   client: string;
+  clientId?: string | null;
   hasClient?: boolean;
   address: string;
   date: string;
@@ -28,6 +29,9 @@ export type Appointment = {
   report?: InterventionReport;
   finalizationStep?: string | null;
   reportDraft?: string;
+  reportWasSkipped?: boolean;
+  finalized?: boolean;
+  quoteId?: string | null;
   invoiceId?: string | null;
   dayTasks?: Array<{
     id: string;

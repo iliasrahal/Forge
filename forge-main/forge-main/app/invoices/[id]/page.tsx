@@ -584,6 +584,10 @@ export default async function InvoicePage({
               clientId={invoice.clientId}
               clientEmail={clientEmail}
               interventionId={invoice.interventionId}
+              initiallySent={
+                invoice.intervention?.finalizationStep === "INVOICE_SENT" &&
+                !invoice.intervention.finalizedAt
+              }
             />
 
             <a

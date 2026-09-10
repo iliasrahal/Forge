@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { keepMostAdvancedFinalizationStep } from "@/src/lib/intervention-finalization";
+
 import { splitPersonalClientName } from "@/src/lib/client-name";
 import { getInterventionReportState } from "@/src/lib/intervention-completion";
 import { prisma } from "@/src/lib/prisma";
@@ -395,7 +397,12 @@ export async function PATCH(request: Request) {
 
       const existing = await prisma.intervention.findFirst({
         where: { id: interventionId, organizationId: workspaceContext.workspace.id },
-        select: { id: true },
+        select: {
+          id: true,
+          finalizationStep: true,
+          reportSkippedAt: true,
+          finalizedAt: true,
+        },
       });
       if (!existing) {
         return NextResponse.json({ error: "Cette intervention est introuvable." }, { status: 404 });
@@ -413,7 +420,13 @@ export async function PATCH(request: Request) {
         data: operation === "finalize"
           ? { finalizedAt: new Date(), finalizationStep: "FINALIZED" }
           : {
-              ...(finalizationStep ? { finalizationStep } : {}),
+              ...(finalizationStep ? {
+                finalizationStep: keepMostAdvancedFinalizationStep(
+                  existing.finalizationStep,
+                  finalizationStep,
+                  Boolean(existing.reportSkippedAt),
+                ),
+              } : {}),
               ...(reportDraft !== undefined ? { reportDraft } : {}),
               ...(draftReport ? {
                 reportIntervention: cleanOptionalString(draftReport.intervention),

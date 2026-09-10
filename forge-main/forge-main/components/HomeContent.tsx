@@ -155,10 +155,10 @@ export default function HomeContent({
   }, [currentAppointment?.id, initialReportDraft]);
 
   useEffect(() => {
-    if (!onReportDraftChange) return;
+    if (state !== "reportInput" || !onReportDraftChange) return;
     const timer = window.setTimeout(() => onReportDraftChange(reportDraft), 600);
     return () => window.clearTimeout(timer);
-  }, [onReportDraftChange, reportDraft]);
+  }, [state, onReportDraftChange, reportDraft]);
 
   const [reportMedia, setReportMedia] =
     useState<File[]>([]);
