@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { clientService } from "@/src/services/client.service";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { createParisInterventionPeriod } from "@/src/lib/paris-datetime";
+import { UNASSIGNED_QUOTE_CLIENT_ID } from "@/src/lib/quote-routes";
 
 type NewInterventionPageProps = {
   params: Promise<{ id: string }>;
@@ -29,22 +30,27 @@ export default async function NewInterventionPage({
   const currentUser =
     await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("write");
+  const withoutClient = id === UNASSIGNED_QUOTE_CLIENT_ID;
+
+  if (withoutClient && !quoteId) {
+    notFound();
+  }
 
 
-  const client =
-    await clientService.getById(
-      id,
-      workspaceContext.workspace.id,
-    );
+  const client = withoutClient
+    ? null
+    : await clientService.getById(id, workspaceContext.workspace.id);
 
 
-  if (!client) {
+  if (!withoutClient && !client) {
     notFound();
   }
 
 
   const name =
-    client.type === "PARTICULIER"
+    !client
+      ? "Aucun client associé — vous pourrez l’ajouter plus tard"
+      : client.type === "PARTICULIER"
       ? `${client.firstName ?? ""} ${
           client.lastName ?? ""
         }`.trim()
@@ -60,17 +66,19 @@ export default async function NewInterventionPage({
     "use server";
 
     const writeContext = await requireWorkspaceContext("write");
-    const workspaceClient = await prisma.client.findFirst({
-      where: { id, organizationId: writeContext.workspace.id },
-      select: { id: true },
-    });
-    if (!workspaceClient) notFound();
+    const workspaceClient = withoutClient
+      ? null
+      : await prisma.client.findFirst({
+          where: { id, organizationId: writeContext.workspace.id },
+          select: { id: true },
+        });
+    if (!withoutClient && !workspaceClient) notFound();
 
     const sourceQuote = quoteId
       ? await prisma.quote.findFirst({
           where: {
             id: quoteId,
-            clientId: workspaceClient.id,
+            clientId: workspaceClient?.id ?? null,
             organizationId: writeContext.workspace.id,
             status: { not: "REFUSE" },
           },
@@ -179,7 +187,7 @@ export default async function NewInterventionPage({
             cleanDescription || null,
           scheduledAt: period.start,
           endDate: period.end,
-          clientId: workspaceClient.id,
+          clientId: workspaceClient?.id ?? null,
           quoteId: sourceQuote?.id ?? null,
         },
       });
@@ -202,8 +210,8 @@ export default async function NewInterventionPage({
 
 
         <Link
-          href={`/clients/${client.id}`}
-          aria-label="Retour au dossier client"
+          href={client ? `/clients/${client.id}` : `/clients/${UNASSIGNED_QUOTE_CLIENT_ID}/quotes/${quoteId}`}
+          aria-label={client ? "Retour au dossier client" : "Retour au devis"}
           className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span>

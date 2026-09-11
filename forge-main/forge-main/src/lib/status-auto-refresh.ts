@@ -8,7 +8,17 @@ export function shouldAutoRefreshStatuses(pathname: string): boolean {
   if (segments.includes("new") || segments.at(-1) === "edit") return false;
 
   if (root === "app") return segments.length === 1;
-  if (root === "quotes" || root === "invoices") return true;
+  if (root === "quotes" || root === "invoices" || root === "credit-notes") {
+    return true;
+  }
+  if (root === "history") return true;
+
+  // Le statut Stripe Connect peut également évoluer via un webhook externe.
+  if (root === "settings" && segments[1] === "paiement") return true;
+
+  if (root === "interventions") {
+    return !segments.includes("compte-rendu");
+  }
 
   if (root === "clients") {
     // Liste/fiche client, ainsi que les détails de documents imbriqués.

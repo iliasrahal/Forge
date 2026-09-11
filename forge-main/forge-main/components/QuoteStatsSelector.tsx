@@ -266,8 +266,8 @@ export default function QuoteStatsSelector({
         <h2 className="text-lg font-bold text-blue-700 dark:text-blue-400">
           Rechercher entre deux dates
         </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+        <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">
+          <label className="min-w-0 text-sm font-semibold text-slate-600 dark:text-slate-300">
             Date de début
             <input
               type="date"
@@ -276,10 +276,10 @@ export default function QuoteStatsSelector({
                 setRangeStart(event.target.value);
                 setRangeError("");
               }}
-              className="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="mt-2 block min-h-12 w-full min-w-0 max-w-full box-border rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
           </label>
-          <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+          <label className="min-w-0 text-sm font-semibold text-slate-600 dark:text-slate-300">
             Date de fin
             <input
               type="date"
@@ -289,7 +289,7 @@ export default function QuoteStatsSelector({
                 setRangeEnd(event.target.value);
                 setRangeError("");
               }}
-              className="mt-2 min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="mt-2 block min-h-12 w-full min-w-0 max-w-full box-border rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
           </label>
         </div>
@@ -303,7 +303,7 @@ export default function QuoteStatsSelector({
             type="button"
             onClick={applyRangeFilter}
             disabled={isRangeLoading}
-            className="min-h-12 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
+            className="min-h-12 min-w-0 w-full rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
           >
             {isRangeLoading ? "Recherche…" : "Appliquer le filtre"}
           </button>
@@ -311,7 +311,7 @@ export default function QuoteStatsSelector({
             type="button"
             onClick={resetRange}
             disabled={!rangeStart && !rangeEnd && !appliedRange}
-            className="min-h-12 rounded-xl border border-blue-600 px-4 py-3 font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-950"
+            className="min-h-12 min-w-0 w-full rounded-xl border border-blue-600 px-4 py-3 font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-950"
           >
             Réinitialiser
           </button>

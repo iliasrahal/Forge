@@ -11,6 +11,7 @@ import {
   isManualPaymentMethod,
 } from "@/src/lib/payments";
 import { syncInvoicePaymentStatus } from "@/src/lib/invoice-payment-sync";
+import { revalidateStatusViews } from "@/src/lib/status-revalidation";
 
 type PaymentsRouteProps = {
   params: Promise<{ id: string }>;
@@ -143,6 +144,8 @@ export async function POST(request: Request, { params }: PaymentsRouteProps) {
       const sync = await syncInvoicePaymentStatus(tx, invoice.id);
       return { payment, sync };
     });
+
+    revalidateStatusViews("invoice", invoice.id);
 
     return NextResponse.json({
       payment: result.payment,

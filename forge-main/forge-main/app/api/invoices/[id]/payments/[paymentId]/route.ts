@@ -6,6 +6,7 @@ import {
   requireWorkspaceContext,
 } from "@/src/lib/workspace-access";
 import { syncInvoicePaymentStatus } from "@/src/lib/invoice-payment-sync";
+import { revalidateStatusViews } from "@/src/lib/status-revalidation";
 
 type PaymentRouteProps = {
   params: Promise<{ id: string; paymentId: string }>;
@@ -45,6 +46,8 @@ export async function DELETE(_request: Request, { params }: PaymentRouteProps) {
       await tx.payment.delete({ where: { id: payment.id } });
       return syncInvoicePaymentStatus(tx, id);
     });
+
+    revalidateStatusViews("invoice", id);
 
     return NextResponse.json({
       ok: true,
