@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { Prisma } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/lib/prisma";
@@ -67,7 +68,13 @@ export async function POST(request: Request) {
       });
 
       if (!access || access.revokedAt) return { kind: "invalid" as const };
-      if (access.quote.signature) return { kind: "signed" as const, alreadySigned: true, ...access.quote.signature };
+      if (access.quote.signature) return {
+        kind: "signed" as const,
+        alreadySigned: true,
+        quoteId: access.quote.id,
+        clientId: access.quote.clientId,
+        ...access.quote.signature,
+      };
 
       const state = getQuoteAcceptanceState(access.quote.status);
       if (state.alreadyAccepted) return { kind: "accepted-before-signatures" as const };
@@ -102,13 +109,25 @@ export async function POST(request: Request) {
         },
       });
       await transaction.quotePublicAccess.update({ where: { id: access.id }, data: { acceptedAt: signedAt } });
-      return { kind: "signed" as const, alreadySigned: false, signerFirstName, signerLastName, signedAt };
+      return {
+        kind: "signed" as const,
+        alreadySigned: false,
+        quoteId: access.quote.id,
+        clientId: access.quote.clientId,
+        signerFirstName,
+        signerLastName,
+        signedAt,
+      };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     if (result.kind === "invalid") return NextResponse.json({ error: "Ce lien est invalide." }, { status: 404 });
     if (result.kind === "accepted-before-signatures") return NextResponse.json({ error: "Ce devis a déjà été accepté." }, { status: 409 });
     if (result.kind === "unavailable") return NextResponse.json({ error: result.reason || "Ce devis ne peut plus être accepté." }, { status: 409 });
     if (result.kind === "retry") throw new Error("QUOTE_SIGNATURE_CONFLICT");
+    revalidatePath("/app");
+    revalidatePath("/quotes");
+    revalidatePath(`/clients/${result.clientId ?? "sans-client"}/quotes/${result.quoteId}`);
+    if (result.clientId) revalidatePath(`/clients/${result.clientId}`);
     return NextResponse.json({ signed: true, ...result });
   } catch (error) {
     if (error instanceof SyntaxError) {
