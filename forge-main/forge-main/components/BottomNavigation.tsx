@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { FileText, House, UsersRound, ReceiptText } from "lucide-react";
 
 import {
@@ -18,11 +19,12 @@ const ITEMS = [
 export default function BottomNavigation() {
   const pathname = usePathname();
   const activeSection = getBottomNavigationSection(pathname);
+  const [pendingSection, setPendingSection] = useState<string | null>(null);
 
   return (
     <nav className="grid grid-cols-4 gap-1">
       {ITEMS.map(({ href, section, label, icon: Icon }) => {
-        const active = activeSection === section;
+        const active = activeSection === section || pendingSection === section;
 
         return (
           <Link
@@ -30,6 +32,9 @@ export default function BottomNavigation() {
             href={href}
             aria-current={active ? "page" : undefined}
             data-active={active ? "true" : undefined}
+            onClick={() => {
+              if (activeSection !== section) setPendingSection(section);
+            }}
             className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.72rem] font-semibold tracking-[-0.005em] transition-all duration-200 sm:min-h-16 sm:text-[0.78rem]"
           >
             <Icon

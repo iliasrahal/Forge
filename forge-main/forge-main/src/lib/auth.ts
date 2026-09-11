@@ -1,11 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { prisma } from "@/src/lib/prisma";
 import { resolveEffectiveStatus } from "@/src/lib/subscription-policy";
 
 
-export async function getCurrentUser() {
+export const getCurrentSession = cache(async function getCurrentSession() {
 
   const cookieStore = await cookies();
 
@@ -21,16 +22,13 @@ export async function getCurrentUser() {
 
 
 
-  const session =
-    await prisma.session.findUnique({
+  const session = await prisma.session.findUnique({
 
       where: {
         token,
       },
 
-      include: {
-        user: true,
-      },
+      include: { user: true, activeOrganization: true },
 
     });
 
@@ -76,7 +74,11 @@ export async function getCurrentUser() {
 
 
 
-  return session.user;
+  return session;
+});
+
+export async function getCurrentUser() {
+  return (await getCurrentSession())?.user ?? null;
 }
 
 

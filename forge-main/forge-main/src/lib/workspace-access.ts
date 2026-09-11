@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
-
 import { prisma } from "@/src/lib/prisma";
+import { getCurrentSession } from "@/src/lib/auth";
 import {
   evaluateSubscriptionAccess,
   resolveEffectiveStatus,
@@ -93,18 +92,8 @@ export async function ensurePersonalWorkspaceForUser(userId: string) {
 }
 
 export async function getCurrentWorkspaceContext(now = new Date()) {
-  const token = (await cookies()).get("forgeSession")?.value;
-  if (!token) return null;
-
-  const session = await prisma.session.findUnique({
-    where: { token },
-    include: {
-      user: true,
-      activeOrganization: true,
-    },
-  });
-
-  if (!session || session.expiresAt <= now) return null;
+  const session = await getCurrentSession();
+  if (!session) return null;
 
   // Bascule paresseuse : essai terminé sans abonnement -> FREE.
   const effectiveStatus = resolveEffectiveStatus(

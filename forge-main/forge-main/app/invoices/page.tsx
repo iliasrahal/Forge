@@ -46,8 +46,10 @@ function formatStatus(status: string) {
 export default async function InvoicesPage() {
 
 
-  await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const [, workspaceContext] = await Promise.all([
+    requireCurrentUser(),
+    requireWorkspaceContext("read"),
+  ]);
 
 
 

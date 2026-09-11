@@ -2,6 +2,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@keyframes forge-route-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(310%); }
+}
+
+.forge-route-progress {
+  animation: forge-route-progress 900ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-route-progress {
+    animation: none;
+    width: 100%;
+    opacity: 0.65;
+  }
+}
+
 
 :root {
   --background: #ffffff;

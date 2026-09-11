@@ -50,13 +50,15 @@ function formatStatus(status: string) {
 
 
 export default async function QuotesPage() {
-  await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const [, workspaceContext] = await Promise.all([
+    requireCurrentUser(),
+    requireWorkspaceContext("read"),
+  ]);
 
 
 
-  const quotes =
-    await prisma.quote.findMany({
+  const [quotes, templates] = await Promise.all([
+    prisma.quote.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
       },
@@ -74,15 +76,15 @@ export default async function QuotesPage() {
       orderBy: {
         createdAt: "desc",
       },
-    });
-
-  const templates = workspaceContext.permissions.canWrite
-    ? await prisma.quoteTemplate.findMany({
+    }),
+    workspaceContext.permissions.canWrite
+      ? prisma.quoteTemplate.findMany({
         where: { organizationId: workspaceContext.workspace.id },
         orderBy: { name: "asc" },
         select: { id: true, name: true, _count: { select: { lines: true } } },
       })
-    : [];
+      : Promise.resolve([]),
+  ]);
 
   const searchableQuotes: SearchableDocument[] = quotes.map((quote) => {
     const reminderState = getQuoteReminderState({

@@ -14,8 +14,10 @@ import { clientService } from "@/src/services/client.service";
 
 
 export default async function ClientsPage() {
-  await requireCurrentUser();
-  const workspaceContext = await requireWorkspaceContext("read");
+  const [, workspaceContext] = await Promise.all([
+    requireCurrentUser(),
+    requireWorkspaceContext("read"),
+  ]);
 
 
 

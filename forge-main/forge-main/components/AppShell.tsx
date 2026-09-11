@@ -44,7 +44,7 @@ export default function AppShell({
   return (
     <>
       {!hideNavigation ? <StatusAutoRefresh /> : null}
-      {!hideNavigation ? <DesktopSidebar /> : null}
+      {!hideNavigation ? <DesktopSidebar key={pathname} /> : null}
       <div
         className={
           hideNavigation
@@ -64,7 +64,7 @@ export default function AppShell({
 
           <div className="forge-navbar mx-auto w-full max-w-md rounded-[1.75rem] border px-1.5 py-1.5 sm:px-2 sm:py-2">
 
-            <BottomNavigation />
+            <BottomNavigation key={pathname} />
 
           </div>
 

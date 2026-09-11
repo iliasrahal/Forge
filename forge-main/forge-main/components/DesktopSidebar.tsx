@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   FileText,
   House,
@@ -28,6 +29,7 @@ const ITEMS = [
 export default function DesktopSidebar() {
   const pathname = usePathname();
   const activeSection = getBottomNavigationSection(pathname);
+  const [pendingSection, setPendingSection] = useState<string | null>(null);
   const settingsActive = pathname.startsWith("/settings");
 
   return (
@@ -41,12 +43,15 @@ export default function DesktopSidebar() {
 
       <nav className="mt-8 flex flex-col gap-1">
         {ITEMS.map(({ href, section, label, icon: Icon }) => {
-          const active = activeSection === section;
+          const active = activeSection === section || pendingSection === section;
           return (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
+              onClick={() => {
+                if (activeSection !== section) setPendingSection(section);
+              }}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                 active
                   ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_20%,var(--forge-surface))] text-[var(--forge-text-primary)]"
@@ -62,9 +67,12 @@ export default function DesktopSidebar() {
 
       <Link
         href="/settings"
-        aria-current={settingsActive ? "page" : undefined}
+        aria-current={settingsActive || pendingSection === "settings" ? "page" : undefined}
+        onClick={() => {
+          if (!settingsActive) setPendingSection("settings");
+        }}
         className={`mt-auto flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-          settingsActive
+          settingsActive || pendingSection === "settings"
             ? "bg-[color-mix(in_srgb,var(--forge-accent-blue)_20%,var(--forge-surface))] text-[var(--forge-text-primary)]"
             : "text-[var(--forge-text-secondary)] hover:bg-[var(--forge-surface-hover)] hover:text-[var(--forge-text-primary)]"
         }`}
