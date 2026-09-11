@@ -365,65 +365,6 @@ export default function QuoteLinesForm({
               ) : null}
             </div>
 
-            {(line.details ?? []).length > 0 ? (
-              <div className="space-y-2 border-l-2 border-blue-300/60 pl-3 dark:border-blue-700/60">
-                {(line.details ?? []).map((detail, detailIndex) => (
-                  <div
-                    key={detailIndex}
-                    className="rounded-xl bg-white/65 p-3 dark:bg-slate-900/55"
-                  >
-                    {detailEditor?.lineIndex === index && detailEditor.detailIndex === detailIndex ? (
-                      <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Enregistrer" />
-                    ) : (
-                      <div className="flex items-start gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-slate-900 dark:text-white">{detail.label}</p>
-                          {detail.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{detail.description}</p>}
-                          {detail.amount.trim() && <p className="mt-1 text-sm font-semibold text-blue-700 dark:text-blue-400">{formatEuros(eurosToCents(detail.amount))} €</p>}
-                        </div>
-                        {canWrite && (
-                          <div className="flex shrink-0 items-center gap-1">
-                            <button type="button" onClick={() => startEditingDetail(index, detailIndex, detail)} className="min-h-10 rounded-lg px-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950">Modifier</button>
-                            <button type="button" onClick={() => removeDetail(index, detailIndex)} aria-label="Supprimer le détail" className="grid h-10 w-10 place-items-center rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"><X size={17} /></button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {(() => {
-                  const detailedCents = (line.details ?? []).reduce(
-                    (sum, detail) =>
-                      sum + (detail.amount.trim() ? eurosToCents(detail.amount) : 0),
-                    0,
-                  );
-                  return detailedCents > 0 ? (
-                    <p className="text-right text-xs text-slate-500 dark:text-slate-400">
-                      Détails : {formatEuros(detailedCents)} € sur{" "}
-                      {formatEuros(computedLines[index].amountCents)} €
-                    </p>
-                  ) : null;
-                })()}
-              </div>
-            ) : null}
-
-            {detailEditor?.lineIndex === index && detailEditor.detailIndex === null ? (
-              <div className="rounded-xl border border-blue-200 bg-white/65 p-3 dark:border-blue-800 dark:bg-slate-900/55">
-                <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Ajouter le détail" />
-              </div>
-            ) : null}
-
-            {canWrite ? (
-              <button
-                type="button"
-                onClick={() => startAddingDetail(index)}
-                disabled={detailEditor?.lineIndex === index && detailEditor.detailIndex === null}
-                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                + Ajouter un détail
-              </button>
-            ) : null}
-
             <div className="flex flex-wrap items-end gap-2 text-sm">
               <label className="flex flex-col gap-1">
                 <span className="text-xs text-slate-500 dark:text-slate-400">Qté</span>
@@ -549,6 +490,65 @@ export default function QuoteLinesForm({
                 </span>
               </div>
             </div>
+
+            {(line.details ?? []).length > 0 ? (
+              <div className="space-y-2 border-l-2 border-blue-300/60 pl-3 dark:border-blue-700/60">
+                {(line.details ?? []).map((detail, detailIndex) => (
+                  <div
+                    key={detailIndex}
+                    className="rounded-xl bg-white/65 p-3 dark:bg-slate-900/55"
+                  >
+                    {detailEditor?.lineIndex === index && detailEditor.detailIndex === detailIndex ? (
+                      <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Enregistrer" />
+                    ) : (
+                      <div className="flex items-start gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-slate-900 dark:text-white">{detail.label}</p>
+                          {detail.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{detail.description}</p>}
+                          {detail.amount.trim() && <p className="mt-1 text-sm font-semibold text-blue-700 dark:text-blue-400">{formatEuros(eurosToCents(detail.amount))} €</p>}
+                        </div>
+                        {canWrite && (
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button type="button" onClick={() => startEditingDetail(index, detailIndex, detail)} className="min-h-10 rounded-lg px-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950">Modifier</button>
+                            <button type="button" onClick={() => removeDetail(index, detailIndex)} aria-label="Supprimer le détail" className="grid h-10 w-10 place-items-center rounded-lg text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950"><X size={17} /></button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {(() => {
+                  const detailedCents = (line.details ?? []).reduce(
+                    (sum, detail) =>
+                      sum + (detail.amount.trim() ? eurosToCents(detail.amount) : 0),
+                    0,
+                  );
+                  return detailedCents > 0 ? (
+                    <p className="text-right text-xs text-slate-500 dark:text-slate-400">
+                      Détails : {formatEuros(detailedCents)} € sur{" "}
+                      {formatEuros(computedLines[index].amountCents)} €
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+            ) : null}
+
+            {detailEditor?.lineIndex === index && detailEditor.detailIndex === null ? (
+              <div className="rounded-xl border border-blue-200 bg-white/65 p-3 dark:border-blue-800 dark:bg-slate-900/55">
+                <DetailEditorFields editor={detailEditor} onChange={patchDetailEditor} onCancel={() => setDetailEditor(null)} onSave={saveDetail} saveLabel="Ajouter le détail" />
+              </div>
+            ) : null}
+
+            {canWrite ? (
+              <button
+                type="button"
+                onClick={() => startAddingDetail(index)}
+                disabled={detailEditor?.lineIndex === index && detailEditor.detailIndex === null}
+                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                + Ajouter un détail
+              </button>
+            ) : null}
           </div>
         ))}
       </div>
