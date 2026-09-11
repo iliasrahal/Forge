@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Props = {
-  quoteId: string;
+  invoiceId: string;
   canWrite: boolean;
   canPrepare: boolean;
   hasEmail: boolean;
-  automaticLevel: 1 | 2 | null;
+  automaticLevel: 1 | 2 | 3 | null;
   daysSinceActivity: number | null;
   reminders: Array<{ id: string; sentAt: string | Date; channel: string }>;
 };
@@ -18,7 +18,13 @@ function formatDateTime(value: string | Date) {
   return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
-export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasEmail, automaticLevel, daysSinceActivity, reminders }: Props) {
+const LEVEL_LABELS: Record<1 | 2 | 3, string> = {
+  1: "conseillée",
+  2: "à renouveler",
+  3: "à renouveler",
+};
+
+export default function InvoiceReminderPanel({ invoiceId, canWrite, canPrepare, hasEmail, automaticLevel, daysSinceActivity, reminders }: Props) {
   const router = useRouter();
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
@@ -36,11 +42,11 @@ export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasE
     try {
       // Un seul clic : le message est généré côté serveur (IA si configurée,
       // sinon modèle standard) puis envoyé immédiatement, sans étape de relecture.
-      const prepareResponse = await fetch(`/api/quotes/${quoteId}/reminders/prepare`, { method: "POST" });
+      const prepareResponse = await fetch(`/api/invoices/${invoiceId}/reminders/prepare`, { method: "POST" });
       const prepareData = await prepareResponse.json();
       if (!prepareResponse.ok) throw new Error(prepareData.error || "La relance n’a pas pu être préparée.");
 
-      const sendResponse = await fetch(`/api/quotes/${quoteId}/reminders/send`, {
+      const sendResponse = await fetch(`/api/invoices/${invoiceId}/reminders/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: prepareData.message }),
@@ -63,15 +69,15 @@ export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasE
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-500/15 text-[var(--forge-accent-blue-lit)]"><BellRing size={19} /></span>
         <div className="min-w-0 flex-1">
           <p className="font-bold text-[var(--forge-text-primary)]">
-            {automaticLevel ? `Relance ${automaticLevel === 1 ? "conseillée" : "à renouveler"}` : canPrepare ? "Suivi du devis" : "Historique des relances"}
+            {automaticLevel ? `Relance ${LEVEL_LABELS[automaticLevel]}` : canPrepare ? "Suivi de la facture" : "Historique des relances"}
           </p>
           <p className="mt-1 text-sm text-[var(--forge-text-secondary)]">
             {automaticLevel && daysSinceActivity !== null
-              ? `Ce devis est sans réponse depuis ${daysSinceActivity} jour${daysSinceActivity > 1 ? "s" : ""}.`
+              ? `Cette facture est impayée depuis ${daysSinceActivity} jour${daysSinceActivity > 1 ? "s" : ""}.`
               : canPrepare && canWrite
                 ? "Vous pouvez relancer manuellement si nécessaire."
                 : canPrepare
-                  ? "Ce devis est toujours en attente d’une réponse."
+                  ? "Cette facture est toujours en attente de règlement."
                   : "Les relances déjà envoyées restent consultables."}
           </p>
         </div>

@@ -315,6 +315,31 @@ ${formatEmailSignature(artisanSignature)}
   });
 }
 
+export async function sendInvoiceReminderEmail(
+  recipient: string,
+  invoiceReference: string,
+  message: string,
+  publicInvoiceUrl?: string | null,
+) {
+  const actionHtml = publicInvoiceUrl
+    ? `<p style="margin-top:20px"><a href="${escapeHtml(publicInvoiceUrl)}" style="display:inline-block;padding:12px 22px;border-radius:14px;background:#1d4ed8;color:#ffffff;font-weight:700;text-decoration:none">Consulter et payer ma facture</a></p>`
+    : "";
+  const actionText = publicInvoiceUrl
+    ? `\n\nConsulter et payer ma facture :\n${publicInvoiceUrl}`
+    : "";
+
+  return getResendClient().emails.send({
+    from: sender,
+    to: recipient,
+    subject: `Rappel concernant votre facture ${invoiceReference}`,
+    text: `${message}${actionText}`,
+    html: renderEmailLayout(
+      `<div style="white-space:pre-line">${escapeHtml(message)}</div>${actionHtml}`,
+    ),
+  });
+}
+
+
 function formatEmailSignature(
   value: string,
 ) {

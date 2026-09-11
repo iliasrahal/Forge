@@ -42,7 +42,13 @@ function editableLine(line: {
   costCents: number | null;
   discountBp: number;
   vatRateBp: number;
-  details: Array<{ label: string; description: string | null; amountCents: number | null }>;
+  details: Array<{
+    label: string;
+    description: string | null;
+    quantityMilli: number;
+    unit: string;
+    unitPriceCents: number | null;
+  }>;
 }): EditableQuoteLine {
   return {
     category: line.category,
@@ -55,7 +61,9 @@ function editableLine(line: {
     details: line.details.map((detail) => ({
       label: detail.label,
       description: detail.description ?? "",
-      amount: detail.amountCents == null ? "" : (detail.amountCents / 100).toFixed(2),
+      quantity: String(detail.quantityMilli / 1000),
+      unit: detail.unit,
+      unitPrice: detail.unitPriceCents == null ? "" : (detail.unitPriceCents / 100).toFixed(2),
     })),
   };
 }

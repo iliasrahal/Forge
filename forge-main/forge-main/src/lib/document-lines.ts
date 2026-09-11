@@ -90,6 +90,30 @@ export function computeLineCostCents(line: DocumentLineInput): number {
   return Math.round(((line.quantityMilli || 0) * line.costCents) / 1000);
 }
 
+export type LineDetailAmountInput = {
+  quantityMilli: number;
+  unitPriceCents: number | null;
+};
+
+/**
+ * Somme des sous-détails chiffrés d'une ligne (quantité × PU HT de chaque
+ * détail, non remisée). S'ajoute au montant propre de la ligne pour former
+ * son Total HT — voir `computeLineAmountCents`.
+ */
+export function sumLineDetailsCents(details: LineDetailAmountInput[]): number {
+  return details.reduce((sum, detail) => {
+    if (detail.unitPriceCents == null) return sum;
+    return (
+      sum +
+      computeLineAmountCents({
+        quantityMilli: detail.quantityMilli,
+        unitPriceCents: detail.unitPriceCents,
+        discountBp: 0,
+      })
+    );
+  }, 0);
+}
+
 export type DocumentMargin = {
   totalCostCents: number;
   totalMarginCents: number;
@@ -122,6 +146,11 @@ export type PersistableDocumentLine = {
 export type PersistableDocumentLineDetail = {
   label: string;
   description: string | null;
+  quantityMilli: number;
+  unit: string;
+  unitPriceCents: number | null;
+  /** = quantityMilli × unitPriceCents, ou null si aucun prix saisi.
+   *  Purement informatif : jamais inclus dans les totaux de la ligne. */
   amountCents: number | null;
   position: number;
 };
@@ -160,7 +189,6 @@ export function buildDocumentLinesFromForm(
       const category =
         typeof line.category === "string" ? line.category.trim() : "";
       const unitPriceCents = eurosToCents(line.unitPrice);
-      if (!category || unitPriceCents <= 0) return null;
 
       const quantityMilli = parseQuantityToMilli(line.quantity, 1000);
       const discountBp = normalizeDiscountBp(line.discount);
@@ -168,11 +196,6 @@ export function buildDocumentLinesFromForm(
         typeof line.cost === "string" && line.cost.trim()
           ? eurosToCents(line.cost)
           : null;
-      const amountCents = computeLineAmountCents({
-        quantityMilli,
-        unitPriceCents,
-        discountBp,
-      });
       const details = Array.isArray(line.details)
         ? line.details
             .map((rawDetail, position): PersistableDocumentLineDetail | null => {
@@ -180,17 +203,30 @@ export function buildDocumentLinesFromForm(
               const detail = rawDetail as Record<string, unknown>;
               const label = typeof detail.label === "string" ? detail.label.trim() : "";
               if (!label) return null;
-              const rawAmount = typeof detail.amount === "string" ? detail.amount.trim() : "";
-              const normalizedAmount = rawAmount.replace(",", ".");
+              const detailQuantityMilli = parseQuantityToMilli(detail.quantity, 1000);
+              const detailUnit = normalizeUnit(detail.unit);
+              const rawUnitPrice = typeof detail.unitPrice === "string" ? detail.unitPrice.trim() : "";
+              const normalizedUnitPrice = rawUnitPrice.replace(",", ".");
+              const detailUnitPriceCents =
+                rawUnitPrice && /^\d+(?:\.\d{1,2})?$/.test(normalizedUnitPrice)
+                  ? Math.max(0, eurosToCents(normalizedUnitPrice))
+                  : null;
               return {
                 label: label.slice(0, 200),
                 description:
                   typeof detail.description === "string" && detail.description.trim()
                     ? detail.description.trim().slice(0, 500)
                     : null,
+                quantityMilli: detailQuantityMilli,
+                unit: detailUnit,
+                unitPriceCents: detailUnitPriceCents,
                 amountCents:
-                  rawAmount && /^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)
-                    ? Math.max(0, eurosToCents(normalizedAmount))
+                  detailUnitPriceCents != null
+                    ? computeLineAmountCents({
+                        quantityMilli: detailQuantityMilli,
+                        unitPriceCents: detailUnitPriceCents,
+                        discountBp: 0,
+                      })
                     : null,
                 position,
               };
@@ -198,6 +234,14 @@ export function buildDocumentLinesFromForm(
             .filter((detail): detail is PersistableDocumentLineDetail => detail !== null)
             .slice(0, 30)
         : [];
+      // Le total de la ligne inclut ses sous-détails chiffrés : une ligne
+      // peut donc être valide sans PU HT propre, si elle est entièrement
+      // construite à partir de détails chiffrés (ex. matériaux au détail).
+      const detailsCents = sumLineDetailsCents(details);
+      const amountCents =
+        computeLineAmountCents({ quantityMilli, unitPriceCents, discountBp }) +
+        detailsCents;
+      if (!category || amountCents <= 0) return null;
 
       return {
         category: category.slice(0, 200),

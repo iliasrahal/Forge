@@ -89,6 +89,8 @@ export default async function QuotesPage() {
       status: quote.status,
       sentAt: quote.sentAt,
       reminders: quote.reminders,
+      delay1Days: workspaceContext.workspace.quoteReminderDelay1Days,
+      delay2Days: workspaceContext.workspace.quoteReminderDelay2Days,
     });
     const clientName = getQuoteClientName(quote.client);
 

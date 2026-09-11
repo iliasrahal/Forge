@@ -1,7 +1,12 @@
+import { formatQuantity, formatUnit } from "@/src/lib/document-lines";
+
 type DocumentLineDetail = {
   id?: string;
   label: string;
   description?: string | null;
+  quantityMilli?: number | null;
+  unit?: string | null;
+  unitPriceCents?: number | null;
   amountCents?: number | null;
 };
 
@@ -22,6 +27,12 @@ export default function DocumentLineDetails({ details, formatAmount }: Props) {
             {detail.description ? (
               <span className="mt-0.5 block break-words text-slate-500 dark:text-slate-400">
                 {detail.description}
+              </span>
+            ) : null}
+            {detail.unitPriceCents != null && detail.quantityMilli != null && detail.unit ? (
+              <span className="mt-0.5 block tabular-nums text-slate-500 dark:text-slate-400">
+                {formatQuantity(detail.quantityMilli)} {formatUnit(detail.unit)} ×{" "}
+                {formatAmount(detail.unitPriceCents)}
               </span>
             ) : null}
           </span>

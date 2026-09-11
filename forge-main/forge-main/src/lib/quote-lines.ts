@@ -19,8 +19,13 @@ export type EditableQuoteLine = {
 
 export type EditableLineDetail = {
   label: string;
-  /** Montant informatif en euros ; chaîne vide = aucun montant. */
-  amount: string;
+  /** Quantité affichée, mêmes règles que la ligne : "1" par défaut. */
+  quantity: string;
+  /** Unité : "forfait", "h", "m2"... */
+  unit: string;
+  /** Prix unitaire HT en euros ; chaîne vide = aucun prix (note purement
+   *  informative, non chiffrée). */
+  unitPrice: string;
   description: string;
 };
 

@@ -100,7 +100,9 @@ function getLineDetails(message: string, matchEnd: number) {
     .filter((match): match is RegExpMatchArray => match !== null)
     .map((match) => ({
       label: match[2].trim().replace(/^(?:de\s+|d['’])/iu, "").slice(0, 160),
-      amount: match[1].replace(",", "."),
+      quantity: "1",
+      unit: "forfait",
+      unitPrice: match[1].replace(",", "."),
       description: "",
     }))
     .filter((detail) => detail.label);
@@ -216,12 +218,27 @@ export function parseSerializedQuoteLines(
                 const detail = rawDetail as Record<string, unknown>;
                 const label = typeof detail.label === "string" ? detail.label.trim() : "";
                 if (!label) return null;
-                const amount = typeof detail.amount === "string"
-                  ? detail.amount.trim().replace(",", ".")
-                  : "";
+                // "unitPrice" (nouveau format) ou "amount" (ancien lien transitoire).
+                const rawUnitPrice =
+                  typeof detail.unitPrice === "string"
+                    ? detail.unitPrice
+                    : typeof detail.amount === "string"
+                      ? detail.amount
+                      : "";
+                const unitPrice = rawUnitPrice.trim().replace(",", ".");
+                const detailQuantity =
+                  typeof detail.quantity === "string" && detail.quantity.trim()
+                    ? detail.quantity.trim().replace(",", ".")
+                    : "1";
+                const detailUnit =
+                  typeof detail.unit === "string" && detail.unit.trim()
+                    ? detail.unit.trim().slice(0, 16)
+                    : "forfait";
                 return {
                   label: label.slice(0, 160),
-                  amount: amount && PRICE_PATTERN.test(amount) ? amount : "",
+                  quantity: detailQuantity,
+                  unit: detailUnit,
+                  unitPrice: unitPrice && PRICE_PATTERN.test(unitPrice) ? unitPrice : "",
                   description:
                     typeof detail.description === "string"
                       ? detail.description.trim().slice(0, 500)

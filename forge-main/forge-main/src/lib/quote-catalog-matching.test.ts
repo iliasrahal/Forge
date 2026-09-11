@@ -117,8 +117,8 @@ test("reconnaît les détails tarifés introduits par dont", () => {
   );
   assert.equal(result.category, "Matériaux");
   assert.deepEqual(result.details, [
-    { label: "chauffe-eau", amount: "40", description: "" },
-    { label: "raccords", amount: "20", description: "" },
-    { label: "fournitures", amount: "40", description: "" },
+    { label: "chauffe-eau", quantity: "1", unit: "forfait", unitPrice: "40", description: "" },
+    { label: "raccords", quantity: "1", unit: "forfait", unitPrice: "20", description: "" },
+    { label: "fournitures", quantity: "1", unit: "forfait", unitPrice: "40", description: "" },
   ]);
 });
