@@ -290,11 +290,15 @@ export default function QuoteLinesForm({
     const unitPriceCents = eurosToCents(line.unitPrice);
     const discountBp = normalizeDiscountBp(line.discount);
     const costCents = line.cost?.trim() ? eurosToCents(line.cost) : null;
-    const amountCents = computeLineAmountCents({
-      quantityMilli,
-      unitPriceCents,
-      discountBp,
-    });
+    // Le total de la ligne inclut ses sous-détails chiffrés (quantité × PU HT
+    // de chaque détail, non remisés) en plus de son propre montant.
+    const detailsCents = (line.details ?? []).reduce(
+      (sum, detail) => sum + detailAmountCents(detail),
+      0,
+    );
+    const amountCents =
+      computeLineAmountCents({ quantityMilli, unitPriceCents, discountBp }) +
+      detailsCents;
     return {
       quantityMilli,
       unitPriceCents,
@@ -564,8 +568,7 @@ export default function QuoteLinesForm({
                   );
                   return detailedCents > 0 ? (
                     <p className="text-right text-xs text-slate-500 dark:text-slate-400">
-                      Détails : {formatEuros(detailedCents)} € sur{" "}
-                      {formatEuros(computedLines[index].amountCents)} €
+                      Dont {formatEuros(detailedCents)} € de détails, inclus dans le total de la ligne
                     </p>
                   ) : null;
                 })()}

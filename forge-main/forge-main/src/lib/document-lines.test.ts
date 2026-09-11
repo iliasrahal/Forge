@@ -116,7 +116,7 @@ test("normalizeUnit / formatUnit", () => {
   assert.equal(formatUnit("j"), "jour");
 });
 
-test("les sous-détails sont persistés mais exclus du montant comptable", () => {
+test("les sous-détails chiffrés s'ajoutent au montant de la ligne", () => {
   const [line] = buildDocumentLinesFromForm(
     JSON.stringify([{ category: "Matériaux", quantity: "1", unit: "forfait", unitPrice: "100", discount: "", cost: "", details: [
       { label: "Peinture", quantity: "2", unit: "u", unitPrice: "10", description: "Pièce humide" },
@@ -124,9 +124,21 @@ test("les sous-détails sont persistés mais exclus du montant comptable", () =>
     ] }]),
     2000,
   );
-  assert.equal(line.amountCents, 10000);
+  // 100 (PU HT propre à la ligne) + 20 (Peinture : 2 × 10) + 0 (Visserie, sans prix).
+  assert.equal(line.amountCents, 12000);
   assert.deepEqual(line.details, [
     { label: "Peinture", quantityMilli: 2000, unit: "u", unitPriceCents: 1000, amountCents: 2000, description: "Pièce humide", position: 0 },
     { label: "Visserie", quantityMilli: 1000, unit: "forfait", unitPriceCents: null, amountCents: null, description: null, position: 1 },
   ]);
+});
+
+test("une ligne sans PU HT propre reste valide si ses détails sont chiffrés", () => {
+  const lines = buildDocumentLinesFromForm(
+    JSON.stringify([{ category: "Matériel", quantity: "1", unit: "forfait", unitPrice: "", discount: "", cost: "", details: [
+      { label: "Peinture", quantity: "1", unit: "forfait", unitPrice: "40", description: "" },
+    ] }]),
+    2000,
+  );
+  assert.equal(lines.length, 1);
+  assert.equal(lines[0].amountCents, 4000);
 });
