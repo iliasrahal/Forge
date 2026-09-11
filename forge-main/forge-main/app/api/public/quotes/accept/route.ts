@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 
 import { Prisma } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { cleanQuotePublicToken, getQuoteAcceptanceState, hashQuotePublicToken } from "@/src/lib/quote-public-access";
 import { buildQuoteSignatureSnapshot, createQuoteIntegrityHash, resolveQuoteSigner, validateDrawnSignature } from "@/src/lib/quote-signature";
 import { checkRateLimit } from "@/src/lib/rate-limit";
+import { revalidateStatusViews } from "@/src/lib/status-revalidation";
 
 async function findExistingSignature(tokenHash: string) {
   return prisma.quotePublicAccess.findUnique({
@@ -124,10 +124,7 @@ export async function POST(request: Request) {
     if (result.kind === "accepted-before-signatures") return NextResponse.json({ error: "Ce devis a déjà été accepté." }, { status: 409 });
     if (result.kind === "unavailable") return NextResponse.json({ error: result.reason || "Ce devis ne peut plus être accepté." }, { status: 409 });
     if (result.kind === "retry") throw new Error("QUOTE_SIGNATURE_CONFLICT");
-    revalidatePath("/app");
-    revalidatePath("/quotes");
-    revalidatePath(`/clients/${result.clientId ?? "sans-client"}/quotes/${result.quoteId}`);
-    if (result.clientId) revalidatePath(`/clients/${result.clientId}`);
+    revalidateStatusViews("quote", result.quoteId, result.clientId);
     return NextResponse.json({ signed: true, ...result });
   } catch (error) {
     if (error instanceof SyntaxError) {

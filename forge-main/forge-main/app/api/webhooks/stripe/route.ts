@@ -5,6 +5,7 @@ import { Prisma } from "@/src/generated/prisma/client";
 import { prisma } from "@/src/lib/prisma";
 import { getStripe, isStripeConfigured } from "@/src/lib/stripe";
 import { syncInvoicePaymentStatus } from "@/src/lib/invoice-payment-sync";
+import { revalidateStatusViews } from "@/src/lib/status-revalidation";
 import { syncConnectAccount } from "@/src/lib/stripe-connect";
 
 // Les webhooks Stripe exigent le corps brut pour vérifier la signature.
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
   }
 
   const connectedAccountId = event.account ?? null;
+  const affectedInvoiceIds = new Set<string>();
 
   try {
     switch (event.type) {
@@ -142,6 +144,7 @@ export async function POST(request: Request) {
           },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
 
         const paymentIntentId =
           typeof session.payment_intent === "string"
@@ -182,6 +185,7 @@ export async function POST(request: Request) {
           },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
         // Même déjà SUCCEEDED, on resynchronise la facture : cela répare une
         // éventuelle ancienne exécution interrompue entre les deux écritures.
         await finalizeSucceeded(
@@ -207,6 +211,7 @@ export async function POST(request: Request) {
           },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
         if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
           await syncInvoicePaymentStatus(prisma, payment.invoiceId);
           break;
@@ -237,6 +242,7 @@ export async function POST(request: Request) {
           },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
         // Un événement d'échec livré tardivement ne peut pas annuler un
         // encaissement déjà confirmé ou remboursé.
         if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
@@ -270,6 +276,7 @@ export async function POST(request: Request) {
           },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
         if (payment.status === "SUCCEEDED" || payment.status === "REFUNDED") {
           await syncInvoicePaymentStatus(prisma, payment.invoiceId);
           break;
@@ -298,6 +305,7 @@ export async function POST(request: Request) {
           where: { stripePaymentIntentId: paymentIntentId },
         });
         if (!payment) break;
+        affectedInvoiceIds.add(payment.invoiceId);
         await prisma.$transaction(async (transaction) => {
           await transaction.payment.update({
             where: { id: payment.id },
@@ -339,6 +347,10 @@ export async function POST(request: Request) {
       { error: "Traitement du webhook impossible." },
       { status: 500 },
     );
+  }
+
+  for (const invoiceId of affectedInvoiceIds) {
+    revalidateStatusViews("invoice", invoiceId);
   }
 
   return NextResponse.json({ received: true });
