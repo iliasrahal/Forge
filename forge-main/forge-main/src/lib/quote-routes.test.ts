@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getQuoteClientName,
   getQuoteEditPath,
+  getQuoteInterventionPath,
   getQuotePath,
 } from "./quote-routes";
 
@@ -15,6 +16,13 @@ test("un devis sans client utilise une route stable et consultable", () => {
   assert.equal(
     getQuoteEditPath({ id: "quote-1", clientId: null }),
     "/clients/sans-client/quotes/quote-1/edit",
+  );
+});
+
+test("un devis sans client peut ouvrir la création d'intervention", () => {
+  assert.equal(
+    getQuoteInterventionPath({ id: "quote-1", clientId: null, title: "Salle de bain" }),
+    "/clients/sans-client/interventions/new?title=Salle+de+bain&quoteId=quote-1",
   );
 });
 

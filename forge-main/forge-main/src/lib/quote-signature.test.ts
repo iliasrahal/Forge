@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   buildQuoteSignatureSnapshot,
   createQuoteIntegrityHash,
+  resolveQuoteSigner,
   validateDrawnSignature,
   validateSignerName,
 } from "./quote-signature";
@@ -28,6 +29,35 @@ test("valide séparément prénom et nom", () => {
   assert.match(validateSignerName("", "Le prénom").error ?? "", /obligatoire/);
   assert.match(validateSignerName("", "Le nom").error ?? "", /obligatoire/);
   assert.equal(validateSignerName("  Jean  ", "Le prénom").value, "Jean");
+});
+
+test("conserve l'identité du client associé", () => {
+  assert.deepEqual(
+    resolveQuoteSigner(
+      { type: "PARTICULIER", firstName: "Jean", lastName: "Dupont", companyName: null, phone: null, email: null, street: null, postalCode: null, city: null },
+      "Autre",
+      "Personne",
+    ),
+    { signerFirstName: "Jean", signerLastName: "Dupont", error: null },
+  );
+});
+
+test("demande et valide l'identité quand le devis n'a pas de client", () => {
+  assert.match(resolveQuoteSigner(null, "", "Dupont").error ?? "", /prénom/i);
+  assert.match(resolveQuoteSigner(null, "Jean", "").error ?? "", /nom/i);
+  assert.deepEqual(resolveQuoteSigner(null, " Jean ", " Dupont "), {
+    signerFirstName: "Jean",
+    signerLastName: "Dupont",
+    error: null,
+  });
+});
+
+test("le snapshot signé accepte explicitement l'absence de client", () => {
+  const snapshot = buildQuoteSignatureSnapshot({
+    reference: "DEV-002", title: "Chantier", description: null, amountCents: 120000,
+    organization: { name: "Forge" }, client: null, lines: [],
+  });
+  assert.equal(snapshot.client, null);
 });
 
 test("le hash rattache le contenu, le signataire et l'instant", () => {

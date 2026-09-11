@@ -510,10 +510,25 @@ export async function PATCH(request: Request) {
         });
       }
 
-      const updatedIntervention = await prisma.intervention.update({
-        where: { id: intervention.id },
-        data: { clientId: client.id },
-        include: { client: true },
+      const updatedIntervention = await prisma.$transaction(async (transaction) => {
+        const updated = await transaction.intervention.update({
+          where: { id: intervention.id },
+          data: { clientId: client.id },
+          include: { client: true },
+        });
+
+        if (intervention.quoteId) {
+          await transaction.quote.updateMany({
+            where: {
+              id: intervention.quoteId,
+              organizationId: workspaceContext.workspace.id,
+              clientId: null,
+            },
+            data: { clientId: client.id },
+          });
+        }
+
+        return updated;
       });
 
       return NextResponse.json({

@@ -25,7 +25,7 @@ export type QuoteSignatureSnapshot = {
     street: string | null;
     postalCode: string | null;
     city: string | null;
-  };
+  } | null;
   title: string;
   description: string | null;
   lines: Array<{
@@ -56,6 +56,36 @@ export function validateSignerName(value: unknown, label: string) {
     return { value: null, error: `${label} est invalide.` };
   }
   return { value: cleaned, error: null };
+}
+
+export function resolveQuoteSigner(
+  client: QuoteSignatureSnapshot["client"],
+  suppliedFirstName: unknown,
+  suppliedLastName: unknown,
+) {
+  if (client) {
+    const signerFirstName = client.type === "PROFESSIONNEL"
+      ? client.companyName?.trim() || client.firstName?.trim() || client.lastName?.trim() || ""
+      : client.firstName?.trim() || client.lastName?.trim() || "";
+    const signerLastName = client.type === "PROFESSIONNEL" || !client.firstName?.trim()
+      ? ""
+      : client.lastName?.trim() || "";
+    return { signerFirstName, signerLastName, error: null };
+  }
+
+  const firstName = validateSignerName(suppliedFirstName, "Le prénom");
+  if (firstName.error) {
+    return { signerFirstName: "", signerLastName: "", error: firstName.error };
+  }
+  const lastName = validateSignerName(suppliedLastName, "Le nom");
+  if (lastName.error) {
+    return { signerFirstName: "", signerLastName: "", error: lastName.error };
+  }
+  return {
+    signerFirstName: firstName.value!,
+    signerLastName: lastName.value!,
+    error: null,
+  };
 }
 
 export function validateDrawnSignature(value: unknown):
@@ -147,7 +177,7 @@ export function buildQuoteSignatureSnapshot(quote: {
     version: 1,
     reference: quote.reference,
     organizationName: quote.organization?.name ?? null,
-    client: { ...quote.client },
+    client: quote.client ? { ...quote.client } : null,
     title: quote.title,
     description: quote.description,
     lines: quote.lines.map((line) => ({ ...line })),
@@ -182,7 +212,7 @@ export function parseQuoteSignatureSnapshot(value: unknown): QuoteSignatureSnaps
   const snapshot = value as Partial<QuoteSignatureSnapshot>;
   return snapshot.version === 1 && typeof snapshot.reference === "string" &&
     typeof snapshot.title === "string" && typeof snapshot.amountCents === "number" &&
-    !!snapshot.client && Array.isArray(snapshot.lines)
+    (snapshot.client === null || !!snapshot.client) && Array.isArray(snapshot.lines)
     ? snapshot as QuoteSignatureSnapshot
     : null;
 }

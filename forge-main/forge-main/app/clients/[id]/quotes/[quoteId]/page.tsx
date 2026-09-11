@@ -33,6 +33,7 @@ import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import {
   getQuoteClientName,
   getQuoteEditPath,
+  getQuoteInterventionPath,
   UNASSIGNED_QUOTE_CLIENT_ID,
 } from "@/src/lib/quote-routes";
 
@@ -528,23 +529,12 @@ export default async function QuotePage({
               quoteEditUrl={getQuoteEditPath(quote)}
             />
 
-            {quote.clientId ? (
               <Link
-                href={{
-                  pathname: `/clients/${id}/interventions/new`,
-                  query: {
-                    title: quote.title,
-                    quoteId: quote.id,
-                    ...(quote.description
-                      ? { description: quote.description }
-                      : {}),
-                  },
-                }}
+                href={getQuoteInterventionPath(quote)}
                 className="block w-full rounded-2xl border border-blue-600 px-5 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
               >
                 Créer une intervention
               </Link>
-            ) : null}
 
             {quote.status !== "ACCEPTE" && !quote.signature ? (
               <Link

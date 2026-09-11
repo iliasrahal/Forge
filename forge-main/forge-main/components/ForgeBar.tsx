@@ -17,7 +17,7 @@ import {
   getSpeechRecognitionErrorMessage,
   getSpeechRecognitionStartErrorMessage,
 } from "@/src/lib/speechRecognition";
-import { getQuoteEditPath, getQuotePath } from "@/src/lib/quote-routes";
+import { getQuoteEditPath, getQuoteInterventionPath, getQuotePath } from "@/src/lib/quote-routes";
 
 type SpeechRecognitionResultLike = {
   0?: {
@@ -1310,26 +1310,7 @@ export default function ForgeBar({
     }
 
     if (action === "createIntervention") {
-      if (!quote.clientId) {
-        throw new Error(
-          "Associe un client au devis avant de créer une intervention.",
-        );
-      }
-      const params = new URLSearchParams({
-        title: quote.title,
-        quoteId: quote.id,
-      });
-
-      if (quote.description) {
-        params.set(
-          "description",
-          quote.description,
-        );
-      }
-
-      router.push(
-        `/clients/${quote.clientId}/interventions/new?${params.toString()}`,
-      );
+      router.push(getQuoteInterventionPath(quote));
       return;
     }
 
