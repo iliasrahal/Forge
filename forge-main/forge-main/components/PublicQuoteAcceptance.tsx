@@ -12,7 +12,6 @@ type Props = {
   initialSignature: SignedDetails | null;
   canAccept: boolean;
   unavailableReason: string | null;
-  requiresSignerIdentity: boolean;
 };
 
 function formatDateTime(value: string | Date) {
@@ -110,14 +109,12 @@ function SignatureCanvas({ onChange }: { onChange: (signature: DrawnSignature | 
   );
 }
 
-export default function PublicQuoteAcceptance({ token, initialAccepted, initialSignature, canAccept, unavailableReason, requiresSignerIdentity }: Props) {
+export default function PublicQuoteAcceptance({ token, initialAccepted, initialSignature, canAccept, unavailableReason }: Props) {
   const [signed, setSigned] = useState<SignedDetails | null>(initialSignature);
   const [confirmed, setConfirmed] = useState(false);
   const [signature, setSignature] = useState<DrawnSignature | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [signerFirstName, setSignerFirstName] = useState("");
-  const [signerLastName, setSignerLastName] = useState("");
 
   async function submit() {
     if (loading || signed) return;
@@ -127,7 +124,7 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
       const response = await fetch("/api/public/quotes/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, confirmed, signature, signerFirstName, signerLastName }),
+        body: JSON.stringify({ token, confirmed, signature }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Votre signature n’a pas pu être enregistrée.");
@@ -162,28 +159,6 @@ export default function PublicQuoteAcceptance({ token, initialAccepted, initialS
   return (
     <section className="rounded-3xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 sm:p-5">
       <h2 className="text-center text-xl font-bold text-[var(--forge-text-primary)]">Accepter et signer</h2>
-      {requiresSignerIdentity ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
-            Prénom
-            <input
-              value={signerFirstName}
-              onChange={(event) => setSignerFirstName(event.target.value)}
-              autoComplete="given-name"
-              className="mt-2 min-h-12 w-full rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface)] px-4 font-normal text-[var(--forge-text-primary)] outline-none focus:border-blue-500"
-            />
-          </label>
-          <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
-            Nom
-            <input
-              value={signerLastName}
-              onChange={(event) => setSignerLastName(event.target.value)}
-              autoComplete="family-name"
-              className="mt-2 min-h-12 w-full rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface)] px-4 font-normal text-[var(--forge-text-primary)] outline-none focus:border-blue-500"
-            />
-          </label>
-        </div>
-      ) : null}
       <div className="mt-4">
         <p className="mb-2 text-sm font-semibold text-[var(--forge-text-primary)]">Votre signature</p>
         <SignatureCanvas onChange={setSignature} />

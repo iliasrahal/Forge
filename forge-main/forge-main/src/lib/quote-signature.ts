@@ -60,8 +60,6 @@ export function validateSignerName(value: unknown, label: string) {
 
 export function resolveQuoteSigner(
   client: QuoteSignatureSnapshot["client"],
-  suppliedFirstName: unknown,
-  suppliedLastName: unknown,
 ) {
   if (client) {
     const signerFirstName = client.type === "PROFESSIONNEL"
@@ -70,21 +68,12 @@ export function resolveQuoteSigner(
     const signerLastName = client.type === "PROFESSIONNEL" || !client.firstName?.trim()
       ? ""
       : client.lastName?.trim() || "";
-    return { signerFirstName, signerLastName, error: null };
+    return { signerFirstName, signerLastName };
   }
 
-  const firstName = validateSignerName(suppliedFirstName, "Le prénom");
-  if (firstName.error) {
-    return { signerFirstName: "", signerLastName: "", error: firstName.error };
-  }
-  const lastName = validateSignerName(suppliedLastName, "Le nom");
-  if (lastName.error) {
-    return { signerFirstName: "", signerLastName: "", error: lastName.error };
-  }
   return {
-    signerFirstName: firstName.value!,
-    signerLastName: lastName.value!,
-    error: null,
+    signerFirstName: "Signataire",
+    signerLastName: "",
   };
 }
 

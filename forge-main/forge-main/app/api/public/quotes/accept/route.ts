@@ -73,14 +73,7 @@ export async function POST(request: Request) {
       if (state.alreadyAccepted) return { kind: "accepted-before-signatures" as const };
       if (!state.canAccept) return { kind: "unavailable" as const, reason: state.reason };
 
-      const signer = resolveQuoteSigner(
-        access.quote.client,
-        body.signerFirstName,
-        body.signerLastName,
-      );
-      if (signer.error) {
-        return { kind: "invalid-signer" as const, error: signer.error };
-      }
+      const signer = resolveQuoteSigner(access.quote.client);
       const { signerFirstName, signerLastName } = signer;
 
       const signedAt = new Date();
@@ -113,7 +106,6 @@ export async function POST(request: Request) {
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     if (result.kind === "invalid") return NextResponse.json({ error: "Ce lien est invalide." }, { status: 404 });
-    if (result.kind === "invalid-signer") return NextResponse.json({ error: result.error }, { status: 400 });
     if (result.kind === "accepted-before-signatures") return NextResponse.json({ error: "Ce devis a déjà été accepté." }, { status: 409 });
     if (result.kind === "unavailable") return NextResponse.json({ error: result.reason || "Ce devis ne peut plus être accepté." }, { status: 409 });
     if (result.kind === "retry") throw new Error("QUOTE_SIGNATURE_CONFLICT");

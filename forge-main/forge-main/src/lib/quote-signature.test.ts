@@ -35,20 +35,15 @@ test("conserve l'identité du client associé", () => {
   assert.deepEqual(
     resolveQuoteSigner(
       { type: "PARTICULIER", firstName: "Jean", lastName: "Dupont", companyName: null, phone: null, email: null, street: null, postalCode: null, city: null },
-      "Autre",
-      "Personne",
     ),
-    { signerFirstName: "Jean", signerLastName: "Dupont", error: null },
+    { signerFirstName: "Jean", signerLastName: "Dupont" },
   );
 });
 
-test("demande et valide l'identité quand le devis n'a pas de client", () => {
-  assert.match(resolveQuoteSigner(null, "", "Dupont").error ?? "", /prénom/i);
-  assert.match(resolveQuoteSigner(null, "Jean", "").error ?? "", /nom/i);
-  assert.deepEqual(resolveQuoteSigner(null, " Jean ", " Dupont "), {
-    signerFirstName: "Jean",
-    signerLastName: "Dupont",
-    error: null,
+test("ne demande aucune identité quand le devis n'a pas de client", () => {
+  assert.deepEqual(resolveQuoteSigner(null), {
+    signerFirstName: "Signataire",
+    signerLastName: "",
   });
 });
 
