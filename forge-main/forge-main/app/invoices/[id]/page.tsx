@@ -97,7 +97,7 @@ export default async function InvoicePage({
 }: InvoicePageProps) {
 
 
-  const currentUser = await requireCurrentUser();
+  await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
 
 
@@ -469,8 +469,7 @@ export default async function InvoicePage({
           />
         ) : null}
 
-        {currentUser.smartRemindersEnabled &&
-        (invoice.status === "ENVOYEE" || invoice.status === "EN_RETARD" || invoice.reminders.length > 0) ? (
+        {invoice.status === "ENVOYEE" || invoice.status === "EN_RETARD" || invoice.reminders.length > 0 ? (
           <InvoiceReminderPanel
             invoiceId={invoice.id}
             canWrite={workspaceContext.permissions.canWrite}

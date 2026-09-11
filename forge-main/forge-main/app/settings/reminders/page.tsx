@@ -79,13 +79,12 @@ export default async function RemindersSettingsPage({
         </h1>
 
         <p className="mt-3 text-slate-500 dark:text-slate-400">
-          Dès qu’un devis ou une facture reste sans réponse au-delà de ces
-          délais, Forge te le signale et tu peux relancer en un clic — le
-          message reste à relire avant l’envoi. Tu peux aussi relancer
-          manuellement à tout moment depuis la fiche du document, même avant
-          l’échéance. Et si tu préfères ne rien avoir à faire, active l’envoi
-          automatique ci-dessous : Forge enverra alors les relances toute
-          seule, sans validation, avec un message standard.
+          Depuis la fiche d’un devis ou d’une facture, un bouton « Relancer »
+          envoie une relance manuelle en un clic, à tout moment — même avant
+          l’échéance. Passé ces délais, Forge te la signale comme conseillée.
+          Et si tu préfères ne rien avoir à faire, active l’envoi automatique
+          ci-dessous : Forge enverra alors les relances toute seule, dès le
+          délai atteint, sans aucun clic de ta part.
         </p>
 
         <form action={saveReminderSettings} className="mt-8 space-y-6">

@@ -19,9 +19,6 @@ type RouteProps = { params: Promise<{ id: string }> };
 export async function POST(_request: Request, { params }: RouteProps) {
   try {
     const context = await requireWorkspaceContext("write");
-    if (!context.user.smartRemindersEnabled) {
-      return NextResponse.json({ error: "Les rappels intelligents sont désactivés." }, { status: 403 });
-    }
     const { id: invoiceId } = await params;
     const limit = checkRateLimit(`invoice-reminder-prepare:${context.user.id}:${invoiceId}`, 10, 60_000);
     if (!limit.allowed) return NextResponse.json({ error: "Trop de demandes. Réessayez dans un instant." }, { status: 429 });

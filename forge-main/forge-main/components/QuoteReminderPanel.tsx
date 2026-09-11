@@ -20,53 +20,38 @@ function formatDateTime(value: string | Date) {
 
 export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasEmail, automaticLevel, daysSinceActivity, reminders }: Props) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
-  async function prepare() {
+  async function relaunch() {
+    if (sending) return;
     if (!hasEmail) {
       setError("Aucune adresse e-mail n’est renseignée pour ce client.");
-      setOpen(true);
       return;
     }
-    setOpen(true);
-    setLoading(true);
+    setSending(true);
     setError("");
     setNotice("");
     try {
-      const response = await fetch(`/api/quotes/${quoteId}/reminders/prepare`, { method: "POST" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "La relance n’a pas pu être préparée.");
-      setMessage(data.message);
-    } catch (preparationError) {
-      setError(preparationError instanceof Error ? preparationError.message : "La relance n’a pas pu être préparée.");
-    } finally {
-      setLoading(false);
-    }
-  }
+      // Un seul clic : le message est généré côté serveur (IA si configurée,
+      // sinon modèle standard) puis envoyé immédiatement, sans étape de relecture.
+      const prepareResponse = await fetch(`/api/quotes/${quoteId}/reminders/prepare`, { method: "POST" });
+      const prepareData = await prepareResponse.json();
+      if (!prepareResponse.ok) throw new Error(prepareData.error || "La relance n’a pas pu être préparée.");
 
-  async function send() {
-    if (sending) return;
-    setSending(true);
-    setError("");
-    try {
-      const response = await fetch(`/api/quotes/${quoteId}/reminders/send`, {
+      const sendResponse = await fetch(`/api/quotes/${quoteId}/reminders/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message: prepareData.message }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "La relance n’a pas pu être envoyée.");
+      const sendData = await sendResponse.json();
+      if (!sendResponse.ok) throw new Error(sendData.error || "La relance n’a pas pu être envoyée.");
+
       setNotice("Relance envoyée avec succès.");
-      setOpen(false);
-      setMessage("");
       router.refresh();
-    } catch (sendError) {
-      setError(sendError instanceof Error ? sendError.message : "La relance n’a pas pu être envoyée.");
+    } catch (relaunchError) {
+      setError(relaunchError instanceof Error ? relaunchError.message : "La relance n’a pas pu être envoyée.");
     } finally {
       setSending(false);
     }
@@ -84,7 +69,7 @@ export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasE
             {automaticLevel && daysSinceActivity !== null
               ? `Ce devis est sans réponse depuis ${daysSinceActivity} jour${daysSinceActivity > 1 ? "s" : ""}.`
               : canPrepare && canWrite
-                ? "Vous pouvez préparer une relance manuelle si nécessaire."
+                ? "Vous pouvez relancer manuellement si nécessaire."
                 : canPrepare
                   ? "Ce devis est toujours en attente d’une réponse."
                   : "Les relances déjà envoyées restent consultables."}
@@ -93,21 +78,15 @@ export default function QuoteReminderPanel({ quoteId, canWrite, canPrepare, hasE
       </div>
 
       {canWrite && canPrepare ? (
-        <button type="button" onClick={prepare} disabled={loading || sending} className="mt-4 min-h-12 w-full rounded-2xl border border-blue-500/50 px-4 font-semibold text-[var(--forge-accent-blue-lit)] transition hover:bg-blue-500/10 disabled:opacity-60">
-          {loading ? "Préparation…" : "Préparer une relance"}
+        <button
+          type="button"
+          onClick={relaunch}
+          disabled={sending}
+          className="mt-4 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-4 font-bold text-white transition disabled:opacity-60"
+        >
+          <Send size={17} />
+          {sending ? "Envoi…" : "Relancer"}
         </button>
-      ) : null}
-
-      {open && canWrite && canPrepare ? (
-        <div className="mt-4 border-t border-[var(--forge-border)] pt-4">
-          <label className="text-sm font-semibold text-[var(--forge-text-primary)]">Message de relance
-            <textarea value={message} onChange={(event) => setMessage(event.target.value)} rows={10} maxLength={5_000} disabled={loading || !hasEmail} className="mt-2 w-full resize-y rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-input-background)] p-4 text-base leading-6 text-[var(--forge-text-primary)] outline-none focus:border-blue-500" />
-          </label>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => { setOpen(false); setError(""); }} disabled={sending} className="min-h-12 rounded-2xl border border-[var(--forge-border)] px-4 font-semibold text-[var(--forge-text-primary)]">Annuler</button>
-            <button type="button" onClick={send} disabled={sending || loading || !message.trim()} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-pink-500 px-4 font-bold text-white disabled:opacity-60"><Send size={17} />{sending ? "Envoi…" : "Envoyer la relance"}</button>
-          </div>
-        </div>
       ) : null}
 
       {error ? <p className="mt-3 text-sm font-medium text-red-500">{error}</p> : null}
