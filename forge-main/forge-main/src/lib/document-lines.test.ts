@@ -119,14 +119,14 @@ test("normalizeUnit / formatUnit", () => {
 test("les sous-détails sont persistés mais exclus du montant comptable", () => {
   const [line] = buildDocumentLinesFromForm(
     JSON.stringify([{ category: "Matériaux", quantity: "1", unit: "forfait", unitPrice: "100", discount: "", cost: "", details: [
-      { label: "Peinture", amount: "20", description: "Pièce humide" },
-      { label: "Visserie", amount: "", description: "" },
+      { label: "Peinture", quantity: "2", unit: "u", unitPrice: "10", description: "Pièce humide" },
+      { label: "Visserie", quantity: "1", unit: "forfait", unitPrice: "", description: "" },
     ] }]),
     2000,
   );
   assert.equal(line.amountCents, 10000);
   assert.deepEqual(line.details, [
-    { label: "Peinture", amountCents: 2000, description: "Pièce humide", position: 0 },
-    { label: "Visserie", amountCents: null, description: null, position: 1 },
+    { label: "Peinture", quantityMilli: 2000, unit: "u", unitPriceCents: 1000, amountCents: 2000, description: "Pièce humide", position: 0 },
+    { label: "Visserie", quantityMilli: 1000, unit: "forfait", unitPriceCents: null, amountCents: null, description: null, position: 1 },
   ]);
 });

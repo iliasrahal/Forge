@@ -11,6 +11,9 @@ type QuoteLineSnapshot = {
   details?: Array<{
     label: string;
     description: string | null;
+    quantityMilli: number;
+    unit: string;
+    unitPriceCents: number | null;
     amountCents: number | null;
     position: number;
   }>;
@@ -57,6 +60,9 @@ export function buildInvoiceSnapshotFromQuote(quote: QuoteSnapshotSource) {
               create: line.details.map((detail) => ({
                 label: detail.label,
                 description: detail.description,
+                quantityMilli: detail.quantityMilli,
+                unit: detail.unit,
+                unitPriceCents: detail.unitPriceCents,
                 amountCents: detail.amountCents,
                 position: detail.position,
               })),

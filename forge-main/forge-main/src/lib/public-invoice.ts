@@ -52,7 +52,7 @@ export async function getPublicInvoiceByToken(rawToken: unknown) {
               label: true,
               amountCents: true,
               details: {
-                select: { id: true, label: true, description: true, amountCents: true },
+                select: { id: true, label: true, description: true, quantityMilli: true, unit: true, unitPriceCents: true, amountCents: true },
                 orderBy: { position: "asc" },
               },
             },

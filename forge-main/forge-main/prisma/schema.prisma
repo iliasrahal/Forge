@@ -904,6 +904,11 @@ model QuoteLineDetail {
   id String @id @default(cuid())
   label String
   description String?
+  // Quantité × unité × PU HT du sous-détail. Sert uniquement à calculer
+  // amountCents ci-dessous ; jamais inclus dans les totaux de la ligne.
+  quantityMilli Int @default(1000)
+  unit String @default("forfait")
+  unitPriceCents Int?
   // Facultatif et uniquement informatif : jamais inclus dans les totaux.
   amountCents Int?
   position Int @default(0)
@@ -1101,6 +1106,11 @@ model InvoiceLineDetail {
   id String @id @default(cuid())
   label String
   description String?
+  // Quantité × unité × PU HT du sous-détail. Sert uniquement à calculer
+  // amountCents ci-dessous ; jamais inclus dans les totaux de la ligne.
+  quantityMilli Int @default(1000)
+  unit String @default("forfait")
+  unitPriceCents Int?
   // Facultatif et uniquement informatif : jamais inclus dans les totaux.
   amountCents Int?
   position Int @default(0)

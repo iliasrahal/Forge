@@ -122,6 +122,11 @@ export type PersistableDocumentLine = {
 export type PersistableDocumentLineDetail = {
   label: string;
   description: string | null;
+  quantityMilli: number;
+  unit: string;
+  unitPriceCents: number | null;
+  /** = quantityMilli × unitPriceCents, ou null si aucun prix saisi.
+   *  Purement informatif : jamais inclus dans les totaux de la ligne. */
   amountCents: number | null;
   position: number;
 };
@@ -180,17 +185,30 @@ export function buildDocumentLinesFromForm(
               const detail = rawDetail as Record<string, unknown>;
               const label = typeof detail.label === "string" ? detail.label.trim() : "";
               if (!label) return null;
-              const rawAmount = typeof detail.amount === "string" ? detail.amount.trim() : "";
-              const normalizedAmount = rawAmount.replace(",", ".");
+              const detailQuantityMilli = parseQuantityToMilli(detail.quantity, 1000);
+              const detailUnit = normalizeUnit(detail.unit);
+              const rawUnitPrice = typeof detail.unitPrice === "string" ? detail.unitPrice.trim() : "";
+              const normalizedUnitPrice = rawUnitPrice.replace(",", ".");
+              const detailUnitPriceCents =
+                rawUnitPrice && /^\d+(?:\.\d{1,2})?$/.test(normalizedUnitPrice)
+                  ? Math.max(0, eurosToCents(normalizedUnitPrice))
+                  : null;
               return {
                 label: label.slice(0, 200),
                 description:
                   typeof detail.description === "string" && detail.description.trim()
                     ? detail.description.trim().slice(0, 500)
                     : null,
+                quantityMilli: detailQuantityMilli,
+                unit: detailUnit,
+                unitPriceCents: detailUnitPriceCents,
                 amountCents:
-                  rawAmount && /^\d+(?:\.\d{1,2})?$/.test(normalizedAmount)
-                    ? Math.max(0, eurosToCents(normalizedAmount))
+                  detailUnitPriceCents != null
+                    ? computeLineAmountCents({
+                        quantityMilli: detailQuantityMilli,
+                        unitPriceCents: detailUnitPriceCents,
+                        discountBp: 0,
+                      })
                     : null,
                 position,
               };

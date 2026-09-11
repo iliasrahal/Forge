@@ -18,6 +18,7 @@ import {
   computeDocumentMargin,
   computeLineAmountCents,
   DOCUMENT_UNITS,
+  formatUnit,
   normalizeDiscountBp,
   parseQuantityToMilli,
 } from "@/src/lib/document-lines";
@@ -70,6 +71,13 @@ function formatEuros(cents: number) {
   });
 }
 
+/** Total d'un sous-détail = quantité × PU HT ; 0 si aucun prix saisi. */
+function detailAmountCents(detail: LineDetail): number {
+  if (!detail.unitPrice.trim()) return 0;
+  const quantity = parseFloat(detail.quantity.replace(",", ".")) || 0;
+  return Math.round(eurosToCents(detail.unitPrice) * quantity);
+}
+
 function DetailEditorFields({
   editor,
   onChange,
@@ -83,19 +91,42 @@ function DetailEditorFields({
   onSave: () => void;
   saveLabel: "Ajouter le détail" | "Enregistrer";
 }) {
+  const detailTotalCents = detailAmountCents(editor.value);
+
   return (
-    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
-      <div className="min-w-0 space-y-2">
-        <input type="text" value={editor.value.label} placeholder="Nom du détail" aria-label="Nom du détail" onChange={(event) => onChange({ label: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-        <input type="text" value={editor.value.description} placeholder="Description facultative" aria-label="Description facultative du détail" onChange={(event) => onChange({ description: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200" />
+    <div className="space-y-2">
+      <input type="text" value={editor.value.label} placeholder="Nom du détail" aria-label="Nom du détail" onChange={(event) => onChange({ label: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Qté</span>
+          <input type="text" inputMode="decimal" value={editor.value.quantity} onChange={(event) => onChange({ quantity: event.target.value })} className="w-16 rounded-lg border border-slate-300 bg-white px-2 py-2 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Unité</span>
+          <select value={editor.value.unit} onChange={(event) => onChange({ unit: event.target.value })} className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+            {DOCUMENT_UNITS.map((entry) => (
+              <option key={entry.value} value={entry.value}>{entry.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="relative flex flex-col gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400">PU HT</span>
+          <input type="text" inputMode="decimal" value={editor.value.unitPrice} placeholder="—" onChange={(event) => onChange({ unitPrice: event.target.value })} className="w-24 rounded-lg border border-slate-300 bg-white px-2 py-2 pr-6 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+          <span className="pointer-events-none absolute bottom-2 right-2 text-sm text-slate-400">€</span>
+        </label>
+        <div className="ml-auto flex flex-col items-end gap-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Total</span>
+          <span className="py-2 text-sm font-semibold text-slate-900 dark:text-white">
+            {editor.value.unitPrice.trim() ? `${formatEuros(detailTotalCents)} €` : "—"}
+          </span>
+        </div>
       </div>
-      <label className="relative block">
-        <span className="mb-1 block text-xs text-slate-500 dark:text-slate-400">Montant facultatif</span>
-        <input type="text" inputMode="decimal" value={editor.value.amount} placeholder="—" onChange={(event) => onChange({ amount: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-7 text-right text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-        <span className="pointer-events-none absolute bottom-2 right-3 text-sm text-slate-400">€</span>
-      </label>
-      {editor.error && <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400 sm:col-span-2">{editor.error}</p>}
-      <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:col-span-2 sm:flex sm:justify-end">
+
+      <input type="text" value={editor.value.description} placeholder="Description facultative" aria-label="Description facultative du détail" onChange={(event) => onChange({ description: event.target.value })} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200" />
+
+      {editor.error && <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">{editor.error}</p>}
+      <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:flex sm:justify-end">
         <button type="button" onClick={onCancel} className="min-h-11 rounded-xl border border-slate-300 px-4 text-sm font-semibold text-slate-700 dark:border-slate-600 dark:text-slate-200">Annuler</button>
         <button type="button" onClick={onSave} className="min-h-11 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">{saveLabel}</button>
       </div>
@@ -194,7 +225,7 @@ export default function QuoteLinesForm({
     setDetailEditor({
       lineIndex,
       detailIndex: null,
-      value: { label: "", amount: "", description: "" },
+      value: { label: "", quantity: "1", unit: "forfait", unitPrice: "", description: "" },
       error: "",
     });
   }
@@ -217,8 +248,10 @@ export default function QuoteLinesForm({
     }
     const savedDetail = {
       label,
+      quantity: detailEditor.value.quantity.trim() || "1",
+      unit: detailEditor.value.unit,
+      unitPrice: detailEditor.value.unitPrice.trim(),
       description: detailEditor.value.description.trim(),
-      amount: detailEditor.value.amount.trim(),
     };
     setLines((current) => current.map((line, lineIndex) => {
       if (lineIndex !== detailEditor.lineIndex) return line;
@@ -505,7 +538,14 @@ export default function QuoteLinesForm({
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-slate-900 dark:text-white">{detail.label}</p>
                           {detail.description && <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{detail.description}</p>}
-                          {detail.amount.trim() && <p className="mt-1 text-sm font-semibold text-blue-700 dark:text-blue-400">{formatEuros(eurosToCents(detail.amount))} €</p>}
+                          {detail.unitPrice.trim() && (
+                            <p className="mt-1 text-sm text-blue-700 dark:text-blue-400">
+                              <span className="tabular-nums">
+                                {detail.quantity || "1"} {formatUnit(detail.unit)} × {formatEuros(eurosToCents(detail.unitPrice))} €
+                              </span>{" "}
+                              <span className="font-semibold">= {formatEuros(detailAmountCents(detail))} €</span>
+                            </p>
+                          )}
                         </div>
                         {canWrite && (
                           <div className="flex shrink-0 items-center gap-1">
@@ -519,8 +559,7 @@ export default function QuoteLinesForm({
                 ))}
                 {(() => {
                   const detailedCents = (line.details ?? []).reduce(
-                    (sum, detail) =>
-                      sum + (detail.amount.trim() ? eurosToCents(detail.amount) : 0),
+                    (sum, detail) => sum + detailAmountCents(detail),
                     0,
                   );
                   return detailedCents > 0 ? (
