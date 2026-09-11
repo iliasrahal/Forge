@@ -236,14 +236,14 @@ export default async function NewInterventionPage({
 
 
 
-          <div className="grid gap-3 min-[360px]:grid-cols-2 sm:gap-5">
-            <div>
+          <div className="grid min-w-0 gap-3 min-[360px]:grid-cols-2 sm:gap-5">
+            <div className="min-w-0">
               <label htmlFor="date" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Date de début</label>
-              <input id="date" name="date" type="date" required className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
+              <input id="date" name="date" type="date" required className="min-h-11 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
             </div>
-            <div>
+            <div className="min-w-0">
               <label htmlFor="time" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">Heure de début</label>
-              <input id="time" name="time" type="time" step={60} required defaultValue="09:00" className="min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
+              <input id="time" name="time" type="time" step={60} required defaultValue="09:00" className="min-h-11 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:px-4 sm:py-3" />
             </div>
           </div>
 
@@ -252,18 +252,18 @@ export default async function NewInterventionPage({
             + Ajouter une période de chantier
           </label>
 
-          <div className="hidden gap-3 peer-checked:grid min-[360px]:grid-cols-2 sm:grid sm:gap-5">
-            <div>
+          <div className="hidden min-w-0 gap-3 peer-checked:grid min-[360px]:grid-cols-2 sm:grid sm:gap-5">
+            <div className="min-w-0">
               <label htmlFor="endDate" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">
                 Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
               </label>
-              <input id="endDate" name="endDate" type="date" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              <input id="endDate" name="endDate" type="date" className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
-            <div>
+            <div className="min-w-0">
               <label htmlFor="endTime" className="mb-2 block font-semibold text-blue-700 dark:text-blue-400">
                 Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
               </label>
-              <input id="endTime" name="endTime" type="time" step={60} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+              <input id="endTime" name="endTime" type="time" step={60} className="w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
             </div>
           </div>
           <div>

@@ -304,8 +304,8 @@ export default function InvoicePaymentsPanel({
 
       {showForm && open ? (
         <div className="mt-4 border-t border-[var(--forge-border)] pt-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            <label className="min-w-0 text-sm font-semibold text-[var(--forge-text-primary)]">
               Montant reçu
               <div className="mt-1 flex items-center gap-2">
                 <input
@@ -321,7 +321,7 @@ export default function InvoicePaymentsPanel({
               </div>
             </label>
 
-            <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
+            <label className="min-w-0 text-sm font-semibold text-[var(--forge-text-primary)]">
               Moyen
               <select
                 value={method}
@@ -340,7 +340,7 @@ export default function InvoicePaymentsPanel({
               </select>
             </label>
 
-            <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
+            <label className="min-w-0 text-sm font-semibold text-[var(--forge-text-primary)]">
               Date d’encaissement
               <input
                 type="date"
@@ -351,7 +351,7 @@ export default function InvoicePaymentsPanel({
               />
             </label>
 
-            <label className="text-sm font-semibold text-[var(--forge-text-primary)]">
+            <label className="min-w-0 text-sm font-semibold text-[var(--forge-text-primary)]">
               Référence <span className="font-normal text-[var(--forge-text-muted)]">(facultatif)</span>
               <input
                 type="text"

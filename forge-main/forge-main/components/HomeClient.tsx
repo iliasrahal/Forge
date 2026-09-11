@@ -1615,8 +1615,8 @@ const handleCreateInvoice = async () => {
             />
           </label>
 
-          <div className="grid gap-4 min-[360px]:grid-cols-2">
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <div className="grid min-w-0 gap-4 min-[360px]:grid-cols-2">
+            <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
               Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
               <input
                 type="date"
@@ -1626,7 +1626,7 @@ const handleCreateInvoice = async () => {
                 className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal dark:border-slate-700 dark:bg-slate-800"
               />
             </label>
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+            <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
               Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
               <input
                 type="time"

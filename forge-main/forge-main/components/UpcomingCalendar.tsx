@@ -412,8 +412,8 @@ export default function UpcomingCalendar({
             </div>
 
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-2 sm:space-y-4 sm:px-6 sm:py-3">
-              <div className="grid gap-3 min-[360px]:grid-cols-2 sm:gap-4">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              <div className="grid min-w-0 gap-3 min-[360px]:grid-cols-2 sm:gap-4">
+                <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Date
                   <input
                     type="date"
@@ -423,7 +423,7 @@ export default function UpcomingCalendar({
                     className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:mt-2 sm:py-3"
                   />
                 </label>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Heure
                   <input
                     type="time"
@@ -508,8 +508,8 @@ export default function UpcomingCalendar({
                 />
               </label>
 
-              <div className="grid gap-4 min-[360px]:grid-cols-2">
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+              <div className="grid min-w-0 gap-4 min-[360px]:grid-cols-2">
+                <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Date de fin <span className="font-normal text-slate-400">(facultatif)</span>
                   <input
                     type="date"
@@ -519,7 +519,7 @@ export default function UpcomingCalendar({
                     className="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal text-slate-950 outline-none focus:border-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                   />
                 </label>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                <label className="block min-w-0 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   Heure de fin <span className="font-normal text-slate-400">(facultatif)</span>
                   <input
                     type="time"
