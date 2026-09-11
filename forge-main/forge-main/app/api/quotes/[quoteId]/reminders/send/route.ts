@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { sendQuoteReminderEmail } from "@/src/lib/email";
 import { prisma } from "@/src/lib/prisma";
 import { createQuotePublicToken, hashQuotePublicToken } from "@/src/lib/quote-public-access";
-import { getQuoteReminderState, isReminderCoolingDown, validateReminderMessage } from "@/src/lib/quote-reminders";
+import { isReminderCoolingDown, validateReminderMessage } from "@/src/lib/quote-reminders";
 import { checkRateLimit } from "@/src/lib/rate-limit";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -34,14 +34,8 @@ export async function POST(request: Request, { params }: RouteProps) {
     if (quote.status !== "ENVOYE") return NextResponse.json({ error: "Ce devis ne peut plus être relancé." }, { status: 409 });
     if (!quote.client) return NextResponse.json({ error: "Associez un client au devis avant d’envoyer une relance." }, { status: 400 });
     if (!quote.client.email) return NextResponse.json({ error: "Aucune adresse e-mail n’est renseignée pour ce client." }, { status: 400 });
-    const reminderState = getQuoteReminderState({
-      status: quote.status,
-      sentAt: quote.sentAt,
-      reminders: quote.reminders,
-    });
-    if (!reminderState.eligible) {
-      return NextResponse.json({ error: "Ce devis n’est pas encore éligible à une relance." }, { status: 409 });
-    }
+    // La relance manuelle reste possible tant que le devis est sans réponse,
+    // même avant le délai automatique — seul le cooldown anti-doublon s'applique.
     if (isReminderCoolingDown(quote.reminders[0]?.sentAt ?? null)) {
       return NextResponse.json({ error: "Une relance a déjà été envoyée récemment. Réessayez plus tard." }, { status: 409 });
     }

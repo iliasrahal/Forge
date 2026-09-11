@@ -2,7 +2,8 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/src/lib/prisma";
-import { buildStandardReminderMessage, getQuoteReminderState, validateReminderMessage } from "@/src/lib/quote-reminders";
+import { resolveDocumentEmailSignature } from "@/src/lib/document-email-signature";
+import { buildStandardReminderMessage, getManualReminderLevel, getQuoteReminderState, validateReminderMessage } from "@/src/lib/quote-reminders";
 import { checkRateLimit } from "@/src/lib/rate-limit";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -29,20 +30,24 @@ export async function POST(_request: Request, { params }: RouteProps) {
     if (quote.status !== "ENVOYE") return NextResponse.json({ error: "Seul un devis envoyé peut être relancé." }, { status: 409 });
     if (!quote.client) return NextResponse.json({ error: "Associez un client au devis avant de préparer une relance." }, { status: 400 });
     if (!quote.client.email) return NextResponse.json({ error: "Aucune adresse e-mail n’est renseignée pour ce client." }, { status: 400 });
+    // Relance automatique proposée (délai atteint) ou, à défaut, relance
+    // manuelle à l'initiative de l'artisan — toujours possible tant que le
+    // devis reste sans réponse, indépendamment du délai configuré.
     const reminderState = getQuoteReminderState({
       status: quote.status,
       sentAt: quote.sentAt,
       reminders: quote.reminders,
+      delay1Days: context.workspace.quoteReminderDelay1Days,
+      delay2Days: context.workspace.quoteReminderDelay2Days,
     });
-    if (!reminderState.eligible || !reminderState.level) {
-      return NextResponse.json({ error: "Ce devis n’est pas encore éligible à une relance." }, { status: 409 });
-    }
 
     const clientName = quote.client.type === "PROFESSIONNEL"
       ? quote.client.companyName?.trim() || "Madame, Monsieur"
       : `${quote.client.firstName ?? ""} ${quote.client.lastName ?? ""}`.trim() || "Madame, Monsieur";
-    const artisanSignature = context.user.emailSignature?.trim() || context.user.firstName.trim() || "L’équipe Forge";
-    const level = reminderState.level;
+    const artisanSignature = resolveDocumentEmailSignature(context.workspace, context.user);
+    const level = reminderState.eligible && reminderState.level
+      ? reminderState.level
+      : getManualReminderLevel(quote.reminders.length);
     const fallback = buildStandardReminderMessage({ level, clientName, reference: quote.reference, sentAt: quote.sentAt, artisanSignature });
     let message = fallback;
 

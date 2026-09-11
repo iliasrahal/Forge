@@ -9,6 +9,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
+import { getInvoiceReminderState } from "@/src/lib/invoice-reminders";
 
 
 function formatDate(date: Date) {
@@ -70,6 +71,10 @@ export default async function InvoicesPage() {
             companyName: true,
           },
         },
+        reminders: {
+          select: { sentAt: true },
+          orderBy: { sentAt: "desc" },
+        },
       },
 
     });
@@ -80,6 +85,16 @@ export default async function InvoicesPage() {
         ? invoice.client.companyName?.trim() || "Client professionnel"
         : `${invoice.client.firstName ?? ""} ${invoice.client.lastName ?? ""}`.trim() ||
           "Client sans nom";
+    const reminderState = getInvoiceReminderState({
+      status: invoice.status,
+      dueDate: invoice.dueDate,
+      sentAt: invoice.sentAt,
+      createdAt: invoice.createdAt,
+      reminders: invoice.reminders,
+      delay1Days: workspaceContext.workspace.invoiceReminderDelay1Days,
+      delay2Days: workspaceContext.workspace.invoiceReminderDelay2Days,
+      delay3Days: workspaceContext.workspace.invoiceReminderDelay3Days,
+    });
 
     return {
       id: invoice.id,
@@ -101,6 +116,7 @@ export default async function InvoicesPage() {
         displayDocumentReference(invoice.reference),
       ],
       badge: invoice.type === "DEPOSIT" ? "Acompte" : undefined,
+      attention: reminderState.eligible ? "À relancer" : undefined,
     };
   });
 

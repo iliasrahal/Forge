@@ -20,6 +20,8 @@ export function getQuoteReminderState(input: {
   sentAt: Date | null;
   reminders: Array<{ sentAt: Date }>;
   now?: Date;
+  delay1Days?: number;
+  delay2Days?: number;
 }): QuoteReminderState {
   const now = input.now ?? new Date();
   if (input.status !== "ENVOYE") {
@@ -37,7 +39,9 @@ export function getQuoteReminderState(input: {
   const lastActivity = reminders[0] && reminders[0].sentAt > input.sentAt
     ? reminders[0].sentAt
     : input.sentAt;
-  const delayDays = level === 1 ? FIRST_QUOTE_REMINDER_DELAY_DAYS : SECOND_QUOTE_REMINDER_DELAY_DAYS;
+  const delay1Days = input.delay1Days ?? FIRST_QUOTE_REMINDER_DELAY_DAYS;
+  const delay2Days = input.delay2Days ?? SECOND_QUOTE_REMINDER_DELAY_DAYS;
+  const delayDays = level === 1 ? delay1Days : delay2Days;
   const nextEligibleAt = new Date(lastActivity.getTime() + delayDays * DAY_MS);
   const daysSinceActivity = Math.max(0, Math.floor((now.getTime() - lastActivity.getTime()) / DAY_MS));
   return {

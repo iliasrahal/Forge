@@ -192,6 +192,8 @@ export default async function QuotePage({
     status: quote.status,
     sentAt: quote.sentAt,
     reminders: quote.reminders,
+    delay1Days: workspaceContext.workspace.quoteReminderDelay1Days,
+    delay2Days: workspaceContext.workspace.quoteReminderDelay2Days,
   });
 
   return (
@@ -323,11 +325,11 @@ export default async function QuotePage({
         ) : null}
 
         {currentUser.smartRemindersEnabled &&
-        (reminderState.eligible || quote.reminders.length > 0) ? (
+        (quote.status === "ENVOYE" || quote.reminders.length > 0) ? (
           <QuoteReminderPanel
             quoteId={quote.id}
             canWrite={workspaceContext.permissions.canWrite}
-            canPrepare={quote.status === "ENVOYE" && reminderState.eligible}
+            canPrepare={quote.status === "ENVOYE"}
             hasEmail={Boolean(quote.client?.email)}
             automaticLevel={reminderState.eligible ? reminderState.level : null}
             daysSinceActivity={reminderState.daysSinceActivity}

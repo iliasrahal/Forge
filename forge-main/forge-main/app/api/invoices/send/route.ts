@@ -323,6 +323,7 @@ export async function POST(
 
       data: {
         status: "ENVOYEE",
+        sentAt: new Date(),
       },
 
     });

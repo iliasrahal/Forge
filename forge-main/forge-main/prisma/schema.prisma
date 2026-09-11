@@ -216,6 +216,8 @@ model User {
 
   quoteReminders QuoteReminder[] @relation("QuoteReminderCreator")
 
+  invoiceReminders InvoiceReminder[] @relation("InvoiceReminderCreator")
+
   recordedPayments Payment[] @relation("PaymentRecorder")
 
   workTimeEntries InterventionWorkTime[]
@@ -296,6 +298,18 @@ model Organization {
   addressCity        String?
   contactPhone       String?
   contactEmail       String?
+  // Cadence des relances automatiques (en jours), modifiable par l'artisan
+  // dans Réglages > Relances. Devis : 2 niveaux. Factures : 3 niveaux.
+  quoteReminderDelay1Days   Int @default(3)
+  quoteReminderDelay2Days   Int @default(7)
+  invoiceReminderDelay1Days Int @default(7)
+  invoiceReminderDelay2Days Int @default(15)
+  invoiceReminderDelay3Days Int @default(30)
+  // Si activé, la tâche planifiée (cron) envoie elle-même les relances
+  // éligibles, sans validation humaine. Sinon (par défaut), Forge propose
+  // seulement — l'artisan relit et envoie depuis la fiche du document.
+  quoteReminderAutoSend   Boolean @default(false)
+  invoiceReminderAutoSend Boolean @default(false)
   documentCounters    DocumentCounter[]
   // Compte Stripe Connect (Express) de l'artisan pour encaisser en ligne.
   stripeAccountId        String?
@@ -765,6 +779,31 @@ model QuoteReminder {
   @@index([createdByUserId])
 }
 
+enum InvoiceReminderChannel {
+  EMAIL
+}
+
+model InvoiceReminder {
+  id String @id @default(cuid())
+
+  invoiceId String
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  sentAt DateTime
+
+  channel InvoiceReminderChannel @default(EMAIL)
+
+  createdByUserId String?
+
+  createdByUser User? @relation("InvoiceReminderCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId, sentAt])
+  @@index([createdByUserId])
+}
+
 model QuotePublicAccess {
   id String @id @default(cuid())
 
@@ -924,6 +963,11 @@ model Invoice {
   retentionCents Int @default(0)
 
   dueDate DateTime?
+
+  // Date du dernier envoi réussi de la facture au client (relances).
+  sentAt DateTime?
+
+  reminders InvoiceReminder[]
 
   // Facture créée depuis un devis
   quoteId String?

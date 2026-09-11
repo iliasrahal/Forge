@@ -5,12 +5,14 @@ import DocumentLineDetails from "@/components/DocumentLineDetails";
 import SendInvoiceButton from "@/components/SendInvoiceButton";
 import InvoiceAmountForm from "@/components/InvoiceAmountForm";
 import InvoicePaymentsPanel from "@/components/InvoicePaymentsPanel";
+import InvoiceReminderPanel from "@/components/InvoiceReminderPanel";
 
 import { requireCurrentUser } from "@/src/lib/auth";
 import {
   buildInvoiceDescriptionSections,
   parseInvoiceDescriptionSections,
 } from "@/src/lib/invoiceDescription";
+import { getInvoiceReminderState } from "@/src/lib/invoice-reminders";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import {
@@ -95,7 +97,7 @@ export default async function InvoicePage({
 }: InvoicePageProps) {
 
 
-  await requireCurrentUser();
+  const currentUser = await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
 
 
@@ -159,6 +161,11 @@ export default async function InvoicePage({
 
           },
 
+        },
+
+        reminders: {
+          select: { id: true, sentAt: true, channel: true },
+          orderBy: { sentAt: "desc" },
         },
 
       },
@@ -226,6 +233,17 @@ export default async function InvoicePage({
     canCreateCreditNote(invoice.status) &&
     invoice.lines.length > 0 &&
     creditedCents < invoice.amountCents;
+
+  const reminderState = getInvoiceReminderState({
+    status: invoice.status,
+    dueDate: invoice.dueDate,
+    sentAt: invoice.sentAt,
+    createdAt: invoice.createdAt,
+    reminders: invoice.reminders,
+    delay1Days: workspaceContext.workspace.invoiceReminderDelay1Days,
+    delay2Days: workspaceContext.workspace.invoiceReminderDelay2Days,
+    delay3Days: workspaceContext.workspace.invoiceReminderDelay3Days,
+  });
 
 
 
@@ -448,6 +466,19 @@ export default async function InvoicePage({
             payments={paymentRows}
             creditedCents={creditedCents}
             retentionCents={invoice.retentionCents}
+          />
+        ) : null}
+
+        {currentUser.smartRemindersEnabled &&
+        (invoice.status === "ENVOYEE" || invoice.status === "EN_RETARD" || invoice.reminders.length > 0) ? (
+          <InvoiceReminderPanel
+            invoiceId={invoice.id}
+            canWrite={workspaceContext.permissions.canWrite}
+            canPrepare={invoice.status === "ENVOYEE" || invoice.status === "EN_RETARD"}
+            hasEmail={Boolean(clientEmail)}
+            automaticLevel={reminderState.eligible ? reminderState.level : null}
+            daysSinceActivity={reminderState.daysSinceActivity}
+            reminders={invoice.reminders}
           />
         ) : null}
 

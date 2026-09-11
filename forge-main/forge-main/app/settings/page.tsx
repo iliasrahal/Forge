@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Bell,
+  BellRing,
   CreditCard,
   FileText,
   Image as ImageIcon,
@@ -49,6 +50,12 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: "Logo et identité",
         hint: "Ton logo en tête des documents envoyés",
         icon: ImageIcon,
+      },
+      {
+        href: "/settings/reminders",
+        label: "Relances automatiques",
+        hint: "Fréquence des relances devis et factures",
+        icon: BellRing,
       },
     ],
   },
