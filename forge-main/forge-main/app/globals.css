@@ -1428,6 +1428,30 @@ html.dark body {
   transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.landing-material-stage {
+  transform-style: preserve-3d;
+}
+
+.landing-material-plate {
+  animation: landing-material-plate 5.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.landing-material-line {
+  animation: landing-material-line 5.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes landing-material-plate {
+  0%, 16% { transform: translate3d(-10px, 8px, 20px) rotate(-2deg); opacity: 0.55; }
+  30%, 82% { transform: translate3d(0, 0, 48px) rotate(0); opacity: 1; }
+  100% { transform: translate3d(10px, -4px, 20px) rotate(1deg); opacity: 0.65; }
+}
+
+@keyframes landing-material-line {
+  0%, 42% { transform: translate3d(-34px, 10px, 55px) scale(0.94); opacity: 0; }
+  58%, 88% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.82; }
+}
+
 @keyframes workflow-progress {
   0%,
   8% {
@@ -1519,6 +1543,11 @@ html.dark body {
   .workflow-progress-item {
     opacity: 1;
     transform: none;
+    animation: none;
+  }
+
+  .landing-material-plate,
+  .landing-material-line {
     animation: none;
   }
 }

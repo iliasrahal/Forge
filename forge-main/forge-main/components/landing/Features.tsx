@@ -7,7 +7,9 @@ import {
   ClipboardCheck,
   Euro,
   FileText,
+  Images,
   Keyboard,
+  PackageSearch,
   Mic,
   Send,
 } from "lucide-react";
@@ -36,7 +38,7 @@ const features = [
   {
     title: "Devis",
     description:
-      "Dites par exemple : « Prépare-moi un devis pour le remplacement d’un robinet chez Dupont. » Forge retrouve le client, vos prestations et vos tarifs enregistrés. Vous gardez la validation finale.",
+      "Créez votre devis comme vous voulez. Recherchez votre matériel ou partez d’une photo : Forge relève ce qui est visible, vous demande une précision si nécessaire, puis vous gardez le choix final.",
     eyebrow: "Une proposition claire",
   },
   {
@@ -360,31 +362,7 @@ function FeatureIllustration({
   }
 
   if (index === 2) {
-    return (
-      <div className="relative mx-auto max-w-sm rotate-[-2deg] rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/10 transition duration-700 hover:rotate-0 dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex items-center justify-between">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-600 text-white"><FileText size={20} /></span>
-          <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold tracking-[0.12em] text-blue-700 dark:bg-blue-950 dark:text-blue-300">DEVIS PRÊT</span>
-        </div>
-        <div className="mt-8 h-3 w-2/3 rounded-full bg-slate-200 dark:bg-slate-700" />
-        <div className="mt-3 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800" />
-        <div className="mt-2 h-2 w-4/5 rounded-full bg-slate-100 dark:bg-slate-800" />
-        <div className="mt-8 flex items-end justify-between border-t border-slate-200 pt-5 dark:border-slate-700">
-          <span className="text-sm text-slate-500 dark:text-slate-400">Total TTC</span>
-          <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">1 240 €</span>
-        </div>
-        <div className="mt-5 flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-          <Send size={16} />
-          Envoyé au client
-        </div>
-        <div className="mt-2 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm font-semibold text-blue-700 dark:border-blue-900 dark:bg-blue-950/45 dark:text-blue-300">
-          Consulté, accepté et signé en ligne
-          <p className="mt-1 text-xs font-medium opacity-80">
-            Statut mis à jour dans Forge
-          </p>
-        </div>
-      </div>
-    );
+    return <MaterialToQuoteIllustration />;
   }
 
   if (index === 3) {
@@ -421,6 +399,45 @@ function FeatureIllustration({
           <Check size={16} /> Demande comprise
         </div>
       </div>
+    </div>
+  );
+}
+
+function MaterialToQuoteIllustration() {
+  return (
+    <div className="landing-material-stage relative mx-auto w-full max-w-xl py-5 [perspective:1100px]">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-600/15" />
+      <div className="relative grid gap-3 sm:grid-cols-[0.86fr_1.14fr] sm:items-center">
+        <div className="relative z-20 space-y-3 sm:translate-x-3 sm:[transform:rotateY(7deg)_rotateZ(-1.5deg)]">
+          <div className="rounded-[1.5rem] border border-blue-200/80 bg-white/90 p-3 shadow-xl backdrop-blur dark:border-blue-800 dark:bg-slate-900/90">
+            <div className="relative h-28 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 via-slate-500 to-blue-900">
+              <div className="absolute inset-x-8 bottom-4 top-4 rounded-lg border-2 border-white/60 bg-white/10">
+                <div className="grid h-full grid-cols-6 gap-1 p-2">{Array.from({ length: 6 }).map((_, index) => <span key={index} className="rounded-sm bg-white/55" />)}</div>
+              </div>
+              <span className="absolute left-3 top-3 rounded-full bg-slate-950/60 px-2 py-1 text-[10px] font-bold text-white">Vue générale</span>
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-sm font-bold"><Camera size={15} className="text-blue-600 dark:text-blue-400" /> Radiateur identifié</div>
+          </div>
+          <div className="landing-material-plate ml-8 flex items-center gap-3 rounded-2xl border border-pink-200 bg-white/95 p-3 shadow-lg dark:border-pink-900 dark:bg-slate-900/95">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-pink-50 text-pink-600 dark:bg-pink-950 dark:text-pink-300"><Images size={18} /></span>
+            <div><p className="text-xs font-bold text-slate-900 dark:text-white">Une précision est nécessaire</p><p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Ajoutez la photo de la plaque.</p></div>
+          </div>
+          <div className="flex gap-2">
+            <span className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-2 text-[11px] font-bold text-white"><Camera size={13} /> Photo</span>
+            <span className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-2 text-[11px] font-bold dark:border-slate-700 dark:bg-slate-900/90"><Images size={13} /> Galerie</span>
+          </div>
+        </div>
+
+        <div className="relative z-10 rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 sm:-translate-x-2 sm:[transform:rotateY(-5deg)]">
+          <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white"><FileText size={18} /></span><span className="text-[10px] font-bold tracking-[0.16em] text-blue-600 dark:text-blue-400">DEVIS D2026-0142</span></div>
+          <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50/75 p-3 dark:border-blue-900 dark:bg-blue-950/45">
+            <div className="flex items-start gap-3"><PackageSearch size={18} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" /><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Bibliothèque matériel</p><p className="mt-1 text-sm font-bold">Radiateur panneau</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Référence et prix enregistrés</p></div><Check size={17} className="ml-auto shrink-0 text-emerald-500" /></div>
+          </div>
+          <div className="landing-material-line mt-3 flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/40"><div><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">Ajouté au devis</p><p className="mt-1 font-semibold">Matériel · Radiateur</p></div><span className="font-bold">1 × 420 €</span></div>
+          <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4 text-sm dark:border-slate-700"><span className="text-slate-500 dark:text-slate-400">Vous vérifiez et choisissez</span><strong className="text-blue-600 dark:text-blue-400">420 €</strong></div>
+        </div>
+      </div>
+      <p className="mt-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Recherche, photo ou galerie. Forge s’adapte.</p>
     </div>
   );
 }
@@ -595,7 +612,10 @@ export default function Features({
                 {index === 2 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
-                      "Enregistrez une fois vos prestations et vos tarifs : Forge les retrouve lors de la préparation",
+                      "Sur le chantier ou depuis votre galerie, vos photos peuvent servir à préparer le devis",
+                      "Une information manque ? Forge vous demande simplement de la préciser",
+                      "Retrouvez vos références et vos prix dans votre bibliothèque matériel",
+                      "Vous choisissez le matériel : Forge l’ajoute au devis",
                       "Votre client reçoit un lien sécurisé pour consulter, accepter et signer son devis en ligne",
                       "Le statut du devis est mis à jour dès son acceptation",
                       "Forge repère les devis sans réponse et propose une relance que vous vérifiez avant l’envoi",

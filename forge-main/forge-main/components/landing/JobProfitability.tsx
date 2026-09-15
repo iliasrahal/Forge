@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, Mic, ReceiptText, TrendingUp } from "lucide-react";
+import { BarChart3, Clock3, Mic, ReceiptText, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const pillars = [
@@ -38,6 +38,18 @@ const pillars = [
         <div className="flex justify-between"><span>Chiffre d’affaires</span><strong>8 000 €</strong></div>
         <div className="flex justify-between"><span>Coûts</span><strong>3 850 €</strong></div>
         <div className="flex justify-between border-t border-emerald-200 pt-2 dark:border-emerald-800"><span>Marge</span><strong className="text-emerald-700 dark:text-emerald-300">4 150 €</strong></div>
+      </div>
+    ),
+  },
+  {
+    icon: BarChart3,
+    title: "Statistiques",
+    description: "Visualisez l’évolution de votre activité sans quitter Forge.",
+    content: (
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between"><span>Facturé</span><strong>12 480 €</strong></div>
+        <div className="flex justify-between"><span>Encaissé</span><strong>9 840 €</strong></div>
+        <div className="flex justify-between border-t border-slate-200 pt-2 dark:border-slate-700"><span>Devis acceptés</span><strong className="text-blue-700 dark:text-blue-300">68 %</strong></div>
       </div>
     ),
   },

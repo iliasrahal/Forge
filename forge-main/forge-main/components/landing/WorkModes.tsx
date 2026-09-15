@@ -39,6 +39,13 @@ const workModes = [
   },
 ];
 
+const ecosystemItems = [
+  "Planning", "Interventions", "Chantiers", "Clients", "Comptes rendus",
+  "Devis", "Bibliothèque matériel", "Factures", "Paiements", "Temps",
+  "Dépenses", "Rentabilité", "Statistiques", "Relances", "Réponses clients",
+  "Personnel", "Équipe",
+];
+
 export default function WorkModes() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -140,6 +147,13 @@ export default function WorkModes() {
               </article>
             ),
           )}
+        </div>
+
+        <div className={`landing-reveal-motion mt-10 rounded-[2rem] border border-blue-200/80 bg-white/70 p-5 text-center shadow-[0_24px_80px_-48px_rgba(37,99,235,0.5)] backdrop-blur-xl duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/65 sm:p-7 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">Tout Forge, au même endroit</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {ecosystemItems.map((item) => <span key={item} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${item === "Bibliothèque matériel" || item === "Statistiques" ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300" : "border-slate-200 bg-white/70 text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-300"}`}>{item}</span>)}
+          </div>
         </div>
       </div>
     </section>
