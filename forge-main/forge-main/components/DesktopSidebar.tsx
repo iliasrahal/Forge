@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   FileText,
+  BarChart3,
   House,
   ReceiptText,
   Settings,
@@ -24,6 +25,7 @@ const ITEMS = [
     label: "Factures",
     icon: ReceiptText,
   },
+  { href: "/statistics", section: "statistics", label: "Statistiques", icon: BarChart3 },
 ] as const;
 
 export default function DesktopSidebar() {

@@ -14,6 +14,7 @@ export function revalidateStatusViews(
   revalidatePath("/app");
   revalidatePath("/clients", "layout");
   revalidatePath("/history");
+  revalidatePath("/statistics");
 
   if (entity === "quote") {
     revalidatePath("/quotes", "layout");

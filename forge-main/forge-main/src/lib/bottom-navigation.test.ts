@@ -39,3 +39,7 @@ test("les routes principales et leurs sous-pages gardent le bon onglet", () => {
   assert.equal(getBottomNavigationSection("/interventions/intervention-1"), "home");
   assert.equal(getBottomNavigationSection("/app"), "home");
 });
+
+test("la page statistiques active son propre onglet", () => {
+  assert.equal(getBottomNavigationSection("/statistics"), "statistics");
+});

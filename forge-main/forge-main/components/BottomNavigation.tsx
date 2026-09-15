@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { FileText, House, UsersRound, ReceiptText } from "lucide-react";
+import { BarChart3, FileText, House, UsersRound, ReceiptText } from "lucide-react";
 
 import {
   getBottomNavigationSection,
@@ -14,6 +14,7 @@ const ITEMS = [
   { href: "/clients", section: "clients", label: "Clients", icon: UsersRound },
   { href: "/quotes", section: "quotes", label: "Devis", icon: FileText },
   { href: "/invoices", section: "invoices", label: "Factures", icon: ReceiptText },
+  { href: "/statistics", section: "statistics", label: "Stats", icon: BarChart3 },
 ] as const;
 
 export default function BottomNavigation() {
@@ -22,7 +23,7 @@ export default function BottomNavigation() {
   const [pendingSection, setPendingSection] = useState<string | null>(null);
 
   return (
-    <nav className="grid grid-cols-4 gap-1">
+    <nav className="grid grid-cols-5 gap-0.5">
       {ITEMS.map(({ href, section, label, icon: Icon }) => {
         const active = activeSection === section || pendingSection === section;
 

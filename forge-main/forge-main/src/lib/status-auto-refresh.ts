@@ -12,6 +12,7 @@ export function shouldAutoRefreshStatuses(pathname: string): boolean {
     return true;
   }
   if (root === "history") return true;
+  if (root === "statistics") return true;
 
   // Le statut Stripe Connect peut également évoluer via un webhook externe.
   if (root === "settings" && segments[1] === "paiement") return true;

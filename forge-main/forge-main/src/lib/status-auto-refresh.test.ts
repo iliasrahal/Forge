@@ -23,6 +23,10 @@ test("active la synchronisation sur l'accueil et les fiches client", () => {
   assert.equal(shouldAutoRefreshStatuses("/interventions/intervention-1"), true);
 });
 
+test("active la synchronisation centralisée sur les statistiques", () => {
+  assert.equal(shouldAutoRefreshStatuses("/statistics"), true);
+});
+
 test("protège les formulaires de création et modification", () => {
   assert.equal(shouldAutoRefreshStatuses("/quotes/new"), false);
   assert.equal(shouldAutoRefreshStatuses("/invoices/invoice-1/edit"), false);
