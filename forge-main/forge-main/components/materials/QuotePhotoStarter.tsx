@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, FilePenLine, ImagePlus, MessageSquareText, Sparkles, X } from "lucide-react";
+import { Camera, ImagePlus, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
@@ -78,10 +78,8 @@ export default function QuotePhotoStarter() {
 
   if (mode === "idle") {
     return (
-      <section className="mb-6 grid gap-2 sm:grid-cols-3" aria-label="Méthode de création du devis">
-        <a href="/app#forge-bar" className="forge-surface flex min-h-20 items-center gap-3 rounded-2xl border p-4 font-semibold text-[var(--forge-text-primary)] hover:border-blue-400"><MessageSquareText className="text-blue-500" />Décrire à Forge</a>
-        <button type="button" onClick={() => setMode("photo")} className="forge-surface flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left font-semibold text-[var(--forge-text-primary)] hover:border-blue-400"><Camera className="text-pink-500" />Prendre une photo</button>
-        <span className="forge-surface flex min-h-20 items-center gap-3 rounded-2xl border border-blue-400 p-4 font-semibold text-[var(--forge-text-primary)]"><FilePenLine className="text-blue-500" />Créer manuellement</span>
+      <section className="mb-4" aria-label="Analyse photo du matériel">
+        <button type="button" onClick={() => setMode("photo")} className="forge-surface flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border px-4 py-3 text-center font-semibold text-[var(--forge-text-primary)] hover:border-blue-400 sm:w-auto sm:justify-start"><Camera className="text-pink-500" />Prendre une photo</button>
       </section>
     );
   }
