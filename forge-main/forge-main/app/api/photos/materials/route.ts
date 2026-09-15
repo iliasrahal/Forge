@@ -4,8 +4,6 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 
 import { MATERIAL_ANALYSIS_JSON_SCHEMA, MATERIAL_ANALYSIS_MODEL, MATERIAL_ANALYSIS_PROMPT, validateMaterialIdentification } from "@/src/lib/material-analysis";
-import { getEffectiveMaterialsForWorkspace } from "@/src/lib/material-catalog.server";
-import { matchMaterials } from "@/src/lib/material-matching";
 import { MAX_PHOTOS, MAX_PHOTO_SIZE } from "@/src/lib/photoConfig";
 import { fileToDataUrl, hasValidImageSignature, isImage } from "@/src/lib/photoFiles.server";
 import { prisma } from "@/src/lib/prisma";
@@ -49,7 +47,8 @@ export async function POST(request: Request) {
       orderBy: { createdAt: "desc" },
     });
     if (cached?.result && typeof cached.result === "object" && !Array.isArray(cached.result)) {
-      return NextResponse.json({ analysisId: cached.id, status: cached.status, ...(cached.result as Record<string, unknown>), cached: true });
+      const cachedResult = cached.result as Record<string, unknown>;
+      return NextResponse.json({ analysisId: cached.id, status: cached.status, identification: cachedResult.identification, matches: [], cached: true });
     }
     const analysis = await prisma.materialAnalysis.create({ data: { organizationId: context.workspace.id, requestedById: context.user.id, model: MATERIAL_ANALYSIS_MODEL, photoCount: photos.length, inputHash } });
     analysisId = analysis.id;
@@ -64,18 +63,14 @@ export async function POST(request: Request) {
       ],
     });
     const identification = validateMaterialIdentification(JSON.parse(response.output_text));
-    const materials = await getEffectiveMaterialsForWorkspace(context.workspace.id);
     const needsInput = Boolean(
       identification.questions.length ||
       identification.missingCriticalCharacteristics.length,
     );
-    const matches = needsInput
-      ? []
-      : matchMaterials(identification, materials).map((match) => ({ ...match, material: match.material }));
     const status = needsInput ? "NEEDS_INPUT" : "COMPLETED";
-    const result = { identification, matches };
+    const result = { identification };
     await prisma.materialAnalysis.update({ where: { id: analysis.id }, data: { status, result } });
-    return NextResponse.json({ analysisId: analysis.id, status, ...result });
+    return NextResponse.json({ analysisId: analysis.id, status, ...result, matches: [] });
   } catch (error) {
     if (analysisId) await prisma.materialAnalysis.update({ where: { id: analysisId }, data: { status: "FAILED", errorCode: "ANALYSIS_FAILED" } }).catch(() => undefined);
     const accessError = getWorkspaceErrorResponse(error);
