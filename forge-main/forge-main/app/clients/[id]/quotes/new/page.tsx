@@ -6,6 +6,7 @@ import {
 
 import QuoteLinesForm from "@/components/QuoteLinesForm";
 import QuoteClientSelector from "@/components/quotes/QuoteClientSelector";
+import QuotePhotoStarter from "@/components/materials/QuotePhotoStarter";
 import DocumentCreateForm, { type DocumentCreateFormState } from "@/components/DocumentCreateForm";
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
@@ -258,6 +259,10 @@ export default async function NewQuotePage({
         </Link>
 
         <h1 className="mt-4 text-xl font-bold text-blue-700 dark:text-blue-400">Nouveau devis</h1>
+      </div>
+
+      <div className="mt-6">
+        <QuotePhotoStarter quoteCreationPath={`/clients/${id}/quotes/new`} />
       </div>
 
       <DocumentCreateForm

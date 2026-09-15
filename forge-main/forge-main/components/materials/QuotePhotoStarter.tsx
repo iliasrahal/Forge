@@ -26,9 +26,10 @@ type QuotePhotoStarterProps = {
   initialSource?: "camera" | "gallery";
   onClose?: () => void;
   onPreparedLines?: (lines: EditableQuoteLine[]) => void;
+  quoteCreationPath?: string;
 };
 
-export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLines }: QuotePhotoStarterProps = {}) {
+export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLines, quoteCreationPath = "/quotes/new" }: QuotePhotoStarterProps = {}) {
   const router = useRouter();
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -119,7 +120,7 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
     }
     const params = new URLSearchParams({ quoteLines: serializeQuoteLines(lines) });
     if (title) params.set("title", title);
-    router.push(`/quotes/new?${params.toString()}`);
+    router.push(`${quoteCreationPath}?${params.toString()}`);
   }
 
   function cancelPreparation() {
