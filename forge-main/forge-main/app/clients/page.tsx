@@ -36,7 +36,7 @@ export default async function ClientsPage() {
 
 
 
-      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "sm:grid-cols-2" : ""}`}>
+      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "min-[380px]:grid-cols-2" : ""}`}>
 
 
 
@@ -45,7 +45,7 @@ export default async function ClientsPage() {
         {workspaceContext.permissions.canWrite ? (
           <Link
             href="/clients/new"
-            className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-6"
+            className="flex min-h-12 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-blue-700 sm:px-5"
           >
             + Nouveau client
           </Link>
@@ -58,7 +58,7 @@ export default async function ClientsPage() {
 
         <Link
           href="/history"
-          className="flex min-h-12 items-center justify-center rounded-2xl border border-blue-600 px-4 py-3 text-center font-semibold text-blue-600 transition hover:bg-blue-50 dark:hover:bg-blue-950 sm:px-6"
+          className="flex min-h-12 items-center justify-center rounded-2xl border border-blue-600 px-4 py-3 text-center font-semibold text-blue-700 transition hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950 sm:px-5"
         >
           Historique Interventions
         </Link>

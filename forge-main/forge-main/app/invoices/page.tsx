@@ -124,7 +124,7 @@ export default async function InvoicesPage() {
 
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-5 pb-56 sm:px-6 sm:py-6">
 
-      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "sm:grid-cols-2" : ""}`}>
+      <div className={`mb-6 grid gap-3 ${workspaceContext.permissions.canWrite ? "min-[380px]:grid-cols-2" : ""}`}>
         {workspaceContext.permissions.canWrite ? (
           <Link
             href="/invoices/new"
