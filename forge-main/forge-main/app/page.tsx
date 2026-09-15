@@ -3,17 +3,15 @@ import { redirect } from "next/navigation";
 import CTA from "@/components/landing/CTA";
 import ClientCreation from "@/components/landing/ClientCreation";
 import CustomerReply from "@/components/landing/CustomerReply";
-import Features from "@/components/landing/Features";
 import Footer from "@/components/landing/Footer";
 import Hero from "@/components/landing/Hero";
 import JobProfitability from "@/components/landing/JobProfitability";
-import Payments from "@/components/landing/Payments";
 import Problem from "@/components/landing/Problem";
 import Pricing from "@/components/landing/Pricing";
-import ProductDemo from "@/components/landing/ProductDemo";
 import SmartReminders from "@/components/landing/SmartReminders";
-import Workflow from "@/components/landing/Workflow";
 import WorkModes from "@/components/landing/WorkModes";
+import JourneyStory from "@/components/landing/JourneyStory";
+import EcosystemOverview from "@/components/landing/EcosystemOverview";
 import { getCurrentUser } from "@/src/lib/auth";
 
 export default async function LandingPage() {
@@ -26,13 +24,10 @@ export default async function LandingPage() {
   return (
     <main className="landing-cyclorama min-h-svh overflow-x-clip text-slate-950 dark:text-white">
       <Hero />
-      <ProductDemo />
       <Problem />
-      <Workflow />
-      <Features group="operations" />
+      <JourneyStory />
+      <EcosystemOverview />
       <JobProfitability />
-      <Features group="documents" showHeading={false} />
-      <Payments />
       <SmartReminders />
       <ClientCreation />
       <CustomerReply />

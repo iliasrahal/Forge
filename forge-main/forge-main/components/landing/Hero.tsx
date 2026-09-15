@@ -1,7 +1,11 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarDays,
   Check,
+  FileCheck2,
+  ReceiptText,
+  UsersRound,
 } from "lucide-react";
 
 import ForgeLogo from "@/components/ForgeLogo";
@@ -95,6 +99,13 @@ export default function Hero() {
 
         <div className="forge-hero-reveal forge-hero-delay-3 relative mt-20 w-full max-w-4xl sm:mt-24">
           <div className="absolute inset-x-12 top-8 -z-10 h-56 rounded-full bg-blue-500/20 blur-3xl dark:bg-blue-600/20" />
+
+          <div aria-hidden="true" className="forge-hero-orbit pointer-events-none absolute inset-0 hidden sm:block">
+            <div className="forge-hero-depth-card absolute -left-8 top-4 -rotate-6"><CalendarDays size={17} /><span>Planning</span></div>
+            <div className="forge-hero-depth-card absolute -right-10 top-10 rotate-6"><UsersRound size={17} /><span>Clients</span></div>
+            <div className="forge-hero-depth-card absolute -bottom-8 left-8 rotate-3"><FileCheck2 size={17} /><span>Devis</span></div>
+            <div className="forge-hero-depth-card absolute -bottom-10 right-6 -rotate-3"><ReceiptText size={17} /><span>Factures</span></div>
+          </div>
 
           <div className="forge-hero-float relative mx-auto max-w-3xl rounded-[2rem] border border-white/70 bg-white/75 p-3 shadow-[0_30px_100px_-30px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/75">
             <div className="rounded-[1.4rem] border border-slate-200 bg-white p-5 text-left dark:border-slate-700 dark:bg-slate-950 sm:p-7">
