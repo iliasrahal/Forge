@@ -5,6 +5,7 @@ import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 import {
+  createMaterialLineSnapshot,
   createQuoteLineSnapshot,
   emptyQuoteLine,
   type EditableQuoteLine,
@@ -29,6 +30,8 @@ import {
   VAT_EXEMPTION_MENTION,
   VAT_RATES_BP,
 } from "@/src/lib/vat";
+import MaterialPicker from "@/components/materials/MaterialPicker";
+import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 
 
 type QuoteLinesFormProps = {
@@ -174,6 +177,7 @@ export default function QuoteLinesForm({
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
+  const [showMaterialPicker, setShowMaterialPicker] = useState(false);
   const [serviceSearch, setServiceSearch] = useState("");
   const [detailEditor, setDetailEditor] = useState<DetailEditor | null>(null);
 
@@ -211,6 +215,14 @@ export default function QuoteLinesForm({
     setShowServicePicker(false);
     setShowAddMenu(false);
     setServiceSearch("");
+  }
+
+  function addSavedMaterial(material: QuoteMaterialSnapshotSource) {
+    if (!canWrite) return;
+    setLines((current) => [
+      ...current,
+      createMaterialLineSnapshot(material, normalizedDefaultRate),
+    ]);
   }
 
   function removeLine(index: number) {
@@ -401,6 +413,12 @@ export default function QuoteLinesForm({
                 </button>
               ) : null}
             </div>
+
+            {line.material ? (
+              <p className="rounded-xl bg-blue-500/10 px-3 py-2 text-xs font-medium text-blue-700 dark:text-blue-300">
+                Matériel · {[line.material.brand, line.material.reference].filter(Boolean).join(" · ") || line.material.name}
+              </p>
+            ) : null}
 
             <div className="flex flex-wrap items-end gap-2 text-sm">
               <label className="flex flex-col gap-1">
@@ -626,6 +644,16 @@ export default function QuoteLinesForm({
               >
                 Ajouter une ligne personnalisée
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMaterialPicker(true);
+                  setShowAddMenu(false);
+                }}
+                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+              >
+                Ajouter du matériel
+              </button>
             </div>
           ) : null}
         </div>
@@ -805,6 +833,12 @@ export default function QuoteLinesForm({
           </section>
         </div>
       ) : null}
+
+      <MaterialPicker
+        open={showMaterialPicker}
+        onClose={() => setShowMaterialPicker(false)}
+        onSelect={addSavedMaterial}
+      />
     </div>
   );
 }

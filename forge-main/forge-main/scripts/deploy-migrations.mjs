@@ -38,6 +38,7 @@ const requiredDeployMigrations = new Set([
   "20260908150000_add_intervention_day_tasks",
   "20260908160000_add_intervention_day_states",
   "20260908170000_add_intervention_profitability",
+  "20260915120000_add_material_catalog",
 ]);
 
 if (!databaseUrl) {

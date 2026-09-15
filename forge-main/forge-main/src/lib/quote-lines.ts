@@ -15,6 +15,17 @@ export type EditableQuoteLine = {
   /** Taux de TVA en points de base. Absent = repli sur le taux par défaut. */
   vatRateBp?: number;
   details?: EditableLineDetail[];
+  material?: EditableMaterialSnapshot;
+};
+
+export type EditableMaterialSnapshot = {
+  catalogItemId: string | null;
+  workspaceMaterialId: string | null;
+  name: string;
+  brand: string;
+  reference: string;
+  specifications: Record<string, string>;
+  supplier: string;
 };
 
 export type EditableLineDetail = {
@@ -64,6 +75,42 @@ export function createQuoteLineSnapshot(
     discount: "",
     cost: "",
     details: [],
+    ...(defaultVatRateBp !== undefined
+      ? { vatRateBp: normalizeVatRateBp(defaultVatRateBp, 2000) }
+      : {}),
+  };
+}
+
+export type QuoteMaterialSnapshotSource = EditableMaterialSnapshot & {
+  salePriceCents: number;
+  purchasePriceCents: number | null;
+  unit: string;
+};
+
+export function createMaterialLineSnapshot(
+  material: QuoteMaterialSnapshotSource,
+  defaultVatRateBp?: number,
+): EditableQuoteLine {
+  return {
+    category: material.name,
+    quantity: "1",
+    unit: material.unit || "u",
+    unitPrice: (material.salePriceCents / 100).toFixed(2),
+    discount: "",
+    cost:
+      material.purchasePriceCents == null
+        ? ""
+        : (material.purchasePriceCents / 100).toFixed(2),
+    details: [],
+    material: {
+      catalogItemId: material.catalogItemId,
+      workspaceMaterialId: material.workspaceMaterialId,
+      name: material.name,
+      brand: material.brand,
+      reference: material.reference,
+      specifications: material.specifications,
+      supplier: material.supplier,
+    },
     ...(defaultVatRateBp !== undefined
       ? { vatRateBp: normalizeVatRateBp(defaultVatRateBp, 2000) }
       : {}),

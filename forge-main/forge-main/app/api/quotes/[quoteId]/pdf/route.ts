@@ -425,9 +425,12 @@ export async function GET(
     );
 
     for (const quoteLine of pricedLines) {
-      const designation =
+      const baseDesignation =
         usefulText(quoteLine.label) ||
         usefulText(quoteLine.category);
+      const designation = quoteLine.materialReference
+        ? `${baseDesignation} — Réf. ${quoteLine.materialReference}`
+        : baseDesignation;
       const designationLines = wrapText(
         designation,
         regularFont,

@@ -1863,7 +1863,7 @@ export default function ForgeBar({
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg">
+    <div id="forge-bar" className="mx-auto w-full max-w-lg">
       <input
         ref={photoInputRef}
         type="file"

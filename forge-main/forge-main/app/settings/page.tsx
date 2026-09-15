@@ -6,6 +6,7 @@ import {
   FileText,
   Image as ImageIcon,
   LayoutTemplate,
+  PackageSearch,
   Mail,
   Palette,
   Receipt,
@@ -32,6 +33,12 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: "Prestations et tarifs",
         hint: "Ton catalogue réutilisable dans les devis",
         icon: FileText,
+      },
+      {
+        href: "/settings/materials",
+        label: "Bibliothèque matériel",
+        hint: "Références, favoris, fournisseurs et tarifs",
+        icon: PackageSearch,
       },
       {
         href: "/settings/facturation",

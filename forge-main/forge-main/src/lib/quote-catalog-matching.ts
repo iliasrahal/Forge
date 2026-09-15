@@ -260,6 +260,9 @@ export function parseSerializedQuoteLines(
           ...(typeof line.vatRateBp === "number"
             ? { vatRateBp: line.vatRateBp }
             : {}),
+          ...(line.material && typeof line.material === "object"
+            ? { material: line.material as EditableQuoteLine["material"] }
+            : {}),
         };
       })
       .filter((line): line is EditableQuoteLine => line !== null)

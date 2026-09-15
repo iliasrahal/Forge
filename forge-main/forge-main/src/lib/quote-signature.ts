@@ -32,6 +32,7 @@ export type QuoteSignatureSnapshot = {
     category: string;
     label: string | null;
     amountCents: number;
+    materialReference?: string | null;
     details?: Array<{
       label: string;
       description: string | null;
@@ -154,6 +155,7 @@ export function buildQuoteSignatureSnapshot(quote: {
     category: string;
     label: string | null;
     amountCents: number;
+    materialReference?: string | null;
     details?: Array<{
       label: string;
       description: string | null;

@@ -8,6 +8,13 @@ type QuoteLineSnapshot = {
   discountBp: number;
   amountCents: number;
   vatRateBp: number;
+  materialCatalogItemId?: string | null;
+  workspaceMaterialId?: string | null;
+  materialName?: string | null;
+  materialBrand?: string | null;
+  materialReference?: string | null;
+  materialSpecifications?: unknown;
+  materialSupplier?: string | null;
   details?: Array<{
     label: string;
     description: string | null;
@@ -54,6 +61,19 @@ export function buildInvoiceSnapshotFromQuote(quote: QuoteSnapshotSource) {
       discountBp: line.discountBp,
       amountCents: line.amountCents,
       vatRateBp: line.vatRateBp,
+      ...(line.materialName
+        ? {
+            materialCatalogItemId: line.materialCatalogItemId ?? null,
+            workspaceMaterialId: line.workspaceMaterialId ?? null,
+            materialName: line.materialName,
+            materialBrand: line.materialBrand ?? null,
+            materialReference: line.materialReference ?? null,
+            ...(line.materialSpecifications
+              ? { materialSpecifications: line.materialSpecifications }
+              : {}),
+            materialSupplier: line.materialSupplier ?? null,
+          }
+        : {}),
       ...(line.details?.length
         ? {
             details: {

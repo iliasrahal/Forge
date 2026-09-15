@@ -141,6 +141,13 @@ export type PersistableDocumentLine = {
   amountCents: number;
   vatRateBp: number;
   details: PersistableDocumentLineDetail[];
+  materialCatalogItemId: string | null;
+  workspaceMaterialId: string | null;
+  materialName: string | null;
+  materialBrand: string | null;
+  materialReference: string | null;
+  materialSpecifications: Record<string, string> | null;
+  materialSupplier: string | null;
 };
 
 export type PersistableDocumentLineDetail = {
@@ -156,9 +163,10 @@ export type PersistableDocumentLineDetail = {
 };
 
 export function documentLineCreateData(line: PersistableDocumentLine) {
-  const { details, ...accountingLine } = line;
+  const { details, materialSpecifications, ...accountingLine } = line;
   return {
     ...accountingLine,
+    ...(materialSpecifications ? { materialSpecifications } : {}),
     ...(details.length > 0 ? { details: { create: details } } : {}),
   };
 }
@@ -234,6 +242,29 @@ export function buildDocumentLinesFromForm(
             .filter((detail): detail is PersistableDocumentLineDetail => detail !== null)
             .slice(0, 30)
         : [];
+      const material =
+        line.material && typeof line.material === "object"
+          ? (line.material as Record<string, unknown>)
+          : null;
+      const materialText = (key: string, max: number) => {
+        const value = material?.[key];
+        return typeof value === "string" && value.trim()
+          ? value.trim().slice(0, max)
+          : null;
+      };
+      const materialSpecifications =
+        material?.specifications &&
+        typeof material.specifications === "object" &&
+        !Array.isArray(material.specifications)
+          ? Object.fromEntries(
+              Object.entries(material.specifications as Record<string, unknown>)
+                .filter((entry): entry is [string, string] =>
+                  typeof entry[1] === "string" && Boolean(entry[1].trim()),
+                )
+                .slice(0, 30)
+                .map(([key, value]) => [key.slice(0, 80), value.trim().slice(0, 200)]),
+            )
+          : null;
       // Le total de la ligne inclut ses sous-détails chiffrés : une ligne
       // peut donc être valide sans PU HT propre, si elle est entièrement
       // construite à partir de détails chiffrés (ex. matériaux au détail).
@@ -254,6 +285,13 @@ export function buildDocumentLinesFromForm(
         amountCents,
         vatRateBp: normalizeVatRateBp(line.vatRateBp, orgDefaultVatRateBp),
         details,
+        materialCatalogItemId: materialText("catalogItemId", 100),
+        workspaceMaterialId: materialText("workspaceMaterialId", 100),
+        materialName: materialText("name", 200),
+        materialBrand: materialText("brand", 120),
+        materialReference: materialText("reference", 120),
+        materialSpecifications,
+        materialSupplier: materialText("supplier", 200),
       };
     })
     .filter((line): line is PersistableDocumentLine => line !== null)

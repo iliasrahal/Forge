@@ -18,6 +18,7 @@ import {
   normalizeVatRateBp,
 } from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { secureMaterialLineSources } from "@/src/lib/material-catalog.server";
 
 type NewInvoicePageProps = {
   params: Promise<{ id: string }>;
@@ -101,10 +102,11 @@ export default async function NewInvoicePage({
       formData.get("documentDiscount"),
     );
 
-    const cleanLines = buildDocumentLinesFromForm(
+    const parsedLines = buildDocumentLinesFromForm(
       invoiceLinesRaw,
       orgDefaultRateBp,
     );
+    const cleanLines = await secureMaterialLineSources(parsedLines, writeContext.workspace.id);
 
     if (cleanLines.length === 0) {
       return { error: "Ajoutez au moins une ligne avec une désignation et un PU HT supérieur à 0." };

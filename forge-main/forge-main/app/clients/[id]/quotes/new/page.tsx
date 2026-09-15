@@ -21,6 +21,7 @@ import {
   normalizeVatRateBp,
 } from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { secureMaterialLineSources } from "@/src/lib/material-catalog.server";
 import {
   getQuotePath,
   UNASSIGNED_QUOTE_CLIENT_ID,
@@ -165,10 +166,11 @@ export default async function NewQuotePage({
 
 
 
-    const cleanLines = buildDocumentLinesFromForm(
+    const parsedLines = buildDocumentLinesFromForm(
       quoteLinesRaw,
       orgDefaultRateBp,
     );
+    const cleanLines = await secureMaterialLineSources(parsedLines, writeContext.workspace.id);
 
     if (
       cleanLines.length === 0

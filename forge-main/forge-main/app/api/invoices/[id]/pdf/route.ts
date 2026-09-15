@@ -480,7 +480,9 @@ export async function GET(
 
       for (const line of pricedLines) {
         const designation = cleanPdfText(
-          line.label || line.category,
+          line.materialReference
+            ? `${line.label || line.category} — Réf. ${line.materialReference}`
+            : line.label || line.category,
         );
         const designationLines = wrapText(
           designation,

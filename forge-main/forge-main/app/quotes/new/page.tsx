@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { UNASSIGNED_QUOTE_CLIENT_ID } from "@/src/lib/quote-routes";
+import QuotePhotoStarter from "@/components/materials/QuotePhotoStarter";
 
 
 type NewQuotePageProps = {
@@ -158,6 +159,7 @@ export default async function NewQuotePage({
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6">
+      <QuotePhotoStarter />
       <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
 

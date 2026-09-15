@@ -102,6 +102,13 @@ enum ServicePricingType {
   UNIT
 }
 
+enum MaterialAnalysisStatus {
+  PROCESSING
+  NEEDS_INPUT
+  COMPLETED
+  FAILED
+}
+
 enum UserJob {
   PLOMBIER_CHAUFFAGISTE
   ELECTRICIEN
@@ -223,6 +230,7 @@ model User {
   workTimeEntries InterventionWorkTime[]
 
   createdInterventionExpenses InterventionExpense[] @relation("InterventionExpenseCreator")
+  materialAnalyses            MaterialAnalysis[]    @relation("MaterialAnalysisRequester")
 
   createdAt DateTime @default(now())
 
@@ -265,74 +273,76 @@ model AdminAuditLog {
 }
 
 model Organization {
-  id                  String               @id @default(cuid())
-  name                String
-  type                OrganizationType     @default(TEAM)
-  personalOwnerId     String?              @unique
-  personalOwner       User?                @relation("PersonalOrganizationOwner", fields: [personalOwnerId], references: [id], onDelete: Cascade)
-  trialStartedAt      DateTime?
-  trialEndsAt         DateTime?
-  subscriptionStatus  String               @default("TRIAL")
+  id                 String           @id @default(cuid())
+  name               String
+  type               OrganizationType @default(TEAM)
+  personalOwnerId    String?          @unique
+  personalOwner      User?            @relation("PersonalOrganizationOwner", fields: [personalOwnerId], references: [id], onDelete: Cascade)
+  trialStartedAt     DateTime?
+  trialEndsAt        DateTime?
+  subscriptionStatus String           @default("TRIAL")
 
   // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
   // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
-  graceExpiresAt      DateTime?
+  graceExpiresAt            DateTime?
   // Régime de TVA par défaut de l'espace + taux par défaut (points de base :
   // 2000 = 20 %, 1000 = 10 %, 550 = 5,5 %, 0 = 0 %). Surchargeable par document.
-  vatScheme           VatScheme            @default(FRANCHISE_BASE)
-  defaultVatRateBp    Int                  @default(2000)
+  vatScheme                 VatScheme              @default(FRANCHISE_BASE)
+  defaultVatRateBp          Int                    @default(2000)
   // Préfixes de numérotation. Numéro final : <préfixe><année>-<6 chiffres>,
   // ex. F2026-000042. Compteur remis à zéro chaque année.
-  quotePrefix         String               @default("D")
-  invoicePrefix       String               @default("F")
-  creditNotePrefix    String               @default("AV")
+  quotePrefix               String                 @default("D")
+  invoicePrefix             String                 @default("F")
+  creditNotePrefix          String                 @default("AV")
   // Logo de l'entreprise (data URL PNG/JPEG), affiché en tête des PDF.
-  logoDataUrl         String?
+  logoDataUrl               String?
   // Identité de l'entreprise reprise en tête des devis / factures / avoirs.
-  legalName          String?
-  siret              String?
-  vatNumber          String?
-  apeCode            String?
-  addressStreet      String?
-  addressPostalCode  String?
-  addressCity        String?
-  contactPhone       String?
-  contactEmail       String?
+  legalName                 String?
+  siret                     String?
+  vatNumber                 String?
+  apeCode                   String?
+  addressStreet             String?
+  addressPostalCode         String?
+  addressCity               String?
+  contactPhone              String?
+  contactEmail              String?
   // Cadence des relances automatiques (en jours), modifiable par l'artisan
   // dans Réglages > Relances. Devis : 2 niveaux. Factures : 3 niveaux.
-  quoteReminderDelay1Days   Int @default(3)
-  quoteReminderDelay2Days   Int @default(7)
-  invoiceReminderDelay1Days Int @default(7)
-  invoiceReminderDelay2Days Int @default(15)
-  invoiceReminderDelay3Days Int @default(30)
+  quoteReminderDelay1Days   Int                    @default(3)
+  quoteReminderDelay2Days   Int                    @default(7)
+  invoiceReminderDelay1Days Int                    @default(7)
+  invoiceReminderDelay2Days Int                    @default(15)
+  invoiceReminderDelay3Days Int                    @default(30)
   // Si activé, la tâche planifiée (cron) envoie elle-même les relances
   // éligibles, sans validation humaine. Sinon (par défaut), Forge propose
   // seulement — l'artisan relit et envoie depuis la fiche du document.
-  quoteReminderAutoSend   Boolean @default(false)
-  invoiceReminderAutoSend Boolean @default(false)
-  documentCounters    DocumentCounter[]
+  quoteReminderAutoSend     Boolean                @default(false)
+  invoiceReminderAutoSend   Boolean                @default(false)
+  documentCounters          DocumentCounter[]
   // Compte Stripe Connect (Express) de l'artisan pour encaisser en ligne.
-  stripeAccountId        String?
-  stripeChargesEnabled   Boolean            @default(false)
-  stripePayoutsEnabled   Boolean            @default(false)
-  stripeDetailsSubmitted Boolean            @default(false)
-  stripeOnboardedAt      DateTime?
-  payments               Payment[]
-  interventionWorkTimes  InterventionWorkTime[]
-  interventionExpenses   InterventionExpense[]
-  members             OrganizationMember[]
-  invitations         TeamInvitation[]
-  clients             Client[]
-  interventions       Intervention[]
-  quotes              Quote[]
-  invoices            Invoice[]
-  creditNotes         CreditNote[]
-  quoteTemplates      QuoteTemplate[]
-  serviceCatalogItems ServiceCatalogItem[]
-  activeSessions      Session[]            @relation("ActiveOrganization")
+  stripeAccountId           String?
+  stripeChargesEnabled      Boolean                @default(false)
+  stripePayoutsEnabled      Boolean                @default(false)
+  stripeDetailsSubmitted    Boolean                @default(false)
+  stripeOnboardedAt         DateTime?
+  payments                  Payment[]
+  interventionWorkTimes     InterventionWorkTime[]
+  interventionExpenses      InterventionExpense[]
+  members                   OrganizationMember[]
+  invitations               TeamInvitation[]
+  clients                   Client[]
+  interventions             Intervention[]
+  quotes                    Quote[]
+  invoices                  Invoice[]
+  creditNotes               CreditNote[]
+  quoteTemplates            QuoteTemplate[]
+  serviceCatalogItems       ServiceCatalogItem[]
+  workspaceMaterials        WorkspaceMaterial[]
+  materialAnalyses          MaterialAnalysis[]
+  activeSessions            Session[]              @relation("ActiveOrganization")
 
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ServiceCatalogItem {
@@ -348,6 +358,102 @@ model ServiceCatalogItem {
 
   @@index([organizationId])
   @@index([organizationId, name])
+}
+
+model MaterialCategory {
+  id        String                @id @default(cuid())
+  name      String
+  slug      String                @unique
+  parentId  String?
+  parent    MaterialCategory?     @relation("MaterialCategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  MaterialCategory[]    @relation("MaterialCategoryTree")
+  active    Boolean               @default(true)
+  position  Int                   @default(0)
+  items     MaterialCatalogItem[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  @@index([parentId, position])
+}
+
+// Catalogue canonique Forge. Les références sont globales et ne contiennent
+// jamais de données propres à un workspace.
+model MaterialCatalogItem {
+  id                        String              @id @default(cuid())
+  categoryId                String?
+  category                  MaterialCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name                      String
+  brand                     String?
+  reference                 String?
+  description               String?
+  specifications            Json?
+  tags                      String[]            @default([])
+  unit                      String              @default("u")
+  defaultPurchasePriceCents Int?
+  defaultSalePriceCents     Int?
+  supplier                  String?
+  active                    Boolean             @default(true)
+  isFixture                 Boolean             @default(false)
+  workspaceMaterials        WorkspaceMaterial[]
+  quoteLines                QuoteLine[]
+  invoiceLines              InvoiceLine[]
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
+
+  @@unique([brand, reference])
+  @@index([categoryId, active])
+  @@index([name])
+  @@index([reference])
+}
+
+// Surcharge ou matériel personnalisé propre à l'espace actif.
+model WorkspaceMaterial {
+  id                 String               @id @default(cuid())
+  organizationId     String
+  organization       Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  catalogItemId      String?
+  catalogItem        MaterialCatalogItem? @relation(fields: [catalogItemId], references: [id], onDelete: SetNull)
+  name               String?
+  brand              String?
+  reference          String?
+  description        String?
+  specifications     Json?
+  tags               String[]             @default([])
+  unit               String?
+  purchasePriceCents Int?
+  salePriceCents     Int?
+  supplier           String?
+  favorite           Boolean              @default(false)
+  active             Boolean              @default(true)
+  quoteLines         QuoteLine[]
+  invoiceLines       InvoiceLine[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([organizationId, catalogItemId])
+  @@index([organizationId, active])
+  @@index([organizationId, name])
+  @@index([organizationId, reference])
+}
+
+// Trace structurée de l'analyse, sans conservation du fichier photo brut.
+model MaterialAnalysis {
+  id             String                 @id @default(cuid())
+  organizationId String
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requestedById  String?
+  requestedBy    User?                  @relation("MaterialAnalysisRequester", fields: [requestedById], references: [id], onDelete: SetNull)
+  model          String
+  status         MaterialAnalysisStatus @default(PROCESSING)
+  photoCount     Int
+  inputHash      String?
+  result         Json?
+  errorCode      String?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@index([organizationId, createdAt])
+  @@index([requestedById, createdAt])
 }
 
 // Compteur séquentiel de numéros de documents, par organisation, par nature
@@ -366,16 +472,16 @@ model DocumentCounter {
 }
 
 model OrganizationMember {
-  id             String       @id @default(cuid())
-  role           TeamRole
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id              String       @id @default(cuid())
+  role            TeamRole
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   // Coût interne par heure, utilisé uniquement pour la rentabilité.
   hourlyCostCents Int?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@unique([userId, organizationId])
   @@index([organizationId])
@@ -519,93 +625,93 @@ model Client {
 }
 
 model InterventionDayTask {
-  id String @id @default(cuid())
+  id             String       @id @default(cuid())
   interventionId String
-  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
   // Journée calendaire stockée au début du jour Europe/Paris.
-  date DateTime
-  title String
-  description String?
-  startTime String?
-  endTime String?
-  completedAt DateTime?
-  report String?
-  position Int @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  date           DateTime
+  title          String
+  description    String?
+  startTime      String?
+  endTime        String?
+  completedAt    DateTime?
+  report         String?
+  position       Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([interventionId, date, position])
 }
 
 model InterventionDayState {
-  id String @id @default(cuid())
-  interventionId String
-  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
-  date DateTime
-  startedAt DateTime?
-  completedAt DateTime?
-  report String?
+  id               String       @id @default(cuid())
+  interventionId   String
+  intervention     Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  date             DateTime
+  startedAt        DateTime?
+  completedAt      DateTime?
+  report           String?
   finalizationStep String?
-  reportDraft String?
-  reportSkippedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  reportDraft      String?
+  reportSkippedAt  DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
   @@unique([interventionId, date])
   @@index([interventionId, date])
 }
 
 model InterventionExcludedDay {
-  id String @id @default(cuid())
+  id             String       @id @default(cuid())
   interventionId String
-  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
-  date DateTime
-  createdAt DateTime @default(now())
+  intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  date           DateTime
+  createdAt      DateTime     @default(now())
 
   @@unique([interventionId, date])
   @@index([interventionId, date])
 }
 
 model InterventionWorkTime {
-  id String @id @default(cuid())
-  interventionId String
-  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
-  organizationId String
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  id              String       @id @default(cuid())
+  interventionId  String
+  intervention    Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Restrict)
   // Journée Europe/Paris facultative du chantier.
-  dayDate DateTime?
-  startedAt DateTime
-  endedAt DateTime?
+  dayDate         DateTime?
+  startedAt       DateTime
+  endedAt         DateTime?
   // Figée à la fermeture ou à la saisie manuelle.
   durationMinutes Int?
   // Snapshot : une modification future du coût membre ne change pas l'historique.
   hourlyCostCents Int?
-  manual Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  manual          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([interventionId, dayDate])
   @@index([organizationId, userId])
 }
 
 model InterventionExpense {
-  id String @id @default(cuid())
-  interventionId String
-  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
-  organizationId String
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id              String                      @id @default(cuid())
+  interventionId  String
+  intervention    Intervention                @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  organizationId  String
+  organization    Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdByUserId String
-  createdByUser User @relation("InterventionExpenseCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
-  dayDate DateTime?
-  amountCents Int
-  category InterventionExpenseCategory @default(OTHER)
-  supplier String?
-  description String?
-  expenseDate DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdByUser   User                        @relation("InterventionExpenseCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  dayDate         DateTime?
+  amountCents     Int
+  category        InterventionExpenseCategory @default(OTHER)
+  supplier        String?
+  description     String?
+  expenseDate     DateTime
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
 
   @@index([interventionId, expenseDate])
   @@index([organizationId])
@@ -655,11 +761,11 @@ model Intervention {
 
   invoices Invoice[]
 
-  dayTasks InterventionDayTask[]
-  dayStates InterventionDayState[]
+  dayTasks     InterventionDayTask[]
+  dayStates    InterventionDayState[]
   excludedDays InterventionExcludedDay[]
-  workTimes InterventionWorkTime[]
-  expenses InterventionExpense[]
+  workTimes    InterventionWorkTime[]
+  expenses     InterventionExpense[]
 
   userId String?
 
@@ -889,6 +995,18 @@ model QuoteLine {
   // 550 = 5,5 %, 0 = 0 %). Ignoré si le devis n'applique pas la TVA.
   vatRateBp Int @default(0)
 
+  // Snapshot matériel : les documents historiques restent inchangés quand le
+  // catalogue évolue. Les relations servent seulement à retrouver la source.
+  materialCatalogItemId  String?
+  materialCatalogItem    MaterialCatalogItem? @relation(fields: [materialCatalogItemId], references: [id], onDelete: SetNull)
+  workspaceMaterialId    String?
+  workspaceMaterial      WorkspaceMaterial?   @relation(fields: [workspaceMaterialId], references: [id], onDelete: SetNull)
+  materialName           String?
+  materialBrand          String?
+  materialReference      String?
+  materialSpecifications Json?
+  materialSupplier       String?
+
   quoteId String
 
   quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
@@ -898,23 +1016,25 @@ model QuoteLine {
   createdAt DateTime @default(now())
 
   @@index([quoteId])
+  @@index([materialCatalogItemId])
+  @@index([workspaceMaterialId])
 }
 
 model QuoteLineDetail {
-  id String @id @default(cuid())
-  label String
-  description String?
+  id             String    @id @default(cuid())
+  label          String
+  description    String?
   // Quantité × unité × PU HT du sous-détail. Sert uniquement à calculer
   // amountCents ci-dessous ; jamais inclus dans les totaux de la ligne.
-  quantityMilli Int @default(1000)
-  unit String @default("forfait")
+  quantityMilli  Int       @default(1000)
+  unit           String    @default("forfait")
   unitPriceCents Int?
   // Facultatif et uniquement informatif : jamais inclus dans les totaux.
-  amountCents Int?
-  position Int @default(0)
-  quoteLineId String
-  quoteLine QuoteLine @relation(fields: [quoteLineId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  amountCents    Int?
+  position       Int       @default(0)
+  quoteLineId    String
+  quoteLine      QuoteLine @relation(fields: [quoteLineId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
 
   @@index([quoteLineId, position])
 }
@@ -1007,25 +1127,25 @@ model Invoice {
 // relances, remboursements). Le statut PAYEE de la facture est dérivé de la
 // somme des paiements SUCCEEDED (moins les remboursements).
 model Payment {
-  id             String          @id @default(cuid())
+  id             String       @id @default(cuid())
   invoiceId      String
-  invoice        Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice        Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   organizationId String
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  amountCents    Int
+  amountCents   Int
   // Frais du prestataire (Stripe). netCents = amountCents - feeCents.
-  feeCents       Int             @default(0)
-  netCents       Int             @default(0)
-  refundedCents  Int             @default(0)
-  currency       String          @default("eur")
+  feeCents      Int    @default(0)
+  netCents      Int    @default(0)
+  refundedCents Int    @default(0)
+  currency      String @default("eur")
 
-  status         PaymentStatus   @default(PENDING)
-  provider       PaymentProvider @default(MANUAL)
+  status       PaymentStatus   @default(PENDING)
+  provider     PaymentProvider @default(MANUAL)
   // "card" | "bank_transfer" | "virement" | "cheque" | "especes"
-  method         String?
-  reference      String?
-  errorMessage   String?
+  method       String?
+  reference    String?
+  errorMessage String?
 
   stripePaymentIntentId   String? @unique
   stripeCheckoutSessionId String? @unique
@@ -1034,8 +1154,8 @@ model Payment {
   recordedByUser   User?   @relation("PaymentRecorder", fields: [recordedByUserId], references: [id], onDelete: SetNull)
 
   paidAt    DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([invoiceId])
   @@index([organizationId])
@@ -1091,6 +1211,16 @@ model InvoiceLine {
   // n'applique pas la TVA.
   vatRateBp Int @default(0)
 
+  materialCatalogItemId  String?
+  materialCatalogItem    MaterialCatalogItem? @relation(fields: [materialCatalogItemId], references: [id], onDelete: SetNull)
+  workspaceMaterialId    String?
+  workspaceMaterial      WorkspaceMaterial?   @relation(fields: [workspaceMaterialId], references: [id], onDelete: SetNull)
+  materialName           String?
+  materialBrand          String?
+  materialReference      String?
+  materialSpecifications Json?
+  materialSupplier       String?
+
   invoiceId String
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -1100,23 +1230,25 @@ model InvoiceLine {
   createdAt DateTime @default(now())
 
   @@index([invoiceId])
+  @@index([materialCatalogItemId])
+  @@index([workspaceMaterialId])
 }
 
 model InvoiceLineDetail {
-  id String @id @default(cuid())
-  label String
-  description String?
+  id             String      @id @default(cuid())
+  label          String
+  description    String?
   // Quantité × unité × PU HT du sous-détail. Sert uniquement à calculer
   // amountCents ci-dessous ; jamais inclus dans les totaux de la ligne.
-  quantityMilli Int @default(1000)
-  unit String @default("forfait")
+  quantityMilli  Int         @default(1000)
+  unit           String      @default("forfait")
   unitPriceCents Int?
   // Facultatif et uniquement informatif : jamais inclus dans les totaux.
-  amountCents Int?
-  position Int @default(0)
-  invoiceLineId String
-  invoiceLine InvoiceLine @relation(fields: [invoiceLineId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  amountCents    Int?
+  position       Int         @default(0)
+  invoiceLineId  String
+  invoiceLine    InvoiceLine @relation(fields: [invoiceLineId], references: [id], onDelete: Cascade)
+  createdAt      DateTime    @default(now())
 
   @@index([invoiceLineId, position])
 }
@@ -1167,12 +1299,12 @@ model CreditNoteLine {
   category String
   label    String?
 
-  quantityMilli  Int @default(1000)
+  quantityMilli  Int    @default(1000)
   unit           String @default("forfait")
-  unitPriceCents Int @default(0)
-  discountBp     Int @default(0)
-  amountCents    Int @default(0)
-  vatRateBp      Int @default(0)
+  unitPriceCents Int    @default(0)
+  discountBp     Int    @default(0)
+  amountCents    Int    @default(0)
+  vatRateBp      Int    @default(0)
 
   creditNoteId String
   creditNote   CreditNote @relation(fields: [creditNoteId], references: [id], onDelete: Cascade)
@@ -1210,13 +1342,13 @@ model QuoteTemplateLine {
   category String
   label    String?
 
-  quantityMilli  Int @default(1000)
+  quantityMilli  Int    @default(1000)
   unit           String @default("forfait")
-  unitPriceCents Int @default(0)
+  unitPriceCents Int    @default(0)
   costCents      Int?
-  discountBp     Int @default(0)
-  vatRateBp      Int @default(0)
-  position       Int @default(0)
+  discountBp     Int    @default(0)
+  vatRateBp      Int    @default(0)
+  position       Int    @default(0)
 
   templateId String
   template   QuoteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)

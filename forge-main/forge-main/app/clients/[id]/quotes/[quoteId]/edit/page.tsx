@@ -20,6 +20,7 @@ import {
 } from "@/src/lib/document-lines";
 import type { EditableQuoteLine } from "@/src/lib/quote-lines";
 import { computeDocumentTotals, normalizeVatRateBp } from "@/src/lib/vat";
+import { secureMaterialLineSources } from "@/src/lib/material-catalog.server";
 import {
   getQuoteClientName,
   getQuotePath,
@@ -42,6 +43,13 @@ function editableLine(line: {
   costCents: number | null;
   discountBp: number;
   vatRateBp: number;
+  materialCatalogItemId: string | null;
+  workspaceMaterialId: string | null;
+  materialName: string | null;
+  materialBrand: string | null;
+  materialReference: string | null;
+  materialSpecifications: unknown;
+  materialSupplier: string | null;
   details: Array<{
     label: string;
     description: string | null;
@@ -58,6 +66,22 @@ function editableLine(line: {
     discount: line.discountBp ? String(line.discountBp / 100) : "",
     cost: line.costCents == null ? "" : (line.costCents / 100).toFixed(2),
     vatRateBp: line.vatRateBp,
+    ...(line.materialName
+      ? {
+          material: {
+            catalogItemId: line.materialCatalogItemId,
+            workspaceMaterialId: line.workspaceMaterialId,
+            name: line.materialName,
+            brand: line.materialBrand ?? "",
+            reference: line.materialReference ?? "",
+            specifications:
+              line.materialSpecifications && typeof line.materialSpecifications === "object" && !Array.isArray(line.materialSpecifications)
+                ? (line.materialSpecifications as Record<string, string>)
+                : {},
+            supplier: line.materialSupplier ?? "",
+          },
+        }
+      : {}),
     details: line.details.map((detail) => ({
       label: detail.label,
       description: detail.description ?? "",
@@ -209,7 +233,8 @@ export default async function EditQuotePage({
 
 
     const defaultVatRateBp = normalizeVatRateBp(writeContext.workspace.defaultVatRateBp, 2000);
-    const lines = buildDocumentLinesFromForm(rawLines, defaultVatRateBp);
+    const parsedLines = buildDocumentLinesFromForm(rawLines, defaultVatRateBp);
+    const lines = await secureMaterialLineSources(parsedLines, writeContext.workspace.id);
     if (lines.length === 0) return { error: "Ajoutez au moins une ligne avec une désignation et un PU HT supérieur à 0." };
     const vatApplicable = formData.get("vatApplicable")?.toString() === "true";
     const discountBp = normalizeDiscountBp(formData.get("documentDiscount"));
