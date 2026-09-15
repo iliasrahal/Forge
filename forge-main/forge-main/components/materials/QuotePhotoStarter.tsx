@@ -8,10 +8,11 @@ import type { EffectiveMaterial } from "@/src/lib/material-catalog";
 import { getMaterialAnalysisFollowUp } from "@/src/lib/material-analysis";
 import type { MaterialIdentification } from "@/src/lib/material-matching";
 import { compressPhoto } from "@/src/lib/photo-compression";
-import { createMaterialLineSnapshot } from "@/src/lib/quote-lines";
 import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 import { serializeQuoteLines } from "@/src/lib/quote-catalog-matching";
 import MaterialPicker from "@/components/materials/MaterialPicker";
+import MaterialQuotePreparation from "@/components/materials/MaterialQuotePreparation";
+import type { EditableQuoteLine } from "@/src/lib/quote-lines";
 
 type Result = {
   analysisId: string;
@@ -24,10 +25,10 @@ type Result = {
 type QuotePhotoStarterProps = {
   initialSource?: "camera" | "gallery";
   onClose?: () => void;
-  onSelectMaterial?: (material: QuoteMaterialSnapshotSource) => void;
+  onPreparedLines?: (lines: EditableQuoteLine[]) => void;
 };
 
-export default function QuotePhotoStarter({ initialSource, onClose, onSelectMaterial }: QuotePhotoStarterProps = {}) {
+export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLines }: QuotePhotoStarterProps = {}) {
   const router = useRouter();
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
@@ -39,6 +40,7 @@ export default function QuotePhotoStarter({ initialSource, onClose, onSelectMate
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPicker, setShowPicker] = useState(false);
+  const [selectedMaterial, setSelectedMaterial] = useState<QuoteMaterialSnapshotSource | null>(null);
   const sourceOpened = useRef(false);
 
   useEffect(() => {
@@ -84,17 +86,31 @@ export default function QuotePhotoStarter({ initialSource, onClose, onSelectMate
   }
 
   function chooseMaterial(material: QuoteMaterialSnapshotSource) {
-    if (onSelectMaterial) {
-      onSelectMaterial(material);
+    setShowPicker(false);
+    setSelectedMaterial(material);
+  }
+
+  function finishPreparation(lines: EditableQuoteLine[]) {
+    if (onPreparedLines) {
+      onPreparedLines(lines);
       onClose?.();
       return;
     }
-    const line = createMaterialLineSnapshot(material);
-    const params = new URLSearchParams({ title: result?.identification.equipmentType ? `Remplacement ${result.identification.equipmentType}` : material.name, quoteLines: serializeQuoteLines([line]) });
+    const params = new URLSearchParams({ quoteLines: serializeQuoteLines(lines) });
     router.push(`/quotes/new?${params.toString()}`);
   }
 
+  function cancelPreparation() {
+    setSelectedMaterial(null);
+    if (onClose) onClose();
+    else setMode("idle");
+  }
+
   const followUp = result ? getMaterialAnalysisFollowUp(result.identification, photos.length) : null;
+
+  if (selectedMaterial && result) {
+    return <MaterialQuotePreparation material={selectedMaterial} identification={result.identification} onBack={() => setSelectedMaterial(null)} onCancel={cancelPreparation} onContinue={finishPreparation} submitLabel={onPreparedLines ? "Ajouter au devis" : "Continuer le devis"} />;
+  }
 
   function startWith(source: "camera" | "gallery") {
     const input = source === "camera" ? cameraRef.current : galleryRef.current;

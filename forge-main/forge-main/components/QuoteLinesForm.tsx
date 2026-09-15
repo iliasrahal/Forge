@@ -227,6 +227,11 @@ export default function QuoteLinesForm({
     ]);
   }
 
+  function addPreparedMaterialLines(preparedLines: EditableQuoteLine[]) {
+    if (!canWrite) return;
+    setLines((current) => [...current, ...preparedLines]);
+  }
+
   function removeLine(index: number) {
     setLines((current) =>
       current.filter((_, lineIndex) => lineIndex !== index),
@@ -642,7 +647,7 @@ export default function QuoteLinesForm({
               <button
                 type="button"
                 onClick={addLine}
-                className="mt-1 w-full rounded-xl px-3 py-3 text-center font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
                 Ajouter une ligne personnalisée
               </button>
@@ -652,21 +657,21 @@ export default function QuoteLinesForm({
                   setShowMaterialPicker(true);
                   setShowAddMenu(false);
                 }}
-                className="mt-1 w-full rounded-xl px-3 py-3 text-center font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
                 <Search className="mr-2 inline" size={17} /> Rechercher du matériel
               </button>
               <button
                 type="button"
                 onClick={() => { setMaterialPhotoSource("camera"); setShowAddMenu(false); }}
-                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+                className="mt-1 w-full rounded-xl px-3 py-3 text-center font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
                 Prendre une photo
               </button>
               <button
                 type="button"
                 onClick={() => { setMaterialPhotoSource("gallery"); setShowAddMenu(false); }}
-                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+                className="mt-1 w-full rounded-xl px-3 py-3 text-center font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
                 Ajouter depuis la galerie
               </button>
@@ -861,7 +866,7 @@ export default function QuoteLinesForm({
             <QuotePhotoStarter
               initialSource={materialPhotoSource}
               onClose={() => setMaterialPhotoSource(null)}
-              onSelectMaterial={addSavedMaterial}
+              onPreparedLines={addPreparedMaterialLines}
             />
           </div>
         </div>
