@@ -55,3 +55,46 @@ export function matchMaterials(
     .sort((left, right) => right.score - left.score || left.material.name.localeCompare(right.material.name, "fr"))
     .slice(0, Math.max(1, Math.min(limit, 5)));
 }
+
+/** Classe le catalogue pour l'exploration artisan, sans prétendre garantir une
+ * compatibilité. Contrairement au matching strict, un signal partiel suffit et
+ * l'absence de signal conserve un accès aux références actives. */
+export function recommendMaterials(
+  identification: MaterialIdentification,
+  materials: EffectiveMaterial[],
+  limit = 20,
+): MaterialMatch[] {
+  const reference = normalize(identification.reference);
+  const brand = normalize(identification.brand);
+  const equipmentType = normalize(identification.equipmentType);
+  const terms = identification.searchTerms.map(normalize).filter(Boolean);
+  const visible = identification.visibleCharacteristics.map((entry) => ({
+    name: normalize(entry.name),
+    value: normalize(entry.value),
+  }));
+
+  return materials
+    .filter((material) => material.active)
+    .map((material) => {
+      let score = 0;
+      const reasons: string[] = [];
+      const materialReference = normalize(material.reference);
+      const materialBrand = normalize(material.brand);
+      const haystack = normalize(materialSearchHaystack(material));
+      if (reference && materialReference === reference) { score += 1000; reasons.push("Référence exacte"); }
+      else if (reference && materialReference.includes(reference)) { score += 300; reasons.push("Référence proche"); }
+      if (equipmentType && haystack.includes(equipmentType)) { score += 220; reasons.push("Même type de matériel"); }
+      if (brand && materialBrand === brand) { score += 160; reasons.push("Même marque"); }
+      for (const characteristic of visible) {
+        if (characteristic.value && haystack.includes(characteristic.value)) {
+          score += 70;
+          reasons.push(`${characteristic.name || "Caractéristique"} correspondante`);
+        }
+      }
+      for (const term of terms) if (term && haystack.includes(term)) score += 25;
+      if (material.favorite) score += score > 0 ? 5 : 1;
+      return { material, score, reasons: [...new Set(reasons)] };
+    })
+    .sort((left, right) => right.score - left.score || Number(right.material.favorite) - Number(left.material.favorite) || left.material.name.localeCompare(right.material.name, "fr"))
+    .slice(0, Math.max(1, Math.min(limit, 50)));
+}

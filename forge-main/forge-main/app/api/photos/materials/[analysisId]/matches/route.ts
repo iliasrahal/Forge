@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { validateMaterialIdentification } from "@/src/lib/material-analysis";
 import { getEffectiveMaterialsForWorkspace } from "@/src/lib/material-catalog.server";
-import { matchMaterials } from "@/src/lib/material-matching";
+import { recommendMaterials } from "@/src/lib/material-matching";
 import { prisma } from "@/src/lib/prisma";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -29,19 +29,8 @@ export async function GET(
     const identification = validateMaterialIdentification(
       (analysis.result as Record<string, unknown>).identification,
     );
-    if (
-      !identification.equipmentType ||
-      identification.missingCriticalCharacteristics.length ||
-      identification.questions.length
-    ) {
-      return NextResponse.json(
-        { error: "Une photo ou une précision supplémentaire est nécessaire avant de rechercher une référence fiable." },
-        { status: 409 },
-      );
-    }
-
     const materials = await getEffectiveMaterialsForWorkspace(context.workspace.id);
-    const matches = matchMaterials(identification, materials);
+    const matches = recommendMaterials(identification, materials);
     return NextResponse.json({ matches });
   } catch (error) {
     const accessError = getWorkspaceErrorResponse(error);

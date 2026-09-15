@@ -91,6 +91,7 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
 
   async function loadMaterialProposals() {
     if (!result || proposalsLoading) return;
+    setShowPicker(true);
     setProposalsLoading(true);
     setProposalsError("");
     const response = await fetch(`/api/photos/materials/${result.analysisId}/matches`);
@@ -129,12 +130,6 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
   }
 
   const followUp = result ? getMaterialAnalysisFollowUp(result.identification, photos.length) : null;
-  const canSearchCatalog = Boolean(
-    result?.identification.equipmentType &&
-    !result.identification.missingCriticalCharacteristics.length &&
-    !result.identification.questions.length,
-  );
-
   if ((selectedMaterial || prepareWithoutMaterial) && result) {
     return <MaterialQuotePreparation material={selectedMaterial} identification={result.identification} onBack={() => { setSelectedMaterial(null); setPrepareWithoutMaterial(false); }} onCancel={cancelPreparation} onContinue={finishPreparation} submitLabel={onPreparedLines ? "Ajouter au devis" : "Créer un devis à partir de l’analyse"} />;
   }
@@ -175,13 +170,11 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
         {followUp?.questions.length ? <div><h3 className="font-semibold text-[var(--forge-text-primary)]">Forge a besoin d’une précision</h3><ul className="mt-1 space-y-2 text-sm text-[var(--forge-text-secondary)]">{followUp.questions.map((question) => <li key={question} className="rounded-xl bg-[var(--forge-surface-secondary)] p-3">{question}</li>)}</ul><p className="mt-2 text-sm text-[var(--forge-text-muted)]">Précise la réponse dans le contexte, puis relance l’analyse.</p></div> : null}
         <div className="space-y-2">
           <button type="button" disabled={!result.identification.equipmentType} onClick={() => setPrepareWithoutMaterial(true)} className="min-h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-pink-500 px-4 text-center font-semibold text-white disabled:opacity-50">{onPreparedLines ? "Ajouter au devis" : "Créer un devis à partir de l’analyse"}</button>
-          {!proposalsRequested ? <button type="button" disabled={!canSearchCatalog || proposalsLoading} onClick={() => void loadMaterialProposals()} className="min-h-12 w-full rounded-xl border border-[var(--forge-border-strong)] px-4 text-center font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">{proposalsLoading ? "Recherche en cours…" : "Voir des propositions de matériel"}</button> : null}
-          {!canSearchCatalog && result.identification.equipmentType ? <p className="text-center text-xs text-[var(--forge-text-muted)]">Complète d’abord les informations indispensables pour rechercher une référence fiable.</p> : null}
+          <button type="button" disabled={proposalsLoading} onClick={() => void loadMaterialProposals()} className="min-h-12 w-full rounded-xl border border-[var(--forge-border-strong)] px-4 text-center font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">{proposalsLoading ? "Ouverture du catalogue…" : "Propositions de matériel"}</button>
           {proposalsError ? <p className="rounded-xl bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">{proposalsError}</p> : null}
         </div>
-        {proposalsRequested ? <div><h3 className="font-semibold text-[var(--forge-text-primary)]">Propositions de matériel</h3>{result.matches.length ? <div className="mt-2 space-y-2">{result.matches.map(({ material, reasons }) => <button key={material.id} type="button" onClick={() => chooseMaterial(material)} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 text-left hover:border-blue-400"><span><span className="block font-semibold text-[var(--forge-text-primary)]">{material.name}</span><span className="block text-sm text-[var(--forge-text-muted)]">{[material.brand, material.reference].filter(Boolean).join(" · ")} · {reasons.slice(0, 2).join(", ")}</span></span><span className="shrink-0 font-bold text-blue-600">Choisir</span></button>)}</div> : <p className="mt-2 rounded-xl bg-[var(--forge-surface-secondary)] p-3 text-sm text-[var(--forge-text-muted)]">Aucun matériel correspondant trouvé dans le catalogue.</p>}<button type="button" onClick={() => setShowPicker(true)} className="mt-3 min-h-11 w-full rounded-xl border border-[var(--forge-border-strong)] font-semibold text-[var(--forge-text-primary)]">Rechercher manuellement</button></div> : null}
       </div> : null}
-      <MaterialPicker open={showPicker} onClose={() => setShowPicker(false)} onSelect={chooseMaterial} />
+      <MaterialPicker open={showPicker} onClose={() => setShowPicker(false)} onSelect={chooseMaterial} suggestedMaterialIds={proposalsRequested ? result?.matches.map(({ material }) => material.id) : []} title={proposalsRequested ? "Propositions de matériel" : "Ajouter du matériel"} />
     </section>
   );
 }
