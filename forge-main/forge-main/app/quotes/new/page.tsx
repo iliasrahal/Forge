@@ -151,12 +151,6 @@ export default async function NewQuotePage({
     );
   }
 
-  if (!cleanSearch && cleanTitle) {
-    redirect(buildQuoteFormUrl(UNASSIGNED_QUOTE_CLIENT_ID));
-  }
-
-
-
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-6">
       <QuotePhotoStarter />
