@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Search, X } from "lucide-react";
+import { Camera, ImagePlus, Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -31,6 +31,7 @@ import {
   VAT_RATES_BP,
 } from "@/src/lib/vat";
 import MaterialPicker from "@/components/materials/MaterialPicker";
+import QuotePhotoStarter from "@/components/materials/QuotePhotoStarter";
 import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 
 
@@ -178,6 +179,7 @@ export default function QuoteLinesForm({
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [showMaterialPicker, setShowMaterialPicker] = useState(false);
+  const [materialPhotoSource, setMaterialPhotoSource] = useState<"camera" | "gallery" | null>(null);
   const [serviceSearch, setServiceSearch] = useState("");
   const [detailEditor, setDetailEditor] = useState<DetailEditor | null>(null);
 
@@ -652,7 +654,21 @@ export default function QuoteLinesForm({
                 }}
                 className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
-                Ajouter du matériel
+                <Search className="mr-2 inline" size={17} /> Rechercher du matériel
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMaterialPhotoSource("camera"); setShowAddMenu(false); }}
+                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+              >
+                <Camera className="mr-2 inline" size={17} /> Prendre une photo
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMaterialPhotoSource("gallery"); setShowAddMenu(false); }}
+                className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
+              >
+                <ImagePlus className="mr-2 inline" size={17} /> Ajouter depuis la galerie
               </button>
             </div>
           ) : null}
@@ -839,6 +855,17 @@ export default function QuoteLinesForm({
         onClose={() => setShowMaterialPicker(false)}
         onSelect={addSavedMaterial}
       />
+      {materialPhotoSource ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/20 p-3 backdrop-blur-[3px] sm:p-6" role="dialog" aria-modal="true" aria-label="Analyser des photos de matériel">
+          <div className="max-h-[calc(100dvh-7rem-env(safe-area-inset-bottom))] w-full max-w-2xl overflow-y-auto rounded-[2rem]">
+            <QuotePhotoStarter
+              initialSource={materialPhotoSource}
+              onClose={() => setMaterialPhotoSource(null)}
+              onSelectMaterial={addSavedMaterial}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
