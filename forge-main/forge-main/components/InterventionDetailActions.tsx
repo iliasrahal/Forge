@@ -31,7 +31,6 @@ export default function InterventionDetailActions({ interventionId, status, canW
       return;
     }
     router.push(`/app?newIntervention=${interventionId}`);
-    router.refresh();
   }
 
   return (

@@ -103,7 +103,6 @@ export default function WorkspaceSwitcher() {
       setIsOpen(false);
       window.dispatchEvent(new Event("forge-workspace-changed"));
       router.push("/app");
-      router.refresh();
     } catch (switchError) {
       setError(
         switchError instanceof Error

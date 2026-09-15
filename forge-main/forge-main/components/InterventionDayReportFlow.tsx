@@ -44,7 +44,6 @@ export default function InterventionDayReportFlow({
 
   function returnToPlanning() {
     router.push(`/interventions/${interventionId}`);
-    router.refresh();
   }
 
   async function skipReport() {

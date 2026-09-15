@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import FixedForgeBar from "@/components/FixedForgeBar";
 import ClientSearch from "@/components/clients/ClientSearch";
-import { requireCurrentUser } from "@/src/lib/auth";
 import { compareClientsByName } from "@/src/lib/client-name";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { clientService } from "@/src/services/client.service";
@@ -14,10 +13,7 @@ import { clientService } from "@/src/services/client.service";
 
 
 export default async function ClientsPage() {
-  const [, workspaceContext] = await Promise.all([
-    requireCurrentUser(),
-    requireWorkspaceContext("read"),
-  ]);
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 

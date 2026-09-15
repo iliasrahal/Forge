@@ -63,7 +63,6 @@ export default function CreateDepositInvoice({
       }
 
       router.push(`/invoices/${data.invoice.id}`);
-      router.refresh();
     } catch (submitError) {
       setError(
         submitError instanceof Error

@@ -6,7 +6,6 @@ import DocumentSearchList, {
   type SearchableDocument,
 } from "@/components/DocumentSearchList";
 import { prisma } from "@/src/lib/prisma";
-import { requireCurrentUser } from "@/src/lib/auth";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
 import { getInvoiceReminderState } from "@/src/lib/invoice-reminders";
@@ -46,10 +45,7 @@ function formatStatus(status: string) {
 export default async function InvoicesPage() {
 
 
-  const [, workspaceContext] = await Promise.all([
-    requireCurrentUser(),
-    requireWorkspaceContext("read"),
-  ]);
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 

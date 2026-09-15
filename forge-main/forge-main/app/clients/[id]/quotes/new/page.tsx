@@ -58,18 +58,23 @@ export default async function NewQuotePage({
       quoteLines,
     );
 
-  const client = withoutClient
-    ? null
-    : await prisma.client.findFirst({
-      where: {
-        id,
-        organizationId:
-          workspaceContext.workspace.id,
-      },
-    });
-
-  const services =
-    await prisma.serviceCatalogItem.findMany({
+  const [client, services] = await Promise.all([
+    withoutClient
+      ? Promise.resolve(null)
+      : prisma.client.findFirst({
+          where: {
+            id,
+            organizationId: workspaceContext.workspace.id,
+          },
+          select: {
+            id: true,
+            type: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+          },
+        }),
+    prisma.serviceCatalogItem.findMany({
       where: {
         organizationId:
           workspaceContext.workspace.id,
@@ -84,7 +89,8 @@ export default async function NewQuotePage({
         priceCents: true,
         pricingType: true,
       },
-    });
+    }),
+  ]);
 
   if (!withoutClient && !client) {
     notFound();

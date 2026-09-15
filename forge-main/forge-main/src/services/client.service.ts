@@ -11,6 +11,13 @@ export const clientService = {
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        id: true,
+        type: true,
+        firstName: true,
+        lastName: true,
+        companyName: true,
+      },
     });
   },
 

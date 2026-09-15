@@ -34,7 +34,6 @@ export default function HomeReminders({
         throw new Error(data.error ?? "Impossible de créer la facture.");
       }
       router.push(`/invoices/${data.invoice.id}`);
-      router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Impossible de créer la facture.");
     } finally {

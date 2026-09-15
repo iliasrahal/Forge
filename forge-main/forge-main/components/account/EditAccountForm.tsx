@@ -41,7 +41,6 @@ export default function EditAccountForm({ initialProfile }: { initialProfile: Ed
       localStorage.setItem("forgeUserFirstName", data.user.firstName);
       localStorage.setItem("forgeUserProfile", JSON.stringify(data.user));
       router.push("/settings/account");
-      router.refresh();
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Impossible d’enregistrer les informations.");
       setSaving(false);

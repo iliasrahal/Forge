@@ -1,5 +1,7 @@
 import { prisma } from "@/src/lib/prisma";
 import { getCurrentSession } from "@/src/lib/auth";
+import { after } from "next/server";
+import { cache } from "react";
 import {
   evaluateSubscriptionAccess,
   resolveEffectiveStatus,
@@ -91,7 +93,8 @@ export async function ensurePersonalWorkspaceForUser(userId: string) {
   return workspace;
 }
 
-export async function getCurrentWorkspaceContext(now = new Date()) {
+export const getCurrentWorkspaceContext = cache(async function getCurrentWorkspaceContext() {
+  const now = new Date();
   const session = await getCurrentSession();
   if (!session) return null;
 
@@ -109,8 +112,10 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
     session.user.subscriptionStatus = effectiveStatus;
   }
 
-  // Balayage opportuniste des équipes 100 % gratuites dont le sursis est écoulé.
-  await maybeSweepExpiredTeams(now);
+  // Maintenance opportuniste non bloquante : elle ne doit pas retarder chaque
+  // navigation authentifiée. Les contrôles d'accès de la requête restent, eux,
+  // entièrement synchrones.
+  after(() => maybeSweepExpiredTeams(now));
 
   let membership = session.activeOrganizationId
     ? await prisma.organizationMember.findUnique({
@@ -147,13 +152,11 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
     );
   }
 
-  // Équipe : (re)calcule le sursis de suppression et rafraîchit la valeur
-  // renvoyée pour que le bandeau d'alerte soit à jour.
+  // Le recalcul du sursis ne conditionne pas l'autorisation courante. On utilise
+  // la valeur persistée pour ce rendu et on prépare la suivante hors du chemin
+  // critique de navigation.
   if (membership.organization.type === "TEAM") {
-    membership.organization.graceExpiresAt = await recomputeTeamGrace(
-      membership.organizationId,
-      now,
-    );
+    after(() => recomputeTeamGrace(membership.organizationId, now));
   }
 
   const subscription = evaluateSubscriptionAccess(
@@ -178,7 +181,7 @@ export async function getCurrentWorkspaceContext(now = new Date()) {
     subscription,
     permissions: getWorkspacePermissions(role, subscription.hasAccess),
   };
-}
+});
 
 export async function requireWorkspaceContext(
   permission: WorkspacePermission = "read",

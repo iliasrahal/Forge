@@ -30,7 +30,6 @@ export default function DeleteQuoteButton({
       }
 
       router.replace("/quotes");
-      router.refresh();
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

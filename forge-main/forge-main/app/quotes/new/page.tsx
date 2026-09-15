@@ -55,6 +55,16 @@ export default async function NewQuotePage({
       orderBy: {
         createdAt: "desc",
       },
+      select: {
+        id: true,
+        type: true,
+        firstName: true,
+        lastName: true,
+        companyName: true,
+        phone: true,
+        postalCode: true,
+        city: true,
+      },
     });
 
 

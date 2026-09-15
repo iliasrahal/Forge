@@ -161,7 +161,6 @@ export default function SendInvoiceButton({
       });
     }
     router.push("/app");
-    router.refresh();
   }
 
   async function handleSaveEmail() {

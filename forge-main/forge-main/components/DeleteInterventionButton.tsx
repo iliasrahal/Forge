@@ -24,7 +24,6 @@ export default function DeleteInterventionButton({ interventionId, hasHistory, h
       return;
     }
     router.push("/app");
-    router.refresh();
   }
 
   return (

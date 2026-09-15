@@ -60,8 +60,6 @@ export default function DeleteClientButton({
 
       router.push("/clients");
 
-      router.refresh();
-
 
     } catch (error) {
 

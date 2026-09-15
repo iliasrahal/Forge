@@ -37,6 +37,16 @@ export default async function NewInvoicePage({
       archived: false,
     },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      type: true,
+      firstName: true,
+      lastName: true,
+      companyName: true,
+      phone: true,
+      postalCode: true,
+      city: true,
+    },
   });
 
   const normalizedSearch = cleanSearch.toLowerCase();

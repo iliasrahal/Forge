@@ -40,15 +40,23 @@ export default async function NewInvoicePage({
 
   const initialLines = parseSerializedQuoteLines(invoiceLines);
 
-  const client = await prisma.client.findFirst({
-    where: { id, organizationId: workspaceContext.workspace.id },
-  });
-
-  const services = await prisma.serviceCatalogItem.findMany({
-    where: { organizationId: workspaceContext.workspace.id },
-    orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-    select: { id: true, name: true, priceCents: true, pricingType: true },
-  });
+  const [client, services] = await Promise.all([
+    prisma.client.findFirst({
+      where: { id, organizationId: workspaceContext.workspace.id },
+      select: {
+        id: true,
+        type: true,
+        firstName: true,
+        lastName: true,
+        companyName: true,
+      },
+    }),
+    prisma.serviceCatalogItem.findMany({
+      where: { organizationId: workspaceContext.workspace.id },
+      orderBy: [{ name: "asc" }, { createdAt: "asc" }],
+      select: { id: true, name: true, priceCents: true, pricingType: true },
+    }),
+  ]);
 
   if (!client) {
     notFound();

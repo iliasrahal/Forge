@@ -7,7 +7,6 @@ import DocumentSearchList, {
   type SearchableDocument,
 } from "@/components/DocumentSearchList";
 import UseQuoteTemplateButton from "@/components/UseQuoteTemplateButton";
-import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getQuoteReminderState } from "@/src/lib/quote-reminders";
@@ -50,10 +49,7 @@ function formatStatus(status: string) {
 
 
 export default async function QuotesPage() {
-  const [, workspaceContext] = await Promise.all([
-    requireCurrentUser(),
-    requireWorkspaceContext("read"),
-  ]);
+  const workspaceContext = await requireWorkspaceContext("read");
 
 
 
