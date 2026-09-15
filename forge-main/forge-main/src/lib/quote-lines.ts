@@ -1,4 +1,5 @@
 import { normalizeVatRateBp } from "@/src/lib/vat";
+import type { MaterialImageView } from "@/src/lib/material-images";
 
 export type EditableQuoteLine = {
   category: string;
@@ -85,6 +86,9 @@ export type QuoteMaterialSnapshotSource = EditableMaterialSnapshot & {
   salePriceCents: number;
   purchasePriceCents: number | null;
   unit: string;
+  /** Aide visuelle courante uniquement, volontairement absente du snapshot du document. */
+  primaryImage?: MaterialImageView | null;
+  imageCount?: number;
 };
 
 export function createMaterialLineSnapshot(

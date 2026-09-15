@@ -338,6 +338,7 @@ model Organization {
   quoteTemplates            QuoteTemplate[]
   serviceCatalogItems       ServiceCatalogItem[]
   workspaceMaterials        WorkspaceMaterial[]
+  workspaceMaterialImages   WorkspaceMaterialImage[]
   materialAnalyses          MaterialAnalysis[]
   activeSessions            Session[]              @relation("ActiveOrganization")
 
@@ -395,6 +396,7 @@ model MaterialCatalogItem {
   active                    Boolean             @default(true)
   isFixture                 Boolean             @default(false)
   workspaceMaterials        WorkspaceMaterial[]
+  images                    MaterialCatalogImage[]
   quoteLines                QuoteLine[]
   invoiceLines              InvoiceLine[]
   createdAt                 DateTime            @default(now())
@@ -427,6 +429,7 @@ model WorkspaceMaterial {
   active             Boolean              @default(true)
   quoteLines         QuoteLine[]
   invoiceLines       InvoiceLine[]
+  images             WorkspaceMaterialImage[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -434,6 +437,71 @@ model WorkspaceMaterial {
   @@index([organizationId, active])
   @@index([organizationId, name])
   @@index([organizationId, reference])
+}
+
+enum MaterialImageKind {
+  PRODUCT
+  DETAIL
+  NAMEPLATE
+  TECHNICAL
+}
+
+enum MaterialCatalogImageSourceType {
+  MANUFACTURER
+  AUTHORIZED_SUPPLIER
+  AUTHORIZED_IMPORT
+}
+
+enum WorkspaceMaterialImageSourceType {
+  WORKSPACE_UPLOAD
+}
+
+model MaterialCatalogImage {
+  id                    String                         @id @default(cuid())
+  materialCatalogItemId String
+  materialCatalogItem   MaterialCatalogItem            @relation(fields: [materialCatalogItemId], references: [id], onDelete: Cascade)
+  objectKey             String                         @unique
+  kind                  MaterialImageKind              @default(PRODUCT)
+  isPrimary             Boolean                        @default(false)
+  position              Int                            @default(0)
+  sourceType            MaterialCatalogImageSourceType
+  sourceName            String?
+  sourceUrl             String?
+  license               String?
+  rightsExpiresAt       DateTime?
+  mimeType              String
+  width                 Int
+  height                Int
+  checksum              String
+  importedAt            DateTime                       @default(now())
+  createdAt             DateTime                       @default(now())
+  updatedAt             DateTime                       @updatedAt
+
+  @@unique([materialCatalogItemId, checksum])
+  @@index([materialCatalogItemId, isPrimary, position])
+}
+
+model WorkspaceMaterialImage {
+  id                  String                           @id @default(cuid())
+  workspaceMaterialId String
+  workspaceMaterial   WorkspaceMaterial                @relation(fields: [workspaceMaterialId], references: [id], onDelete: Cascade)
+  organizationId      String
+  organization        Organization                     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  objectKey           String                           @unique
+  kind                MaterialImageKind                @default(PRODUCT)
+  isPrimary           Boolean                          @default(false)
+  position            Int                              @default(0)
+  sourceType          WorkspaceMaterialImageSourceType @default(WORKSPACE_UPLOAD)
+  mimeType            String
+  width               Int
+  height              Int
+  checksum            String
+  createdAt           DateTime                         @default(now())
+  updatedAt           DateTime                         @updatedAt
+
+  @@unique([workspaceMaterialId, checksum])
+  @@index([organizationId, workspaceMaterialId])
+  @@index([workspaceMaterialId, isPrimary, position])
 }
 
 // Trace structurée de l'analyse, sans conservation du fichier photo brut.

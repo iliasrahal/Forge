@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { materialSearchHaystack, type EffectiveMaterial } from "@/src/lib/material-catalog";
 import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
+import MaterialThumbnail from "@/components/materials/MaterialThumbnail";
 
 export default function MaterialPicker({ open, onClose, onSelect, suggestedMaterialIds = [], title = "Ajouter du matériel" }: { open: boolean; onClose: () => void; onSelect: (material: QuoteMaterialSnapshotSource) => void; suggestedMaterialIds?: string[]; title?: string }) {
   const [materials, setMaterials] = useState<EffectiveMaterial[]>([]);
@@ -43,7 +44,8 @@ export default function MaterialPicker({ open, onClose, onSelect, suggestedMater
         </div>
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:px-5 sm:pb-5">
           {loading ? <p className="py-10 text-center text-[var(--forge-text-muted)]">Chargement…</p> : error ? <p className="rounded-xl bg-red-500/10 p-3 text-red-700 dark:text-red-300">{error}</p> : filtered.length ? filtered.map((material) => (
-            <button key={material.id} type="button" onClick={() => { onSelect(material); onClose(); }} className="flex w-full items-center gap-3 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 text-left transition hover:border-blue-400">
+            <button key={material.id} type="button" onClick={() => { onSelect(material); onClose(); }} className="flex w-full items-center gap-3 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-3 text-left transition hover:border-blue-400 sm:p-4">
+              <MaterialThumbnail image={material.primaryImage} name={material.name} className="h-20 w-20 sm:h-24 sm:w-24" />
               <span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-semibold text-[var(--forge-text-primary)]">{material.name}{material.favorite ? <Heart size={15} className="fill-pink-500 text-pink-500" /> : null}</span><span className="mt-1 block text-sm text-[var(--forge-text-muted)]">{[material.brand, material.reference, material.categoryName].filter(Boolean).join(" · ") || "Matériel personnalisé"}</span>{Object.keys(material.specifications).length ? <span className="mt-1 block text-xs text-[var(--forge-text-muted)]">{Object.entries(material.specifications).slice(0, 3).map(([name, value]) => `${name} : ${value}`).join(" · ")}</span> : null}{material.supplier ? <span className="mt-1 block text-xs text-[var(--forge-text-muted)]">Fournisseur : {material.supplier}</span> : null}</span>
               <span className="shrink-0 text-right"><span className="block font-bold text-[var(--forge-accent-blue-lit)]">{material.salePriceCents > 0 ? `${(material.salePriceCents / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €` : "Prix à compléter"}</span><span className="mt-1 block text-sm font-bold text-blue-600 dark:text-blue-400">Choisir</span></span>
             </button>

@@ -10,6 +10,7 @@ import {
   Images,
   Keyboard,
   PackageSearch,
+  Package,
   Mic,
   Send,
 } from "lucide-react";
@@ -437,10 +438,10 @@ function MaterialToQuoteIllustration() {
           <div className="landing-material-proposals rounded-[1.5rem] border border-blue-200 bg-blue-50/90 p-3 shadow-xl backdrop-blur dark:border-blue-900 dark:bg-blue-950/70">
             <div className="flex items-center justify-between gap-2"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Propositions de matériel</p><span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">Facultatif</span></div>
             <div className="mt-2 space-y-1.5">
-              <div className="rounded-xl border border-blue-300 bg-white/90 px-3 py-2 dark:border-blue-700 dark:bg-slate-900/90"><div className="flex items-center justify-between gap-2"><div><p className="text-xs font-bold">Radiateur vertical</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Atlantic · 1 500 W</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
-              <div className="rounded-xl bg-white/60 px-3 py-2 dark:bg-slate-900/55"><div className="flex items-center justify-between gap-2"><div><p className="text-xs font-bold">Radiateur panneau</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Référence du catalogue</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
+              <div className="rounded-xl border border-blue-300 bg-white/90 px-2 py-2 dark:border-blue-700 dark:bg-slate-900/90"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur vertical</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Atlantic · 1 500 W</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
+              <div className="rounded-xl bg-white/60 px-2 py-2 dark:bg-slate-900/55"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur panneau</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Référence du catalogue</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
             </div>
-            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">L’artisan vérifie toujours la référence avant de la sélectionner.</p>
+            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">Photo catalogue selon disponibilité. L’artisan vérifie toujours la référence.</p>
           </div>
 
           <div className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-4 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">

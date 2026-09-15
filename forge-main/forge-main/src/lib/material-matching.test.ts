@@ -5,7 +5,7 @@ import type { EffectiveMaterial } from "@/src/lib/material-catalog";
 import { matchMaterials, recommendMaterials, type MaterialIdentification } from "@/src/lib/material-matching";
 
 function material(id: string, patch: Partial<EffectiveMaterial>): EffectiveMaterial {
-  return { id, catalogItemId: id, workspaceMaterialId: null, categoryId: null, categoryName: "Chauffage", name: id, brand: "", reference: "", description: "", specifications: {}, tags: [], unit: "u", purchasePriceCents: null, salePriceCents: 1000, supplier: "", favorite: false, active: true, isFixture: true, ...patch };
+  return { id, catalogItemId: id, workspaceMaterialId: null, categoryId: null, categoryName: "Chauffage", name: id, brand: "", reference: "", description: "", specifications: {}, tags: [], unit: "u", purchasePriceCents: null, salePriceCents: 1000, supplier: "", favorite: false, active: true, isFixture: true, ...patch, primaryImage: patch.primaryImage ?? null, imageCount: patch.imageCount ?? 0 };
 }
 const base: MaterialIdentification = { equipmentType: "circulateur", brand: null, reference: null, confidence: "medium", visibleCharacteristics: [], uncertainCharacteristics: [], missingCriticalCharacteristics: [], questions: [], searchTerms: ["circulateur"], warnings: [] };
 

@@ -1,4 +1,5 @@
 import type { EditableMaterialSnapshot } from "@/src/lib/quote-lines";
+import { materialImageUrl, pickPrimaryMaterialImage, type MaterialImageView } from "@/src/lib/material-images";
 
 export type EffectiveMaterial = EditableMaterialSnapshot & {
   id: string;
@@ -12,6 +13,17 @@ export type EffectiveMaterial = EditableMaterialSnapshot & {
   favorite: boolean;
   active: boolean;
   isFixture: boolean;
+  primaryImage: MaterialImageView | null;
+  imageCount: number;
+};
+
+type ImageRecord = {
+  id: string;
+  kind: "PRODUCT" | "DETAIL" | "NAMEPLATE" | "TECHNICAL";
+  isPrimary: boolean;
+  position: number;
+  width: number;
+  height: number;
 };
 
 type CatalogRecord = {
@@ -29,6 +41,7 @@ type CatalogRecord = {
   active: boolean;
   isFixture: boolean;
   category: { id: string; name: string } | null;
+  images: ImageRecord[];
   workspaceMaterials: WorkspaceRecord[];
 };
 
@@ -47,8 +60,13 @@ type WorkspaceRecord = {
   supplier: string | null;
   favorite: boolean;
   active: boolean;
+  images: ImageRecord[];
   catalogItem?: Omit<CatalogRecord, "workspaceMaterials"> | null;
 };
+
+function imageView(scope: "catalog" | "workspace", image: ImageRecord | null, name: string): MaterialImageView | null {
+  return image ? { id: image.id, url: materialImageUrl(scope, image.id), kind: image.kind, width: image.width, height: image.height, alt: name } : null;
+}
 
 export function normalizeSpecifications(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -68,13 +86,16 @@ export function buildEffectiveMaterials(
 ): EffectiveMaterial[] {
   const inherited = catalog.map((item) => {
     const override = item.workspaceMaterials[0];
+    const displayName = override?.name || item.name;
+    const workspaceImage = pickPrimaryMaterialImage(override?.images ?? []);
+    const catalogImage = pickPrimaryMaterialImage(item.images);
     return {
       id: override?.id ?? `catalog:${item.id}`,
       catalogItemId: item.id,
       workspaceMaterialId: override?.id ?? null,
       categoryId: item.category?.id ?? null,
       categoryName: item.category?.name ?? null,
-      name: override?.name || item.name,
+      name: displayName,
       brand: override?.brand ?? item.brand ?? "",
       reference: override?.reference ?? item.reference ?? "",
       description: override?.description ?? item.description ?? "",
@@ -88,6 +109,8 @@ export function buildEffectiveMaterials(
       favorite: override?.favorite ?? false,
       active: override?.active ?? item.active,
       isFixture: item.isFixture,
+      primaryImage: imageView(workspaceImage ? "workspace" : "catalog", workspaceImage ?? catalogImage, displayName),
+      imageCount: (override?.images.length ?? 0) + item.images.length,
     } satisfies EffectiveMaterial;
   });
 
@@ -110,6 +133,8 @@ export function buildEffectiveMaterials(
     favorite: item.favorite,
     active: item.active,
     isFixture: false,
+    primaryImage: imageView("workspace", pickPrimaryMaterialImage(item.images), item.name || "Matériel personnalisé"),
+    imageCount: item.images.length,
   } satisfies EffectiveMaterial));
 
   return [...inherited, ...custom].sort(

@@ -8,12 +8,14 @@ export async function getEffectiveMaterialsForWorkspace(organizationId: string) 
       where: { active: true },
       include: {
         category: { select: { id: true, name: true } },
-        workspaceMaterials: { where: { organizationId }, take: 1 },
+        images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } },
+        workspaceMaterials: { where: { organizationId }, take: 1, include: { images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } } } },
       },
       orderBy: [{ name: "asc" }],
     }),
     prisma.workspaceMaterial.findMany({
       where: { organizationId, catalogItemId: null },
+      include: { images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } } },
       orderBy: [{ favorite: "desc" }, { name: "asc" }],
     }),
   ]);
