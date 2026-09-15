@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { buildPreparedQuoteLines, suggestServicesForMaterial, type SuggestibleService } from "@/src/lib/material-service-suggestions";
+import { buildAnalysisQuoteTitle, buildPreparedQuoteLines, suggestServicesForMaterial, type SuggestibleService } from "@/src/lib/material-service-suggestions";
 import type { MaterialIdentification } from "@/src/lib/material-matching";
 import type { EditableQuoteLine, QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 import { formatServicePrice } from "@/src/lib/service-catalog";
 
-export default function MaterialQuotePreparation({ material, identification, onBack, onCancel, onContinue, submitLabel = "Continuer le devis" }: {
-  material: QuoteMaterialSnapshotSource;
+export default function MaterialQuotePreparation({ material, identification, onBack, onCancel, onContinue, submitLabel = "Créer un devis à partir de l’analyse" }: {
+  material: QuoteMaterialSnapshotSource | null;
   identification: MaterialIdentification;
   onBack: () => void;
   onCancel: () => void;
-  onContinue: (lines: EditableQuoteLine[]) => void;
-  submitLabel?: "Continuer le devis" | "Ajouter au devis";
+  onContinue: (lines: EditableQuoteLine[], title: string) => void;
+  submitLabel?: "Créer un devis à partir de l’analyse" | "Ajouter au devis";
 }) {
   const [quantity, setQuantity] = useState("1");
   const [quantityConfirmed, setQuantityConfirmed] = useState(false);
@@ -31,13 +31,14 @@ export default function MaterialQuotePreparation({ material, identification, onB
     return () => { active = false; };
   }, []);
 
-  const suggestions = useMemo(() => suggestServicesForMaterial(material, identification, services), [identification, material, services]);
+  const materialForSuggestions = useMemo<QuoteMaterialSnapshotSource>(() => material ?? ({ catalogItemId: null, workspaceMaterialId: null, name: identification.equipmentType || "", brand: identification.brand || "", reference: identification.reference || "", specifications: Object.fromEntries(identification.visibleCharacteristics.map(({ name, value }) => [name, value])), supplier: "", salePriceCents: 0, purchasePriceCents: null, unit: "u" }), [identification, material]);
+  const suggestions = useMemo(() => suggestServicesForMaterial(materialForSuggestions, identification, services), [identification, materialForSuggestions, services]);
   const validQuantity = /^\d+(?:[.,]\d{1,3})?$/.test(quantity.trim()) && Number(quantity.replace(",", ".")) > 0;
 
   function continueWith(selectedIds: string[]) {
     if (!validQuantity || !quantityConfirmed) return;
     const selectedServices = suggestions.filter((service) => selectedIds.includes(service.id));
-    onContinue(buildPreparedQuoteLines(material, quantity, selectedServices));
+    onContinue(buildPreparedQuoteLines(material, identification, quantity, selectedServices), buildAnalysisQuoteTitle(material, identification));
   }
 
   return (
@@ -45,8 +46,8 @@ export default function MaterialQuotePreparation({ material, identification, onB
       <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">Préparer le devis</p><h2 className="mt-1 text-xl font-bold text-[var(--forge-text-primary)]">Matériel choisi</h2></div><button type="button" onClick={onCancel} className="text-sm font-semibold text-[var(--forge-text-muted)] hover:text-[var(--forge-text-primary)]">Fermer</button></div>
 
       <div className="mt-4 rounded-2xl bg-[var(--forge-surface-secondary)] p-4">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold text-[var(--forge-text-primary)]">{material.name}</p><p className="mt-1 text-sm text-[var(--forge-text-muted)]">{[material.brand, material.reference].filter(Boolean).join(" · ") || "Référence personnalisée"}</p></div><p className="font-bold text-blue-600 dark:text-blue-400">{material.salePriceCents > 0 ? formatServicePrice(material.salePriceCents) : "Prix à compléter"}</p></div>
-        {Object.keys(material.specifications).length ? <p className="mt-3 text-sm text-[var(--forge-text-secondary)]">{Object.entries(material.specifications).slice(0, 5).map(([name, value]) => `${name} : ${value}`).join(" · ")}</p> : null}
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold text-[var(--forge-text-primary)]">{material?.name || identification.equipmentType || "Matériel à préciser"}</p><p className="mt-1 text-sm text-[var(--forge-text-muted)]">{material ? ([material.brand, material.reference].filter(Boolean).join(" · ") || "Référence personnalisée") : "Aucune référence catalogue sélectionnée"}</p></div><p className="font-bold text-blue-600 dark:text-blue-400">{material && material.salePriceCents > 0 ? formatServicePrice(material.salePriceCents) : "Prix à compléter"}</p></div>
+        {(material ? Object.keys(material.specifications).length : identification.visibleCharacteristics.length) ? <p className="mt-3 text-sm text-[var(--forge-text-secondary)]">{material ? Object.entries(material.specifications).slice(0, 5).map(([name, value]) => `${name} : ${value}`).join(" · ") : identification.visibleCharacteristics.slice(0, 5).map(({ name, value }) => `${name} : ${value}`).join(" · ")}</p> : null}
         <button type="button" onClick={onBack} className="mt-3 text-sm font-semibold text-blue-600 dark:text-blue-400">Modifier le choix</button>
       </div>
 

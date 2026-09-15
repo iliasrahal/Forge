@@ -41,6 +41,7 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
   const [error, setError] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<QuoteMaterialSnapshotSource | null>(null);
+  const [prepareWithoutMaterial, setPrepareWithoutMaterial] = useState(false);
   const sourceOpened = useRef(false);
 
   useEffect(() => {
@@ -87,29 +88,32 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
 
   function chooseMaterial(material: QuoteMaterialSnapshotSource) {
     setShowPicker(false);
+    setPrepareWithoutMaterial(false);
     setSelectedMaterial(material);
   }
 
-  function finishPreparation(lines: EditableQuoteLine[]) {
+  function finishPreparation(lines: EditableQuoteLine[], title: string) {
     if (onPreparedLines) {
       onPreparedLines(lines);
       onClose?.();
       return;
     }
     const params = new URLSearchParams({ quoteLines: serializeQuoteLines(lines) });
+    if (title) params.set("title", title);
     router.push(`/quotes/new?${params.toString()}`);
   }
 
   function cancelPreparation() {
     setSelectedMaterial(null);
+    setPrepareWithoutMaterial(false);
     if (onClose) onClose();
     else setMode("idle");
   }
 
   const followUp = result ? getMaterialAnalysisFollowUp(result.identification, photos.length) : null;
 
-  if (selectedMaterial && result) {
-    return <MaterialQuotePreparation material={selectedMaterial} identification={result.identification} onBack={() => setSelectedMaterial(null)} onCancel={cancelPreparation} onContinue={finishPreparation} submitLabel={onPreparedLines ? "Ajouter au devis" : "Continuer le devis"} />;
+  if ((selectedMaterial || prepareWithoutMaterial) && result) {
+    return <MaterialQuotePreparation material={selectedMaterial} identification={result.identification} onBack={() => { setSelectedMaterial(null); setPrepareWithoutMaterial(false); }} onCancel={cancelPreparation} onContinue={finishPreparation} submitLabel={onPreparedLines ? "Ajouter au devis" : "Créer un devis à partir de l’analyse"} />;
   }
 
   function startWith(source: "camera" | "gallery") {
@@ -145,7 +149,7 @@ export default function QuotePhotoStarter({ initialSource, onClose, onPreparedLi
         {!followUp?.requestPhoto && result.identification.uncertainCharacteristics.length ? <div className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200"><strong>À confirmer :</strong> {result.identification.uncertainCharacteristics.slice(0, 2).map((item) => `${item.name} (${item.possibleValue})`).join(" · ")}</div> : null}
         {followUp?.requestPhoto ? <div className="rounded-2xl border border-blue-400/40 bg-blue-500/10 p-4"><h3 className="font-semibold text-[var(--forge-text-primary)]">Pour aller plus loin</h3><p className="mt-1 text-sm text-[var(--forge-text-secondary)]">{followUp.photoPrompt}</p><div className="mt-3 grid grid-cols-1 gap-2 min-[380px]:grid-cols-2"><button type="button" disabled={loading} onClick={() => cameraRef.current?.click()} className="min-h-12 rounded-xl bg-blue-600 px-3 text-center font-semibold text-white disabled:opacity-50">Prendre une autre photo</button><button type="button" disabled={loading} onClick={() => galleryRef.current?.click()} className="min-h-12 rounded-xl border border-[var(--forge-border-strong)] px-3 text-center font-semibold text-[var(--forge-text-primary)] disabled:opacity-50">Ajouter depuis la galerie</button></div><p className="mt-2 text-xs text-[var(--forge-text-muted)]">La nouvelle photo sera analysée avec les précédentes.</p></div> : null}
         {followUp?.questions.length ? <div><h3 className="font-semibold text-[var(--forge-text-primary)]">Forge a besoin d’une précision</h3><ul className="mt-1 space-y-2 text-sm text-[var(--forge-text-secondary)]">{followUp.questions.map((question) => <li key={question} className="rounded-xl bg-[var(--forge-surface-secondary)] p-3">{question}</li>)}</ul><p className="mt-2 text-sm text-[var(--forge-text-muted)]">Précise la réponse dans le contexte, puis relance l’analyse.</p></div> : null}
-        {!followUp?.requestPhoto ? <div><h3 className="font-semibold text-[var(--forge-text-primary)]">Matériels proposés</h3>{result.matches.length ? <div className="mt-2 space-y-2">{result.matches.map(({ material, reasons }) => <button key={material.id} type="button" onClick={() => chooseMaterial(material)} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 text-left hover:border-blue-400"><span><span className="block font-semibold text-[var(--forge-text-primary)]">{material.name}</span><span className="block text-sm text-[var(--forge-text-muted)]">{[material.brand, material.reference].filter(Boolean).join(" · ")} · {reasons.slice(0, 2).join(", ")}</span></span><span className="shrink-0 font-bold text-blue-600">Choisir</span></button>)}</div> : <p className="mt-2 rounded-xl bg-[var(--forge-surface-secondary)] p-3 text-sm text-[var(--forge-text-muted)]">Aucun matériel correspondant dans votre bibliothèque.</p>}<button type="button" onClick={() => setShowPicker(true)} className="mt-3 min-h-11 w-full rounded-xl border border-[var(--forge-border-strong)] font-semibold text-[var(--forge-text-primary)]">Rechercher manuellement</button></div> : null}
+        {!followUp?.requestPhoto ? <div><h3 className="font-semibold text-[var(--forge-text-primary)]">Matériels proposés</h3>{result.matches.length ? <div className="mt-2 space-y-2">{result.matches.map(({ material, reasons }) => <button key={material.id} type="button" onClick={() => chooseMaterial(material)} className="flex w-full items-center justify-between gap-3 rounded-2xl border border-[var(--forge-border)] bg-[var(--forge-surface-secondary)] p-4 text-left hover:border-blue-400"><span><span className="block font-semibold text-[var(--forge-text-primary)]">{material.name}</span><span className="block text-sm text-[var(--forge-text-muted)]">{[material.brand, material.reference].filter(Boolean).join(" · ")} · {reasons.slice(0, 2).join(", ")}</span></span><span className="shrink-0 font-bold text-blue-600">Choisir</span></button>)}</div> : <p className="mt-2 rounded-xl bg-[var(--forge-surface-secondary)] p-3 text-sm text-[var(--forge-text-muted)]">Aucun matériel correspondant dans votre bibliothèque.</p>}<button type="button" onClick={() => setShowPicker(true)} className="mt-3 min-h-11 w-full rounded-xl border border-[var(--forge-border-strong)] font-semibold text-[var(--forge-text-primary)]">Rechercher manuellement</button>{result.matches.length ? <p className="mt-3 text-center text-sm text-[var(--forge-text-muted)]">Choisis d’abord le matériel à ajouter au devis.</p> : <button type="button" disabled={!result.identification.equipmentType} onClick={() => setPrepareWithoutMaterial(true)} className="mt-3 min-h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-pink-500 px-4 text-center font-semibold text-white disabled:opacity-50">{onPreparedLines ? "Ajouter au devis" : "Créer un devis à partir de l’analyse"}</button>}</div> : null}
       </div> : null}
       <MaterialPicker open={showPicker} onClose={() => setShowPicker(false)} onSelect={chooseMaterial} />
     </section>

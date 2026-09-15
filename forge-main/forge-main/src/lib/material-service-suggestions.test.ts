@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildPreparedQuoteLines, suggestServicesForMaterial, type SuggestibleService } from "@/src/lib/material-service-suggestions";
+import { buildAnalysisQuoteTitle, buildPreparedQuoteLines, suggestServicesForMaterial, type SuggestibleService } from "@/src/lib/material-service-suggestions";
 import type { MaterialIdentification } from "@/src/lib/material-matching";
 import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 
@@ -22,7 +22,7 @@ test("ne crée aucune prestation quand le catalogue ne contient rien de pertinen
 });
 
 test("prépare uniquement le matériel et les prestations cochées avec leurs vrais prix", () => {
-  const lines = buildPreparedQuoteLines(material, "2", [services[0]]);
+  const lines = buildPreparedQuoteLines(material, identification, "2", [services[0]]);
   assert.equal(lines.length, 2);
   assert.equal(lines[0].quantity, "2");
   assert.equal(lines[0].unitPrice, "420.00");
@@ -32,9 +32,22 @@ test("prépare uniquement le matériel et les prestations cochées avec leurs vr
 });
 
 test("un matériel sans prix reste à compléter sans prix inventé", () => {
-  const lines = buildPreparedQuoteLines({ ...material, salePriceCents: 0, purchasePriceCents: null }, "1,5", []);
+  const lines = buildPreparedQuoteLines({ ...material, salePriceCents: 0, purchasePriceCents: null }, identification, "1,5", []);
   assert.equal(lines[0].quantity, "1,5");
   assert.equal(lines[0].unitPrice, "0.00");
   assert.equal(lines[0].cost, "");
   assert.equal(lines.length, 1);
+});
+
+test("sans matériel catalogue, prépare une ligne manuelle sans référence ni prix inventés", () => {
+  const lines = buildPreparedQuoteLines(null, { ...identification, visibleCharacteristics: [{ name: "Puissance", value: "1500 W" }] }, "1", []);
+  assert.equal(lines[0].category, "Radiateur Atlantic");
+  assert.equal(lines[0].unitPrice, "");
+  assert.equal(lines[0].material, undefined);
+  assert.deepEqual(lines[0].details, [{ label: "Puissance", description: "1500 W", quantity: "1", unit: "forfait", unitPrice: "" }]);
+});
+
+test("le titre reste neutre et n'invente jamais un remplacement", () => {
+  assert.equal(buildAnalysisQuoteTitle(null, identification), "Radiateur Atlantic");
+  assert.equal(buildAnalysisQuoteTitle(material, identification), "Radiateur panneau");
 });

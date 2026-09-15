@@ -1,5 +1,5 @@
 import type { MaterialIdentification } from "@/src/lib/material-matching";
-import { createMaterialLineSnapshot, createQuoteLineSnapshot, type QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
+import { createMaterialLineSnapshot, createQuoteLineSnapshot, emptyQuoteLine, type QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
 import type { ServicePricingTypeValue } from "@/src/lib/service-catalog";
 
 export type SuggestibleService = {
@@ -51,13 +51,37 @@ export function suggestServicesForMaterial(
 }
 
 export function buildPreparedQuoteLines(
-  material: QuoteMaterialSnapshotSource,
+  material: QuoteMaterialSnapshotSource | null,
+  identification: MaterialIdentification,
   quantity: string,
   selectedServices: SuggestibleService[],
 ) {
+  const analysisTitle = buildAnalysisQuoteTitle(material, identification);
   const materialLine = {
-    ...createMaterialLineSnapshot(material),
+    ...(material
+      ? createMaterialLineSnapshot(material)
+      : {
+          ...emptyQuoteLine(analysisTitle || "Matériel à préciser"),
+          details: identification.visibleCharacteristics.map(({ name, value }) => ({
+            label: name,
+            description: value,
+            quantity: "1",
+            unit: "forfait",
+            unitPrice: "",
+          })),
+        }),
     quantity: quantity.trim().replace(".", ","),
   };
   return [materialLine, ...selectedServices.map((service) => createQuoteLineSnapshot(service))];
+}
+
+export function buildAnalysisQuoteTitle(
+  material: QuoteMaterialSnapshotSource | null,
+  identification: MaterialIdentification,
+) {
+  if (material) return material.name;
+  return [identification.equipmentType, identification.brand, identification.reference]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 }
