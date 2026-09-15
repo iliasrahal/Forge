@@ -37,9 +37,13 @@ export default function QuotePhotoStarter() {
     if (!files) return;
     setError("");
     const remaining = Math.max(0, 4 - photos.length);
-    const compressed = await Promise.all(Array.from(files).slice(0, remaining).map(compressPhoto));
-    setPhotos((current) => [...current, ...compressed]);
-    setPreviews((current) => [...current, ...compressed.map((file) => URL.createObjectURL(file))]);
+    try {
+      const compressed = await Promise.all(Array.from(files).slice(0, remaining).map(compressPhoto));
+      setPhotos((current) => [...current, ...compressed]);
+      setPreviews((current) => [...current, ...compressed.map((file) => URL.createObjectURL(file))]);
+    } catch {
+      setError("Cette photo ne peut pas être convertie. Choisis une photo JPEG, PNG, WebP ou reprends-la avec l’appareil photo.");
+    }
   }
 
   function removePhoto(index: number) {
@@ -80,8 +84,8 @@ export default function QuotePhotoStarter() {
   return (
     <section className="forge-surface mb-6 rounded-3xl border p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-[var(--forge-text-primary)]">Créer depuis des photos</h2><p className="mt-1 text-sm text-[var(--forge-text-muted)]">Forge analyse, puis tu valides toujours la référence.</p></div><button type="button" onClick={() => setMode("idle")} className="grid h-10 w-10 place-items-center rounded-xl hover:bg-[var(--forge-surface-hover)]" aria-label="Fermer"><X size={19} /></button></div>
-      <input ref={cameraRef} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => void addPhotos(event.target.files)} />
-      <input ref={galleryRef} hidden type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(event) => void addPhotos(event.target.files)} />
+      <input ref={cameraRef} hidden type="file" accept="image/*" capture="environment" onChange={(event) => void addPhotos(event.target.files)} />
+      <input ref={galleryRef} hidden type="file" accept="image/*" multiple onChange={(event) => void addPhotos(event.target.files)} />
       <div className="mt-4 grid grid-cols-2 gap-2"><button type="button" onClick={() => cameraRef.current?.click()} className="min-h-12 rounded-xl bg-blue-600 px-3 font-semibold text-white"><Camera className="mr-2 inline" size={18} />Appareil photo</button><button type="button" onClick={() => galleryRef.current?.click()} className="min-h-12 rounded-xl border border-[var(--forge-border-strong)] px-3 font-semibold text-[var(--forge-text-primary)]"><ImagePlus className="mr-2 inline" size={18} />Galerie</button></div>
       {/* Les aperçus sont des URL blob locales et éphémères : next/image ne peut pas les optimiser. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
