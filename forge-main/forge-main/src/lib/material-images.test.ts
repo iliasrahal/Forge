@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { validateMaterialImage } from "@/src/lib/material-image-storage.server";
+import { catalogMaterialObjectKey, validateMaterialImage } from "@/src/lib/material-image-storage.server";
 import { pickPrimaryMaterialImage } from "@/src/lib/material-images";
 
 function pngFile(width = 120, height = 80, type = "image/png") {
@@ -32,4 +32,11 @@ test("valide la signature, les dimensions et le checksum d'une image produit", a
 test("refuse un MIME non autorisé et des dimensions déraisonnables", async () => {
   await assert.rejects(validateMaterialImage(pngFile(120, 80, "image/gif")), /INVALID_IMAGE_TYPE/);
   await assert.rejects(validateMaterialImage(pngFile(20, 20)), /INVALID_IMAGE_DIMENSIONS/);
+});
+
+test("construit une clé catalogue stable sans nom de fichier ni traversée de chemin", () => {
+  assert.equal(
+    catalogMaterialObjectKey("Marque Été/../", "Réf. 20/27", "PRODUCT", "abcdef0123456789ffff", "image/webp"),
+    "marque-ete/ref-20-27/product-abcdef0123456789.webp",
+  );
 });

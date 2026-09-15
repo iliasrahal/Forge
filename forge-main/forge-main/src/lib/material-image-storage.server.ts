@@ -58,6 +58,21 @@ export function workspaceMaterialObjectKey(organizationId: string, workspaceMate
   return `${organizationId}/${workspaceMaterialId}/${randomUUID()}.${extension}`;
 }
 
+function storageSlug(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "inconnu";
+}
+
+export function catalogMaterialObjectKey(brand: string, reference: string, kind: string, checksum: string, mimeType: string) {
+  const extension = mimeType === "image/png" ? "png" : mimeType === "image/webp" ? "webp" : "jpg";
+  return `${storageSlug(brand)}/${storageSlug(reference)}/${storageSlug(kind)}-${checksum.slice(0, 16)}.${extension}`;
+}
+
 async function storageRequest(bucket: string, objectKey: string, init: RequestInit) {
   const { baseUrl, serviceKey } = storageConfig();
   return fetch(`${baseUrl}/storage/v1/object/${bucket}/${objectKey.split("/").map(encodeURIComponent).join("/")}`, {
