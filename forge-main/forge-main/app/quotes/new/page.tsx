@@ -215,7 +215,7 @@ export default async function NewQuotePage({
                   )}
                   className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500 dark:hover:bg-blue-950"
                 >
-                  <p className="font-semibold text-blue-700 dark:text-blue-400">
+                  <p className="text-center font-semibold text-blue-700 dark:text-blue-400">
                     {clientName}
                   </p>
 
