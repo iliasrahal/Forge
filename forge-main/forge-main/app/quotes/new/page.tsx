@@ -1,14 +1,19 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+
+
 import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { UNASSIGNED_QUOTE_CLIENT_ID } from "@/src/lib/quote-routes";
+import QuotePhotoStarter from "@/components/materials/QuotePhotoStarter";
 
 
 type NewQuotePageProps = {
   searchParams: Promise<{
     client?: string;
     title?: string;
+    description?: string;
     quoteLines?: string;
   }>;
 };
@@ -24,6 +29,7 @@ export default async function NewQuotePage({
   const {
     client: clientSearch,
     title,
+    description,
     quoteLines,
   } = await searchParams;
 
@@ -36,7 +42,13 @@ export default async function NewQuotePage({
     title?.trim() ?? "";
 
 
-  const allClients = await prisma.client.findMany({
+  const cleanDescription =
+    description?.trim() ?? "";
+
+
+
+  const allClients =
+    await prisma.client.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
         archived: false,
@@ -58,7 +70,8 @@ export default async function NewQuotePage({
 
 
 
-  const normalizedSearch = cleanSearch.toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalizedSearch =
+    cleanSearch.toLowerCase();
 
 
 
@@ -70,10 +83,10 @@ export default async function NewQuotePage({
                 client.lastName ?? ""
               }`
                 .trim()
-                .toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
             : (
                 client.companyName ?? ""
-              ).toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              ).toLowerCase();
 
 
 
@@ -85,7 +98,9 @@ export default async function NewQuotePage({
 
 
 
-  function buildQuoteFormUrl(clientId: string) {
+  function buildQuoteFormUrl(
+    clientId: string,
+  ) {
     const params =
       new URLSearchParams();
 
@@ -99,6 +114,13 @@ export default async function NewQuotePage({
     }
 
 
+
+    if (cleanDescription) {
+      params.set(
+        "description",
+        cleanDescription,
+      );
+    }
 
     if (quoteLines) {
       params.set("quoteLines", quoteLines);
@@ -118,8 +140,136 @@ export default async function NewQuotePage({
 
 
 
-  const initialClientId = cleanSearch && clients.length === 1
-    ? clients[0].id
-    : UNASSIGNED_QUOTE_CLIENT_ID;
-  redirect(buildQuoteFormUrl(initialClientId));
+  if (
+    cleanSearch &&
+    clients.length === 1
+  ) {
+    redirect(
+      buildQuoteFormUrl(
+        clients[0].id,
+      ),
+    );
+  }
+
+  if (!cleanSearch && cleanTitle) {
+    redirect(buildQuoteFormUrl(UNASSIGNED_QUOTE_CLIENT_ID));
+  }
+
+
+
+  return (
+    <main className="mx-auto w-full max-w-3xl px-6 py-6">
+      <QuotePhotoStarter />
+      <section className="forge-surface rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+
+
+        <div>
+          <Link
+            href="/quotes"
+            aria-label="Retour aux devis"
+            className="forge-back-link text-base font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            <span>
+              Retour
+            </span>
+          </Link>
+        </div>
+
+
+
+        {cleanSearch && (
+          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            Résultats pour « {cleanSearch} »
+          </p>
+        )}
+
+        <Link
+          href={buildQuoteFormUrl(UNASSIGNED_QUOTE_CLIENT_ID)}
+          className="mt-6 block rounded-2xl border border-blue-300 bg-blue-50/70 p-4 text-center font-semibold text-blue-700 transition hover:border-blue-500 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:border-blue-600"
+        >
+          Aucun client pour le moment
+        </Link>
+
+
+
+        {clients.length > 0 ? (
+          <div className="mt-3 space-y-3">
+
+
+            {clients.map((client) => {
+              const clientName =
+                client.type === "PARTICULIER"
+                  ? `${client.firstName ?? ""} ${
+                      client.lastName ?? ""
+                    }`.trim()
+                  : client.companyName ??
+                    "Client professionnel";
+
+
+
+              return (
+                <Link
+                  key={client.id}
+                  href={buildQuoteFormUrl(
+                    client.id,
+                  )}
+                  className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-500 dark:hover:bg-blue-950"
+                >
+                  <p className="font-semibold text-blue-700 dark:text-blue-400">
+                    {clientName}
+                  </p>
+
+
+
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                    {client.phone}
+                  </p>
+
+
+
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    {client.postalCode}{" "}
+                    {client.city}
+                  </p>
+
+
+                </Link>
+              );
+            })}
+
+
+          </div>
+
+
+        ) : (
+
+
+          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
+
+
+            <p className="text-slate-500 dark:text-slate-400">
+              {cleanSearch
+                ? `Aucun client trouvé pour « ${cleanSearch} ».`
+                : "Aucun client enregistré."}
+            </p>
+
+
+
+            <Link
+              href="/clients/new"
+              className="mt-4 inline-flex rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Créer un client
+            </Link>
+
+
+          </div>
+
+
+        )}
+
+
+      </section>
+    </main>
+  );
 }
