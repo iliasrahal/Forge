@@ -23,7 +23,7 @@ export const MATERIAL_ANALYSIS_JSON_SCHEMA = {
       items: { type: "object", additionalProperties: false, required: ["name", "possibleValue", "reason"], properties: { name: { type: "string" }, possibleValue: { type: "string" }, reason: { type: "string" } } },
     },
     missingCriticalCharacteristics: { type: "array", maxItems: 10, items: { type: "string" } },
-    questions: { type: "array", maxItems: 5, items: { type: "string" } },
+    questions: { type: "array", maxItems: 2, items: { type: "string" } },
     searchTerms: { type: "array", maxItems: 15, items: { type: "string" } },
     warnings: { type: "array", maxItems: 10, items: { type: "string" } },
   },
@@ -34,7 +34,10 @@ Tu analyses des photos de matériel professionnel pour aider un artisan à reche
 Tu dois décrire uniquement les informations réellement visibles. N'invente jamais une marque, une référence, une dimension, un diamètre, une puissance, une compatibilité ou un produit.
 Si une inscription n'est pas parfaitement lisible, place-la dans uncertainCharacteristics et explique pourquoi. Une valeur inconnue reste null ou absente des caractéristiques visibles.
 Une référence ne peut être renseignée que si elle est lisible explicitement sur une plaque ou une étiquette. Une marque suit la même règle.
-Identifie les caractéristiques critiques manquantes qui empêchent de choisir une référence compatible. Pose au maximum cinq questions courtes, ou demande une autre photo ciblée (plaque, raccord, vue d'ensemble).
+Identifie uniquement les caractéristiques critiques manquantes qui empêchent réellement de choisir une référence compatible.
+Adapte ces caractéristiques au matériel identifié : par exemple puissance/dimensions/raccordement pour un radiateur, capacité/orientation/raccordement pour un chauffe-eau, diamètre/type de raccord pour une vanne.
+Une caractéristique lisible sur une plaque ou une autre vue ne doit pas devenir une question utilisateur : indique-la comme manquante afin que l'interface demande d'abord une photo complémentaire ciblée.
+Si une information indispensable ne peut raisonnablement pas être obtenue visuellement, pose une seule question courte, ou au maximum deux si elles sont fortement liées. Ne produis jamais une liste générique de questions.
 Les searchTerms sont des mots strictement dérivés des éléments visibles et servent uniquement à interroger le catalogue interne. Tu ne recommandes aucun produit toi-même.
 Réponds en français et respecte exactement le schéma JSON imposé.
 `.trim();
@@ -62,8 +65,21 @@ export function validateMaterialIdentification(value: unknown): MaterialIdentifi
     visibleCharacteristics: visible,
     uncertainCharacteristics: uncertain,
     missingCriticalCharacteristics: strings(item.missingCriticalCharacteristics, 10),
-    questions: strings(item.questions, 5),
+    questions: strings(item.questions, 2),
     searchTerms: strings(item.searchTerms, 15),
     warnings: strings(item.warnings, 10),
+  };
+}
+
+export function getMaterialAnalysisFollowUp(identification: MaterialIdentification, photoCount: number) {
+  const needsInput = identification.missingCriticalCharacteristics.length > 0 || identification.questions.length > 0;
+  const requestPhoto = Boolean(identification.equipmentType) && needsInput && photoCount < 2;
+
+  return {
+    requestPhoto,
+    photoPrompt: requestPhoto
+      ? `Pour trouver le bon matériel, prends une photo de ${identification.reference ? "ses raccordements et dimensions" : "sa plaque signalétique"}.`
+      : null,
+    questions: requestPhoto ? [] : identification.questions.slice(0, 2),
   };
 }
