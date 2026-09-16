@@ -18,6 +18,8 @@ import { computeInterventionProfitability } from "@/src/lib/intervention-profita
 import InterventionProfitability from "@/components/InterventionProfitability";
 import DeleteInterventionButton from "@/components/DeleteInterventionButton";
 import { getInterventionReturnHref } from "@/src/lib/intervention-navigation";
+import { computeInterventionProgress } from "@/src/lib/intervention-progress";
+import InterventionOperations from "@/components/InterventionOperations";
 
 
 type InterventionPageProps = {
@@ -99,13 +101,13 @@ export default async function InterventionPage({
       },
       include: {
         client: true,
-        dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
+        dayTasks: { include: { assignedTo: { select: { firstName: true, lastName: true } } }, orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
         excludedDays: { orderBy: { date: "asc" } },
-        quote: { select: { status: true, amountCents: true, totalCostCents: true } },
+        quote: { select: { id: true, clientId: true, reference: true, status: true, amountCents: true, totalCostCents: true } },
         invoices: {
           where: { organizationId: workspaceContext.workspace.id },
-          select: { status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } } },
+          select: { id: true, reference: true, type: true, status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } }, creditNotes: { select: { id: true, reference: true, status: true, amountCents: true } } },
         },
         expenses: {
           where: { organizationId: workspaceContext.workspace.id },
@@ -116,6 +118,7 @@ export default async function InterventionPage({
           include: { user: { select: { firstName: true, lastName: true } } },
           orderBy: { startedAt: "desc" },
         },
+        materialUsages: { orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -146,6 +149,17 @@ export default async function InterventionPage({
   const currentMembership = await prisma.organizationMember.findUnique({
     where: { userId_organizationId: { userId: workspaceContext.user.id, organizationId: workspaceContext.workspace.id } },
     select: { hourlyCostCents: true },
+  });
+  const materials = await prisma.materialCatalogItem.findMany({
+    where: { active: true },
+    select: { id: true, name: true, brand: true, reference: true, unit: true, defaultPurchasePriceCents: true },
+    orderBy: { name: "asc" },
+    take: 200,
+  });
+  const progress = computeInterventionProgress({
+    explicitProgressBp: intervention.progressBp,
+    tasks: intervention.dayTasks,
+    days: intervention.dayStates,
   });
 
   const profitability = computeInterventionProfitability({
@@ -267,6 +281,12 @@ export default async function InterventionPage({
 
           </div>
 
+          <div className="min-w-44 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-3.5 text-center shadow-[0_16px_40px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-800/55 dark:shadow-black/30">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Progression</p>
+            <p className="mt-1 font-semibold text-slate-800 dark:text-slate-200">{progress ? `${progress.percent} %` : "À renseigner"}</p>
+            {progress && <div className="mx-auto mt-2 h-2 max-w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"><div className="h-full rounded-full bg-gradient-to-r from-blue-600 to-pink-500" style={{ width: `${progress.percent}%` }} /></div>}
+          </div>
+
 
 
 
@@ -312,7 +332,26 @@ export default async function InterventionPage({
 
         )}
 
-        {(intervention.endDate || intervention.dayTasks.length > 0) && (
+        <InterventionOperations
+          interventionId={intervention.id}
+          canWrite={workspaceContext.permissions.canWrite}
+          progressPercent={progress?.percent ?? null}
+          progressSource={progress?.source ?? null}
+          generalTasks={intervention.dayTasks.filter((task) => !task.date).map((task) => ({
+            id: task.id, title: task.title, description: task.description, status: task.status,
+            assignedToId: task.assignedToId,
+            assigneeName: task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName ?? ""}`.trim() : null,
+          }))}
+          members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
+          materials={materials}
+          usages={intervention.materialUsages.map((usage) => ({
+            id: usage.id, name: usage.name, brand: usage.brand, reference: usage.reference,
+            quantity: usage.quantityMilli / 1000, unit: usage.unit,
+            actualUnitCostCents: usage.actualUnitCostCents, dayDate: usage.dayDate ? formatParisDateKey(usage.dayDate) : null,
+          }))}
+        />
+
+        {(intervention.endDate || intervention.dayTasks.some((task) => task.date)) && (
           <InterventionDayPlanning
             interventionId={intervention.id}
             days={listInterventionDateKeys(
@@ -320,14 +359,15 @@ export default async function InterventionPage({
               intervention.endDate,
               intervention.excludedDays.map((day) => formatParisDateKey(day.date)),
             )}
-            tasks={intervention.dayTasks.map((task) => ({
+            tasks={intervention.dayTasks.filter((task) => task.date).map((task) => ({
               id: task.id,
-              date: formatParisDateKey(task.date),
+              date: formatParisDateKey(task.date!),
               title: task.title,
               description: task.description,
               startTime: task.startTime,
               endTime: task.endTime,
               completedAt: task.completedAt?.toISOString() ?? null,
+              status: task.status,
               report: task.report,
             }))}
             dayStates={intervention.dayStates.map((state) => ({
@@ -355,6 +395,7 @@ export default async function InterventionPage({
             category: expense.category,
             supplier: expense.supplier,
             description: expense.description,
+            note: expense.note,
           }))}
           workTimes={intervention.workTimes.map((entry) => ({
             id: entry.id,
@@ -365,8 +406,18 @@ export default async function InterventionPage({
             hourlyCostCents: entry.hourlyCostCents,
             memberName: `${entry.user.firstName} ${entry.user.lastName ?? ""}`.trim(),
             isCurrentUser: entry.userId === workspaceContext.user.id,
+            note: entry.note,
           }))}
+          members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
         />
+
+        {(intervention.quote || intervention.invoices.length > 0) && <section id="documents" className="mx-auto mt-8 max-w-2xl scroll-mt-6 rounded-3xl border border-blue-200/70 bg-white/45 p-5 dark:border-blue-800/60 dark:bg-slate-900/35">
+          <h2 className="text-center text-2xl font-bold text-slate-950 dark:text-white">Documents</h2>
+          <div className="mt-4 grid gap-2">
+            {intervention.quote && <Link href={`/clients/${intervention.quote.clientId ?? "unassigned"}/quotes/${intervention.quote.id}`} className="rounded-2xl bg-white/60 px-4 py-3 font-semibold text-blue-700 dark:bg-slate-800/50 dark:text-blue-300">Devis {intervention.quote.reference}</Link>}
+            {intervention.invoices.map((invoice) => <div key={invoice.id} className="rounded-2xl bg-white/60 px-4 py-3 dark:bg-slate-800/50"><Link href={`/invoices/${invoice.id}`} className="font-semibold text-blue-700 dark:text-blue-300">{invoice.type === "DEPOSIT" ? "Acompte" : invoice.type === "SITUATION" ? "Situation" : invoice.type === "BALANCE" ? "Solde" : "Facture"} {invoice.reference}</Link>{invoice.creditNotes.map((credit) => <p key={credit.id} className="mt-1 text-sm text-slate-500">Avoir {credit.reference}</p>)}</div>)}
+          </div>
+        </section>}
 
         {workspaceContext.permissions.canWrite && (
           <div className="mx-auto mt-10 max-w-2xl border-t border-[var(--forge-border)] pt-6 text-center">

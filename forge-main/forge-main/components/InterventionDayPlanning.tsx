@@ -14,6 +14,7 @@ type DayTask = {
   startTime: string | null;
   endTime: string | null;
   completedAt: string | null;
+  status: string;
   report: string | null;
 };
 
@@ -158,7 +159,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
   }
 
   return (
-    <section className="mx-auto mt-8 max-w-2xl">
+    <section id="planning" className="mx-auto mt-8 max-w-2xl scroll-mt-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold tracking-[-0.03em] text-blue-700 dark:text-blue-400">Planning du chantier</h2>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Les journées peuvent être suivies séparément sans terminer tout le chantier.</p>
@@ -199,7 +200,9 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                           {task.report && <p className="mt-2 text-sm italic text-slate-500 dark:text-slate-400">Compte rendu : {task.report}</p>}
                         </div>
                         {canWrite && <div className="flex flex-wrap justify-end gap-2 text-xs font-semibold">
+                          {!task.completedAt && task.status === "TODO" && <button type="button" onClick={() => mutate("PATCH", { taskId: task.id, status: "IN_PROGRESS" })} className="text-amber-700 dark:text-amber-300">Commencer</button>}
                           {!task.completedAt && <button type="button" onClick={() => mutate("PATCH", { taskId: task.id, completed: true })} className="text-emerald-700 dark:text-emerald-300">Terminer la tâche</button>}
+                          {task.completedAt && <button type="button" onClick={() => mutate("PATCH", { taskId: task.id, completed: false })} className="text-blue-700 dark:text-blue-300">Réouvrir</button>}
                           <button type="button" onClick={() => { setOpenDate(null); setEditing(task); }} className="text-blue-700 dark:text-blue-300">{task.completedAt ? "Compte rendu / Modifier" : "Modifier"}</button>
                           <button type="button" onClick={() => mutate("DELETE", { taskId: task.id })} className="text-red-600 dark:text-red-400">Supprimer</button>
                         </div>}

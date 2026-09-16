@@ -229,6 +229,8 @@ model User {
 
   workTimeEntries InterventionWorkTime[]
 
+  assignedInterventionTasks InterventionDayTask[] @relation("InterventionTaskAssignee")
+
   createdInterventionExpenses InterventionExpense[] @relation("InterventionExpenseCreator")
   materialAnalyses            MaterialAnalysis[]    @relation("MaterialAnalysisRequester")
 
@@ -328,6 +330,7 @@ model Organization {
   payments                  Payment[]
   interventionWorkTimes     InterventionWorkTime[]
   interventionExpenses      InterventionExpense[]
+  interventionMaterialUsages InterventionMaterialUsage[]
   members                   OrganizationMember[]
   invitations               TeamInvitation[]
   clients                   Client[]
@@ -399,6 +402,7 @@ model MaterialCatalogItem {
   images                    MaterialCatalogImage[]
   quoteLines                QuoteLine[]
   invoiceLines              InvoiceLine[]
+  interventionMaterialUsages InterventionMaterialUsage[]
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @updatedAt
 
@@ -429,6 +433,7 @@ model WorkspaceMaterial {
   active             Boolean              @default(true)
   quoteLines         QuoteLine[]
   invoiceLines       InvoiceLine[]
+  interventionMaterialUsages InterventionMaterialUsage[]
   images             WorkspaceMaterialImage[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
@@ -697,18 +702,25 @@ model InterventionDayTask {
   interventionId String
   intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
   // Journée calendaire stockée au début du jour Europe/Paris.
-  date           DateTime
+  // Null = tâche générale du chantier, affectable à une journée plus tard.
+  date           DateTime?
   title          String
   description    String?
   startTime      String?
   endTime        String?
   completedAt    DateTime?
+  startedAt      DateTime?
+  // String volontairement extensible : TODO, IN_PROGRESS, DONE.
+  status         String       @default("TODO")
+  assignedToId   String?
+  assignedTo     User?        @relation("InterventionTaskAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   report         String?
   position       Int          @default(0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@index([interventionId, date, position])
+  @@index([assignedToId])
 }
 
 model InterventionDayState {
@@ -757,6 +769,8 @@ model InterventionWorkTime {
   // Snapshot : une modification future du coût membre ne change pas l'historique.
   hourlyCostCents Int?
   manual          Boolean      @default(false)
+  note            String?
+  creationKey     String?      @unique
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
@@ -777,12 +791,43 @@ model InterventionExpense {
   category        InterventionExpenseCategory @default(OTHER)
   supplier        String?
   description     String?
+  note            String?
+  creationKey     String?                     @unique
   expenseDate     DateTime
   createdAt       DateTime                    @default(now())
   updatedAt       DateTime                    @updatedAt
 
   @@index([interventionId, expenseDate])
   @@index([organizationId])
+}
+
+model InterventionMaterialUsage {
+  id                    String               @id @default(cuid())
+  interventionId        String
+  intervention          Intervention         @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  dayDate               DateTime?
+  materialCatalogItemId String?
+  materialCatalogItem   MaterialCatalogItem? @relation(fields: [materialCatalogItemId], references: [id], onDelete: SetNull)
+  workspaceMaterialId   String?
+  workspaceMaterial     WorkspaceMaterial?   @relation(fields: [workspaceMaterialId], references: [id], onDelete: SetNull)
+  name                  String
+  brand                 String?
+  reference             String?
+  specifications        Json?
+  quantityMilli         Int                  @default(1000)
+  unit                  String               @default("u")
+  actualUnitCostCents   Int?
+  note                  String?
+  creationKey           String?              @unique
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([interventionId, dayDate])
+  @@index([organizationId])
+  @@index([materialCatalogItemId])
+  @@index([workspaceMaterialId])
 }
 
 model Intervention {
@@ -834,6 +879,10 @@ model Intervention {
   excludedDays InterventionExcludedDay[]
   workTimes    InterventionWorkTime[]
   expenses     InterventionExpense[]
+  materialUsages InterventionMaterialUsage[]
+
+  // Avancement explicite facultatif (0..10000). Null = progression dérivée.
+  progressBp Int?
 
   userId String?
 

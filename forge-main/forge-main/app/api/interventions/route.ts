@@ -364,8 +364,8 @@ export async function PATCH(request: Request) {
 
       const target = candidates[0];
       const tasks = normalizeInterventionDayTasks(body.dayTasks, target.scheduledAt, target.endDate);
-      const existingKeys = new Set(target.dayTasks.map((task) =>
-        `${formatParisDateKey(task.date)}\u0000${normalize(task.title)}`,
+      const existingKeys = new Set(target.dayTasks.filter((task) => task.date).map((task) =>
+        `${formatParisDateKey(task.date!)}\u0000${normalize(task.title)}`,
       ));
       const newTasks = tasks.filter((task) => !existingKeys.has(`${task.date}\u0000${normalize(task.title)}`));
       if (!newTasks.length) {

@@ -20,6 +20,15 @@ async function getWritableIntervention(id: string, organizationId: string) {
   });
 }
 
+async function validAssignee(userId: unknown, organizationId: string) {
+  if (typeof userId !== "string" || !userId) return null;
+  const member = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId, organizationId } },
+    select: { userId: true },
+  });
+  return member?.userId ?? null;
+}
+
 function isExcluded(intervention: Awaited<ReturnType<typeof getWritableIntervention>>, date: string) {
   return intervention?.excludedDays.some((day) => formatParisDateKey(day.date) === date) ?? false;
 }
@@ -31,12 +40,28 @@ export async function POST(request: Request, { params }: RouteContext) {
     const intervention = await getWritableIntervention(id, workspace.workspace.id);
     if (!intervention) return NextResponse.json({ error: "Intervention introuvable." }, { status: 404 });
     const body = await request.json();
-    const [task] = normalizeInterventionDayTasks([body], intervention.scheduledAt, intervention.endDate);
-    if (!task) return NextResponse.json({ error: "La journée et le titre de la tâche sont obligatoires et doivent appartenir au chantier." }, { status: 400 });
-    if (isExcluded(intervention, task.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
+    const isGeneral = body.date === null || body.date === "" || body.date === undefined;
+    const [task] = isGeneral ? [] : normalizeInterventionDayTasks([body], intervention.scheduledAt, intervention.endDate);
+    const title = typeof body.title === "string" ? body.title.trim().slice(0, 200) : "";
+    if (!title || (!isGeneral && !task)) return NextResponse.json({ error: "Le titre est obligatoire et la journée doit appartenir au chantier." }, { status: 400 });
+    if (task && isExcluded(intervention, task.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
     const position = await prisma.interventionDayTask.count({ where: { interventionId: id } });
+    const assignedToId = await validAssignee(body.assignedToId, workspace.workspace.id);
     const created = await prisma.interventionDayTask.create({
-      data: { ...interventionDayTaskCreateData(task), interventionId: id, position },
+      data: {
+        ...(task ? interventionDayTaskCreateData(task) : {
+          date: null,
+          title,
+          description: typeof body.description === "string" && body.description.trim() ? body.description.trim().slice(0, 1000) : null,
+          startTime: null,
+          endTime: null,
+          report: null,
+          position,
+        }),
+        interventionId: id,
+        position,
+        assignedToId,
+      },
     });
     return NextResponse.json({ task: created }, { status: 201 });
   } catch (error) {
@@ -63,13 +88,42 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         where: { id: taskId },
         data: {
           completedAt: body.completed ? new Date() : null,
+          startedAt: body.completed ? existing.startedAt ?? new Date() : null,
+          status: body.completed ? "DONE" : "TODO",
         },
       });
       return NextResponse.json({ task });
     }
 
+    if (body.status === "TODO" || body.status === "IN_PROGRESS" || body.status === "DONE") {
+      const now = new Date();
+      const task = await prisma.interventionDayTask.update({
+        where: { id: taskId },
+        data: {
+          status: body.status,
+          startedAt: body.status === "TODO" ? null : existing.startedAt ?? now,
+          completedAt: body.status === "DONE" ? existing.completedAt ?? now : null,
+        },
+      });
+      return NextResponse.json({ task });
+    }
+
+    const isGeneral = body.date === null || body.date === "";
+    if (isGeneral) {
+      const title = typeof body.title === "string" ? body.title.trim().slice(0, 200) : existing.title;
+      const task = await prisma.interventionDayTask.update({ where: { id: taskId }, data: {
+        date: null,
+        title,
+        description: typeof body.description === "string" && body.description.trim() ? body.description.trim().slice(0, 1000) : null,
+        startTime: null,
+        endTime: null,
+        assignedToId: await validAssignee(body.assignedToId, workspace.workspace.id),
+      } });
+      return NextResponse.json({ task });
+    }
+
     const [normalized] = normalizeInterventionDayTasks([{
-      date: body.date ?? formatParisDateKey(existing.date),
+      date: body.date ?? (existing.date ? formatParisDateKey(existing.date) : ""),
       title: body.title ?? existing.title,
       description: body.description ?? existing.description,
       startTime: body.startTime ?? existing.startTime,
@@ -80,7 +134,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     if (isExcluded(intervention, normalized.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
     const task = await prisma.interventionDayTask.update({
       where: { id: taskId },
-      data: interventionDayTaskCreateData(normalized),
+      data: { ...interventionDayTaskCreateData(normalized), assignedToId: await validAssignee(body.assignedToId, workspace.workspace.id) },
     });
     return NextResponse.json({ task });
   } catch (error) {

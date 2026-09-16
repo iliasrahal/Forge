@@ -111,9 +111,9 @@ function mapIntervention(intervention: HomeIntervention): Appointment {
     finalized: Boolean(intervention.finalizedAt),
     quoteId: intervention.quoteId,
     invoiceId: intervention.invoices[0]?.id ?? null,
-    dayTasks: intervention.dayTasks.map((task) => ({
+    dayTasks: intervention.dayTasks.filter((task) => task.date).map((task) => ({
       id: task.id,
-      date: formatParisDateKey(task.date),
+      date: formatParisDateKey(task.date!),
       title: task.title,
       description: task.description ?? undefined,
       startTime: task.startTime ?? undefined,
