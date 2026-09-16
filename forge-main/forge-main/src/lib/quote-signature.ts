@@ -31,8 +31,16 @@ export type QuoteSignatureSnapshot = {
   lines: Array<{
     category: string;
     label: string | null;
+    quantityMilli?: number;
+    unit?: string;
+    unitPriceCents?: number;
+    discountBp?: number;
     amountCents: number;
+    vatRateBp?: number;
+    materialName?: string | null;
+    materialBrand?: string | null;
     materialReference?: string | null;
+    materialSpecifications?: unknown;
     details?: Array<{
       label: string;
       description: string | null;
@@ -154,8 +162,16 @@ export function buildQuoteSignatureSnapshot(quote: {
   lines: Array<{
     category: string;
     label: string | null;
+    quantityMilli?: number;
+    unit?: string;
+    unitPriceCents?: number;
+    discountBp?: number;
     amountCents: number;
+    vatRateBp?: number;
+    materialName?: string | null;
+    materialBrand?: string | null;
     materialReference?: string | null;
+    materialSpecifications?: unknown;
     details?: Array<{
       label: string;
       description: string | null;
