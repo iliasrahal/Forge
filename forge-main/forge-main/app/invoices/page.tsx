@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Receipt } from "lucide-react";
+import { Euro } from "lucide-react";
 
 import FixedForgeBar from "@/components/FixedForgeBar";
 import DocumentSearchList, {
@@ -146,24 +146,13 @@ export default async function InvoicesPage() {
 
         {invoices.length === 0 ? (
           <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--forge-border)] px-6 py-14 text-center">
-            <Receipt
+            <Euro
               className="h-8 w-8 text-[var(--forge-text-muted)]"
               strokeWidth={1.5}
             />
             <p className="mt-4 text-base font-semibold text-[var(--forge-text-primary)]">
               Aucune facture pour l’instant
             </p>
-            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
-              Crée une facture directement ou depuis un devis accepté.
-            </p>
-            {workspaceContext.permissions.canWrite ? (
-              <Link
-                href="/invoices/new"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
-              >
-                Nouvelle facture
-              </Link>
-            ) : null}
           </div>
         ) : (
           <DocumentSearchList

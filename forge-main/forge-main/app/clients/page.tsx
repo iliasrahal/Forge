@@ -82,18 +82,6 @@ export default async function ClientsPage() {
             <p className="text-base font-semibold text-[var(--forge-text-primary)]">
               Aucun client pour l’instant
             </p>
-            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
-              Ajoute ton premier client pour créer un devis ou une facture à son
-              nom.
-            </p>
-            {workspaceContext.permissions.canWrite ? (
-              <Link
-                href="/clients/new"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
-              >
-                + Nouveau client
-              </Link>
-            ) : null}
           </div>
         )}
       </div>

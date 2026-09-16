@@ -205,17 +205,6 @@ export default async function QuotesPage() {
             <p className="mt-4 text-base font-semibold text-[var(--forge-text-primary)]">
               Aucun devis pour l’instant
             </p>
-            <p className="mt-1 max-w-xs text-sm text-[var(--forge-text-muted)]">
-              Crée ton premier devis, ou pars d’un modèle enregistré.
-            </p>
-            {workspaceContext.permissions.canWrite ? (
-              <Link
-                href="/quotes/new"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 font-semibold text-white transition hover:bg-blue-700"
-              >
-                + Nouveau devis
-              </Link>
-            ) : null}
           </div>
         )}
 
