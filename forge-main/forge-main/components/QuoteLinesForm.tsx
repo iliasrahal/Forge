@@ -5,9 +5,9 @@ import { Plus, Search, X } from "lucide-react";
 import { useState } from "react";
 
 import {
-  createMaterialLineSnapshot,
   createQuoteLineSnapshot,
   emptyQuoteLine,
+  placeMaterialInDocumentLines,
   type EditableQuoteLine,
 } from "@/src/lib/quote-lines";
 import {
@@ -221,10 +221,16 @@ export default function QuoteLinesForm({
 
   function addSavedMaterial(material: QuoteMaterialSnapshotSource) {
     if (!canWrite) return;
-    setLines((current) => [
-      ...current,
-      createMaterialLineSnapshot(material, normalizedDefaultRate),
-    ]);
+    setLines((current) =>
+      placeMaterialInDocumentLines(current, material, normalizedDefaultRate),
+    );
+    if (showMaterialShortcut) {
+      const titleInput = document.getElementById("title");
+      if (titleInput instanceof HTMLInputElement) {
+        titleInput.value = material.name;
+        titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
   }
 
   function removeLine(index: number) {

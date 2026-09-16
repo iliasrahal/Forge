@@ -120,3 +120,26 @@ export function createMaterialLineSnapshot(
       : {}),
   };
 }
+
+export function placeMaterialInDocumentLines(
+  lines: EditableQuoteLine[],
+  material: QuoteMaterialSnapshotSource,
+  defaultVatRateBp?: number,
+) {
+  const snapshot = createMaterialLineSnapshot(material, defaultVatRateBp);
+  const materialLineIndex = lines.findIndex((line) =>
+    line.category
+      .trim()
+      .toLocaleLowerCase("fr")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") === "materiel",
+  );
+
+  if (materialLineIndex < 0) return [...lines, snapshot];
+
+  return lines.map((line, index) =>
+    index === materialLineIndex
+      ? { ...snapshot, category: line.category.trim() || "Matériel" }
+      : line,
+  );
+}
