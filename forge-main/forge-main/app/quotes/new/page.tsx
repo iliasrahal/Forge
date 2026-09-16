@@ -247,14 +247,6 @@ export default async function NewQuotePage({
 
 
 
-            <Link
-              href="/clients/new"
-              className="mt-4 inline-flex rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
-            >
-              Créer un client
-            </Link>
-
-
           </div>
 
 

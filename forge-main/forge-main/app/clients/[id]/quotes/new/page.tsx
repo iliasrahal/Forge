@@ -274,6 +274,7 @@ export default async function NewQuotePage({
         <QuoteLinesForm
           initialTitle={title}
           initialLines={initialLines}
+          showMaterialShortcut
           defaultVatApplicable={workspaceContext.workspace.vatScheme === "SUBJECT"}
           defaultVatRateBp={workspaceContext.workspace.defaultVatRateBp}
           services={services}

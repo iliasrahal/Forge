@@ -52,6 +52,7 @@ type QuoteLinesFormProps = {
     pricingType: ServicePricingTypeValue;
   }>;
   canWrite?: boolean;
+  showMaterialShortcut?: boolean;
 };
 
 type LineDetail = NonNullable<EditableQuoteLine["details"]>[number];
@@ -149,6 +150,7 @@ export default function QuoteLinesForm({
   linesFieldName = "quoteLines",
   services = [],
   canWrite = true,
+  showMaterialShortcut = false,
 }: QuoteLinesFormProps) {
   const normalizedDefaultRate = normalizeVatRateBp(defaultVatRateBp, 2000);
 
@@ -353,6 +355,16 @@ export default function QuoteLinesForm({
         name="documentDiscount"
         value={documentDiscount.trim()}
       />
+
+      {canWrite && showMaterialShortcut ? (
+        <button
+          type="button"
+          onClick={() => setShowMaterialPicker(true)}
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-blue-400/60 bg-blue-500/10 px-4 py-3 text-center font-semibold text-blue-700 transition hover:border-blue-500 hover:bg-blue-500/15 dark:text-blue-300"
+        >
+          <Search size={18} aria-hidden="true" /> Rechercher un matériel
+        </button>
+      ) : null}
 
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
