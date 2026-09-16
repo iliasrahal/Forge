@@ -104,7 +104,7 @@ export default async function InterventionPage({
         dayTasks: { include: { assignedTo: { select: { firstName: true, lastName: true } } }, orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
         excludedDays: { orderBy: { date: "asc" } },
-        quote: { select: { id: true, clientId: true, reference: true, status: true, amountCents: true, totalCostCents: true } },
+        quote: { select: { id: true, clientId: true, reference: true, status: true, amountCents: true, totalCostCents: true, lines: { select: { lineType: true, quantityMilli: true, unit: true, costCents: true } } } },
         invoices: {
           where: { organizationId: workspaceContext.workspace.id },
           select: { id: true, reference: true, type: true, status: true, amountCents: true, payments: { select: { status: true, amountCents: true, feeCents: true, refundedCents: true, paidAt: true } }, creditNotes: { select: { id: true, reference: true, status: true, amountCents: true } } },
@@ -166,7 +166,13 @@ export default async function InterventionPage({
     quote: intervention.quote,
     invoices: intervention.invoices,
     expenses: intervention.expenses,
-    workTimes: intervention.workTimes,
+    workTimes: intervention.workTimes.map((entry) => ({
+      userId: entry.userId,
+      memberName: `${entry.user.firstName} ${entry.user.lastName ?? ""}`.trim(),
+      durationMinutes: entry.durationMinutes,
+      hourlyCostCents: entry.hourlyCostCents,
+    })),
+    materialUsages: intervention.materialUsages,
   });
   const dailyTracking = Array.from(new Set([
     ...intervention.expenses.map((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate)),
