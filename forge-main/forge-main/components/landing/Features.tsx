@@ -7,7 +7,6 @@ import {
   ClipboardCheck,
   Euro,
   FileText,
-  Images,
   Keyboard,
   PackageSearch,
   Package,
@@ -39,7 +38,7 @@ const features = [
   {
     title: "Devis",
     description:
-      "Partez d’une photo prise sur le chantier ou choisie dans votre galerie. Forge relève les informations visibles et préremplit votre devis ; si vous le souhaitez, vous pouvez aussi parcourir des références de votre catalogue métier.",
+      "Recherchez le matériel utilisé au quotidien dans votre catalogue métier, choisissez la référence adaptée puis ajoutez-la directement à votre devis.",
     eyebrow: "Une proposition claire",
   },
   {
@@ -410,28 +409,18 @@ function MaterialToQuoteIllustration() {
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-600/15" />
       <div className="relative grid gap-3 sm:grid-cols-[0.86fr_1.14fr] sm:items-center">
         <div className="relative z-20 space-y-3 sm:translate-x-3 sm:[transform:rotateY(7deg)_rotateZ(-1.5deg)]">
-          <div className="rounded-[1.5rem] border border-blue-200/80 bg-white/90 p-3 shadow-xl backdrop-blur dark:border-blue-800 dark:bg-slate-900/90">
-            <div className="relative h-28 overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 via-slate-500 to-blue-900">
-              <div className="absolute inset-x-8 bottom-4 top-4 rounded-lg border-2 border-white/60 bg-white/10">
-                <div className="grid h-full grid-cols-6 gap-1 p-2">{Array.from({ length: 6 }).map((_, index) => <span key={index} className="rounded-sm bg-white/55" />)}</div>
-              </div>
-              <span className="absolute left-3 top-3 rounded-full bg-slate-950/60 px-2 py-1 text-[10px] font-bold text-white">Vue générale</span>
+          <div className="rounded-[1.5rem] border border-blue-200/80 bg-white/90 p-4 shadow-xl backdrop-blur dark:border-blue-800 dark:bg-slate-900/90">
+            <div className="flex items-center gap-2 text-sm font-bold"><PackageSearch size={17} className="text-blue-600 dark:text-blue-400" /> Rechercher un matériel</div>
+            <div className="mt-3 flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-950">
+              <Package size={15} className="shrink-0 text-slate-400" />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Radiateur</span>
             </div>
-            <div className="mt-3 flex items-center gap-2 text-sm font-bold"><Camera size={15} className="text-blue-600 dark:text-blue-400" /> Analyse du matériel</div>
-            <div className="mt-2 rounded-xl bg-blue-50/80 p-3 dark:bg-blue-950/45">
-              <p className="text-sm font-bold">Radiateur · Atlantic</p>
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Vertical · 1 500 W</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {['Radiateurs', 'Tuyauterie', 'Raccords'].map((label) => <span key={label} className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">{label}</span>)}
             </div>
+            <div className="mt-3 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-xs font-bold text-white">Rechercher dans le catalogue</div>
           </div>
-          <div className="landing-material-plate ml-8 flex items-center gap-3 rounded-2xl border border-pink-200 bg-white/95 p-3 shadow-lg dark:border-pink-900 dark:bg-slate-900/95">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-pink-50 text-pink-600 dark:bg-pink-950 dark:text-pink-300"><Images size={18} /></span>
-            <div><p className="text-xs font-bold text-slate-900 dark:text-white">Une précision est nécessaire</p><p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Ajoutez la photo de la plaque.</p></div>
-          </div>
-          <div className="flex gap-2">
-            <span className="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-blue-600 px-2 text-center text-[10px] font-bold leading-tight text-white">Créer un devis à partir de l’analyse</span>
-            <span className="flex min-h-10 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white/90 px-2 text-center text-[10px] font-bold leading-tight dark:border-slate-700 dark:bg-slate-900/90">Propositions de matériel</span>
-          </div>
-          <p className="text-center text-[10px] font-semibold text-slate-500 dark:text-slate-400">Photo directe ou ajout depuis la galerie</p>
+          <p className="text-center text-[10px] font-semibold text-slate-500 dark:text-slate-400">Matériels courants et références enregistrées</p>
         </div>
 
         <div className="relative z-10 space-y-3 sm:-translate-x-2 sm:[transform:rotateY(-5deg)]">
@@ -441,7 +430,7 @@ function MaterialToQuoteIllustration() {
               <div className="rounded-xl border border-blue-300 bg-white/90 px-2 py-2 dark:border-blue-700 dark:bg-slate-900/90"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur vertical</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Atlantic · 1 500 W</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
               <div className="rounded-xl bg-white/60 px-2 py-2 dark:bg-slate-900/55"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur panneau</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Référence du catalogue</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
             </div>
-            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">Photo catalogue selon disponibilité. L’artisan vérifie toujours la référence.</p>
+            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">L’artisan vérifie toujours le matériel avant de le choisir.</p>
           </div>
 
           <div className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-4 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
@@ -454,7 +443,7 @@ function MaterialToQuoteIllustration() {
           </div>
         </div>
       </div>
-      <p className="mt-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Analyse directe ou catalogue matériel : l’artisan garde toujours le choix.</p>
+      <p className="mt-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Recherche, sélection, puis ajout au devis : l’artisan garde toujours le choix.</p>
     </div>
   );
 }
@@ -629,11 +618,10 @@ export default function Features({
                 {index === 2 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
-                      "Sur le chantier ou depuis votre galerie, vos photos peuvent servir à préparer le devis",
-                      "Une information manque ? Forge vous demande simplement de la préciser",
-                      "Créez directement un devis prérempli avec les informations réellement identifiées",
-                      "Consultez facultativement des références adaptées à votre métier dans le catalogue matériel",
-                      "Vous vérifiez et choisissez toujours la référence avant son ajout au devis",
+                      "Recherchez rapidement les matériels utilisés au quotidien dans votre métier",
+                      "Parcourez plusieurs propositions selon le type de matériel recherché",
+                      "Choisissez toujours le matériel avant son ajout au devis",
+                      "Les informations connues du matériel sont reprises dans la ligne du devis",
                       "Votre client reçoit un lien sécurisé pour consulter, accepter et signer son devis en ligne",
                       "Le statut du devis est mis à jour dès son acceptation",
                       "Forge repère les devis sans réponse et propose une relance que vous vérifiez avant l’envoi",
