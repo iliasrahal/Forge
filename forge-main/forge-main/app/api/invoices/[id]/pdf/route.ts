@@ -4,6 +4,7 @@ import { prisma } from "@/src/lib/prisma";
 import { getQuoteIssuerLines, quoteIssuerOrganizationSelect } from "@/src/lib/quote-issuer";
 import { computeDocumentTotals, formatVatRateBp, VAT_EXEMPTION_MENTION } from "@/src/lib/vat";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { formatInvoiceDocumentType } from "@/src/lib/invoice-types";
 
 type PdfRouteProps = { params: Promise<{ id: string }> };
 const formatDate = (date: Date) => new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "long", year: "numeric" }).format(date);
@@ -29,7 +30,7 @@ export async function GET(_request: Request, { params }: PdfRouteProps) {
       ? [invoice.client.firstName, invoice.client.lastName].filter(Boolean).join(" ")
       : invoice.client.companyName ?? "";
     const clientLines = [clientName, invoice.client.street, [invoice.client.postalCode, invoice.client.city].filter(Boolean).join(" "), invoice.client.phone, invoice.client.email].filter((value): value is string => Boolean(value?.trim()));
-    const kindLabel = invoice.type === "DEPOSIT" ? "FACTURE D'ACOMPTE" : invoice.type === "SITUATION" ? "SITUATION DE TRAVAUX" : invoice.type === "BALANCE" ? "FACTURE DE SOLDE" : "FACTURE";
+    const kindLabel = formatInvoiceDocumentType(invoice.type);
     const summaryRows = invoice.vatApplicable
       ? [
           { label: "Total HT", value: formatPdfAmount(totals.totalHtCents || invoice.totalHtCents) },

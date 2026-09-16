@@ -9,6 +9,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
 import { getInvoiceReminderState } from "@/src/lib/invoice-reminders";
+import { formatInvoiceType } from "@/src/lib/invoice-types";
 
 
 function formatDate(date: Date) {
@@ -113,7 +114,7 @@ export default async function InvoicesPage() {
         invoice.reference,
         displayDocumentReference(invoice.reference),
       ],
-      badge: invoice.type === "DEPOSIT" ? "Acompte" : undefined,
+      badge: formatInvoiceType(invoice.type),
       attention: reminderState.eligible ? "À relancer" : undefined,
     };
   });

@@ -1119,6 +1119,8 @@ model QuoteLineDetail {
 model Invoice {
   id String @id @default(cuid())
 
+  creationKey String? @unique
+
   reference String @unique
 
   title String
@@ -1341,6 +1343,8 @@ model InvoiceLineDetail {
 model CreditNote {
   id String @id @default(cuid())
 
+  creationKey String? @unique
+
   reference String @unique
 
   invoiceId String
@@ -1380,6 +1384,8 @@ model CreditNoteLine {
   id String @id @default(cuid())
 
   category String
+  lineType String?
+  sourceInvoiceLineId String?
   label    String?
 
   quantityMilli  Int    @default(1000)

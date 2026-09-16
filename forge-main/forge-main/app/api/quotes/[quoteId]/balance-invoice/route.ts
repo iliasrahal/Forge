@@ -12,7 +12,8 @@ import {
   computeRetentionCents,
   getQuoteBillingLedger,
 } from "@/src/lib/quote-billing";
-import { ventilateQuoteAmount } from "@/src/lib/quote-invoice-vat";
+import { buildFinancialInvoiceSlice, financialInvoiceLineCreateData } from "@/src/lib/financial-invoice-lines";
+import { getFinancialCreationKey } from "@/src/lib/financial-idempotency";
 
 type RouteProps = { params: Promise<{ quoteId: string }> };
 
@@ -25,13 +26,18 @@ class HttpError extends Error {
   }
 }
 
-export async function POST(_request: Request, { params }: RouteProps) {
+export async function POST(request: Request, { params }: RouteProps) {
   try {
     const context = await requireWorkspaceContext("write");
+    const creationKey = getFinancialCreationKey(request, `balance:${context.workspace.id}`);
     const { quoteId } = await params;
 
     const invoice = await prisma.$transaction(
       async (tx) => {
+        if (creationKey) {
+          const existing = await tx.invoice.findUnique({ where: { creationKey }, select: { id: true } });
+          if (existing) return existing;
+        }
         const quote = await tx.quote.findFirst({
           where: {
             id: quoteId,
@@ -39,6 +45,7 @@ export async function POST(_request: Request, { params }: RouteProps) {
             status: { in: ["ENVOYE", "ACCEPTE"] },
           },
           include: {
+            lines: { include: { details: { orderBy: { position: "asc" } } } },
             invoices: {
               select: {
                 type: true,
@@ -72,12 +79,7 @@ export async function POST(_request: Request, { params }: RouteProps) {
           throw new HttpError("Ce devis est déjà entièrement facturé.", 409);
         }
 
-        const { totalHtCents, totalVatCents } = ventilateQuoteAmount({
-          amountTtcCents: amountCents,
-          vatApplicable: quote.vatApplicable,
-          quoteTotalHtCents: quote.totalHtCents,
-          quoteTotalVatCents: quote.totalVatCents,
-        });
+        const slice = buildFinancialInvoiceSlice({ lines: quote.lines, quoteTtcCents: quote.amountCents, targetTtcCents: amountCents, vatApplicable: quote.vatApplicable, discountBp: quote.discountBp });
         const retentionCents = computeRetentionCents(
           amountCents,
           quote.retentionBp,
@@ -86,13 +88,16 @@ export async function POST(_request: Request, { params }: RouteProps) {
         return tx.invoice.create({
           data: {
             reference: draftReference(),
+            creationKey,
             type: "BALANCE",
             title: `Facture de solde - ${quote.title}`,
             description: `Solde du devis ${quote.reference}`,
             amountCents,
             vatApplicable: quote.vatApplicable,
-            totalHtCents,
-            totalVatCents,
+            totalHtCents: slice.totalHtCents,
+            totalVatCents: slice.totalVatCents,
+            discountBp: quote.discountBp,
+            lines: { create: slice.lines.map(financialInvoiceLineCreateData) },
             situationProgressBp: 10000,
             retentionCents,
             status: "BROUILLON",

@@ -53,6 +53,8 @@ export function canCreateCreditNote(invoiceStatus: string): boolean {
 }
 
 export type PersistableCreditNoteLine = {
+  lineType?: string | null;
+  sourceInvoiceLineId?: string | null;
   category: string;
   label: string | null;
   quantityMilli: number;
@@ -64,6 +66,8 @@ export type PersistableCreditNoteLine = {
 };
 
 type InvoiceLineLike = {
+  id?: string;
+  lineType?: string | null;
   category: string;
   label: string | null;
   quantityMilli: number;
@@ -83,6 +87,8 @@ export function buildFullCreditNoteLinesFromInvoice(
   invoiceLines: InvoiceLineLike[],
 ): PersistableCreditNoteLine[] {
   return invoiceLines.map((line) => ({
+    ...(line.lineType ? { lineType: line.lineType } : {}),
+    ...(line.id ? { sourceInvoiceLineId: line.id } : {}),
     category: line.category,
     label: line.label ?? null,
     quantityMilli: line.quantityMilli,

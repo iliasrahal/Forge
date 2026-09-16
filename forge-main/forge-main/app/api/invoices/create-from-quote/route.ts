@@ -8,6 +8,8 @@ import {
 } from "@/src/lib/workspace-access";
 
 import { draftReference } from "@/src/lib/document-numbering";
+import { getQuoteBillingLedger } from "@/src/lib/quote-billing";
+import { buildFinancialInvoiceSlice, financialInvoiceLineCreateData } from "@/src/lib/financial-invoice-lines";
 
 function generateInvoiceReference() {
   return draftReference();
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       include: {
         client: true,
         lines: { include: { details: { orderBy: { position: "asc" } } } },
+        invoices: { select: { type: true, status: true, amountCents: true, retentionCents: true } },
       },
     });
 
@@ -85,21 +88,27 @@ export async function POST(request: Request) {
     }
 
     const snapshot = buildInvoiceSnapshotFromQuote(quote);
+    const ledger = getQuoteBillingLedger(quote.amountCents, quote.invoices);
+    if (ledger.remainingCents <= 0) {
+      return NextResponse.json({ error: "Ce devis est déjà entièrement facturé." }, { status: 409 });
+    }
+    const isBalance = ledger.billedCents > 0;
+    const slice = isBalance ? buildFinancialInvoiceSlice({ lines: quote.lines, quoteTtcCents: quote.amountCents, targetTtcCents: ledger.remainingCents, vatApplicable: quote.vatApplicable, discountBp: quote.discountBp }) : null;
 
     const invoice = await prisma.invoice.create({
       data: {
         reference: generateInvoiceReference(),
 
-        title: snapshot.title,
+        title: isBalance ? `Facture de solde - ${quote.title}` : snapshot.title,
 
         description:
           cleanInvoiceDescriptionValue(snapshot.description) || null,
 
-        amountCents: snapshot.amountCents,
+        amountCents: slice?.totalTtcCents ?? snapshot.amountCents,
 
         status: "BROUILLON",
 
-        type: "STANDARD",
+        type: isBalance ? "BALANCE" : "STANDARD",
 
         quote: { connect: { id: quote.id } },
 
@@ -110,7 +119,7 @@ export async function POST(request: Request) {
         // Chaque ligne du devis est copiée dans la facture.
         // Ensuite les deux documents sont totalement indépendants.
         lines: {
-          create: snapshot.lines.map((line) => ({
+          create: slice ? slice.lines.map(financialInvoiceLineCreateData) : snapshot.lines.map((line) => ({
             lineType: line.lineType,
             category: line.category,
             label: line.label,
@@ -136,8 +145,8 @@ export async function POST(request: Request) {
         },
 
         vatApplicable: snapshot.vatApplicable,
-        totalHtCents: snapshot.totalHtCents,
-        totalVatCents: snapshot.totalVatCents,
+        totalHtCents: slice?.totalHtCents ?? snapshot.totalHtCents,
+        totalVatCents: slice?.totalVatCents ?? snapshot.totalVatCents,
         discountBp: snapshot.discountBp,
         totalCostCents: snapshot.totalCostCents,
       },

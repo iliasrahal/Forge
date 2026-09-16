@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { formatInvoiceType } from "@/src/lib/invoice-types";
 
 type LinkedInvoice = {
   id: string;
@@ -18,19 +19,13 @@ type Props = {
   retentionPercent: number;
   billedCents: number;
   billedBp: number;
+  paidCents: number;
   remainingCents: number;
   retentionWithheldCents: number;
   isFullyBilled: boolean;
   canWrite: boolean;
   canBill: boolean;
   invoices: LinkedInvoice[];
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  STANDARD: "Facture",
-  DEPOSIT: "Acompte",
-  SITUATION: "Situation",
-  BALANCE: "Solde",
 };
 
 function formatEur(cents: number) {
@@ -46,6 +41,7 @@ export default function QuoteBillingPanel({
   retentionPercent,
   billedCents,
   billedBp,
+  paidCents,
   remainingCents,
   retentionWithheldCents,
   isFullyBilled,
@@ -61,6 +57,8 @@ export default function QuoteBillingPanel({
   );
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const situationKey = useRef<string | null>(null);
+  const balanceKey = useRef<string | null>(null);
 
   async function saveRetention() {
     if (busy) return;
@@ -70,7 +68,7 @@ export default function QuoteBillingPanel({
     try {
       const response = await fetch(`/api/quotes/${quoteId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": situationKey.current ??= crypto.randomUUID() },
         body: JSON.stringify({ retentionPercent: retention.replace(",", ".") }),
       });
       const data = await response.json();
@@ -127,7 +125,7 @@ export default function QuoteBillingPanel({
     try {
       const response = await fetch(
         `/api/quotes/${quoteId}/balance-invoice`,
-        { method: "POST" },
+        { method: "POST", headers: { "Idempotency-Key": balanceKey.current ??= crypto.randomUUID() } },
       );
       const data = await response.json();
       if (!response.ok || !data.id) {
@@ -162,6 +160,9 @@ export default function QuoteBillingPanel({
           ? ` · retenue cumulée ${formatEur(retentionWithheldCents)}`
           : ""}
       </p>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+        Déjà encaissé : <span className="font-semibold">{formatEur(paidCents)}</span> · reste global à encaisser : <span className="font-semibold">{formatEur(Math.max(0, quoteTtcCents - paidCents))}</span>
+      </p>
 
       {invoices.length > 0 ? (
         <ul className="mt-3 divide-y divide-slate-200 rounded-xl border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
@@ -172,7 +173,7 @@ export default function QuoteBillingPanel({
                 className="flex items-center justify-between gap-3 px-3 py-2 text-sm transition hover:bg-white dark:hover:bg-slate-900"
               >
                 <span className="text-slate-700 dark:text-slate-200">
-                  {TYPE_LABELS[invoice.type] ?? invoice.type}
+                  {formatInvoiceType(invoice.type)}
                   {invoice.status === "ANNULEE" ? " (annulée)" : ""}
                 </span>
                 <span className="font-semibold text-slate-900 dark:text-white">

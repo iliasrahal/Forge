@@ -6,6 +6,7 @@ import { requireCurrentUser } from "@/src/lib/auth";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { getParisYearMonth } from "@/src/lib/document-history";
+import { formatInvoiceType } from "@/src/lib/invoice-types";
 
 
 export default async function InvoiceStatsPage() {
@@ -23,6 +24,8 @@ export default async function InvoiceStatsPage() {
       status: true,
       type: true,
       amountCents: true,
+      totalHtCents: true,
+      creditNotes: { where: { status: "EMISE" }, select: { totalHtCents: true } },
       createdAt: true,
     },
     orderBy: {
@@ -52,11 +55,11 @@ export default async function InvoiceStatsPage() {
       id: invoice.id,
       title: invoice.title,
       reference: `Facture ${invoice.reference}`,
-      amountCents: invoice.amountCents,
+      amountCents: Math.max(0, invoice.totalHtCents - invoice.creditNotes.reduce((sum, credit) => sum + credit.totalHtCents, 0)),
       createdAt: invoice.createdAt.toISOString(),
       statusLabel: statusLabels[invoice.status] ?? invoice.status,
       href: `/invoices/${invoice.id}`,
-      badge: invoice.type === "DEPOSIT" ? "Facture d’acompte" : undefined,
+      badge: formatInvoiceType(invoice.type),
     }));
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type LineOption = {
   id: string;
@@ -35,6 +35,7 @@ export default function CreateCreditNoteForm({
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const creationKey = useRef<string | null>(null);
 
   const activeIds = mode === "FULL" ? lines.map((l) => l.id) : [...selected];
   const total = lines
@@ -67,7 +68,7 @@ export default function CreateCreditNoteForm({
         `/api/invoices/${invoiceId}/credit-notes`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Idempotency-Key": creationKey.current ??= crypto.randomUUID() },
           body: JSON.stringify({
             mode,
             reason: reason.trim(),

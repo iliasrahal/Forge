@@ -125,6 +125,7 @@ export default async function QuotePage({
             amountCents: true,
             retentionCents: true,
             situationProgressBp: true,
+            payments: { select: { status: true, amountCents: true, refundedCents: true } },
           },
           orderBy: { createdAt: "asc" },
         },
@@ -495,6 +496,7 @@ export default async function QuotePage({
       retentionPercent={quote.retentionBp / 100}
       billedCents={billingLedger.billedCents}
       billedBp={billingLedger.billedBp}
+      paidCents={quote.invoices.reduce((sum, invoice) => sum + invoice.payments.reduce((paymentSum, payment) => payment.status === "SUCCEEDED" ? paymentSum + Math.max(0, payment.amountCents - payment.refundedCents) : paymentSum, 0), 0)}
       remainingCents={billingLedger.remainingCents}
       retentionWithheldCents={billingLedger.retentionWithheldCents}
       isFullyBilled={billingLedger.isFullyBilled}

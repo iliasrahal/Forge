@@ -12,7 +12,8 @@ import {
   computeSituationInvoiceAmount,
   getQuoteBillingLedger,
 } from "@/src/lib/quote-billing";
-import { ventilateQuoteAmount } from "@/src/lib/quote-invoice-vat";
+import { buildFinancialInvoiceSlice, financialInvoiceLineCreateData } from "@/src/lib/financial-invoice-lines";
+import { getFinancialCreationKey } from "@/src/lib/financial-idempotency";
 
 type RouteProps = { params: Promise<{ quoteId: string }> };
 
@@ -28,6 +29,7 @@ class HttpError extends Error {
 export async function POST(request: Request, { params }: RouteProps) {
   try {
     const context = await requireWorkspaceContext("write");
+    const creationKey = getFinancialCreationKey(request, `situation:${context.workspace.id}`);
     const { quoteId } = await params;
     const body = await request.json().catch(() => ({}));
 
@@ -44,6 +46,10 @@ export async function POST(request: Request, { params }: RouteProps) {
 
     const invoice = await prisma.$transaction(
       async (tx) => {
+        if (creationKey) {
+          const existing = await tx.invoice.findUnique({ where: { creationKey }, select: { id: true } });
+          if (existing) return existing;
+        }
         const quote = await tx.quote.findFirst({
           where: {
             id: quoteId,
@@ -51,6 +57,7 @@ export async function POST(request: Request, { params }: RouteProps) {
             status: { in: ["ENVOYE", "ACCEPTE"] },
           },
           include: {
+            lines: { include: { details: { orderBy: { position: "asc" } } } },
             invoices: {
               select: {
                 type: true,
@@ -85,12 +92,7 @@ export async function POST(request: Request, { params }: RouteProps) {
           throw new HttpError(computed.error, 409);
         }
 
-        const { totalHtCents, totalVatCents } = ventilateQuoteAmount({
-          amountTtcCents: computed.amountCents,
-          vatApplicable: quote.vatApplicable,
-          quoteTotalHtCents: quote.totalHtCents,
-          quoteTotalVatCents: quote.totalVatCents,
-        });
+        const slice = buildFinancialInvoiceSlice({ lines: quote.lines, quoteTtcCents: quote.amountCents, targetTtcCents: computed.amountCents, vatApplicable: quote.vatApplicable, discountBp: quote.discountBp });
         const retentionCents = computeRetentionCents(
           computed.amountCents,
           quote.retentionBp,
@@ -100,6 +102,7 @@ export async function POST(request: Request, { params }: RouteProps) {
         return tx.invoice.create({
           data: {
             reference: draftReference(),
+            creationKey,
             type: "SITUATION",
             title: `Situation n°${situationNumber} - ${quote.title}`,
             description: `Situation de travaux n°${situationNumber} · avancement cumulé ${
@@ -107,8 +110,10 @@ export async function POST(request: Request, { params }: RouteProps) {
             } % du devis ${quote.reference}`,
             amountCents: computed.amountCents,
             vatApplicable: quote.vatApplicable,
-            totalHtCents,
-            totalVatCents,
+            totalHtCents: slice.totalHtCents,
+            totalVatCents: slice.totalVatCents,
+            discountBp: quote.discountBp,
+            lines: { create: slice.lines.map(financialInvoiceLineCreateData) },
             situationProgressBp: targetProgressBp,
             retentionCents,
             status: "BROUILLON",

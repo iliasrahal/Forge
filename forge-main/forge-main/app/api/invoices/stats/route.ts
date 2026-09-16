@@ -4,6 +4,7 @@ import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { resolveDocumentHistoryRange } from "@/src/lib/document-history";
 import { displayDocumentReference } from "@/src/lib/document-numbering";
+import { formatInvoiceType } from "@/src/lib/invoice-types";
 
 
 export async function GET(request: Request) {
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
       type: true,
       amountCents: true,
       totalHtCents: true,
+      creditNotes: { where: { status: "EMISE" }, select: { totalHtCents: true } },
       createdAt: true,
     },
     orderBy: {
@@ -57,12 +59,12 @@ export async function GET(request: Request) {
       title: invoice.title,
       reference: `Facture ${displayDocumentReference(invoice.reference)}`,
       // Le chiffre d'affaires se pilote en HT ; le TTC reste sur le détail.
-      amountCents: invoice.totalHtCents,
+      amountCents: Math.max(0, invoice.totalHtCents - invoice.creditNotes.reduce((sum, credit) => sum + credit.totalHtCents, 0)),
       amountTtcCents: invoice.amountCents,
       createdAt: invoice.createdAt.toISOString(),
       statusLabel: statusLabels[invoice.status] ?? invoice.status,
       href: `/invoices/${invoice.id}`,
-      badge: invoice.type === "DEPOSIT" ? "Facture d’acompte" : undefined,
+      badge: formatInvoiceType(invoice.type),
     })),
   );
 }

@@ -14,6 +14,8 @@ import {
 } from "@/src/lib/workspace-access";
 
 import { draftReference } from "@/src/lib/document-numbering";
+import { buildFinancialInvoiceSlice, financialInvoiceLineCreateData } from "@/src/lib/financial-invoice-lines";
+import { getFinancialCreationKey } from "@/src/lib/financial-idempotency";
 
 function generateInvoiceReference() {
   return draftReference();
@@ -31,6 +33,7 @@ class DepositCreationError extends Error {
 export async function POST(request: Request) {
   try {
     const context = await requireWorkspaceContext("write");
+    const creationKey = getFinancialCreationKey(request, `deposit:${context.workspace.id}`);
     const body = (await request.json()) as Record<string, unknown>;
     const quoteId = typeof body.quoteId === "string" ? body.quoteId.trim() : "";
     const mode = DEPOSIT_MODES.includes(body.mode as DepositMode)
@@ -46,6 +49,10 @@ export async function POST(request: Request) {
 
     const invoice = await prisma.$transaction(
       async (transaction) => {
+        if (creationKey) {
+          const existing = await transaction.invoice.findUnique({ where: { creationKey } });
+          if (existing) return existing;
+        }
         const quote = await transaction.quote.findFirst({
           where: {
             id: quoteId,
@@ -53,6 +60,7 @@ export async function POST(request: Request) {
             status: { not: "REFUSE" },
           },
           include: {
+            lines: { include: { details: { orderBy: { position: "asc" } } } },
             invoices: {
               select: { type: true, status: true, amountCents: true },
             },
@@ -82,31 +90,22 @@ export async function POST(request: Request) {
           throw new DepositCreationError(calculation.error, 400);
         }
 
-        // L'acompte est un % du TTC du devis. Quand le devis porte la TVA,
-        // on ventile l'acompte au taux effectif du devis (TVA / HT).
         const depositTtc = calculation.amountCents;
-        let depositHt = depositTtc;
-        let depositVat = 0;
-        if (quote.vatApplicable && quote.totalHtCents > 0) {
-          const effectiveRateBp = Math.round(
-            (quote.totalVatCents * 10000) / quote.totalHtCents,
-          );
-          depositHt = Math.round(
-            (depositTtc * 10000) / (10000 + effectiveRateBp),
-          );
-          depositVat = depositTtc - depositHt;
-        }
+        const slice = buildFinancialInvoiceSlice({ lines: quote.lines, quoteTtcCents: quote.amountCents, targetTtcCents: depositTtc, vatApplicable: quote.vatApplicable, discountBp: quote.discountBp });
 
         return transaction.invoice.create({
           data: {
             reference: generateInvoiceReference(),
+            creationKey,
             type: "DEPOSIT",
             title: `Facture d’acompte - ${quote.title}`,
             description: `Acompte relatif au devis ${quote.reference}`,
             amountCents: depositTtc,
             vatApplicable: quote.vatApplicable,
-            totalHtCents: depositHt,
-            totalVatCents: depositVat,
+            totalHtCents: slice.totalHtCents,
+            totalVatCents: slice.totalVatCents,
+            discountBp: quote.discountBp,
+            lines: { create: slice.lines.map(financialInvoiceLineCreateData) },
             status: "BROUILLON",
             quoteId: quote.id,
             clientId: quote.clientId,

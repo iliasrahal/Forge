@@ -2,7 +2,7 @@
 
 import { Percent, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { calculateDepositAmount, type DepositMode } from "@/src/lib/deposits";
 
@@ -30,6 +30,7 @@ export default function CreateDepositInvoice({
   const [value, setValue] = useState("30");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const creationKey = useRef<string | null>(null);
 
   const calculation = useMemo(
     () =>
@@ -53,7 +54,7 @@ export default function CreateDepositInvoice({
     try {
       const response = await fetch("/api/invoices/create-deposit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": creationKey.current ??= crypto.randomUUID() },
         body: JSON.stringify({ quoteId, mode, value }),
       });
       const data = await response.json();
