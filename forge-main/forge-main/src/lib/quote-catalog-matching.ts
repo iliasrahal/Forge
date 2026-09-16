@@ -146,6 +146,7 @@ export function matchCatalogServicesForQuote(
     matches.push({
       start: range.start,
       line: {
+        lineType: "SERVICE",
         category: service.name,
         quantity: "1",
         unit: "forfait",
@@ -250,6 +251,10 @@ export function parseSerializedQuoteLines(
           : [];
 
         return {
+          lineType:
+            typeof line.lineType === "string" && line.lineType.trim()
+              ? line.lineType.trim().slice(0, 80)
+              : "OTHER",
           category: category.slice(0, 160),
           quantity,
           unit,

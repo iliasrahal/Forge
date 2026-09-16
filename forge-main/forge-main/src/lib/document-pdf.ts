@@ -1,10 +1,12 @@
 import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from "pdf-lib";
 
 import { formatQuantity, formatUnit } from "@/src/lib/document-lines";
+import { formatDocumentLineType, inferLegacyDocumentLineType } from "@/src/lib/document-line-types";
 import { embedOrgLogo } from "@/src/lib/pdf-logo";
 import { DrawnSignature } from "@/src/lib/quote-signature";
 
 export type PdfDocumentLine = {
+  lineType?: string | null;
   category?: string | null;
   label?: string | null;
   quantityMilli?: number | null;
@@ -86,15 +88,13 @@ export function getClientFacingSpecifications(value: unknown): string[] {
     .map(([key, item]) => `${key}: ${String(item)}`);
 }
 
-function categoryLabel(value?: string | null) {
-  return cleanPdfText(value?.trim() || "Autre");
-}
-
 export function groupDocumentLines(lines: PdfDocumentLine[]) {
   const groups: Array<{ key: string; label: string; lines: PdfDocumentLine[] }> = [];
   const byKey = new Map<string, (typeof groups)[number]>();
   for (const line of lines) {
-    const label = categoryLabel(line.category);
+    const label = line.lineType
+      ? formatDocumentLineType(line.lineType)
+      : formatDocumentLineType(inferLegacyDocumentLineType(line.category));
     const key = label.toLocaleLowerCase("fr-FR");
     const existing = byKey.get(key);
     if (existing) existing.lines.push(line);

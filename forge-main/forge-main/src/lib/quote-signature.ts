@@ -29,6 +29,7 @@ export type QuoteSignatureSnapshot = {
   title: string;
   description: string | null;
   lines: Array<{
+    lineType?: string | null;
     category: string;
     label: string | null;
     quantityMilli?: number;
@@ -160,6 +161,7 @@ export function buildQuoteSignatureSnapshot(quote: {
   organization: { name: string } | null;
   client: QuoteSignatureSnapshot["client"];
   lines: Array<{
+    lineType?: string | null;
     category: string;
     label: string | null;
     quantityMilli?: number;

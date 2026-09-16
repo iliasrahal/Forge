@@ -11,6 +11,7 @@ test("copie le nom et le prix courant dans une ligne indépendante", () => {
   service.priceCents = 10000;
 
   assert.deepEqual(line, {
+    lineType: "SERVICE",
     category: "Recherche de fuite",
     quantity: "1",
     unit: "forfait",
@@ -32,6 +33,7 @@ test("createQuoteLineSnapshot fige le taux de TVA par défaut fourni", () => {
 
 test("emptyQuoteLine : une ligne vierge exploitable", () => {
   assert.deepEqual(emptyQuoteLine("Matériel"), {
+    lineType: "OTHER",
     category: "Matériel",
     quantity: "1",
     unit: "forfait",

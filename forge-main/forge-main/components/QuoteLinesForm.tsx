@@ -32,6 +32,7 @@ import {
 } from "@/src/lib/vat";
 import MaterialPicker from "@/components/materials/MaterialPicker";
 import type { QuoteMaterialSnapshotSource } from "@/src/lib/quote-lines";
+import { DOCUMENT_LINE_TYPES } from "@/src/lib/document-line-types";
 
 
 type QuoteLinesFormProps = {
@@ -53,6 +54,12 @@ type QuoteLinesFormProps = {
   }>;
   canWrite?: boolean;
   showMaterialShortcut?: boolean;
+  workTemplates?: Array<{
+    id: string;
+    name: string;
+    updatedAt: string;
+    lines: EditableQuoteLine[];
+  }>;
 };
 
 type LineDetail = NonNullable<EditableQuoteLine["details"]>[number];
@@ -151,6 +158,7 @@ export default function QuoteLinesForm({
   services = [],
   canWrite = true,
   showMaterialShortcut = false,
+  workTemplates = [],
 }: QuoteLinesFormProps) {
   const normalizedDefaultRate = normalizeVatRateBp(defaultVatRateBp, 2000);
 
@@ -171,15 +179,16 @@ export default function QuoteLinesForm({
           vatRateBp: normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate),
         }))
       : [
-          emptyQuoteLine(initialTitle || "Main d'œuvre", normalizedDefaultRate),
-          emptyQuoteLine("Matériel", normalizedDefaultRate),
-          emptyQuoteLine("Déplacement", normalizedDefaultRate),
+          { ...emptyQuoteLine(initialTitle || "Main d'œuvre", normalizedDefaultRate), lineType: "LABOR", unit: "h" },
+          { ...emptyQuoteLine("Matériel", normalizedDefaultRate), lineType: "MATERIAL", unit: "u" },
+          { ...emptyQuoteLine("Déplacement", normalizedDefaultRate), lineType: "TRAVEL" },
         ],
   );
 
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showServicePicker, setShowServicePicker] = useState(false);
   const [showMaterialPicker, setShowMaterialPicker] = useState(false);
+  const [showWorkPicker, setShowWorkPicker] = useState(false);
   const [serviceSearch, setServiceSearch] = useState("");
   const [detailEditor, setDetailEditor] = useState<DetailEditor | null>(null);
 
@@ -199,12 +208,27 @@ export default function QuoteLinesForm({
     );
   }
 
-  function addLine() {
+  function addLine(lineType = "OTHER") {
     if (!canWrite) return;
     setLines((current) => [
       ...current,
-      emptyQuoteLine("", normalizedDefaultRate),
+      { ...emptyQuoteLine("", normalizedDefaultRate), lineType },
     ]);
+    setShowAddMenu(false);
+  }
+
+  function addWorkTemplate(template: (typeof workTemplates)[number]) {
+    if (!canWrite) return;
+    const sourceWork = {
+      templateId: template.id,
+      templateName: template.name,
+      templateVersionAt: template.updatedAt,
+    };
+    setLines((current) => [
+      ...current,
+      ...template.lines.map((line) => ({ ...line, details: line.details?.map((detail) => ({ ...detail })), material: line.material ? { ...line.material, specifications: { ...line.material.specifications } } : undefined, sourceWork })),
+    ]);
+    setShowWorkPicker(false);
     setShowAddMenu(false);
   }
 
@@ -409,7 +433,19 @@ export default function QuoteLinesForm({
             key={index}
             className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800"
           >
-            <div className="flex items-start gap-3">
+            <div className="flex flex-wrap items-start gap-3">
+              <select
+                value={line.lineType ?? "OTHER"}
+                onChange={(event) => patchLine(index, { lineType: event.target.value })}
+                disabled={!canWrite}
+                aria-label="Type de ligne"
+                className="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 sm:w-auto sm:max-w-[11rem]"
+              >
+                {line.lineType && !DOCUMENT_LINE_TYPES.some((type) => type.value === line.lineType) ? (
+                  <option value={line.lineType}>{line.lineType}</option>
+                ) : null}
+                {DOCUMENT_LINE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
+              </select>
               <input
                 type="text"
                 value={line.category}
@@ -657,11 +693,27 @@ export default function QuoteLinesForm({
               </button>
               <button
                 type="button"
-                onClick={addLine}
+                onClick={() => addLine("OTHER")}
                 className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]"
               >
                 Ajouter une ligne personnalisée
               </button>
+              <div className="mt-1 grid grid-cols-2 gap-1 border-t border-[var(--forge-border)] pt-2">
+                {DOCUMENT_LINE_TYPES.filter((type) => !["MATERIAL", "SERVICE", "WORK", "OTHER"].includes(type.value)).map((type) => (
+                  <button key={type.value} type="button" onClick={() => addLine(type.value)} className="rounded-lg px-2 py-2 text-left text-sm font-medium text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]">
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+              {workTemplates.length > 0 ? (
+                <button type="button" onClick={() => { setShowWorkPicker(true); setShowAddMenu(false); }} className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]">
+                  Ajouter un ouvrage
+                </button>
+              ) : (
+                <Link href="/settings/quote-templates/new" className="mt-1 block w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]">
+                  Créer un premier ouvrage
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -674,6 +726,23 @@ export default function QuoteLinesForm({
               </button>
             </div>
           ) : null}
+        </div>
+      ) : null}
+
+      {showWorkPicker ? (
+        <div className="forge-surface rounded-2xl border p-3 shadow-lg">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="font-semibold text-[var(--forge-text-primary)]">Ajouter un ouvrage</h3>
+            <button type="button" onClick={() => setShowWorkPicker(false)} aria-label="Fermer"><X size={18} /></button>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {workTemplates.map((template) => (
+              <button key={template.id} type="button" onClick={() => addWorkTemplate(template)} className="rounded-xl border border-[var(--forge-border)] px-3 py-3 text-left transition hover:bg-[var(--forge-surface-hover)]">
+                <span className="block font-semibold text-[var(--forge-text-primary)]">{template.name}</span>
+                <span className="text-xs text-[var(--forge-text-muted)]">{template.lines.length} ligne{template.lines.length > 1 ? "s" : ""} · copie modifiable</span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
 

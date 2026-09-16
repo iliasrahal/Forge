@@ -22,6 +22,7 @@ import {
 } from "@/src/lib/vat";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { secureMaterialLineSources } from "@/src/lib/material-catalog.server";
+import { templateLinesToEditable } from "@/src/lib/quote-templates";
 import {
   getQuotePath,
   UNASSIGNED_QUOTE_CLIENT_ID,
@@ -59,7 +60,7 @@ export default async function NewQuotePage({
       quoteLines,
     );
 
-  const [client, services] = await Promise.all([
+  const [client, services, workTemplates] = await Promise.all([
     withoutClient
       ? Promise.resolve(null)
       : prisma.client.findFirst({
@@ -90,6 +91,11 @@ export default async function NewQuotePage({
         priceCents: true,
         pricingType: true,
       },
+    }),
+    prisma.quoteTemplate.findMany({
+      where: { organizationId: workspaceContext.workspace.id },
+      orderBy: { name: "asc" },
+      include: { lines: { orderBy: { position: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
     }),
   ]);
 
@@ -278,6 +284,12 @@ export default async function NewQuotePage({
           defaultVatApplicable={workspaceContext.workspace.vatScheme === "SUBJECT"}
           defaultVatRateBp={workspaceContext.workspace.defaultVatRateBp}
           services={services}
+          workTemplates={workTemplates.map((template) => ({
+            id: template.id,
+            name: template.name,
+            updatedAt: template.updatedAt.toISOString(),
+            lines: templateLinesToEditable(template.lines),
+          }))}
           canWrite={
             workspaceContext
               .permissions

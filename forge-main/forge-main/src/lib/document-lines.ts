@@ -1,4 +1,5 @@
 import { normalizeVatRateBp } from "@/src/lib/vat";
+import { normalizeDocumentLineType } from "@/src/lib/document-line-types";
 
 /**
  * Lignes de devis / facture : quantité × prix unitaire, unité, remise de
@@ -131,6 +132,7 @@ function eurosToCents(value: unknown): number {
 }
 
 export type PersistableDocumentLine = {
+  lineType: string;
   category: string;
   label: string | null;
   quantityMilli: number;
@@ -148,6 +150,9 @@ export type PersistableDocumentLine = {
   materialReference: string | null;
   materialSpecifications: Record<string, string> | null;
   materialSupplier: string | null;
+  sourceWorkTemplateId: string | null;
+  sourceWorkTemplateName: string | null;
+  sourceWorkTemplateVersionAt: Date | null;
 };
 
 export type PersistableDocumentLineDetail = {
@@ -274,7 +279,12 @@ export function buildDocumentLinesFromForm(
         detailsCents;
       if (!category || amountCents <= 0) return null;
 
+      const sourceVersionValue =
+        line.sourceWork && typeof line.sourceWork === "object" && typeof (line.sourceWork as Record<string, unknown>).templateVersionAt === "string"
+          ? new Date(String((line.sourceWork as Record<string, unknown>).templateVersionAt))
+          : null;
       return {
+        lineType: normalizeDocumentLineType(line.lineType),
         category: category.slice(0, 200),
         label: category.slice(0, 200),
         quantityMilli,
@@ -292,6 +302,16 @@ export function buildDocumentLinesFromForm(
         materialReference: materialText("reference", 120),
         materialSpecifications,
         materialSupplier: materialText("supplier", 200),
+        sourceWorkTemplateId:
+          line.sourceWork && typeof line.sourceWork === "object" && typeof (line.sourceWork as Record<string, unknown>).templateId === "string"
+            ? String((line.sourceWork as Record<string, unknown>).templateId).slice(0, 100)
+            : null,
+        sourceWorkTemplateName:
+          line.sourceWork && typeof line.sourceWork === "object" && typeof (line.sourceWork as Record<string, unknown>).templateName === "string"
+            ? String((line.sourceWork as Record<string, unknown>).templateName).slice(0, 200)
+            : null,
+        sourceWorkTemplateVersionAt:
+          sourceVersionValue && !Number.isNaN(sourceVersionValue.getTime()) ? sourceVersionValue : null,
       };
     })
     .filter((line): line is PersistableDocumentLine => line !== null)

@@ -1,4 +1,5 @@
 type QuoteLineSnapshot = {
+  lineType?: string | null;
   category: string;
   label: string | null;
   quantityMilli: number;
@@ -15,6 +16,9 @@ type QuoteLineSnapshot = {
   materialReference?: string | null;
   materialSpecifications?: unknown;
   materialSupplier?: string | null;
+  sourceWorkTemplateId?: string | null;
+  sourceWorkTemplateName?: string | null;
+  sourceWorkTemplateVersionAt?: Date | null;
   details?: Array<{
     label: string;
     description: string | null;
@@ -52,6 +56,7 @@ export function buildInvoiceSnapshotFromQuote(quote: QuoteSnapshotSource) {
     // `createdAt`, relation Prisma...) vers InvoiceLine.create. La facture
     // reçoit uniquement un instantané indépendant des données métier.
     lines: quote.lines.map((line) => ({
+      ...(line.lineType ? { lineType: line.lineType } : {}),
       category: line.category,
       label: line.label,
       quantityMilli: line.quantityMilli,
@@ -74,6 +79,9 @@ export function buildInvoiceSnapshotFromQuote(quote: QuoteSnapshotSource) {
             materialSupplier: line.materialSupplier ?? null,
           }
         : {}),
+      ...(line.sourceWorkTemplateId ? { sourceWorkTemplateId: line.sourceWorkTemplateId } : {}),
+      ...(line.sourceWorkTemplateName ? { sourceWorkTemplateName: line.sourceWorkTemplateName } : {}),
+      ...(line.sourceWorkTemplateVersionAt ? { sourceWorkTemplateVersionAt: line.sourceWorkTemplateVersionAt } : {}),
       ...(line.details?.length
         ? {
             details: {

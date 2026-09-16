@@ -2,6 +2,7 @@ import { normalizeVatRateBp } from "@/src/lib/vat";
 import type { MaterialImageView } from "@/src/lib/material-images";
 
 export type EditableQuoteLine = {
+  lineType?: string;
   category: string;
   /** Quantité affichée : "12,5". */
   quantity: string;
@@ -17,6 +18,11 @@ export type EditableQuoteLine = {
   vatRateBp?: number;
   details?: EditableLineDetail[];
   material?: EditableMaterialSnapshot;
+  sourceWork?: {
+    templateId: string;
+    templateName: string;
+    templateVersionAt: string;
+  };
 };
 
 export type EditableMaterialSnapshot = {
@@ -44,6 +50,7 @@ export type EditableLineDetail = {
 export type QuoteServiceSnapshotSource = {
   name: string;
   priceCents: number;
+  pricingType?: "FIXED" | "HOURLY" | "UNIT";
 };
 
 export function emptyQuoteLine(
@@ -51,6 +58,7 @@ export function emptyQuoteLine(
   defaultVatRateBp?: number,
 ): EditableQuoteLine {
   return {
+    lineType: "OTHER",
     category,
     quantity: "1",
     unit: "forfait",
@@ -69,9 +77,10 @@ export function createQuoteLineSnapshot(
   defaultVatRateBp?: number,
 ): EditableQuoteLine {
   return {
+    lineType: "SERVICE",
     category: service.name,
     quantity: "1",
-    unit: "forfait",
+    unit: service.pricingType === "HOURLY" ? "h" : service.pricingType === "UNIT" ? "u" : "forfait",
     unitPrice: (service.priceCents / 100).toFixed(2),
     discount: "",
     cost: "",
@@ -96,6 +105,7 @@ export function createMaterialLineSnapshot(
   defaultVatRateBp?: number,
 ): EditableQuoteLine {
   return {
+    lineType: "MATERIAL",
     category: material.name,
     quantity: "1",
     unit: material.unit || "u",

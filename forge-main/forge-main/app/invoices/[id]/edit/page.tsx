@@ -18,6 +18,7 @@ import { secureMaterialLineSources } from "@/src/lib/material-catalog.server";
 type EditInvoicePageProps = { params: Promise<{ id: string }> };
 
 function editableLine(line: {
+  lineType: string | null;
   category: string;
   quantityMilli: number;
   unit: string;
@@ -32,6 +33,9 @@ function editableLine(line: {
   materialReference: string | null;
   materialSpecifications: unknown;
   materialSupplier: string | null;
+  sourceWorkTemplateId: string | null;
+  sourceWorkTemplateName: string | null;
+  sourceWorkTemplateVersionAt: Date | null;
   details: Array<{
     label: string;
     description: string | null;
@@ -41,6 +45,7 @@ function editableLine(line: {
   }>;
 }): EditableQuoteLine {
   return {
+    lineType: line.lineType ?? "OTHER",
     category: line.category,
     quantity: String(line.quantityMilli / 1000),
     unit: line.unit,
@@ -48,6 +53,9 @@ function editableLine(line: {
     discount: line.discountBp ? String(line.discountBp / 100) : "",
     cost: line.costCents == null ? "" : (line.costCents / 100).toFixed(2),
     vatRateBp: line.vatRateBp,
+    ...(line.sourceWorkTemplateId && line.sourceWorkTemplateName && line.sourceWorkTemplateVersionAt
+      ? { sourceWork: { templateId: line.sourceWorkTemplateId, templateName: line.sourceWorkTemplateName, templateVersionAt: line.sourceWorkTemplateVersionAt.toISOString() } }
+      : {}),
     ...(line.materialName
       ? {
           material: {

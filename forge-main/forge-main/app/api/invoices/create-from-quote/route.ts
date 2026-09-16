@@ -111,6 +111,7 @@ export async function POST(request: Request) {
         // Ensuite les deux documents sont totalement indépendants.
         lines: {
           create: snapshot.lines.map((line) => ({
+            lineType: line.lineType,
             category: line.category,
             label: line.label,
             quantityMilli: line.quantityMilli,
@@ -127,6 +128,9 @@ export async function POST(request: Request) {
             materialReference: line.materialReference,
             materialSpecifications: line.materialSpecifications,
             materialSupplier: line.materialSupplier,
+            sourceWorkTemplateId: line.sourceWorkTemplateId,
+            sourceWorkTemplateName: line.sourceWorkTemplateName,
+            sourceWorkTemplateVersionAt: line.sourceWorkTemplateVersionAt,
             ...(line.details ? { details: line.details } : {}),
           })),
         },

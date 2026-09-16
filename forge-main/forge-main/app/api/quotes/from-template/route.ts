@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     const template = await prisma.quoteTemplate.findFirst({
       where: { id: templateId, organizationId: context.workspace.id },
-      include: { lines: { orderBy: { position: "asc" } } },
+      include: { lines: { orderBy: { position: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
     });
 
     if (!template) {
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     }
 
     const persistedLines = template.lines.map((line) => ({
+      lineType: line.lineType ?? "OTHER",
       category: line.category,
       label: line.label,
       quantityMilli: line.quantityMilli,
@@ -49,6 +50,17 @@ export async function POST(request: Request) {
       discountBp: line.discountBp,
       vatRateBp: line.vatRateBp,
       amountCents: computeLineAmountCents(line),
+      sourceWorkTemplateId: template.id,
+      sourceWorkTemplateName: template.name,
+      sourceWorkTemplateVersionAt: template.updatedAt,
+      materialCatalogItemId: line.materialCatalogItemId,
+      workspaceMaterialId: line.workspaceMaterialId,
+      materialName: line.materialName,
+      materialBrand: line.materialBrand,
+      materialReference: line.materialReference,
+      materialSpecifications: line.materialSpecifications ?? undefined,
+      materialSupplier: line.materialSupplier,
+      ...(line.details.length ? { details: { create: line.details.map((detail) => ({ label: detail.label, description: detail.description, quantityMilli: detail.quantityMilli, unit: detail.unit, unitPriceCents: detail.unitPriceCents, amountCents: detail.amountCents, position: detail.position })) } } : {}),
     }));
     const totals = computeDocumentTotals(
       persistedLines,

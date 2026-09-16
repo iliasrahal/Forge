@@ -1038,6 +1038,10 @@ model QuoteLine {
 
   category String
 
+  // Type métier extensible. String (et non enum) pour préserver les anciens
+  // types et permettre d'en ajouter sans migration destructive.
+  lineType String?
+
   label String?
 
   // Quantité en milliunités (1000 = 1 ; 12500 = 12,5).
@@ -1074,6 +1078,11 @@ model QuoteLine {
   materialReference      String?
   materialSpecifications Json?
   materialSupplier       String?
+
+  // Provenance informative d'un ouvrage/modèle, figée à l'insertion.
+  sourceWorkTemplateId        String?
+  sourceWorkTemplateName      String?
+  sourceWorkTemplateVersionAt DateTime?
 
   quoteId String
 
@@ -1259,6 +1268,8 @@ model InvoiceLine {
 
   category String
 
+  lineType String?
+
   label String?
 
   // Détail figé à la création de la facture.
@@ -1288,6 +1299,10 @@ model InvoiceLine {
   materialReference      String?
   materialSpecifications Json?
   materialSupplier       String?
+
+  sourceWorkTemplateId        String?
+  sourceWorkTemplateName      String?
+  sourceWorkTemplateVersionAt DateTime?
 
   invoiceId String
 
@@ -1408,6 +1423,7 @@ model QuoteTemplateLine {
   id String @id @default(cuid())
 
   category String
+  lineType String?
   label    String?
 
   quantityMilli  Int    @default(1000)
@@ -1418,10 +1434,36 @@ model QuoteTemplateLine {
   vatRateBp      Int    @default(0)
   position       Int    @default(0)
 
+  materialCatalogItemId String?
+  workspaceMaterialId   String?
+  materialName           String?
+  materialBrand          String?
+  materialReference      String?
+  materialSpecifications Json?
+  materialSupplier       String?
+
+  details QuoteTemplateLineDetail[]
+
   templateId String
   template   QuoteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@index([templateId, position])
+}
+
+model QuoteTemplateLineDetail {
+  id             String            @id @default(cuid())
+  label          String
+  description    String?
+  quantityMilli  Int               @default(1000)
+  unit           String            @default("forfait")
+  unitPriceCents Int?
+  amountCents    Int?
+  position       Int               @default(0)
+  templateLineId String
+  templateLine   QuoteTemplateLine @relation(fields: [templateLineId], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+
+  @@index([templateLineId, position])
 }

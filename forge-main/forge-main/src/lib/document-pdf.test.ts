@@ -6,10 +6,10 @@ import { getClientFacingSpecifications, groupDocumentLines, renderBusinessDocume
 
 test("groups any current, future or historical category without dropping lines", () => {
   const groups = groupDocumentLines([
-    { category: "TYPE A", label: "A", amountCents: 100 },
-    { category: "TYPE B", label: "B", amountCents: 200 },
-    { category: "TYPE C", label: "C", amountCents: 300 },
-    { category: "ANCIEN TYPE SUPPRIMÉ", label: "Historique", amountCents: 400 },
+    { lineType: "TYPE A", category: "A", label: "A", amountCents: 100 },
+    { lineType: "TYPE B", category: "B", label: "B", amountCents: 200 },
+    { lineType: "TYPE C", category: "C", label: "C", amountCents: 300 },
+    { lineType: "ANCIEN TYPE SUPPRIMÉ", category: "Historique", label: "Historique", amountCents: 400 },
     { category: "", label: "Générique", amountCents: 500 },
   ]);
   assert.deepEqual(groups.map((group) => group.label), ["TYPE A", "TYPE B", "TYPE C", "ANCIEN TYPE SUPPRIMÉ", "Autre"]);

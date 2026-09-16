@@ -28,6 +28,7 @@ test("templateLinesToEditable : formate quantité, prix, remise, coût", () => {
   ]);
 
   assert.deepEqual(editable[0], {
+    lineType: "OTHER",
     category: "Pose carrelage",
     quantity: "2.5",
     unit: "m2",
@@ -38,6 +39,7 @@ test("templateLinesToEditable : formate quantité, prix, remise, coût", () => {
     details: [],
   });
   assert.deepEqual(editable[1], {
+    lineType: "OTHER",
     category: "Déplacement",
     quantity: "1",
     unit: "forfait",

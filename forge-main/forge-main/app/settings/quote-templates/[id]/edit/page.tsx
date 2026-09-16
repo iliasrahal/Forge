@@ -24,7 +24,7 @@ export default async function EditQuoteTemplatePage({ params }: PageProps) {
 
   const template = await prisma.quoteTemplate.findFirst({
     where: { id, organizationId: context.workspace.id },
-    include: { lines: { orderBy: { position: "asc" } } },
+    include: { lines: { orderBy: { position: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
   });
   if (!template) notFound();
 

@@ -27,7 +27,7 @@ export async function POST(request: Request, { params }: RouteProps) {
 
     const quote = await prisma.quote.findFirst({
       where: { id: quoteId, organizationId: context.workspace.id },
-      include: { lines: { orderBy: { createdAt: "asc" } } },
+      include: { lines: { orderBy: { createdAt: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
     });
 
     if (!quote) {
@@ -54,6 +54,7 @@ export async function POST(request: Request, { params }: RouteProps) {
         retentionBp: quote.retentionBp,
         lines: {
           create: quote.lines.map((line, position) => ({
+            lineType: line.lineType,
             category: line.category,
             label: line.label,
             quantityMilli: line.quantityMilli,
@@ -62,6 +63,14 @@ export async function POST(request: Request, { params }: RouteProps) {
             costCents: line.costCents,
             discountBp: line.discountBp,
             vatRateBp: line.vatRateBp,
+            materialCatalogItemId: line.materialCatalogItemId,
+            workspaceMaterialId: line.workspaceMaterialId,
+            materialName: line.materialName,
+            materialBrand: line.materialBrand,
+            materialReference: line.materialReference,
+            materialSpecifications: line.materialSpecifications ?? undefined,
+            materialSupplier: line.materialSupplier,
+            ...(line.details.length ? { details: { create: line.details.map((detail) => ({ label: detail.label, description: detail.description, quantityMilli: detail.quantityMilli, unit: detail.unit, unitPriceCents: detail.unitPriceCents, amountCents: detail.amountCents, position: detail.position })) } } : {}),
             position,
           })),
         },
