@@ -51,6 +51,10 @@ type QuoteLinesFormProps = {
     name: string;
     priceCents: number;
     pricingType: ServicePricingTypeValue;
+    lineType?: string;
+    unit?: string;
+    vatRateBp?: number;
+    internalCostCents?: number | null;
   }>;
   canWrite?: boolean;
   showMaterialShortcut?: boolean;

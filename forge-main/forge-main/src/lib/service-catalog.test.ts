@@ -32,7 +32,27 @@ test("valide les champs obligatoires et le type de prix", () => {
         description: "Zone locale",
         priceCents: 4500,
         pricingType: "FIXED",
+        lineType: "SERVICE",
+        category: null,
+        unit: "forfait",
+        vatRateBp: 0,
+        internalCostCents: null,
+        tradeSlugs: [],
+        favorite: false,
+        active: true,
       },
     },
   );
+});
+
+test("sépare prix de vente et coût interne de la main-d’œuvre", () => {
+  const result = validateServiceCatalogInput({ name: "Main-d’œuvre plomberie", price: "55", internalCost: "25", pricingType: "HOURLY", lineType: "LABOR", unit: "h", vatRate: "20", tradeSlugs: ["plomberie", "chauffage"], favorite: true });
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal(result.data.priceCents, 5500);
+    assert.equal(result.data.internalCostCents, 2500);
+    assert.equal(result.data.lineType, "LABOR");
+    assert.equal(result.data.vatRateBp, 2000);
+    assert.deepEqual(result.data.tradeSlugs, ["plomberie", "chauffage"]);
+  }
 });

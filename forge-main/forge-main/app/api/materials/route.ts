@@ -5,11 +5,11 @@ import { validateWorkspaceMaterialInput } from "@/src/lib/material-catalog";
 import { prisma } from "@/src/lib/prisma";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const context = await requireWorkspaceContext("read");
     const [materials, categories] = await Promise.all([
-      getEffectiveMaterialsForWorkspace(context.workspace.id),
+      getEffectiveMaterialsForWorkspace(context.workspace.id, { search: new URL(request.url).searchParams.get("q") ?? "", limit: 100 }),
       prisma.materialCategory.findMany({ where: { active: true }, orderBy: [{ position: "asc" }, { name: "asc" }] }),
     ]);
     return NextResponse.json({ materials, categories, permissions: context.permissions });

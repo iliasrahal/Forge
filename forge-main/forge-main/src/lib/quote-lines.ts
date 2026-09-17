@@ -51,6 +51,10 @@ export type QuoteServiceSnapshotSource = {
   name: string;
   priceCents: number;
   pricingType?: "FIXED" | "HOURLY" | "UNIT";
+  lineType?: string;
+  unit?: string;
+  vatRateBp?: number;
+  internalCostCents?: number | null;
 };
 
 export function emptyQuoteLine(
@@ -77,16 +81,16 @@ export function createQuoteLineSnapshot(
   defaultVatRateBp?: number,
 ): EditableQuoteLine {
   return {
-    lineType: "SERVICE",
+    lineType: service.lineType || "SERVICE",
     category: service.name,
     quantity: "1",
-    unit: service.pricingType === "HOURLY" ? "h" : service.pricingType === "UNIT" ? "u" : "forfait",
+    unit: service.unit || (service.pricingType === "HOURLY" ? "h" : service.pricingType === "UNIT" ? "u" : "forfait"),
     unitPrice: (service.priceCents / 100).toFixed(2),
     discount: "",
-    cost: "",
+    cost: service.internalCostCents == null ? "" : (service.internalCostCents / 100).toFixed(2),
     details: [],
-    ...(defaultVatRateBp !== undefined
-      ? { vatRateBp: normalizeVatRateBp(defaultVatRateBp, 2000) }
+    ...(service.vatRateBp !== undefined || defaultVatRateBp !== undefined
+      ? { vatRateBp: normalizeVatRateBp(service.vatRateBp ?? defaultVatRateBp, 2000) }
       : {}),
   };
 }

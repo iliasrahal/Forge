@@ -2,24 +2,43 @@ import { prisma } from "@/src/lib/prisma";
 import { buildEffectiveMaterials } from "@/src/lib/material-catalog";
 import type { PersistableDocumentLine } from "@/src/lib/document-lines";
 
-export async function getEffectiveMaterialsForWorkspace(organizationId: string) {
-  const [catalog, customMaterials] = await Promise.all([
+export async function getEffectiveMaterialsForWorkspace(organizationId: string, options: { search?: string; limit?: number } = {}) {
+  const search = options.search?.trim().slice(0, 120) ?? "";
+  const take = Math.min(Math.max(options.limit ?? 100, 1), 200);
+  const textFilter = search
+    ? {
+        OR: [
+          ...["name", "brand", "reference", "description"].map((field) => ({ [field]: { contains: search, mode: "insensitive" as const } })),
+          { category: { name: { contains: search, mode: "insensitive" as const } } },
+        ],
+      }
+    : {};
+  const [catalog, customMaterials, organization] = await Promise.all([
     prisma.materialCatalogItem.findMany({
-      where: { active: true },
+      where: { active: true, ...textFilter },
       include: {
         category: { select: { id: true, name: true } },
         images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } },
         workspaceMaterials: { where: { organizationId }, take: 1, include: { images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } } } },
       },
       orderBy: [{ name: "asc" }],
+      take,
     }),
     prisma.workspaceMaterial.findMany({
-      where: { organizationId, catalogItemId: null },
+      where: { organizationId, catalogItemId: null, ...(search ? { OR: ["name", "brand", "reference", "description"].map((field) => ({ [field]: { contains: search, mode: "insensitive" as const } })) } : {}) },
       include: { images: { orderBy: [{ isPrimary: "desc" }, { position: "asc" }], select: { id: true, kind: true, isPrimary: true, position: true, width: true, height: true } } },
       orderBy: [{ favorite: "desc" }, { name: "asc" }],
+      take,
     }),
+    prisma.organization.findUnique({ where: { id: organizationId }, select: { tradeSlugs: true } }),
   ]);
-  return buildEffectiveMaterials(catalog, customMaterials);
+  const materials = buildEffectiveMaterials(catalog, customMaterials);
+  const trades = new Set(organization?.tradeSlugs ?? []);
+  return materials.sort((left, right) => {
+    const leftRelevant = (left.tradeSlugs ?? []).some((trade) => trades.has(trade));
+    const rightRelevant = (right.tradeSlugs ?? []).some((trade) => trades.has(trade));
+    return Number(right.favorite) - Number(left.favorite) || Number(rightRelevant) - Number(leftRelevant) || left.name.localeCompare(right.name, "fr");
+  });
 }
 
 /** Neutralise toute relation catalogue falsifiée dans le JSON du formulaire. */

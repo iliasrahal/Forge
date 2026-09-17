@@ -144,12 +144,12 @@ export default async function EditQuotePage({
       select: { id: true, type: true, firstName: true, lastName: true, companyName: true },
     }),
     prisma.serviceCatalogItem.findMany({
-      where: { organizationId: workspaceContext.workspace.id },
+      where: { organizationId: workspaceContext.workspace.id, active: true },
       orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-      select: { id: true, name: true, priceCents: true, pricingType: true },
+      select: { id: true, name: true, priceCents: true, pricingType: true, lineType: true, unit: true, vatRateBp: true, internalCostCents: true },
     }),
     prisma.quoteTemplate.findMany({
-      where: { organizationId: workspaceContext.workspace.id },
+      where: { active: true, OR: [{ organizationId: workspaceContext.workspace.id }, { organizationId: null }] },
       orderBy: { name: "asc" },
       include: { lines: { orderBy: { position: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
     }),

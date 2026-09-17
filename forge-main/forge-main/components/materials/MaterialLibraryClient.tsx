@@ -1,7 +1,7 @@
 "use client";
 
 import { Heart, Pencil, Plus, Search } from "lucide-react";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { materialSearchHaystack, type EffectiveMaterial } from "@/src/lib/material-catalog";
 import MaterialThumbnail from "@/components/materials/MaterialThumbnail";
@@ -26,10 +26,20 @@ export default function MaterialLibraryClient({ initialMaterials, canWrite }: { 
   const normalized = search.toLocaleLowerCase("fr").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
   const filtered = materials.filter((item) => (!category || item.categoryName === category) && (!normalized || materialSearchHaystack(item).includes(normalized)));
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      const response = await fetch(`/api/materials?q=${encodeURIComponent(search)}`, { signal: controller.signal });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && Array.isArray(data.materials)) setMaterials(data.materials);
+    }, 220);
+    return () => { window.clearTimeout(timeout); controller.abort(); };
+  }, [search]);
+
   function openCreate() { setEditing(null); setForm(emptyForm); setImage(null); setError(""); setShowForm(true); }
   function openEdit(item: EffectiveMaterial) { setEditing(item); setForm({ name: item.name, brand: item.brand, reference: item.reference, description: item.description, specifications: specText(item.specifications), tags: item.tags.join(", "), unit: item.unit, purchasePrice: price(item.purchasePriceCents), salePrice: price(item.salePriceCents), supplier: item.supplier, favorite: item.favorite, active: item.active }); setImage(null); setError(""); setShowForm(true); }
 
-  async function reload() { const response = await fetch("/api/materials"); const data = await response.json(); if (response.ok) setMaterials(data.materials); }
+  async function reload() { const response = await fetch(`/api/materials?q=${encodeURIComponent(search)}`); const data = await response.json(); if (response.ok) setMaterials(data.materials); }
   async function save(event: FormEvent) {
     event.preventDefault(); if (!canWrite || saving) return; setSaving(true); setError("");
     const body = { ...form, specifications: parseSpecs(form.specifications), tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean), catalogItemId: editing?.catalogItemId ?? null };

@@ -283,6 +283,9 @@ model Organization {
   trialStartedAt     DateTime?
   trialEndsAt        DateTime?
   subscriptionStatus String           @default("TRIAL")
+  // Métiers activés pour suggérer le contenu pertinent de la bibliothèque.
+  // Tableau extensible : un workspace peut exercer plusieurs métiers.
+  tradeSlugs         String[]         @default([])
 
   // Posé quand tous les membres d'une équipe sont FREE : l'équipe est
   // supprimée passé cette date. Remis à null dès qu'un membre a un abonnement.
@@ -353,15 +356,49 @@ model ServiceCatalogItem {
   id             String             @id @default(cuid())
   organizationId String
   organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  catalogServiceId String?
+  catalogService   ServiceCatalogDefinition? @relation(fields: [catalogServiceId], references: [id], onDelete: SetNull)
   name           String
   description    String?
   priceCents     Int
   pricingType    ServicePricingType
+  lineType       String             @default("SERVICE")
+  category       String?
+  unit           String             @default("forfait")
+  vatRateBp      Int                @default(0)
+  internalCostCents Int?
+  tradeSlugs     String[]           @default([])
+  favorite       Boolean            @default(false)
+  active         Boolean            @default(true)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
   @@index([organizationId])
   @@index([organizationId, name])
+  @@index([organizationId, lineType, active])
+  @@unique([organizationId, catalogServiceId])
+}
+
+// Définition Forge globale, sans prix/coût interne propre à un artisan.
+model ServiceCatalogDefinition {
+  id            String               @id @default(cuid())
+  name          String
+  description   String?
+  category      String?
+  lineType      String               @default("SERVICE")
+  unit          String               @default("forfait")
+  suggestedVatRateBp Int?
+  tradeSlugs    String[]             @default([])
+  tags          String[]             @default([])
+  sourceType    String               @default("FORGE")
+  sourceName    String?
+  active        Boolean              @default(true)
+  workspaceItems ServiceCatalogItem[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([lineType, active])
+  @@index([name])
 }
 
 model MaterialCategory {
@@ -392,6 +429,11 @@ model MaterialCatalogItem {
   description               String?
   specifications            Json?
   tags                      String[]            @default([])
+  tradeSlugs                String[]            @default([])
+  suggestedVatRateBp        Int?
+  sourceType                String              @default("FORGE")
+  sourceName                String?
+  discontinuedAt            DateTime?
   unit                      String              @default("u")
   defaultPurchasePriceCents Int?
   defaultSalePriceCents     Int?
@@ -1455,12 +1497,21 @@ model CreditNoteLine {
 // Modèle de devis réutilisable : titre, réglages et lignes types.
 model QuoteTemplate {
   id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  // Null = ouvrage Forge global ; renseigné = ouvrage propre au workspace.
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   name        String
   title       String
   description String?
+  category    String?
+  tradeSlugs  String[] @default([])
+  favorite    Boolean  @default(false)
+  active      Boolean  @default(true)
+  // Filiation informative d'une copie personnalisée. Le contenu reste figé.
+  sourceTemplateId String?
+  sourceTemplate   QuoteTemplate?  @relation("QuoteTemplateCopies", fields: [sourceTemplateId], references: [id], onDelete: SetNull)
+  copies           QuoteTemplate[] @relation("QuoteTemplateCopies")
 
   vatApplicable Boolean @default(false)
   discountBp    Int     @default(0)
@@ -1472,6 +1523,8 @@ model QuoteTemplate {
   updatedAt DateTime @updatedAt
 
   @@index([organizationId])
+  @@index([organizationId, active])
+  @@index([sourceTemplateId])
 }
 
 model QuoteTemplateLine {

@@ -99,9 +99,9 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
       },
     }),
     prisma.serviceCatalogItem.findMany({
-      where: { organizationId: context.workspace.id },
+      where: { organizationId: context.workspace.id, active: true },
       orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-      select: { id: true, name: true, priceCents: true, pricingType: true },
+      select: { id: true, name: true, priceCents: true, pricingType: true, lineType: true, unit: true, vatRateBp: true, internalCostCents: true },
     }),
   ]);
 

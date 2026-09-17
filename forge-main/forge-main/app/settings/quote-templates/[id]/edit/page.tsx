@@ -29,9 +29,9 @@ export default async function EditQuoteTemplatePage({ params }: PageProps) {
   if (!template) notFound();
 
   const services = await prisma.serviceCatalogItem.findMany({
-    where: { organizationId: context.workspace.id },
+    where: { organizationId: context.workspace.id, active: true },
     orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-    select: { id: true, name: true, priceCents: true, pricingType: true },
+    select: { id: true, name: true, priceCents: true, pricingType: true, lineType: true, unit: true, vatRateBp: true, internalCostCents: true },
   });
 
   async function updateTemplate(formData: FormData) {

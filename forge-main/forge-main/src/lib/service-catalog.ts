@@ -7,6 +7,14 @@ export type ServiceCatalogInput = {
   description: string | null;
   priceCents: number;
   pricingType: ServicePricingTypeValue;
+  lineType: "SERVICE" | "LABOR";
+  category: string | null;
+  unit: string;
+  vatRateBp: number;
+  internalCostCents: number | null;
+  tradeSlugs: string[];
+  favorite: boolean;
+  active: boolean;
 };
 
 export function parseEuroPriceToCents(value: unknown) {
@@ -38,6 +46,11 @@ export function validateServiceCatalogInput(body: unknown):
     typeof input.description === "string" ? input.description.trim() : "";
   const priceCents = parseEuroPriceToCents(input.price);
   const pricingType = input.pricingType;
+  const lineType = input.lineType === "LABOR" ? "LABOR" : "SERVICE";
+  const internalCostCents = input.internalCost === "" || input.internalCost == null
+    ? null
+    : parseEuroPriceToCents(input.internalCost);
+  const vatRate = Number(String(input.vatRate ?? "0").replace(",", "."));
 
   if (!name) return { ok: false, error: "Le nom est obligatoire." };
   if (name.length > 120) return { ok: false, error: "Le nom est trop long." };
@@ -50,6 +63,12 @@ export function validateServiceCatalogInput(body: unknown):
   if (!SERVICE_PRICING_TYPES.includes(pricingType as ServicePricingTypeValue)) {
     return { ok: false, error: "Le type de prix est invalide." };
   }
+  if (internalCostCents === null && input.internalCost !== "" && input.internalCost != null) {
+    return { ok: false, error: "Le coût interne est invalide." };
+  }
+  if (!Number.isFinite(vatRate) || vatRate < 0 || vatRate > 100) {
+    return { ok: false, error: "Le taux de TVA est invalide." };
+  }
 
   return {
     ok: true,
@@ -58,6 +77,14 @@ export function validateServiceCatalogInput(body: unknown):
       description: description || null,
       priceCents,
       pricingType: pricingType as ServicePricingTypeValue,
+      lineType,
+      category: typeof input.category === "string" && input.category.trim() ? input.category.trim().slice(0, 120) : null,
+      unit: typeof input.unit === "string" && input.unit.trim() ? input.unit.trim().slice(0, 16) : lineType === "LABOR" ? "h" : "forfait",
+      vatRateBp: Math.round(vatRate * 100),
+      internalCostCents,
+      tradeSlugs: Array.isArray(input.tradeSlugs) ? input.tradeSlugs.filter((value): value is string => typeof value === "string").map((value) => value.trim().toLowerCase()).filter(Boolean).slice(0, 20) : [],
+      favorite: input.favorite === true,
+      active: input.active !== false,
     },
   };
 }

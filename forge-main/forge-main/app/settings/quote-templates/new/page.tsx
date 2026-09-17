@@ -17,9 +17,9 @@ export default async function NewQuoteTemplatePage() {
   const context = await requireWorkspaceContext("write");
 
   const services = await prisma.serviceCatalogItem.findMany({
-    where: { organizationId: context.workspace.id },
+    where: { organizationId: context.workspace.id, active: true },
     orderBy: [{ name: "asc" }, { createdAt: "asc" }],
-    select: { id: true, name: true, priceCents: true, pricingType: true },
+    select: { id: true, name: true, priceCents: true, pricingType: true, lineType: true, unit: true, vatRateBp: true, internalCostCents: true },
   });
 
   async function createTemplate(formData: FormData) {

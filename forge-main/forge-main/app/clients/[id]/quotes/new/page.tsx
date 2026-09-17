@@ -80,6 +80,7 @@ export default async function NewQuotePage({
       where: {
         organizationId:
           workspaceContext.workspace.id,
+        active: true,
       },
       orderBy: [
         { name: "asc" },
@@ -90,10 +91,14 @@ export default async function NewQuotePage({
         name: true,
         priceCents: true,
         pricingType: true,
+        lineType: true,
+        unit: true,
+        vatRateBp: true,
+        internalCostCents: true,
       },
     }),
     prisma.quoteTemplate.findMany({
-      where: { organizationId: workspaceContext.workspace.id },
+      where: { active: true, OR: [{ organizationId: workspaceContext.workspace.id }, { organizationId: null }] },
       orderBy: { name: "asc" },
       include: { lines: { orderBy: { position: "asc" }, include: { details: { orderBy: { position: "asc" } } } } },
     }),

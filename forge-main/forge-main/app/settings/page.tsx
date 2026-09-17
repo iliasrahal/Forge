@@ -5,7 +5,6 @@ import {
   CreditCard,
   FileText,
   Image as ImageIcon,
-  LayoutTemplate,
   PackageSearch,
   Mail,
   Palette,
@@ -29,15 +28,9 @@ const GROUPS: { title: string; rows: Row[] }[] = [
     title: "Documents",
     rows: [
       {
-        href: "/settings/services",
-        label: "Prestations et tarifs",
-        hint: "Ton catalogue réutilisable dans les devis",
-        icon: FileText,
-      },
-      {
-        href: "/settings/materials",
-        label: "Bibliothèque matériel",
-        hint: "Références, favoris, fournisseurs et tarifs",
+        href: "/settings/library",
+        label: "Bibliothèque",
+        hint: "Matériaux, prestations, main-d’œuvre et ouvrages",
         icon: PackageSearch,
       },
       {
@@ -45,12 +38,6 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: "TVA et facturation",
         hint: "Régime de TVA, taux par défaut, numérotation",
         icon: Receipt,
-      },
-      {
-        href: "/settings/quote-templates",
-        label: "Modèles de devis",
-        hint: "Devis types réutilisables en un clic",
-        icon: LayoutTemplate,
       },
       {
         href: "/settings/branding",

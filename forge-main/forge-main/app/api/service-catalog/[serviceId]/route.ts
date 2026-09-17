@@ -65,8 +65,8 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
       );
     }
 
-    await prisma.serviceCatalogItem.delete({ where: { id: existing.id } });
-    return NextResponse.json({ success: true });
+    const service = await prisma.serviceCatalogItem.update({ where: { id: existing.id }, data: { active: false } });
+    return NextResponse.json({ success: true, service });
   } catch (error) {
     const accessError = getWorkspaceErrorResponse(error);
     if (accessError) {

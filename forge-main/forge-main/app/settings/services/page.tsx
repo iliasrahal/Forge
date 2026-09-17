@@ -44,6 +44,14 @@ export default async function ServicesSettingsPage() {
             description: service.description,
             priceCents: service.priceCents,
             pricingType: service.pricingType,
+            lineType: service.lineType,
+            category: service.category,
+            unit: service.unit,
+            vatRateBp: service.vatRateBp,
+            internalCostCents: service.internalCostCents,
+            tradeSlugs: service.tradeSlugs,
+            favorite: service.favorite,
+            active: service.active,
           }))}
           canWrite={context.permissions.canWrite}
         />

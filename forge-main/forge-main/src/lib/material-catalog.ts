@@ -7,6 +7,8 @@ export type EffectiveMaterial = EditableMaterialSnapshot & {
   categoryName: string | null;
   description: string;
   tags: string[];
+  tradeSlugs?: string[];
+  sourceType?: string;
   unit: string;
   purchasePriceCents: number | null;
   salePriceCents: number;
@@ -34,6 +36,8 @@ type CatalogRecord = {
   description: string | null;
   specifications: unknown;
   tags: string[];
+  tradeSlugs?: string[];
+  sourceType?: string;
   unit: string;
   defaultPurchasePriceCents: number | null;
   defaultSalePriceCents: number | null;
@@ -101,6 +105,8 @@ export function buildEffectiveMaterials(
       description: override?.description ?? item.description ?? "",
       specifications: normalizeSpecifications(override?.specifications ?? item.specifications),
       tags: override?.tags.length ? override.tags : item.tags,
+      tradeSlugs: item.tradeSlugs ?? [],
+      sourceType: item.sourceType ?? "FORGE",
       unit: override?.unit || item.unit,
       purchasePriceCents:
         override?.purchasePriceCents ?? item.defaultPurchasePriceCents,
@@ -126,6 +132,8 @@ export function buildEffectiveMaterials(
     description: item.description ?? "",
     specifications: normalizeSpecifications(item.specifications),
     tags: item.tags,
+    tradeSlugs: [],
+    sourceType: "WORKSPACE",
     unit: item.unit || "u",
     purchasePriceCents: item.purchasePriceCents,
     salePriceCents: item.salePriceCents ?? 0,
