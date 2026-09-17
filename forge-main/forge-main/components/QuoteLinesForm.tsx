@@ -721,13 +721,6 @@ export default function QuoteLinesForm({
               >
                 Ajouter une ligne personnalisée
               </button>
-              <div className="mt-1 grid grid-cols-2 gap-1 border-t border-[var(--forge-border)] pt-2">
-                {DOCUMENT_LINE_TYPES.filter((type) => !["MATERIAL", "SERVICE", "WORK", "OTHER"].includes(type.value)).map((type) => (
-                  <button key={type.value} type="button" onClick={() => addLine(type.value)} className="rounded-lg px-2 py-2 text-left text-sm font-medium text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]">
-                    {type.label}
-                  </button>
-                ))}
-              </div>
               {workTemplates.length > 0 ? (
                 <button type="button" onClick={() => { setShowWorkPicker(true); setShowAddMenu(false); }} className="mt-1 w-full rounded-xl px-3 py-3 text-left font-semibold text-[var(--forge-text-primary)] transition hover:bg-[var(--forge-surface-hover)]">
                   Ajouter un ouvrage
