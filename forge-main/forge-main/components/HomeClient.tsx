@@ -1346,7 +1346,7 @@ const handleCreateInvoice = async () => {
             onClick={openCalendar}
             className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
           >
-            Prochainement ({upcomingAppointmentsList.length})
+            Calendrier ({upcomingAppointmentsList.length})
           </button>
         </section>
       </div>
@@ -1388,7 +1388,7 @@ const handleCreateInvoice = async () => {
         onClick={openCalendar}
         className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-center text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/70 dark:text-blue-300 dark:hover:border-blue-700 min-[390px]:text-sm sm:px-5 sm:py-2.5 sm:text-base"
       >
-        Prochainement ({upcomingAppointmentsList.length})
+        Calendrier ({upcomingAppointmentsList.length})
       </button>
     </section>
   ) : null}
@@ -1401,7 +1401,7 @@ const handleCreateInvoice = async () => {
         onClick={handleCloseUpcomingCalendar}
         className="inline-flex min-h-11 items-center justify-center rounded-full border border-blue-600 bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition sm:text-base"
       >
-        Prochainement ({upcomingAppointmentsList.length})
+        Calendrier ({upcomingAppointmentsList.length})
       </button>
     </section>
   ) : null}
