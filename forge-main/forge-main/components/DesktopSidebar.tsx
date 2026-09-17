@@ -26,8 +26,8 @@ const ITEMS = [
     label: "Factures",
     icon: ReceiptText,
   },
-  { href: "/statistics", section: "statistics", label: "Statistiques", icon: BarChart3 },
   { href: "/stock", section: "stock", label: "Stock", icon: PackageOpen },
+  { href: "/statistics", section: "statistics", label: "Statistiques", icon: BarChart3 },
 ] as const;
 
 export default function DesktopSidebar() {
