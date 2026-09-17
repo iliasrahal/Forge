@@ -16,6 +16,11 @@ import {
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 import { buildInterventionHref } from "@/src/lib/intervention-navigation";
 import { clientService } from "@/src/services/client.service";
+import { computeClientFinancialSummary } from "@/src/lib/client-financials";
+import { getQuoteReminderState } from "@/src/lib/quote-reminders";
+import { getInvoiceReminderState } from "@/src/lib/invoice-reminders";
+import { computeInvoicePaymentState, formatPaymentMethod } from "@/src/lib/payments";
+import { sumIssuedCreditsCents } from "@/src/lib/credit-notes";
 
 
 type ClientPageProps = {
@@ -57,12 +62,16 @@ function formatDocumentStatus(status: string) {
   return statuses[status] ?? status;
 }
 
+function formatInvoiceType(type: string) {
+  return ({ STANDARD: "Facture", DEPOSIT: "Acompte", SITUATION: "Situation", BALANCE: "Solde" } as Record<string, string>)[type] ?? "Facture";
+}
+
 
 export default async function ClientPage({
   params,
 }: ClientPageProps) {
 
-  await requireCurrentUser();
+  const currentUser = await requireCurrentUser();
   const workspaceContext = await requireWorkspaceContext("read");
 
   const { id } = await params;
@@ -97,6 +106,7 @@ export default async function ClientPage({
             intervention.scheduledAt,
           ),
         ),
+        attention: intervention.reportIntervention || intervention.reportDiagnostic || intervention.reportTravaux || intervention.reportRecommendation ? "Compte rendu disponible" : intervention.endDate ? "Chantier multi-jours" : undefined,
       }),
     );
 
@@ -109,6 +119,7 @@ export default async function ClientPage({
         date: formatDate(quote.createdAt),
         amount: formatAmount(quote.amountCents),
         status: formatDocumentStatus(quote.status),
+        attention: currentUser.smartRemindersEnabled && getQuoteReminderState({ status: quote.status, sentAt: quote.sentAt, reminders: quote.reminders, delay1Days: workspaceContext.workspace.quoteReminderDelay1Days, delay2Days: workspaceContext.workspace.quoteReminderDelay2Days }).eligible ? "Relance pertinente" : undefined,
       }),
     );
 
@@ -116,13 +127,21 @@ export default async function ClientPage({
       (invoice) => ({
         id: invoice.id,
         href: `/invoices/${invoice.id}`,
-        title: invoice.title,
+        title: `${formatInvoiceType(invoice.type)} · ${invoice.title}`,
         reference: invoice.reference,
         date: formatDate(invoice.createdAt),
         amount: formatAmount(invoice.amountCents),
         status: formatDocumentStatus(invoice.status),
+        attention: (() => { const credits=sumIssuedCreditsCents(invoice.creditNotes); const payment=computeInvoicePaymentState(invoice.amountCents,invoice.payments,credits); return currentUser.smartRemindersEnabled && payment.remainingCents>0 && getInvoiceReminderState({status:invoice.status,dueDate:invoice.dueDate,sentAt:invoice.sentAt,createdAt:invoice.createdAt,reminders:invoice.reminders,delay1Days:workspaceContext.workspace.invoiceReminderDelay1Days,delay2Days:workspaceContext.workspace.invoiceReminderDelay2Days,delay3Days:workspaceContext.workspace.invoiceReminderDelay3Days}).eligible ? `Relance pertinente · reste ${formatAmount(payment.remainingCents)}` : undefined; })(),
       }),
     );
+
+  const creditNotes: ClientHistoryItem[] = client.creditNotes.map((credit) => ({ id: credit.id, href: `/credit-notes/${credit.id}`, title: `Avoir${credit.reason ? ` · ${credit.reason}` : ""}`, reference: credit.reference, date: formatDate(credit.createdAt), amount: formatAmount(credit.amountCents), status: formatDocumentStatus(credit.status) }));
+  invoices.push(...creditNotes);
+
+  const payments: ClientHistoryItem[] = client.invoices.flatMap((invoice) => invoice.payments.filter((payment) => payment.status === "SUCCEEDED").map((payment) => ({ id: payment.id, href: `/invoices/${invoice.id}`, title: `Paiement · ${invoice.reference}`, reference: formatPaymentMethod(payment.method), date: formatDate(payment.paidAt ?? payment.createdAt), amount: formatAmount(Math.max(0,payment.amountCents-payment.refundedCents)), status: payment.refundedCents > 0 ? "Remboursé partiellement" : "Encaissé" })));
+  payments.sort((left,right)=>right.date.localeCompare(left.date));
+  const financial = computeClientFinancialSummary(client.invoices);
 
 
 
@@ -177,6 +196,7 @@ export default async function ClientPage({
           interventions={interventions}
           quotes={quotes}
           invoices={invoices}
+          payments={payments}
         >
         <div className="forge-surface mt-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
 
@@ -222,6 +242,8 @@ export default async function ClientPage({
 
 
           <ClientHistoryCounters />
+
+          <div className="mt-5 grid grid-cols-3 gap-2 text-center"><div className="rounded-xl bg-blue-50/70 p-3 dark:bg-blue-950/40"><p className="text-xs text-[var(--forge-text-muted)]">Facturé</p><p className="mt-1 font-bold text-blue-700 dark:text-blue-300">{formatAmount(financial.billedCents)}</p></div><div className="rounded-xl bg-emerald-50/70 p-3 dark:bg-emerald-950/30"><p className="text-xs text-[var(--forge-text-muted)]">Encaissé</p><p className="mt-1 font-bold text-emerald-700 dark:text-emerald-300">{formatAmount(financial.collectedCents)}</p></div><div className="rounded-xl bg-amber-50/70 p-3 dark:bg-amber-950/30"><p className="text-xs text-[var(--forge-text-muted)]">Reste dû</p><p className="mt-1 font-bold text-amber-700 dark:text-amber-300">{formatAmount(financial.remainingCents)}</p></div></div>
 
 
 
@@ -277,6 +299,8 @@ export default async function ClientPage({
 
 
         </div>
+
+        {(client.street || client.postalCode || client.city) && <div className="mt-6 rounded-2xl border border-slate-100 p-4 dark:border-slate-700"><h2 className="font-semibold text-blue-700 dark:text-blue-400">Adresse</h2><p className="mt-2 text-slate-600 dark:text-slate-300">{client.street}{client.street && (client.postalCode || client.city) ? <br/> : null}{[client.postalCode,client.city].filter(Boolean).join(" ")}</p></div>}
 
 
 

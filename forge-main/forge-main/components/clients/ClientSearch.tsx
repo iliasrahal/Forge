@@ -18,6 +18,8 @@ type Client = {
   firstName: string | null;
   lastName: string | null;
   companyName: string | null;
+  email: string | null;
+  phone: string | null;
 };
 
 export default function ClientSearch({ clients }: { clients: Client[] }) {
@@ -27,7 +29,7 @@ export default function ClientSearch({ clients }: { clients: Client[] }) {
     () =>
       clients.map((client) => ({
         client,
-        search: buildSearchText([getClientDisplayName(client)]),
+        search: buildSearchText([getClientDisplayName(client), client.firstName, client.lastName, client.companyName, client.email, client.phone]),
       })),
     [clients],
   );

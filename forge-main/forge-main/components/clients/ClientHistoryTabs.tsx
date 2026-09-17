@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-export type ClientHistorySection = "interventions" | "quotes" | "invoices";
+export type ClientHistorySection = "interventions" | "quotes" | "invoices" | "payments";
 
 export type ClientHistoryItem = {
   id: string;
@@ -18,6 +18,7 @@ export type ClientHistoryItem = {
   date: string;
   amount?: string;
   status: string;
+  attention?: string;
 };
 
 type HistoryContextValue = {
@@ -32,6 +33,7 @@ type ProviderProps = {
   interventions: ClientHistoryItem[];
   quotes: ClientHistoryItem[];
   invoices: ClientHistoryItem[];
+  payments: ClientHistoryItem[];
   children: ReactNode;
 };
 
@@ -51,17 +53,19 @@ const sections: Array<{
     label: "Factures",
     emptyLabel: "Aucune facture pour ce client.",
   },
+  { id: "payments", label: "Paiements", emptyLabel: "Aucun paiement enregistré pour ce client." },
 ];
 
 export function ClientHistoryProvider({
   interventions,
   quotes,
   invoices,
+  payments,
   children,
 }: ProviderProps) {
   const [activeSection, setActiveSection] =
     useState<ClientHistorySection>("interventions");
-  const documents = { interventions, quotes, invoices };
+  const documents = { interventions, quotes, invoices, payments };
 
   return (
     <ClientHistoryContext.Provider
@@ -92,7 +96,7 @@ export function ClientHistoryCounters() {
   }
 
   return (
-    <div className="mt-6 grid grid-cols-3 gap-1 border-y border-slate-100 py-5 text-center dark:border-slate-700 sm:gap-3">
+    <div className="mt-6 grid grid-cols-4 gap-1 border-y border-slate-100 py-5 text-center dark:border-slate-700 sm:gap-3">
       {sections.map((section) => (
         <button
           key={section.id}
@@ -127,7 +131,7 @@ export default function ClientHistoryTabs() {
         <div
           role="tablist"
           aria-label="Historique du client"
-          className="mt-4 grid grid-cols-3 rounded-2xl border border-slate-200/80 bg-white/60 p-1 dark:border-slate-700/80 dark:bg-slate-900/50"
+          className="mt-4 grid grid-cols-4 rounded-2xl border border-slate-200/80 bg-white/60 p-1 dark:border-slate-700/80 dark:bg-slate-900/50"
         >
           {sections.map((section) => {
             const isActive = activeSection === section.id;
@@ -176,6 +180,7 @@ export default function ClientHistoryTabs() {
                         {item.date}
                         {item.amount ? ` · ${item.amount}` : ""}
                       </p>
+                      {item.attention ? <p className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-300">{item.attention}</p> : null}
                     </div>
                     <span className="shrink-0 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-900">
                       {item.status}
