@@ -343,6 +343,8 @@ model Organization {
   purchases                  Purchase[]
   purchaseLines              PurchaseLine[]
   purchaseAllocations        PurchaseAllocation[]
+  stockItems                 StockItem[]
+  stockMovements             StockMovement[]
   members                    OrganizationMember[]
   invitations                TeamInvitation[]
   clients                    Client[]
@@ -490,6 +492,7 @@ model WorkspaceMaterial {
   interventionMaterialUsages InterventionMaterialUsage[]
   purchaseLines              PurchaseLine[]
   images                     WorkspaceMaterialImage[]
+  stockItem                  StockItem?
   createdAt                  DateTime                    @default(now())
   updatedAt                  DateTime                    @updatedAt
 
@@ -527,8 +530,23 @@ enum PurchaseStatus {
   VOIDED
 }
 
+enum StockMovementType {
+  ENTRY
+  EXIT
+  ADJUSTMENT
+  RETURN
+}
+
+enum StockMovementOrigin {
+  MANUAL
+  PURCHASE
+  MATERIAL_USAGE
+  INVOICE
+}
+
 model Purchase {
   id               String                @id @default(cuid())
+  creationKey      String?               @unique
   organizationId   String
   organization     Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   supplierId       String?
@@ -1022,12 +1040,61 @@ model InterventionMaterialUsage {
   creationKey           String?              @unique
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
+  stockMovement         StockMovement?
 
   @@index([interventionId, dayDate])
   @@index([organizationId])
   @@index([materialCatalogItemId])
   @@index([workspaceMaterialId])
   @@index([purchaseLineId])
+}
+
+model StockItem {
+  id                     String            @id @default(cuid())
+  organizationId         String
+  organization           Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workspaceMaterialId    String            @unique
+  workspaceMaterial      WorkspaceMaterial @relation(fields: [workspaceMaterialId], references: [id], onDelete: Cascade)
+  quantityMilli          Int               @default(0)
+  reservedQuantityMilli  Int               @default(0)
+  lowStockThresholdMilli Int?
+  averageUnitCostCents   Int?
+  movements              StockMovement[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, quantityMilli])
+}
+
+model StockMovement {
+  id                     String              @id @default(cuid())
+  organizationId         String
+  organization           Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockItemId            String
+  stockItem              StockItem           @relation(fields: [stockItemId], references: [id], onDelete: Cascade)
+  type                   StockMovementType
+  origin                 StockMovementOrigin
+  quantityDeltaMilli     Int
+  balanceAfterMilli      Int
+  unitCostCents          Int?
+  sourceKey              String?             @unique
+  sourceId               String?
+  sourceLabel            String?
+  interventionId         String?
+  purchaseId             String?
+  invoiceId              String?
+  materialUsageId        String?             @unique
+  materialUsage          InterventionMaterialUsage? @relation(fields: [materialUsageId], references: [id], onDelete: SetNull)
+  actorUserId            String?
+  note                   String?
+  createdAt              DateTime            @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([stockItemId, createdAt])
+  @@index([interventionId])
+  @@index([purchaseId])
+  @@index([invoiceId])
 }
 
 model Intervention {

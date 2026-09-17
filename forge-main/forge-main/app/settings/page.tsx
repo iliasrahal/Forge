@@ -6,6 +6,7 @@ import {
   FileText,
   Image as ImageIcon,
   PackageSearch,
+  PackageOpen,
   Mail,
   Palette,
   Receipt,
@@ -46,6 +47,12 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: "Achats",
         hint: "Coûts réels et affectations chantier",
         icon: ShoppingCart,
+      },
+      {
+        href: "/stock",
+        label: "Stock",
+        hint: "Quantités disponibles et historique des mouvements",
+        icon: PackageOpen,
       },
       {
         href: "/settings/facturation",

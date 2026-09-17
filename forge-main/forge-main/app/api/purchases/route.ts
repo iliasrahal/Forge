@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { Prisma, StockMovementOrigin, StockMovementType } from "@/src/generated/prisma/client";
 import { parseParisDateTime } from "@/src/lib/paris-datetime";
 import { prisma } from "@/src/lib/prisma";
 import { normalizePurchaseLines, purchaseTotals } from "@/src/lib/purchases";
+import { applyStockDelta } from "@/src/lib/stock";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
 export async function GET(request: Request) {
@@ -20,6 +22,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const context = await requireWorkspaceContext("write"); const body = await request.json();
+    const creationKey = typeof body.creationKey === "string" && body.creationKey.trim() ? `${context.workspace.id}:${body.creationKey.trim()}`.slice(0, 240) : null;
+    if (creationKey) {
+      const existing = await prisma.purchase.findUnique({ where: { creationKey } });
+      if (existing) return NextResponse.json({ purchase: existing, duplicate: true });
+    }
     let lines;
     try { lines = normalizePurchaseLines(body.lines); } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Lignes invalides." }, { status: 400 }); }
     const purchasedAt = typeof body.purchasedAt === "string" ? parseParisDateTime(body.purchasedAt, "12:00") : null;
@@ -39,15 +46,19 @@ export async function POST(request: Request) {
     if (workspaceIds.some((id) => !workspaceMap.has(id)) || catalogIds.some((id) => !catalogMap.has(id))) return NextResponse.json({ error: "Un matériau n’est pas accessible dans cet espace." }, { status: 400 });
     const totals = purchaseTotals(lines);
     const purchase = await prisma.$transaction(async (tx) => {
-      const created = await tx.purchase.create({ data: { organizationId: context.workspace.id, supplierId: supplier?.id ?? null, interventionId: intervention?.id ?? null, purchasedAt, reference: typeof body.reference === "string" && body.reference.trim() ? body.reference.trim().slice(0, 120) : null, supplierName: supplier?.companyName || supplier?.name || null, note: typeof body.note === "string" && body.note.trim() ? body.note.trim().slice(0, 2000) : null, ...totals } });
+      const created = await tx.purchase.create({ data: { creationKey, organizationId: context.workspace.id, supplierId: supplier?.id ?? null, interventionId: intervention?.id ?? null, purchasedAt, reference: typeof body.reference === "string" && body.reference.trim() ? body.reference.trim().slice(0, 120) : null, supplierName: supplier?.companyName || supplier?.name || null, note: typeof body.note === "string" && body.note.trim() ? body.note.trim().slice(0, 2000) : null, ...totals } });
       for (const line of lines) {
         const workspaceMaterial = line.workspaceMaterialId ? workspaceMap.get(line.workspaceMaterialId) : null; const catalog = line.materialCatalogItemId ? catalogMap.get(line.materialCatalogItemId) : workspaceMaterial?.catalogItem;
         const createdLine = await tx.purchaseLine.create({ data: { purchaseId: created.id, organizationId: context.workspace.id, materialCatalogItemId: workspaceMaterial?.catalogItemId ?? catalog?.id ?? null, workspaceMaterialId: workspaceMaterial?.id ?? null, lineType: line.lineType, name: line.name || workspaceMaterial?.name || catalog?.name || "Achat", brand: workspaceMaterial?.brand ?? catalog?.brand ?? null, reference: workspaceMaterial?.reference ?? catalog?.reference ?? null, quantityMilli: line.quantityMilli, unit: line.unit, unitPriceCents: line.unitPriceCents, vatRateBp: line.vatRateBp, netAmountCents: line.netAmountCents, vatAmountCents: line.vatAmountCents, totalAmountCents: line.totalAmountCents, supplierName: supplier?.companyName || supplier?.name || null } });
         if (workspaceMaterial) await tx.workspaceMaterial.update({ where: { id: workspaceMaterial.id }, data: { purchasePriceCents: line.unitPriceCents, preferredSupplierId: supplier?.id ?? workspaceMaterial.preferredSupplierId } });
         if (intervention && body.allocateFully === true) await tx.purchaseAllocation.create({ data: { organizationId: context.workspace.id, purchaseId: created.id, purchaseLineId: createdLine.id, interventionId: intervention.id, quantityMilli: line.quantityMilli, unitCostCents: line.unitPriceCents, amountCents: line.netAmountCents, lineType: line.lineType } });
+        if (body.addToStock === true && line.lineType === "MATERIAL" && (workspaceMaterial || catalog)) {
+          const stockMaterial = workspaceMaterial ?? await tx.workspaceMaterial.upsert({ where: { organizationId_catalogItemId: { organizationId: context.workspace.id, catalogItemId: catalog!.id } }, update: { active: true, purchasePriceCents: line.unitPriceCents }, create: { organizationId: context.workspace.id, catalogItemId: catalog!.id, active: true, purchasePriceCents: line.unitPriceCents } });
+          await applyStockDelta(tx, { organizationId: context.workspace.id, workspaceMaterialId: stockMaterial.id, deltaMilli: line.quantityMilli, type: StockMovementType.ENTRY, origin: StockMovementOrigin.PURCHASE, actorUserId: context.user.id, unitCostCents: line.unitPriceCents, sourceKey: `purchase-line:${createdLine.id}`, sourceId: createdLine.id, sourceLabel: `Achat ${supplier?.companyName || supplier?.name || created.reference || "fournisseur"}`, purchaseId: created.id });
+        }
       }
       return created;
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     return NextResponse.json({ purchase }, { status: 201 });
   } catch (error) { const access = getWorkspaceErrorResponse(error); if (access) return NextResponse.json(access.body, { status: access.status }); console.error("CREATE PURCHASE ERROR", error); return NextResponse.json({ error: "Impossible d’enregistrer cet achat." }, { status: 500 }); }
 }

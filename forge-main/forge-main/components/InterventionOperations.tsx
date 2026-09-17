@@ -34,6 +34,10 @@ export default function InterventionOperations({ interventionId, canWrite, progr
     const response = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await response.json().catch(() => ({}));
     setPending(false);
+    if (!response.ok && data.code === "STOCK_INSUFFICIENT" && window.confirm(`${data.error} Continuer et laisser le stock devenir négatif ?`)) {
+      setPending(false);
+      return request(url, method, { ...body, confirmInsufficientStock: true });
+    }
     if (!response.ok) { setError(typeof data.error === "string" ? data.error : "Impossible d’enregistrer."); return false; }
     router.refresh(); return true;
   }
@@ -66,6 +70,12 @@ export default function InterventionOperations({ interventionId, canWrite, progr
     await request(`/api/interventions/${interventionId}/progress`, "PATCH", { percent: data.get("percent") });
   }
 
+  async function editUsage(usage: Usage) {
+    const value = window.prompt(`Nouvelle quantité (${usage.unit})`, String(usage.quantity));
+    if (value === null) return;
+    await request(`/api/interventions/${interventionId}/materials`, "PATCH", { id: usage.id, quantity: value, requestKey: crypto.randomUUID() });
+  }
+
   return <section className="mx-auto mt-8 max-w-2xl space-y-5">
     <nav className="grid grid-cols-3 gap-2 rounded-2xl border border-blue-200/70 bg-white/45 p-2 text-center text-xs font-semibold text-blue-700 dark:border-blue-800/60 dark:bg-slate-900/35 dark:text-blue-300 sm:grid-cols-6">
       <a href="#planning">Planning</a><a href="#tasks">Tâches</a><a href="#tracking">Temps</a><a href="#tracking">Dépenses</a><a href="#materials">Matériaux</a><a href="#documents">Documents</a>
@@ -80,7 +90,7 @@ export default function InterventionOperations({ interventionId, canWrite, progr
     <section id="materials" className="scroll-mt-6 rounded-3xl border border-blue-200/70 bg-white/45 p-5 dark:border-blue-800/60 dark:bg-slate-900/35">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold text-slate-950 dark:text-white">Matériaux utilisés</h2><p className="text-sm text-slate-500">Usage réel du chantier, distinct des achats et dépenses.</p></div>{canWrite && <button onClick={() => setMaterialOpen(!materialOpen)} className="rounded-full border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 dark:border-blue-700 dark:text-blue-300">+ Ajouter</button>}</div>
       {materialOpen && <form onSubmit={addMaterial} className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">{purchaseLines.length>0&&<select name="purchaseLineId" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70 sm:col-span-2"><option value="">Sans ligne d’achat</option>{purchaseLines.map((item)=><option key={item.id} value={item.id}>{item.name} · {item.availableQuantity.toLocaleString("fr-FR")} {item.unit} disponible</option>)}</select>}<select name="materialCatalogItemId" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"><option value="">Ligne libre</option>{materials.map((item)=><option key={item.id} value={item.id}>{[item.name,item.brand,item.reference].filter(Boolean).join(" · ")}</option>)}</select><input name="name" placeholder="Désignation si ligne libre" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"/><input name="quantity" required type="number" min="0.001" step="0.001" defaultValue="1" placeholder="Quantité" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"/><input name="unit" defaultValue="u" placeholder="Unité" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"/><input name="actualUnitCost" type="number" min="0" step="0.01" placeholder="Coût unitaire réel (€)" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"/><input name="date" type="date" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70"/><textarea name="note" placeholder="Note facultative" className="min-w-0 rounded-xl border bg-white/70 px-3 py-2 dark:bg-slate-900/70 sm:col-span-2"/><button disabled={pending} className="rounded-full bg-blue-600 px-4 py-2 font-semibold text-white sm:col-span-2">Enregistrer l’utilisation</button></form>}
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">{usages.length ? usages.map((usage)=><article key={usage.id} className="rounded-2xl bg-white/60 p-3 dark:bg-slate-800/50"><p className="font-semibold">{usage.name}</p><p className="text-sm text-slate-500">{[usage.brand,usage.reference].filter(Boolean).join(" · ") || "Ligne libre"}</p><p className="text-sm">{usage.quantity.toLocaleString("fr-FR")} {usage.unit}{usage.actualUnitCostCents !== null ? ` · ${money.format(usage.actualUnitCostCents / 100)} / ${usage.unit}` : ""}</p>{canWrite && <button onClick={() => request(`/api/interventions/${interventionId}/materials`, "DELETE", { id: usage.id })} className="mt-2 text-xs font-semibold text-red-600">Supprimer</button>}</article>) : <p className="text-sm text-slate-500">Aucun matériel utilisé renseigné.</p>}</div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">{usages.length ? usages.map((usage)=><article key={usage.id} className="rounded-2xl bg-white/60 p-3 dark:bg-slate-800/50"><p className="font-semibold">{usage.name}</p><p className="text-sm text-slate-500">{[usage.brand,usage.reference].filter(Boolean).join(" · ") || "Ligne libre"}</p><p className="text-sm">{usage.quantity.toLocaleString("fr-FR")} {usage.unit}{usage.actualUnitCostCents !== null ? ` · ${money.format(usage.actualUnitCostCents / 100)} / ${usage.unit}` : ""}</p>{canWrite && <div className="mt-2 flex gap-3 text-xs font-semibold"><button onClick={() => editUsage(usage)} className="text-blue-600">Modifier</button><button onClick={() => request(`/api/interventions/${interventionId}/materials`, "DELETE", { id: usage.id })} className="text-red-600">Supprimer</button></div>}</article>) : <p className="text-sm text-slate-500">Aucun matériel utilisé renseigné.</p>}</div>
     </section>
     {error && <p className="text-center text-sm font-medium text-red-600 dark:text-red-400">{error}</p>}
   </section>;

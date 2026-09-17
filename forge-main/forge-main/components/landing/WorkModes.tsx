@@ -42,7 +42,7 @@ const workModes = [
 
 const ecosystemItems = [
   "Planning", "Interventions", "Chantiers", "Clients", "Comptes rendus",
-  "Devis", "Bibliothèque métier", "Factures", "Paiements", "Temps",
+  "Devis", "Bibliothèque métier", "Stock", "Factures", "Paiements", "Temps",
   "Fournisseurs", "Achats", "Dépenses", "Rentabilité", "Statistiques", "Relances", "Réponses clients",
   "Personnel", "Équipe",
 ];

@@ -143,6 +143,16 @@ export default function JobProfitability() {
             ))}
           </div>
         </div>
+        <div className={`landing-reveal-motion mt-8 rounded-[2rem] border border-blue-200/80 bg-white/75 p-5 shadow-[0_24px_70px_-45px_rgba(37,99,235,0.5)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/70 sm:p-7 ${reveal}`}>
+          <div className="grid items-center gap-5 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+            <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-400">Achat fournisseur</p><p className="mt-2 font-bold">+ 10 raccords cuivre</p></div>
+            <span className="hidden text-blue-500 md:block">→</span>
+            <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-400">Stock</p><p className="mt-2 font-bold">25 disponibles</p></div>
+            <span className="hidden text-blue-500 md:block">→</span>
+            <div><p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-400">Chantier Martin</p><p className="mt-2 font-bold">8 utilisés · stock 17</p></div>
+          </div>
+          <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">Gardez un œil sur votre matériel : les sorties réelles alimentent le coût du chantier sans transformer Forge en logiciel logistique.</p>
+        </div>
       </div>
     </section>
   );

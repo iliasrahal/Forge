@@ -8,6 +8,7 @@ import {
   BarChart3,
   House,
   ReceiptText,
+  PackageOpen,
   Settings,
   UsersRound,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const ITEMS = [
     icon: ReceiptText,
   },
   { href: "/statistics", section: "statistics", label: "Statistiques", icon: BarChart3 },
+  { href: "/stock", section: "stock", label: "Stock", icon: PackageOpen },
 ] as const;
 
 export default function DesktopSidebar() {
