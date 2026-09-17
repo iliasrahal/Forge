@@ -72,6 +72,10 @@ type AssistantIntent =
   | "expense"
   | "workTime"
   | "profitability"
+  | "statistics"
+  | "clientFinancial"
+  | "assignment"
+  | "purchase"
   | "unknown";
 
 type AssistantAction =
@@ -86,6 +90,8 @@ type AssistantAction =
   | "send"
   | "download"
   | "createIntervention"
+  | "query"
+  | "assign"
   | "unknown";
 
 type InterventionOperation =
@@ -125,6 +131,9 @@ type AssistantDecision = {
   expenseCategory: string | null;
   supplier: string | null;
   durationMinutes: number | null;
+  quantityMilli: number | null;
+  metric: "sold" | "billed" | "collected" | "remaining" | "purchases" | "margin" | null;
+  assignees: string[];
   quoteLines: Array<{
     category: string;
     unitPrice?: string;
@@ -566,6 +575,9 @@ export default function ForgeBar({
       expenseCategory: typeof data.expenseCategory === "string" ? data.expenseCategory : null,
       supplier: typeof data.supplier === "string" ? data.supplier : null,
       durationMinutes: typeof data.durationMinutes === "number" ? data.durationMinutes : null,
+      quantityMilli: typeof data.quantityMilli === "number" ? data.quantityMilli : null,
+      metric: ["sold", "billed", "collected", "remaining", "purchases", "margin"].includes(data.metric) ? data.metric : null,
+      assignees: Array.isArray(data.assignees) ? data.assignees.filter((value: unknown): value is string => typeof value === "string" && Boolean(value.trim())) : [],
 
       quoteLines: Array.isArray(data.quoteLines)
         ? data.quoteLines.filter(
@@ -1355,6 +1367,13 @@ export default function ForgeBar({
 
       const source =
         sourceData.source as InvoiceSourceResolution;
+      const confirmed = window.confirm(
+        `Créer une facture à partir ${source.source === "intervention" ? "de l’intervention" : "du devis"} sélectionné pour ${entity} ?`,
+      );
+      if (!confirmed) {
+        setMessage("");
+        return;
+      }
       const createResponse = await fetch(
         source.source === "intervention"
           ? "/api/invoices/create-from-intervention"
@@ -1442,6 +1461,8 @@ export default function ForgeBar({
         type, entity: decision.entity, amountCents: decision.amountCents,
         category: decision.expenseCategory, supplier: decision.supplier,
         description: decision.description, durationMinutes: decision.durationMinutes,
+        assignee: decision.assignees[0] ?? null,
+        requestKey: crypto.randomUUID(),
         date: decision.scheduledDate,
       }),
     });
@@ -1456,6 +1477,52 @@ export default function ForgeBar({
     const result = data.profitability;
     const formatMoney = (cents: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100);
     showNotice(`Chantier ${decision.entity} : ${Math.floor(result.workedMinutes / 60)}h${String(result.workedMinutes % 60).padStart(2, "0")} travaillées, ${formatMoney(result.expenseCents)} de dépenses, ${formatMoney(result.billedRevenueCents)} facturés, marge réelle ${formatMoney(result.actualMarginCents)}.`);
+  }
+
+  async function callAssistantAction(body: Record<string, unknown>) {
+    const response = await fetch("/api/assistant/actions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Forge ne peut pas exécuter cette action.");
+    return data;
+  }
+
+  async function handleStatisticsQuery(decision: AssistantDecision) {
+    const data = await callAssistantAction({ type: "statistics", metric: decision.metric, period: "month" });
+    const cents = decision.metric === "sold" ? data.metrics.soldCents
+      : decision.metric === "billed" ? data.metrics.billedCents
+      : decision.metric === "remaining" ? data.metrics.remainingCents
+      : decision.metric === "purchases" ? data.metrics.purchasesCents
+      : data.metrics.collectedCents;
+    const labels = { sold: "vendu", billed: "facturé net", collected: "encaissé", remaining: "reste à encaisser", purchases: "dépensé en achats", margin: "marge" } as const;
+    if (decision.metric === "margin") throw new Error("La marge détaillée est disponible dans Statistiques ou depuis un chantier précis.");
+    showNotice(`Du ${data.range.from} au ${data.range.to}, vous avez ${labels[decision.metric ?? "collected"]} ${new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100)}.`);
+    setMessage("");
+  }
+
+  async function handleClientFinancialQuery(decision: AssistantDecision) {
+    if (!decision.entity) throw new Error("Précise le client concerné.");
+    const data = await callAssistantAction({ type: "clientFinancial", entity: decision.entity });
+    const amount = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(data.financials.remainingCents / 100);
+    showNotice(`${data.client.name} vous doit encore ${amount}.`);
+    setMessage("");
+  }
+
+  async function handleAssignment(decision: AssistantDecision) {
+    const data = await callAssistantAction({ type: "assign", entity: decision.entity, assignees: decision.assignees });
+    showNotice(data.message);
+    setMessage("");
+    router.refresh();
+  }
+
+  async function handleInterventionStatus(decision: AssistantDecision, operation: "start" | "finish") {
+    if (!decision.entity) throw new Error("Précise l’intervention concernée.");
+    const resolved = await callAssistantAction({ type: "resolveIntervention", entity: decision.entity });
+    const response = await fetch("/api/interventions", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ operation, interventionId: resolved.intervention.id }) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Impossible de mettre à jour cette intervention.");
+    showNotice(operation === "start" ? "L’intervention est démarrée." : "L’intervention est terminée.");
+    setMessage("");
+    router.refresh();
   }
 
   async function handleSubmit(
@@ -1695,15 +1762,11 @@ export default function ForgeBar({
           break;
 
         case "intervention:start":
-          showNotice(
-            "Tu souhaites démarrer une intervention.",
-          );
+          await handleInterventionStatus(decision, "start");
           break;
 
         case "intervention:finish":
-          showNotice(
-            "Tu souhaites terminer une intervention.",
-          );
+          await handleInterventionStatus(decision, "finish");
           break;
 
         case "intervention:open":
@@ -1731,6 +1794,30 @@ export default function ForgeBar({
         case "profitability:search":
           await handleInterventionTracking(decision);
           break;
+
+        case "statistics:query":
+          await handleStatisticsQuery(decision);
+          break;
+
+        case "clientFinancial:query":
+          await handleClientFinancialQuery(decision);
+          break;
+
+        case "assignment:assign":
+          await handleAssignment(decision);
+          break;
+
+        case "purchase:create": {
+          if (!decision.entity || !decision.amountCents || !decision.quantityMilli || !decision.supplier) throw new Error("Précise le matériel, la quantité, le fournisseur et le montant total.");
+          const amount = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(decision.amountCents / 100);
+          const confirmed = window.confirm(`Préparer cet achat ?\n${decision.quantityMilli / 1000} × ${decision.entity}\n${decision.supplier}\nTotal annoncé : ${amount}\n\nLe formulaire d’achat restera à valider.`);
+          if (confirmed) {
+            const params = new URLSearchParams({ new: "1", supplier: decision.supplier, item: decision.entity, quantity: String(decision.quantityMilli / 1000), totalCents: String(decision.amountCents) });
+            router.push(`/settings/purchases?${params.toString()}`);
+          }
+          setMessage("");
+          break;
+        }
 
         default:
           throw new Error(

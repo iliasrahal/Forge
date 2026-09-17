@@ -6,6 +6,7 @@ import { prisma } from "@/src/lib/prisma";
 import { matchCatalogServicesForQuote } from "@/src/lib/quote-catalog-matching";
 import { parseFrenchInterventionRange } from "@/src/lib/french-intervention-range";
 import { formatParisDateKey } from "@/src/lib/paris-datetime";
+import { detectDeterministicForgeIntent } from "@/src/lib/forge-intent-router";
 import {
   getWorkspaceErrorResponse,
   requireWorkspaceContext,
@@ -24,6 +25,10 @@ type AssistantIntent =
   | "expense"
   | "workTime"
   | "profitability"
+  | "statistics"
+  | "clientFinancial"
+  | "assignment"
+  | "purchase"
   | "unknown";
 
 type AssistantAction =
@@ -38,6 +43,8 @@ type AssistantAction =
   | "send"
   | "download"
   | "createIntervention"
+  | "query"
+  | "assign"
   | "unknown";
 
 type InterventionOperation =
@@ -80,6 +87,9 @@ type AssistantDecision = {
   expenseCategory: string | null;
   supplier: string | null;
   durationMinutes: number | null;
+  quantityMilli: number | null;
+  metric: "sold" | "billed" | "collected" | "remaining" | "purchases" | "margin" | null;
+  assignees: string[];
 };
 
 function getCurrentFrenchDate() {
@@ -261,6 +271,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const deterministic = detectDeterministicForgeIntent(message);
+    if (deterministic) {
+      return NextResponse.json({
+        intent: deterministic.intent, action: deterministic.action, entity: deterministic.entity,
+        title: null, description: null, currentScheduledDate: null, scheduledDate: null,
+        scheduledTime: null, scheduledEndDate: null, scheduledEndTime: null,
+        interventionOperation: null, dayTasks: [], phone: null, street: null,
+        postalCode: null, city: null, email: null, notes: null,
+        amountCents: deterministic.amountCents ?? null, expenseCategory: null,
+        supplier: deterministic.supplier ?? null, durationMinutes: deterministic.durationMinutes ?? null,
+        quantityMilli: deterministic.quantityMilli ?? null, assignees: deterministic.assignees ?? [],
+        metric: deterministic.metric ?? null, quoteLines: [], routing: "deterministic",
+      });
+    }
+
     const currentDate =
       getCurrentFrenchDate();
 
@@ -287,6 +312,13 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - invoice : créer, rechercher, ouvrir, modifier, envoyer ou télécharger une facture.
 - client : créer, rechercher, ouvrir ou modifier une fiche client.
 - intervention : créer, rechercher, ouvrir, reporter, annuler, démarrer, terminer ou modifier une intervention.
+- expense : saisir une dépense sur un chantier.
+- workTime : saisir du temps travaillé sur un chantier.
+- profitability : consulter la rentabilité d’un chantier précis.
+- statistics : consulter vendu, facturé, encaissé, reste à encaisser, achats ou marge globale.
+- clientFinancial : consulter ce qu’un client doit encore.
+- assignment : affecter un ou plusieurs membres à un chantier.
+- purchase : préparer un achat fournisseur.
 - unknown : la demande ne correspond clairement à aucune catégorie.
 
 2. action :
@@ -301,6 +333,8 @@ Analyse la demande de l’artisan et retourne toujours les champs suivants.
 - send : envoyer un devis ou une facture au client.
 - download : télécharger le PDF d’un devis ou d’une facture.
 - createIntervention : créer une intervention depuis un devis existant.
+- query : consulter une donnée financière ou statistique.
+- assign : affecter des membres à un chantier.
 - unknown : l’action n’est pas suffisamment claire.
 
 Règles documents :
@@ -782,6 +816,10 @@ if (
         "expense",
         "workTime",
         "profitability",
+        "statistics",
+        "clientFinancial",
+        "assignment",
+        "purchase",
         "unknown",
       ];
 
@@ -798,6 +836,8 @@ if (
         "send",
         "download",
         "createIntervention",
+        "query",
+        "assign",
         "unknown",
       ];
 
@@ -921,6 +961,12 @@ if (
     const expenseCategory = cleanOptionalString(parsed.expenseCategory);
     const supplier = cleanOptionalString(parsed.supplier);
     const durationMinutes = typeof parsed.durationMinutes === "number" && parsed.durationMinutes > 0 ? Math.round(parsed.durationMinutes) : null;
+    const quantityMilli = typeof parsed.quantityMilli === "number" && parsed.quantityMilli > 0 ? Math.round(parsed.quantityMilli) : null;
+    const metrics = ["sold", "billed", "collected", "remaining", "purchases", "margin"] as const;
+    const metric = metrics.find((item) => item === parsed.metric) ?? null;
+    const assignees = Array.isArray(parsed.assignees)
+      ? parsed.assignees.filter((item): item is string => typeof item === "string" && Boolean(item.trim())).map((item) => item.trim()).slice(0, 20)
+      : [];
 
     const quoteLines =
       resolvedIntent === "quote" && resolvedAction === "create"
@@ -956,6 +1002,9 @@ if (
       expenseCategory,
       supplier,
       durationMinutes,
+      quantityMilli,
+      metric,
+      assignees,
       quoteLines,
     });
   } catch (error) {

@@ -6,6 +6,12 @@ import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/wo
 
 function normalize(value: string) { return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
 
+function creationKey(organizationId: string, interventionId: string, requestKey: unknown) {
+  return typeof requestKey === "string" && requestKey.trim()
+    ? `forge:${organizationId}:${interventionId}:${requestKey.trim()}`
+    : null;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -30,23 +36,42 @@ export async function POST(request: Request) {
       const amountCents = Number(body.amountCents);
       if (!Number.isInteger(amountCents) || amountCents <= 0) return NextResponse.json({ error: "Précise un montant valide." }, { status: 400 });
       const allowed = ["MATERIALS", "SUPPLIES", "TRAVEL", "RENTAL", "SUBCONTRACTING", "OTHER"];
+      const key = creationKey(workspace.workspace.id, intervention.id, body.requestKey);
+      if (key) {
+        const existing = await prisma.interventionExpense.findUnique({ where: { creationKey: key } });
+        if (existing) return NextResponse.json({ message: "La dépense avait déjà été ajoutée au chantier.", interventionId: intervention.id, expense: existing });
+      }
       const expense = await prisma.interventionExpense.create({ data: {
         interventionId: intervention.id, organizationId: workspace.workspace.id, createdByUserId: workspace.user.id,
         amountCents, category: allowed.includes(body.category) ? body.category : "OTHER",
         supplier: typeof body.supplier === "string" && body.supplier.trim() ? body.supplier.trim() : null,
         description: typeof body.description === "string" && body.description.trim() ? body.description.trim() : null,
-        expenseDate: date, dayDate: date,
+        expenseDate: date, dayDate: date, creationKey: key,
       } });
       return NextResponse.json({ message: "La dépense a été ajoutée au chantier.", interventionId: intervention.id, expense });
     }
     if (body.type === "time") {
       const durationMinutes = Number(body.durationMinutes);
       if (!Number.isInteger(durationMinutes) || durationMinutes <= 0 || durationMinutes > 1440) return NextResponse.json({ error: "Précise une durée valide." }, { status: 400 });
-      const member = await prisma.organizationMember.findUnique({ where: { userId_organizationId: { userId: workspace.user.id, organizationId: workspace.workspace.id } }, select: { hourlyCostCents: true } });
+      const requestedAssignee = typeof body.assignee === "string" ? normalize(body.assignee) : "";
+      const members = await prisma.organizationMember.findMany({
+        where: { organizationId: workspace.workspace.id },
+        include: { user: { select: { firstName: true, lastName: true, email: true } } },
+      });
+      const matchingMembers = requestedAssignee
+        ? members.filter((candidate) => normalize(`${candidate.user.firstName} ${candidate.user.lastName ?? ""} ${candidate.user.email}`).includes(requestedAssignee))
+        : members.filter((candidate) => candidate.userId === workspace.user.id);
+      if (matchingMembers.length !== 1) return NextResponse.json({ error: requestedAssignee ? "Ce membre est introuvable ou ambigu dans cet espace." : "Votre accès à cet espace est introuvable." }, { status: 409 });
+      const member = matchingMembers[0];
+      const key = creationKey(workspace.workspace.id, intervention.id, body.requestKey);
+      if (key) {
+        const existing = await prisma.interventionWorkTime.findUnique({ where: { creationKey: key } });
+        if (existing) return NextResponse.json({ message: "Ce temps avait déjà été ajouté au chantier.", interventionId: intervention.id, entry: existing });
+      }
       const startedAt = date;
       const entry = await prisma.interventionWorkTime.create({ data: {
-        interventionId: intervention.id, organizationId: workspace.workspace.id, userId: workspace.user.id,
-        dayDate: date, startedAt, endedAt: startedAt, durationMinutes, hourlyCostCents: member?.hourlyCostCents ?? null, manual: true,
+        interventionId: intervention.id, organizationId: workspace.workspace.id, userId: member.userId,
+        dayDate: date, startedAt, endedAt: startedAt, durationMinutes, hourlyCostCents: member.hourlyCostCents ?? null, manual: true, creationKey: key,
       } });
       return NextResponse.json({ message: "Le temps passé a été ajouté au chantier.", interventionId: intervention.id, entry });
     }
