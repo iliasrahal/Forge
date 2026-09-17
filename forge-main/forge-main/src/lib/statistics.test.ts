@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildStatistics, resolveStatisticsRange } from "./statistics";
+import { buildOperationalStatistics, buildStatistics, percentageChange, previousStatisticsRange, resolveStatisticsRange } from "./statistics";
 
 const range = resolveStatisticsRange({ period: "30d", now: new Date("2026-09-15T10:00:00Z") });
 
@@ -52,4 +52,44 @@ test("une période personnalisée inversée est normalisée", () => {
   const custom = resolveStatisticsRange({ period: "custom", from: "2026-09-15", to: "2026-09-01" });
   assert.equal(custom.from, "2026-09-01");
   assert.equal(custom.to, "2026-09-15");
+});
+
+test("calcule vendu sur les devis acceptés et facturé net après avoir", () => {
+  const acceptedAt = new Date("2026-09-10T10:00:00Z");
+  const result = buildStatistics({ range, payments: [], quotes: [
+    { id: "accepted", amountCents: 120000, status: "ACCEPTE", sentAt: acceptedAt, acceptedAt, invoices: [] },
+    { id: "refused", amountCents: 90000, status: "REFUSE", sentAt: acceptedAt, invoices: [] },
+  ], invoices: [{ id: "invoice", quoteId: "accepted", clientId: "c1", amountCents: 120000, status: "ENVOYEE", createdAt: acceptedAt, sentAt: acceptedAt, payments: [], creditNotes: [{ status: "EMISE", amountCents: 20000 }] }] });
+  assert.equal(result.soldCents, 120000);
+  assert.equal(result.billedCents, 100000);
+  assert.equal(result.remainingCents, 100000);
+});
+
+test("agrège rentabilité, pertes, temps, achats et fournisseurs sans inventer les coûts incomplets", () => {
+  const result = buildOperationalStatistics({
+    interventions: [
+      { id: "profitable", title: "Rentable", profitability: { quote: { status: "ACCEPTE", amountCents: 100000, totalCostCents: 30000 }, invoices: [], expenses: [{ amountCents: 10000, category: "TRAVEL" }], workTimes: [{ userId: "u1", memberName: "Alice", durationMinutes: 120, hourlyCostCents: 3000 }] } },
+      { id: "loss", title: "Perte", profitability: { quote: { status: "ACCEPTE", amountCents: 20000, totalCostCents: 10000 }, invoices: [], expenses: [{ amountCents: 30000, category: "RENTAL" }], workTimes: [] } },
+      { id: "unknown", title: "Incomplet", profitability: { quote: null, invoices: [], expenses: [], workTimes: [{ userId: "u2", memberName: "Bob", durationMinutes: 60, hourlyCostCents: null }] } },
+    ],
+    purchases: [{ totalAmountCents: 50000, supplierId: "s1", supplierName: "Cédéo" }, { totalAmountCents: 20000, supplierId: "s1", supplierName: "Cédéo" }],
+  });
+  assert.equal(result.totalCostCents, 46000);
+  assert.equal(result.marginCents, 74000);
+  assert.equal(result.plannedCostCents, 40000);
+  assert.equal(result.incompleteInterventions, 1);
+  assert.equal(result.interventions.at(-1)?.marginCents, -10000);
+  assert.equal(result.workedMinutes, 180);
+  assert.equal(result.purchasesCents, 70000);
+  assert.equal(result.suppliers[0].amountCents, 70000);
+});
+
+test("gère les périodes métier et la comparaison sans Infinity", () => {
+  const month = resolveStatisticsRange({ period: "month", now: new Date("2026-09-15T10:00:00Z") });
+  const previousMonth = resolveStatisticsRange({ period: "previousMonth", now: new Date("2026-09-15T10:00:00Z") });
+  assert.equal(month.from, "2026-09-01");
+  assert.deepEqual([previousMonth.from, previousMonth.to], ["2026-08-01", "2026-08-31"]);
+  assert.equal(previousStatisticsRange(month).to, "2026-08-31");
+  assert.equal(percentageChange(100, 0), null);
+  assert.equal(percentageChange(0, 0), 0);
 });

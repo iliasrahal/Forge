@@ -6,11 +6,9 @@ import { useState, useTransition } from "react";
 import type { StatisticsPeriod } from "@/src/lib/statistics";
 
 const OPTIONS: Array<{ value: StatisticsPeriod; label: string }> = [
-  { value: "7d", label: "7 jours" },
-  { value: "30d", label: "30 jours" },
-  { value: "3m", label: "3 mois" },
-  { value: "6m", label: "6 mois" },
-  { value: "1y", label: "1 an" },
+  { value: "month", label: "Ce mois" },
+  { value: "previousMonth", label: "Mois précédent" },
+  { value: "year", label: "Cette année" },
   { value: "custom", label: "Personnalisé" },
 ];
 
