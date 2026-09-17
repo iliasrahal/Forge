@@ -83,7 +83,7 @@ const GENERIC_LINE_CATEGORIES = new Set([
 
 function isGenericLineCategory(category: string) {
   return GENERIC_LINE_CATEGORIES.has(
-    category.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(),
+    category.replace(/œ/g, "oe").replace(/Œ/g, "OE").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(),
   );
 }
 
@@ -478,8 +478,8 @@ export default function QuoteLinesForm({
                   disabled={!canWrite}
                   className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
                 />
-              ) : <span className="min-w-0 flex-1" />}
-              {canWrite ? (
+              ) : null}
+              {canWrite && !isGenericLineCategory(line.category) ? (
                 <button
                   type="button"
                   onClick={() => removeLine(index)}
