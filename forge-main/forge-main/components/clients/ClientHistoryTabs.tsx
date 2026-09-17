@@ -144,7 +144,7 @@ export default function ClientHistoryTabs() {
                 aria-selected={isActive}
                 aria-controls="client-history-panel"
                 onClick={() => setActiveSection(section.id)}
-                className={`min-w-0 rounded-xl px-1.5 py-2.5 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:px-4 sm:text-sm ${
+                className={`min-w-0 whitespace-nowrap rounded-xl px-0.5 py-2.5 text-[10px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-[360px]:px-1 min-[360px]:text-[11px] min-[400px]:px-1.5 min-[400px]:text-xs sm:px-4 sm:text-sm ${
                   isActive
                     ? "bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-sm"
                     : "text-slate-500 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-blue-950/50 dark:hover:text-blue-300"
