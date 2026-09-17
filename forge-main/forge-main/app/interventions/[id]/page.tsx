@@ -119,6 +119,8 @@ export default async function InterventionPage({
           orderBy: { startedAt: "desc" },
         },
         materialUsages: { orderBy: { createdAt: "desc" } },
+        purchaseAllocations: { where: { organizationId: workspaceContext.workspace.id }, select: { amountCents: true, lineType: true, materialUsageId: true } },
+        purchases: { where: { organizationId: workspaceContext.workspace.id, status: "ACTIVE" }, include: { supplier: { select: { name: true, companyName: true } }, lines: { include: { allocations: { select: { quantityMilli: true } } } }, _count: { select: { lines: true } } }, orderBy: { purchasedAt: "desc" } },
       },
     });
 
@@ -173,6 +175,7 @@ export default async function InterventionPage({
       hourlyCostCents: entry.hourlyCostCents,
     })),
     materialUsages: intervention.materialUsages,
+    purchaseAllocations: intervention.purchaseAllocations,
   });
   const dailyTracking = Array.from(new Set([
     ...intervention.expenses.map((entry) => formatParisDateKey(entry.dayDate ?? entry.expenseDate)),
@@ -350,6 +353,7 @@ export default async function InterventionPage({
           }))}
           members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
           materials={materials}
+          purchaseLines={intervention.purchases.flatMap((purchase) => purchase.lines.map((line) => ({ id: line.id, name: line.name, brand: line.brand, reference: line.reference, unit: line.unit, unitPriceCents: line.unitPriceCents, availableQuantity: Math.max(0, line.quantityMilli - line.allocations.reduce((sum, allocation) => sum + allocation.quantityMilli, 0)) / 1000 }))).filter((line) => line.availableQuantity > 0)}
           usages={intervention.materialUsages.map((usage) => ({
             id: usage.id, name: usage.name, brand: usage.brand, reference: usage.reference,
             quantity: usage.quantityMilli / 1000, unit: usage.unit,
@@ -416,6 +420,11 @@ export default async function InterventionPage({
           }))}
           members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
         />
+
+        <section className="mx-auto mt-8 max-w-2xl rounded-3xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold">Achats liés</h2><p className="text-sm text-[var(--forge-text-muted)]">Achats affectés à ce chantier.</p></div>{workspaceContext.permissions.canWrite && <Link href={`/settings/purchases?interventionId=${intervention.id}`} className="rounded-full border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300">+ Ajouter un achat</Link>}</div>
+          <div className="mt-4 space-y-2">{intervention.purchases.map((purchase)=><div key={purchase.id} className="rounded-2xl bg-white/55 p-3 text-sm dark:bg-slate-800/55"><p className="font-semibold">{purchase.supplier?.companyName || purchase.supplier?.name || purchase.supplierName || "Sans fournisseur"} · {(purchase.totalAmountCents/100).toLocaleString("fr-FR",{style:"currency",currency:"EUR"})}</p><p className="text-[var(--forge-text-muted)]">{formatParisDateKey(purchase.purchasedAt)} · {purchase._count.lines} ligne{purchase._count.lines>1?"s":""}</p></div>)}{!intervention.purchases.length && <p className="text-sm text-[var(--forge-text-muted)]">Aucun achat lié.</p>}</div>
+        </section>
 
         {(intervention.quote || intervention.invoices.length > 0) && <section id="documents" className="mx-auto mt-8 max-w-2xl scroll-mt-6 rounded-3xl border border-blue-200/70 bg-white/45 p-5 dark:border-blue-800/60 dark:bg-slate-900/35">
           <h2 className="text-center text-2xl font-bold text-slate-950 dark:text-white">Documents</h2>

@@ -10,6 +10,8 @@ import {
   Palette,
   Receipt,
   ShieldCheck,
+  ShoppingCart,
+  Truck,
   UserRound,
 } from "lucide-react";
 
@@ -32,6 +34,18 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: "Bibliothèque",
         hint: "Matériaux, prestations, main-d’œuvre et ouvrages",
         icon: PackageSearch,
+      },
+      {
+        href: "/settings/suppliers",
+        label: "Fournisseurs",
+        hint: "Coordonnées et historique d’achats",
+        icon: Truck,
+      },
+      {
+        href: "/settings/purchases",
+        label: "Achats",
+        hint: "Coûts réels et affectations chantier",
+        icon: ShoppingCart,
       },
       {
         href: "/settings/facturation",

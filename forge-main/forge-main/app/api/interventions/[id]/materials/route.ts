@@ -27,9 +27,15 @@ export async function POST(request: Request, { params }: Context) {
     const { id } = await params;
     const intervention = await getIntervention(id, workspace.workspace.id);
     if (!intervention?.organizationId) return NextResponse.json({ error: "Chantier introuvable." }, { status: 404 });
+    const organizationId = intervention.organizationId;
     const body = await request.json();
     const quantity = quantityMilli(body.quantity);
     if (!quantity) return NextResponse.json({ error: "La quantité doit être supérieure à zéro." }, { status: 400 });
+    const purchaseLine = typeof body.purchaseLineId === "string" && body.purchaseLineId
+      ? await prisma.purchaseLine.findFirst({ where: { id: body.purchaseLineId, organizationId, purchase: { status: "ACTIVE" } }, include: { purchase: true, allocations: { select: { quantityMilli: true } } } })
+      : null;
+    if (body.purchaseLineId && !purchaseLine) return NextResponse.json({ error: "Ligne d’achat introuvable dans cet espace." }, { status: 400 });
+    if (purchaseLine && purchaseLine.allocations.reduce((sum, allocation) => sum + allocation.quantityMilli, 0) + quantity > purchaseLine.quantityMilli) return NextResponse.json({ error: "La quantité dépasse le solde disponible de cet achat." }, { status: 400 });
 
     const catalogItem = typeof body.materialCatalogItemId === "string"
       ? await prisma.materialCatalogItem.findFirst({ where: { id: body.materialCatalogItemId, active: true } })
@@ -39,7 +45,7 @@ export async function POST(request: Request, { params }: Context) {
       : null;
     const source = workspaceMaterial ?? catalogItem;
     const fallbackCatalog = workspaceMaterial?.catalogItem ?? null;
-    const name = (typeof body.name === "string" ? body.name.trim() : "") || source?.name || fallbackCatalog?.name;
+    const name = (typeof body.name === "string" ? body.name.trim() : "") || purchaseLine?.name || source?.name || fallbackCatalog?.name;
     if (!name) return NextResponse.json({ error: "La désignation du matériel est obligatoire." }, { status: 400 });
     const dayDate = typeof body.date === "string" && body.date ? parseParisDateTime(body.date, "00:00") : null;
     if (body.date && !dayDate) return NextResponse.json({ error: "Date invalide." }, { status: 400 });
@@ -47,22 +53,23 @@ export async function POST(request: Request, { params }: Context) {
       ? `${intervention.organizationId}:${id}:${body.creationKey.trim()}`.slice(0, 240)
       : null;
 
-    const usage = await prisma.interventionMaterialUsage.create({ data: {
+    const usage = await prisma.$transaction(async (tx) => { const created = await tx.interventionMaterialUsage.create({ data: {
       interventionId: id,
-      organizationId: intervention.organizationId,
+      organizationId,
       dayDate,
-      materialCatalogItemId: workspaceMaterial?.catalogItemId ?? catalogItem?.id ?? null,
-      workspaceMaterialId: workspaceMaterial?.id ?? null,
+      materialCatalogItemId: purchaseLine?.materialCatalogItemId ?? workspaceMaterial?.catalogItemId ?? catalogItem?.id ?? null,
+      workspaceMaterialId: purchaseLine?.workspaceMaterialId ?? workspaceMaterial?.id ?? null,
+      purchaseLineId: purchaseLine?.id ?? null,
       name,
-      brand: workspaceMaterial?.brand ?? catalogItem?.brand ?? fallbackCatalog?.brand ?? null,
-      reference: workspaceMaterial?.reference ?? catalogItem?.reference ?? fallbackCatalog?.reference ?? null,
+      brand: purchaseLine?.brand ?? workspaceMaterial?.brand ?? catalogItem?.brand ?? fallbackCatalog?.brand ?? null,
+      reference: purchaseLine?.reference ?? workspaceMaterial?.reference ?? catalogItem?.reference ?? fallbackCatalog?.reference ?? null,
       specifications: workspaceMaterial?.specifications ?? catalogItem?.specifications ?? fallbackCatalog?.specifications ?? undefined,
       quantityMilli: quantity,
-      unit: (typeof body.unit === "string" && body.unit.trim()) || workspaceMaterial?.unit || catalogItem?.unit || fallbackCatalog?.unit || "u",
-      actualUnitCostCents: optionalCents(body.actualUnitCost),
+      unit: purchaseLine?.unit ?? ((typeof body.unit === "string" && body.unit.trim()) || workspaceMaterial?.unit || catalogItem?.unit || fallbackCatalog?.unit || "u"),
+      actualUnitCostCents: purchaseLine?.unitPriceCents ?? optionalCents(body.actualUnitCost),
       note: typeof body.note === "string" && body.note.trim() ? body.note.trim() : null,
       creationKey,
-    } });
+    } }); if (purchaseLine) await tx.purchaseAllocation.create({ data: { organizationId, purchaseId: purchaseLine.purchaseId, purchaseLineId: purchaseLine.id, interventionId: id, materialUsageId: created.id, quantityMilli: quantity, unitCostCents: purchaseLine.unitPriceCents, amountCents: Math.round(quantity * purchaseLine.unitPriceCents / 1000), lineType: purchaseLine.lineType } }); return created; });
     return NextResponse.json({ usage }, { status: 201 });
   } catch (error) {
     const accessError = getWorkspaceErrorResponse(error);

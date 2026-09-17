@@ -63,6 +63,23 @@ test("calcule matériel snapshoté et évite de doubler une dépense matériau",
   assert.equal(result.totalCostCents, 4800);
 });
 
+test("une utilisation reliée à un achat ne double pas son allocation", () => {
+  const result = computeInterventionProfitability({ quote: null, invoices: [], workTimes: [], expenses: [],
+    materialUsages: [{ quantityMilli: 8000, actualUnitCostCents: 300, purchaseLineId: "line-1" }],
+    purchaseAllocations: [{ amountCents: 2400, lineType: "MATERIAL", materialUsageId: "usage-1" }],
+  });
+  assert.equal(result.materialsCostCents, 2400);
+  assert.equal(result.totalCostCents, 2400);
+});
+
+test("une affectation d’achat directe contribue une seule fois au chantier", () => {
+  const result = computeInterventionProfitability({ quote: null, invoices: [], workTimes: [], expenses: [{ amountCents: 15000, category: "RENTAL", purchaseId: "purchase-1" }],
+    purchaseAllocations: [{ amountCents: 15000, lineType: "RENTAL", materialUsageId: null }],
+  });
+  assert.equal(result.nonMaterialExpenseCents, 15000);
+  assert.equal(result.totalCostCents, 15000);
+});
+
 test("signale un coût incomplet au lieu de valoriser le temps ou le matériel à zéro", () => {
   const result = computeInterventionProfitability({
     quote: { status: "ACCEPTE", amountCents: 100000, totalCostCents: 30000 }, invoices: [], expenses: [],

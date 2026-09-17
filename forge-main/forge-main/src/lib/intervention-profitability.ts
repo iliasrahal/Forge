@@ -3,9 +3,10 @@ import { computeInvoicePaymentState, type PaymentRecord } from "@/src/lib/paymen
 
 type QuoteLineCost = { lineType?: string | null; quantityMilli: number; unit: string; costCents: number | null };
 type ProfitabilityInvoice = { status: string; amountCents: number; payments: PaymentRecord[]; creditNotes?: CreditNoteAmountRecord[] };
-type ProfitabilityExpense = { amountCents: number; category?: string | null };
+type ProfitabilityExpense = { amountCents: number; category?: string | null; purchaseId?: string | null };
 type ProfitabilityWorkTime = { userId?: string; memberName?: string; durationMinutes: number | null; hourlyCostCents: number | null };
-type ProfitabilityMaterial = { quantityMilli: number; actualUnitCostCents: number | null };
+type ProfitabilityMaterial = { quantityMilli: number; actualUnitCostCents: number | null; purchaseLineId?: string | null };
+type ProfitabilityPurchaseAllocation = { amountCents: number; lineType?: string | null; materialUsageId?: string | null };
 
 export type ProfitabilityInput = {
   quote?: { status: string; amountCents: number; totalCostCents: number; lines?: QuoteLineCost[] } | null;
@@ -13,6 +14,7 @@ export type ProfitabilityInput = {
   expenses: ProfitabilityExpense[];
   workTimes: ProfitabilityWorkTime[];
   materialUsages?: ProfitabilityMaterial[];
+  purchaseAllocations?: ProfitabilityPurchaseAllocation[];
 };
 
 function percentage(numerator: number | null, denominator: number | null) {
@@ -49,17 +51,24 @@ export function computeInterventionProfitability(input: ProfitabilityInput) {
 
   const materialUsages = input.materialUsages ?? [];
   const knownMaterialUsageCostCents = materialUsages.reduce((sum, usage) => usage.actualUnitCostCents === null ? sum : sum + Math.round((usage.quantityMilli * usage.actualUnitCostCents) / 1000), 0);
-  const materialExpenseCents = input.expenses.filter((expense) => expense.category === "MATERIALS" || expense.category === "SUPPLIES").reduce((sum, expense) => sum + expense.amountCents, 0);
-  // Achat et usage peuvent représenter le même coût. Sans lien explicite,
-  // conserver la source la plus élevée évite leur addition automatique.
-  const materialsCostCents = Math.max(knownMaterialUsageCostCents, materialExpenseCents);
+  const freeExpenses = input.expenses.filter((expense) => !expense.purchaseId);
+  const materialExpenseCents = freeExpenses.filter((expense) => expense.category === "MATERIALS" || expense.category === "SUPPLIES").reduce((sum, expense) => sum + expense.amountCents, 0);
+  const linkedUsageCostCents = materialUsages.filter((usage) => usage.purchaseLineId).reduce((sum, usage) => usage.actualUnitCostCents === null ? sum : sum + Math.round((usage.quantityMilli * usage.actualUnitCostCents) / 1000), 0);
+  const unlinkedUsageCostCents = knownMaterialUsageCostCents - linkedUsageCostCents;
+  const allocations = input.purchaseAllocations ?? [];
+  const allocatedMaterialCostCents = allocations.filter((allocation) => allocation.lineType === "MATERIAL" && !allocation.materialUsageId).reduce((sum, allocation) => sum + allocation.amountCents, 0);
+  // Les relations explicites achat→usage sont comptées via l’usage. Les achats
+  // affectés sans usage le sont via l’allocation. Le fallback historique garde
+  // la source la plus élevée pour les anciennes dépenses non reliées.
+  const materialsCostCents = linkedUsageCostCents + allocatedMaterialCostCents + Math.max(unlinkedUsageCostCents, materialExpenseCents);
   const materialsCostComplete = materialUsages.every((usage) => usage.actualUnitCostCents !== null);
-  const expenseByCategory = (category: string) => input.expenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amountCents, 0);
+  const expenseByCategory = (category: string) => freeExpenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amountCents, 0);
   const travelCostCents = expenseByCategory("TRAVEL");
   const rentalCostCents = expenseByCategory("RENTAL");
   const subcontractingCostCents = expenseByCategory("SUBCONTRACTING");
-  const otherCostCents = input.expenses.filter((expense) => !["MATERIALS", "SUPPLIES", "TRAVEL", "RENTAL", "SUBCONTRACTING"].includes(expense.category ?? "OTHER")).reduce((sum, expense) => sum + expense.amountCents, 0);
-  const nonMaterialExpenseCents = travelCostCents + rentalCostCents + subcontractingCostCents + otherCostCents;
+  const otherCostCents = freeExpenses.filter((expense) => !["MATERIALS", "SUPPLIES", "TRAVEL", "RENTAL", "SUBCONTRACTING"].includes(expense.category ?? "OTHER")).reduce((sum, expense) => sum + expense.amountCents, 0);
+  const allocatedNonMaterialCostCents = allocations.filter((allocation) => allocation.lineType !== "MATERIAL").reduce((sum, allocation) => sum + allocation.amountCents, 0);
+  const nonMaterialExpenseCents = travelCostCents + rentalCostCents + subcontractingCostCents + otherCostCents + allocatedNonMaterialCostCents;
 
   let laborCostCents = 0;
   let laborCostComplete = true;
@@ -93,7 +102,7 @@ export function computeInterventionProfitability(input: ProfitabilityInput) {
     creditedCents, billedRevenueCents, collectedRevenueCents,
     materialsCostCents, knownMaterialUsageCostCents, materialExpenseCents,
     laborCostCents, nonMaterialExpenseCents,
-    expenseCents: input.expenses.reduce((sum, expense) => sum + expense.amountCents, 0),
+    expenseCents: freeExpenses.reduce((sum, expense) => sum + expense.amountCents, 0) + allocations.reduce((sum, allocation) => sum + allocation.amountCents, 0),
     travelCostCents, rentalCostCents, subcontractingCostCents, otherCostCents,
     totalCostCents, totalCostComplete, laborCostComplete, materialsCostComplete,
     workedMinutes, timeByMember: [...memberMap.values()],
