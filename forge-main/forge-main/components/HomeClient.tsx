@@ -792,9 +792,7 @@ const handleSaveNotes = async (notes: string) => {
 
   const openCalendar = () => {
     setAutoOpenNewIntervention(false);
-    setCalendarFocusDate(
-      upcomingAppointmentsList[0]?.date ?? todayDateKey,
-    );
+    setCalendarFocusDate(todayDateKey);
     setShowUpcomingCalendar(true);
   };
 

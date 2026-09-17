@@ -58,6 +58,27 @@ function getStatusLabel(
   return "Planifiée";
 }
 
+function getStatusClasses(status: Appointment["status"], isPast: boolean) {
+  if (status === "inProgress") return "bg-amber-50 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300";
+  if (status === "completed") return "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300";
+  if (status === "cancelled") return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
+  if (status === "postponed") return "bg-violet-50 text-violet-800 dark:bg-violet-950/70 dark:text-violet-300";
+  if (isPast) return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+  return "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300";
+}
+
+function getParticipantSummary(names: string[]) {
+  const initials = names.slice(0, 3).map((name) =>
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toLocaleUpperCase("fr-FR"))
+      .join(""),
+  );
+  return `${initials.join(" · ")}${names.length > 3 ? ` +${names.length - 3}` : ""}`;
+}
+
 export default function UpcomingCalendar({
   appointments,
   clients,
@@ -71,7 +92,7 @@ export default function UpcomingCalendar({
   currentUserId,
   members,
 }: UpcomingCalendarProps) {
-  const initialDateKey = focusDate || appointments[0]?.date || todayDateKey;
+  const initialDateKey = focusDate || todayDateKey;
   const initialDate = parseDateKey(initialDateKey);
   const [visibleMonth, setVisibleMonth] = useState(() => ({
     year: initialDate.getUTCFullYear(),
@@ -256,20 +277,18 @@ export default function UpcomingCalendar({
       <>
       <div className="rounded-[2rem] border border-slate-200/80 bg-white/90 p-3 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.42)] dark:border-slate-800 dark:bg-slate-900/90 sm:p-5">
         <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-bold capitalize sm:text-2xl">{monthLabel}</h1>
-          </div>
-          {canWrite ? (<button
+          <h1 className="text-lg font-bold text-[var(--forge-text-primary)] sm:text-xl">Calendrier</h1>
+          <button
             type="button"
             onClick={onClose}
             aria-label="Fermer le planning"
             className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-600 dark:hover:text-blue-300"
           >
             <X size={19} />
-          </button>) : null}
+          </button>
         </div>
 
-        <div className="mt-5 grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
+        <div className="mt-3 grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-2 sm:mt-4">
           <button
             type="button"
             onClick={() => changeMonth(-1)}
@@ -278,13 +297,7 @@ export default function UpcomingCalendar({
           >
             <ChevronLeft size={19} />
           </button>
-          <button
-            type="button"
-            onClick={goToToday}
-            className="justify-self-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
-          >
-            Aujourd’hui
-          </button>
+          <h2 className="text-center text-lg font-bold capitalize text-[var(--forge-text-primary)] sm:text-2xl">{monthLabel}</h2>
           <button
             type="button"
             onClick={() => changeMonth(1)}
@@ -295,11 +308,30 @@ export default function UpcomingCalendar({
           </button>
         </div>
 
-        {members.length > 0 ? <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-1" aria-label="Filtrer par collaborateur">
+        <div className="mt-2 flex justify-center">
+          <button
+            type="button"
+            onClick={goToToday}
+            className="min-h-10 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+          >
+            Aujourd’hui
+          </button>
+        </div>
+
+        {members.length > 0 ? <>
+        <label className="mt-3 block sm:hidden">
+          <span className="sr-only">Filtrer par collaborateur</span>
+          <select value={memberFilter} onChange={(event) => setMemberFilter(event.target.value)} className="min-h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+            <option value="all">Toutes les interventions</option>
+            <option value={currentUserId}>Mes interventions</option>
+            {members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
+          </select>
+        </label>
+        <div className="mt-4 hidden max-w-full flex-wrap gap-2 sm:flex" aria-label="Filtrer par collaborateur">
           <button type="button" onClick={() => setMemberFilter("all")} aria-pressed={memberFilter === "all"} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === "all" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>Toutes</button>
           <button type="button" onClick={() => setMemberFilter(currentUserId)} aria-pressed={memberFilter === currentUserId} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === currentUserId ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>Mes interventions</button>
           {members.map((member) => <button key={member.id} type="button" onClick={() => setMemberFilter(member.id)} aria-pressed={memberFilter === member.id} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === member.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>{member.name}</button>)}
-        </div> : null}
+        </div></> : null}
 
         <div className="mt-5 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold text-slate-500 dark:text-slate-400 sm:gap-2 sm:text-xs">
           {weekDays.map((day) => <span key={day}>{day}</span>)}
@@ -309,6 +341,9 @@ export default function UpcomingCalendar({
             const count = appointmentsByDate.get(day.dateKey)?.length ?? 0;
             const isSelected = day.dateKey === selectedDateKey;
             const isToday = day.dateKey === todayDateKey;
+            const hasMultiDay = (appointmentsByDate.get(day.dateKey) ?? []).some(
+              (appointment) => appointment.endDate && appointment.endDate !== appointment.date,
+            );
 
             return (
               <button
@@ -316,10 +351,10 @@ export default function UpcomingCalendar({
                 type="button"
                 onClick={() => selectDate(day.dateKey)}
                 aria-pressed={isSelected}
-                aria-label={`${day.day}${count ? `, ${count} intervention${count > 1 ? "s" : ""}` : ""}`}
-                className={`relative flex aspect-square min-h-10 flex-col items-center justify-center rounded-xl border text-sm transition sm:min-h-12 ${
+                aria-label={`${day.dateKey === todayDateKey ? "Aujourd’hui, " : ""}${day.day} ${monthLabel}${count ? `, ${count} intervention${count > 1 ? "s" : ""}` : ", aucune intervention"}${hasMultiDay ? ", chantier multi-jours" : ""}`}
+                className={`relative flex aspect-square min-h-10 min-w-0 flex-col items-center justify-center rounded-xl border text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:min-h-12 ${
                   isSelected
-                    ? "border-blue-600 bg-blue-600 font-bold text-white shadow-md shadow-blue-600/20"
+                    ? `border-blue-600 bg-blue-600 font-bold text-white shadow-md shadow-blue-600/20 ${isToday ? "ring-2 ring-pink-300 ring-offset-1 dark:ring-pink-500" : ""}`
                     : isToday
                       ? "border-blue-300 bg-blue-50 font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
                       : day.isCurrentMonth
@@ -334,6 +369,7 @@ export default function UpcomingCalendar({
                     {count}
                   </span>
                 )}
+                {hasMultiDay ? <span className={`absolute inset-x-2 bottom-1 h-0.5 rounded-full ${isSelected ? "bg-violet-200" : "bg-violet-500"}`} aria-hidden="true" /> : null}
               </button>
             );
           })}
@@ -345,13 +381,13 @@ export default function UpcomingCalendar({
           <h2 className="text-center text-lg font-bold capitalize text-blue-700 dark:text-blue-400 sm:text-left sm:text-xl">
             {selectedDateLabel}
           </h2>
-          <button
+          {canWrite ? <button
             type="button"
             onClick={openCreationForm}
             className="inline-flex min-h-10 items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-600/15 transition hover:bg-blue-700"
           >
             + Nouvelle intervention
-          </button>
+          </button> : null}
         </div>
         {selectedAppointments.length > 0 ? (
           <div className="mt-4 space-y-3">
@@ -363,26 +399,20 @@ export default function UpcomingCalendar({
                 onClick={() => onSelectAppointment(appointment.id)}
                 className="flex w-full items-start gap-4 rounded-2xl border border-slate-200/80 bg-white/90 p-4 text-left shadow-sm transition hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-blue-700"
               >
-                <span className="w-12 shrink-0 pt-0.5 text-sm font-bold text-blue-700 dark:text-blue-400">
-                  {appointment.time || "—"}
-                </span>
+                {appointment.time ? <span className="w-12 shrink-0 pt-0.5 text-sm font-bold text-blue-700 dark:text-blue-400">{appointment.time}</span> : null}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-slate-950 dark:text-white">
-                    {appointment.client || "Client non renseigné"}
-                  </span>
-                  <span className="mt-1 block text-sm text-slate-600 dark:text-slate-300">
-                    {getAppointmentSubject(appointment) || "Intervention"}
-                  </span>
-                  {appointment.assigneeNames?.length ? <span className="mt-1 block text-xs font-medium text-violet-700 dark:text-violet-300">{appointment.assigneeNames.join(" · ")}</span> : null}
-                  {(appointment.dayTasks?.filter((task) => task.date === selectedDateKey) ?? []).map((task) => (
+                  {appointment.client ? <span className="block truncate font-semibold text-slate-950 dark:text-white">{appointment.client}</span> : null}
+                  {getAppointmentSubject(appointment) ? <span className={`${appointment.client ? "mt-1" : ""} block text-sm text-slate-600 dark:text-slate-300`}>{getAppointmentSubject(appointment)}</span> : null}
+                  {appointment.assigneeNames?.length ? <span className="mt-1 block text-xs font-medium text-violet-700 dark:text-violet-300" aria-label={`Participants : ${appointment.assigneeNames.join(", ")}`}>{getParticipantSummary(appointment.assigneeNames)}</span> : null}
+                  {(appointment.dayTasks?.filter((task) => task.date === selectedDateKey) ?? []).slice(0, 2).map((task) => (
                     <span key={task.id} className="mt-1 block text-xs font-medium text-blue-700 dark:text-blue-300">
                       {task.startTime ? `${task.startTime} · ` : ""}{task.title}
                     </span>
                   ))}
-                  <span className="mt-2 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[0.68rem] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                  <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[0.68rem] font-semibold ${getStatusClasses(appointment.status, isInterventionDatePast(appointment.endDate || appointment.date, todayDateKey))}`}>
                     {getStatusLabel(
                       appointment.status,
-                      appointment.date,
+                      appointment.endDate || appointment.date,
                       todayDateKey,
                     )}
                   </span>
@@ -396,9 +426,10 @@ export default function UpcomingCalendar({
             ))}
           </div>
         ) : (
-          <p className="mt-4 px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
-            Aucune intervention prévue ce jour-là.
-          </p>
+          <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-white/60 px-4 py-7 text-center dark:border-slate-800 dark:bg-slate-900/50">
+            <p className="text-sm text-slate-500 dark:text-slate-400">Aucune intervention prévue.</p>
+            {canWrite ? <button type="button" onClick={openCreationForm} className="mt-3 min-h-10 rounded-full border border-blue-200 px-4 py-2 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300">+ Nouvelle intervention</button> : null}
+          </div>
         )}
       </div>
       </>
