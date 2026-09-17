@@ -151,6 +151,7 @@ function DetailEditorFields({
 
 
 export default function QuoteLinesForm({
+  initialTitle,
   initialLines = [],
   initialVatApplicable,
   initialDocumentDiscount,
@@ -181,7 +182,11 @@ export default function QuoteLinesForm({
           ...line,
           vatRateBp: normalizeVatRateBp(line.vatRateBp, normalizedDefaultRate),
         }))
-      : [],
+      : [
+          { ...emptyQuoteLine(initialTitle || "Main d'œuvre", normalizedDefaultRate), lineType: "LABOR", unit: "h" },
+          { ...emptyQuoteLine("Matériel", normalizedDefaultRate), lineType: "MATERIAL", unit: "u" },
+          { ...emptyQuoteLine("Déplacement", normalizedDefaultRate), lineType: "TRAVEL" },
+        ],
   );
 
   const [showAddMenu, setShowAddMenu] = useState(false);
