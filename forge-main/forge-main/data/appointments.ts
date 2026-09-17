@@ -33,6 +33,8 @@ export type Appointment = {
   finalized?: boolean;
   quoteId?: string | null;
   invoiceId?: string | null;
+  assigneeIds?: string[];
+  assigneeNames?: string[];
   dayTasks?: Array<{
     id: string;
     date: string;

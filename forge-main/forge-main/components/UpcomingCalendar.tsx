@@ -34,6 +34,8 @@ type UpcomingCalendarProps = {
   ) => void;
   canWrite: boolean;
   autoOpenCreationForm?: boolean;
+  currentUserId: string;
+  members: Array<{ id: string; name: string }>;
 };
 
 export type PlanningClient = {
@@ -66,6 +68,8 @@ export default function UpcomingCalendar({
   onInterventionCreated,
   canWrite,
   autoOpenCreationForm = false,
+  currentUserId,
+  members,
 }: UpcomingCalendarProps) {
   const initialDateKey = focusDate || appointments[0]?.date || todayDateKey;
   const initialDate = parseDateKey(initialDateKey);
@@ -89,6 +93,7 @@ export default function UpcomingCalendar({
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [creationError, setCreationError] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [memberFilter, setMemberFilter] = useState("all");
   const isMounted = useSyncExternalStore(
     () => () => undefined,
     () => true,
@@ -109,9 +114,10 @@ export default function UpcomingCalendar({
     };
   }, [showCreationForm]);
 
+  const filteredAppointments = useMemo(() => memberFilter === "all" ? appointments : appointments.filter((appointment) => appointment.assigneeIds?.includes(memberFilter)), [appointments, memberFilter]);
   const appointmentsByDate = useMemo(
-    () => groupAppointmentsByDate(appointments),
-    [appointments],
+    () => groupAppointmentsByDate(filteredAppointments),
+    [filteredAppointments],
   );
   const calendarDays = useMemo(
     () => getCalendarDays(visibleMonth.year, visibleMonth.month),
@@ -289,6 +295,12 @@ export default function UpcomingCalendar({
           </button>
         </div>
 
+        {members.length > 0 ? <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-1" aria-label="Filtrer par collaborateur">
+          <button type="button" onClick={() => setMemberFilter("all")} aria-pressed={memberFilter === "all"} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === "all" ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>Toutes</button>
+          <button type="button" onClick={() => setMemberFilter(currentUserId)} aria-pressed={memberFilter === currentUserId} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === currentUserId ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>Mes interventions</button>
+          {members.map((member) => <button key={member.id} type="button" onClick={() => setMemberFilter(member.id)} aria-pressed={memberFilter === member.id} className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${memberFilter === member.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300 dark:border-slate-700"}`}>{member.name}</button>)}
+        </div> : null}
+
         <div className="mt-5 grid grid-cols-7 gap-1 text-center text-[0.68rem] font-semibold text-slate-500 dark:text-slate-400 sm:gap-2 sm:text-xs">
           {weekDays.map((day) => <span key={day}>{day}</span>)}
         </div>
@@ -361,6 +373,7 @@ export default function UpcomingCalendar({
                   <span className="mt-1 block text-sm text-slate-600 dark:text-slate-300">
                     {getAppointmentSubject(appointment) || "Intervention"}
                   </span>
+                  {appointment.assigneeNames?.length ? <span className="mt-1 block text-xs font-medium text-violet-700 dark:text-violet-300">{appointment.assigneeNames.join(" · ")}</span> : null}
                   {(appointment.dayTasks?.filter((task) => task.date === selectedDateKey) ?? []).map((task) => (
                     <span key={task.id} className="mt-1 block text-xs font-medium text-blue-700 dark:text-blue-300">
                       {task.startTime ? `${task.startTime} · ` : ""}{task.title}

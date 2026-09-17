@@ -46,7 +46,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (!title || (!isGeneral && !task)) return NextResponse.json({ error: "Le titre est obligatoire et la journée doit appartenir au chantier." }, { status: 400 });
     if (task && isExcluded(intervention, task.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
     const position = await prisma.interventionDayTask.count({ where: { interventionId: id } });
-    const assignedToId = await validAssignee(body.assignedToId, workspace.workspace.id);
+    const requestedAssignee = typeof body.assignedToId === "string" && body.assignedToId ? body.assignedToId : null;
+    const assignedToId = await validAssignee(requestedAssignee, workspace.workspace.id);
+    if (requestedAssignee && !assignedToId) return NextResponse.json({ error: "Ce responsable n’appartient pas à cet espace." }, { status: 400 });
     const created = await prisma.interventionDayTask.create({
       data: {
         ...(task ? interventionDayTaskCreateData(task) : {
@@ -111,13 +113,16 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const isGeneral = body.date === null || body.date === "";
     if (isGeneral) {
       const title = typeof body.title === "string" ? body.title.trim().slice(0, 200) : existing.title;
+      const requestedAssignee = typeof body.assignedToId === "string" && body.assignedToId ? body.assignedToId : null;
+      const assignedToId = await validAssignee(requestedAssignee, workspace.workspace.id);
+      if (requestedAssignee && !assignedToId) return NextResponse.json({ error: "Ce responsable n’appartient pas à cet espace." }, { status: 400 });
       const task = await prisma.interventionDayTask.update({ where: { id: taskId }, data: {
         date: null,
         title,
         description: typeof body.description === "string" && body.description.trim() ? body.description.trim().slice(0, 1000) : null,
         startTime: null,
         endTime: null,
-        assignedToId: await validAssignee(body.assignedToId, workspace.workspace.id),
+        assignedToId,
       } });
       return NextResponse.json({ task });
     }
@@ -132,9 +137,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     }], intervention.scheduledAt, intervention.endDate);
     if (!normalized) return NextResponse.json({ error: "Les informations de la tâche sont invalides." }, { status: 400 });
     if (isExcluded(intervention, normalized.date)) return NextResponse.json({ error: "Cette journée a été supprimée du chantier." }, { status: 409 });
+    const requestedAssignee = typeof body.assignedToId === "string" && body.assignedToId ? body.assignedToId : null;
+    const assignedToId = await validAssignee(requestedAssignee, workspace.workspace.id);
+    if (requestedAssignee && !assignedToId) return NextResponse.json({ error: "Ce responsable n’appartient pas à cet espace." }, { status: 400 });
     const task = await prisma.interventionDayTask.update({
       where: { id: taskId },
-      data: { ...interventionDayTaskCreateData(normalized), assignedToId: await validAssignee(body.assignedToId, workspace.workspace.id) },
+      data: { ...interventionDayTaskCreateData(normalized), assignedToId },
     });
     return NextResponse.json({ task });
   } catch (error) {

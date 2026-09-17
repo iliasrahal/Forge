@@ -71,6 +71,8 @@ export async function DELETE(_request: Request, { params }: Props) {
     if (!member) return NextResponse.json({ error: "Membre introuvable." }, { status: 404 });
 
     await prisma.$transaction([
+      prisma.interventionDayAssignment.deleteMany({ where: { organizationId: context.workspace.id, userId: member.userId } }),
+      prisma.interventionAssignment.deleteMany({ where: { organizationId: context.workspace.id, userId: member.userId } }),
       prisma.intervention.updateMany({
         where: { organizationId: context.workspace.id, assignedToId: member.userId },
         data: { assignedToId: null },

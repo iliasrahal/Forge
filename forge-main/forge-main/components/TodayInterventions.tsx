@@ -67,6 +67,11 @@ export default function TodayInterventions({
                   {appointment.client}
                 </span>
               ) : null}
+              {appointment.assigneeNames?.length ? (
+                <span className="mt-1 block truncate text-xs font-medium text-violet-700 dark:text-violet-300">
+                  {appointment.assigneeNames.join(" · ")}
+                </span>
+              ) : null}
               <span
                 className={`mt-auto pt-1.5 text-[0.62rem] font-bold uppercase tracking-wide sm:pt-3 sm:text-[0.65rem] ${
                   inProgress

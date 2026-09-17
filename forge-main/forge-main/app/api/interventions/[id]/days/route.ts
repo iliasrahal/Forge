@@ -197,6 +197,7 @@ export async function DELETE(request: Request, { params }: RouteContext) {
       await transaction.interventionWorkTime.deleteMany({ where: { interventionId: id, dayDate: dateRange } });
       await transaction.interventionExpense.deleteMany({ where: { interventionId: id, dayDate: dateRange } });
       await transaction.interventionMaterialUsage.deleteMany({ where: { interventionId: id, dayDate: dateRange } });
+      await transaction.interventionDayAssignment.deleteMany({ where: { interventionId: id, date: dateRange } });
       await transaction.interventionDayTask.deleteMany({ where: { interventionId: id, date: dateRange } });
       await transaction.interventionDayState.deleteMany({ where: { interventionId: id, date: dateRange } });
       if (isBoundary) {

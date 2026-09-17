@@ -56,6 +56,8 @@ type HomeClientProps = {
   initialPlanningOpen?: boolean;
   initialSelectedInterventionId?: string | null;
   canWrite: boolean;
+  currentUserId: string;
+  planningMembers: Array<{ id: string; name: string }>;
 };
 
 export default function HomeClient({
@@ -66,6 +68,8 @@ export default function HomeClient({
   planningClients,
   todayDateKey,
   canWrite,
+  currentUserId,
+  planningMembers,
   newInterventionId: initialNewInterventionId = null,
   initialPlanningOpen = false,
   initialSelectedInterventionId = null,
@@ -1419,6 +1423,8 @@ const handleCreateInvoice = async () => {
       onInterventionCreated={handlePlanningInterventionCreated}
       canWrite={canWrite}
       autoOpenCreationForm={autoOpenNewIntervention}
+      currentUserId={currentUserId}
+      members={planningMembers}
     />
   )}
 

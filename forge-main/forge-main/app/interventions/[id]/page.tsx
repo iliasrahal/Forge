@@ -101,6 +101,8 @@ export default async function InterventionPage({
       },
       include: {
         client: true,
+        assignments: { select: { userId: true } },
+        dayAssignments: { select: { userId: true, date: true } },
         dayTasks: { include: { assignedTo: { select: { firstName: true, lastName: true } } }, orderBy: [{ date: "asc" }, { position: "asc" }] },
         dayStates: { orderBy: { date: "asc" } },
         excludedDays: { orderBy: { date: "asc" } },
@@ -256,11 +258,11 @@ export default async function InterventionPage({
           canWrite={workspaceContext.permissions.canWrite}
         />
 
-        {workspaceContext.permissions.canWrite && teamMembers.length > 0 && (
+        {teamMembers.length > 0 && (
           <AssignmentSelect
             interventionId={intervention.id}
-            initialUserId={intervention.assignedToId}
-            disabled={false}
+            initialUserIds={intervention.assignments.length ? intervention.assignments.map((assignment) => assignment.userId) : intervention.assignedToId ? [intervention.assignedToId] : []}
+            disabled={!workspaceContext.permissions.canWrite}
             members={teamMembers.map((member) => ({
               id: member.userId,
               name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim(),
@@ -379,6 +381,8 @@ export default async function InterventionPage({
               completedAt: task.completedAt?.toISOString() ?? null,
               status: task.status,
               report: task.report,
+              assignedToId: task.assignedToId,
+              assigneeName: task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName ?? ""}`.trim() : null,
             }))}
             dayStates={intervention.dayStates.map((state) => ({
               date: formatParisDateKey(state.date),
@@ -388,6 +392,8 @@ export default async function InterventionPage({
               finalizationStep: state.finalizationStep,
             }))}
             dailyTracking={dailyTracking}
+            members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
+            dayAssignments={intervention.dayAssignments.map((assignment) => ({ date: formatParisDateKey(assignment.date), userId: assignment.userId }))}
             canWrite={workspaceContext.permissions.canWrite}
           />
         )}

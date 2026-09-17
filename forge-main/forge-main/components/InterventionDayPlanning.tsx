@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 
 import { getInterventionDayHistoryKind } from "@/src/lib/intervention-day-deletion";
 import { formatInterventionDayReport } from "@/src/lib/intervention-day-report";
+import DayAssignmentSelect from "@/components/team/DayAssignmentSelect";
 
 type DayTask = {
   id: string;
@@ -16,6 +17,8 @@ type DayTask = {
   completedAt: string | null;
   status: string;
   report: string | null;
+  assignedToId: string | null;
+  assigneeName: string | null;
 };
 
 type Props = {
@@ -24,6 +27,8 @@ type Props = {
   tasks: DayTask[];
   dayStates: Array<{ date: string; startedAt: string | null; completedAt: string | null; report: string | null; finalizationStep: string | null }>;
   dailyTracking: Array<{ date: string; expenseCents: number; durationMinutes: number; hasExpenses: boolean; hasWorkTimes: boolean }>;
+  members: Array<{ id: string; name: string }>;
+  dayAssignments: Array<{ date: string; userId: string }>;
   canWrite: boolean;
 };
 
@@ -31,7 +36,7 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris",
 });
 
-export default function InterventionDayPlanning({ interventionId, days, tasks, dayStates, dailyTracking, canWrite }: Props) {
+export default function InterventionDayPlanning({ interventionId, days, tasks, dayStates, dailyTracking, members, dayAssignments, canWrite }: Props) {
   const router = useRouter();
   const [openDate, setOpenDate] = useState<string | null>(null);
   const [editing, setEditing] = useState<DayTask | null>(null);
@@ -155,6 +160,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
       description: form.get("description"),
       startTime: form.get("startTime"),
       report: form.get("report"),
+      assignedToId: form.get("assignedToId"),
     });
   }
 
@@ -186,6 +192,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                   <h3 className="font-semibold capitalize text-slate-900 dark:text-white">{dateFormatter.format(new Date(`${date}T12:00:00Z`))}</h3>
                   <p className="mt-1 text-xs font-bold uppercase tracking-wide text-blue-600 dark:text-blue-300">{dayState?.completedAt ? "Journée terminée" : dayState?.startedAt ? "Journée en cours" : "Journée planifiée"}</p>
                   {tracking && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{Math.floor(tracking.durationMinutes / 60)}h{String(tracking.durationMinutes % 60).padStart(2, "0")} · {(tracking.expenseCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} de dépenses</p>}
+                  {members.length > 0 ? <DayAssignmentSelect interventionId={interventionId} date={date} initialUserIds={dayAssignments.filter((assignment) => assignment.date === date).map((assignment) => assignment.userId)} members={members} disabled={!canWrite} /> : null}
                   {dailyTasks.length ? (
                 <div className="mt-4 space-y-2">
                   {dailyTasks.map((task) => (
@@ -194,6 +201,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                         <div className="min-w-0 flex-1">
                           <p className={`font-medium text-slate-800 dark:text-slate-100 ${task.completedAt ? "line-through opacity-60" : ""}`}>{task.startTime ? `${task.startTime} · ` : ""}{task.title}</p>
                           {task.description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{task.description}</p>}
+                          {task.assigneeName ? <p className="mt-1 text-xs font-semibold text-violet-700 dark:text-violet-300">Responsable : {task.assigneeName}</p> : null}
                           <span className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide ${task.completedAt ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" : "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"}`}>
                             {task.completedAt ? "Tâche terminée" : "Tâche planifiée"}
                           </span>
@@ -230,6 +238,7 @@ export default function InterventionDayPlanning({ interventionId, days, tasks, d
                   <input name="title" required defaultValue={editing?.title ?? ""} placeholder="Tâche" className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70" />
                   <input name="startTime" type="time" defaultValue={editing?.startTime ?? ""} className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70" />
                   <textarea name="description" defaultValue={editing?.description ?? ""} placeholder="Description facultative" className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70 sm:col-span-2" />
+                  {members.length > 0 ? <select name="assignedToId" defaultValue={editing?.assignedToId ?? ""} className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70 sm:col-span-2"><option value="">Aucun responsable</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select> : null}
                   <textarea name="report" defaultValue={editing?.report ?? ""} placeholder="Compte rendu de la journée (facultatif)" className="rounded-xl border border-slate-300 bg-white/70 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/70 sm:col-span-2" />
                   <div className="flex justify-end gap-2 sm:col-span-2"><button type="button" onClick={() => { setOpenDate(null); setEditing(null); }} className="px-3 py-2 text-sm">Annuler</button><button disabled={pending} className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Enregistrer</button></div>
                 </form>

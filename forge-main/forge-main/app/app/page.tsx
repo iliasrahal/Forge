@@ -45,6 +45,7 @@ type HomeIntervention = Prisma.InterventionGetPayload<{
       select: { id: true; status: true };
     };
     dayTasks: true;
+    assignments: { include: { user: { select: { firstName: true; lastName: true } } } };
   };
 }>;
 
@@ -111,6 +112,8 @@ function mapIntervention(intervention: HomeIntervention): Appointment {
     finalized: Boolean(intervention.finalizedAt),
     quoteId: intervention.quoteId,
     invoiceId: intervention.invoices[0]?.id ?? null,
+    assigneeIds: intervention.assignments.map((assignment) => assignment.userId),
+    assigneeNames: intervention.assignments.map((assignment) => `${assignment.user.firstName} ${assignment.user.lastName ?? ""}`.trim()),
     dayTasks: intervention.dayTasks.filter((task) => task.date).map((task) => ({
       id: task.id,
       date: formatParisDateKey(task.date!),
@@ -130,7 +133,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const { newIntervention, invitationAccess, planning, selectedIntervention } = await searchParams;
   const todayKey = formatParisDateKey(new Date());
 
-  const [interventions, clients] = await Promise.all([
+  const [interventions, clients, teamMembers] = await Promise.all([
     prisma.intervention.findMany({
       where: {
         organizationId: workspaceContext.workspace.id,
@@ -148,6 +151,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           take: 1,
         },
         dayTasks: { orderBy: [{ date: "asc" }, { position: "asc" }] },
+        assignments: { include: { user: { select: { firstName: true, lastName: true } } }, orderBy: { createdAt: "asc" } },
       },
       orderBy: {
         scheduledAt: "asc",
@@ -164,6 +168,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         { firstName: "asc" },
       ],
     }),
+    workspaceContext.workspace.type === "TEAM" ? prisma.organizationMember.findMany({
+      where: { organizationId: workspaceContext.workspace.id },
+      select: { userId: true, user: { select: { firstName: true, lastName: true } } },
+      orderBy: { createdAt: "asc" },
+    }) : Promise.resolve([]),
   ]);
 
   const [reminderQuotes, reminderInvoices, completedInterventions] = currentUser.smartRemindersEnabled
@@ -299,6 +308,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               "Client",
       }))}
       canWrite={workspaceContext.permissions.canWrite}
+      currentUserId={currentUser.id}
+      planningMembers={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
       newInterventionId={newIntervention ?? null}
       initialPlanningOpen={planning === "1"}
       initialSelectedInterventionId={selectedIntervention ?? null}

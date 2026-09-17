@@ -215,6 +215,9 @@ model User {
 
   assignedInterventions Intervention[] @relation("AssignedInterventions")
 
+  interventionAssignments    InterventionAssignment[]
+  interventionDayAssignments InterventionDayAssignment[]
+
   sentTeamInvitations TeamInvitation[] @relation("InvitationSender")
 
   staffMembership StaffMember?
@@ -334,6 +337,8 @@ model Organization {
   interventionWorkTimes      InterventionWorkTime[]
   interventionExpenses       InterventionExpense[]
   interventionMaterialUsages InterventionMaterialUsage[]
+  interventionAssignments    InterventionAssignment[]
+  interventionDayAssignments InterventionDayAssignment[]
   suppliers                  Supplier[]
   purchases                  Purchase[]
   purchaseLines              PurchaseLine[]
@@ -882,6 +887,35 @@ model InterventionDayTask {
   @@index([assignedToId])
 }
 
+model InterventionAssignment {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  interventionId String
+  intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([interventionId, userId])
+  @@index([organizationId, userId])
+}
+
+model InterventionDayAssignment {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  interventionId String
+  intervention   Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  date           DateTime
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([interventionId, date, userId])
+  @@index([organizationId, userId, date])
+}
+
 model InterventionDayState {
   id               String       @id @default(cuid())
   interventionId   String
@@ -1048,6 +1082,8 @@ model Intervention {
   materialUsages      InterventionMaterialUsage[]
   purchases           Purchase[]
   purchaseAllocations PurchaseAllocation[]
+  assignments         InterventionAssignment[]
+  dayAssignments      InterventionDayAssignment[]
 
   // Avancement explicite facultatif (0..10000). Null = progression dérivée.
   progressBp Int?
