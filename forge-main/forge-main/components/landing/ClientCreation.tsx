@@ -20,10 +20,10 @@ import {
 import ForgeSymbol from "@/components/ForgeSymbol";
 
 const benefits = [
-  "Création par commande vocale ou écrite",
-  "Ajout automatique des informations client",
-  "Fonctionne pour les particuliers et les professionnels",
-  "Création d’une fiche client en quelques secondes",
+  "Coordonnées et informations utiles au même endroit",
+  "Interventions et chantiers du client",
+  "Devis et factures associés",
+  "Paiements et historique retrouvés rapidement",
 ];
 
 const clientDetails = [
@@ -184,13 +184,13 @@ export default function ClientCreation() {
           className={`landing-reveal-motion mx-auto max-w-3xl text-center duration-700 motion-reduce:transition-none ${revealClass}`}
         >
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
-            05 · Gestion client instantanée
+            05 · Tout l’historique client
           </p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-            Créez vos fiches clients instantanément
+            Retrouvez chaque client et tout ce qui le concerne.
           </h2>
           <p className="mx-auto mt-6 max-w-3xl text-pretty text-lg leading-8 text-slate-600 dark:text-slate-300">
-            Créez vos fiches clients instantanément à la voix, à l’écrit ou manuellement selon votre besoin.
+            Coordonnées, interventions, chantiers, devis, factures et paiements restent réunis dans une seule fiche.
           </p>
           <p className="mx-auto mt-3 max-w-3xl text-pretty text-base leading-7 text-slate-500 dark:text-slate-400">
             Confiez les informations à Forge pour une création automatique, ou utilisez le formulaire classique lorsque vous préférez tout renseigner vous-même. Les deux méthodes fonctionnent pour les particuliers et les professionnels.

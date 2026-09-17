@@ -73,11 +73,11 @@ export default function Hero() {
         </p>
 
         <h1 className="forge-hero-reveal forge-hero-delay-1 mt-6 max-w-5xl text-balance text-5xl font-bold tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl dark:text-white">
-          La solution intelligente pour les artisans.
+          Le gagne-temps quotidien des artisans.
         </h1>
 
         <p className="forge-hero-reveal forge-hero-delay-2 mt-7 max-w-3xl text-balance text-lg leading-8 text-slate-600 sm:text-xl dark:text-slate-300">
-          De la demande client à la facture, Forge simplifie votre quotidien.
+          Organisez, chiffrez, travaillez, facturez et suivez ce que vos chantiers vous rapportent, sans ressaisir les mêmes informations.
         </p>
 
         <div className="forge-hero-reveal forge-hero-delay-3 mt-10 flex w-full max-w-sm justify-center">
@@ -85,7 +85,7 @@ export default function Hero() {
             href="/register"
             className="group inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-7 py-4 font-semibold text-white shadow-xl shadow-blue-600/25 transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-600/35"
           >
-            Créer mon espace gratuitement
+            Commencer gratuitement
             <ArrowRight
               size={18}
               className="transition group-hover:translate-x-1"
@@ -114,7 +114,7 @@ export default function Hero() {
               </div>
 
               <div className="mt-7">
-                <ForgeBarPreview text="« Crée une intervention demain à 10 h… »" />
+                <ForgeBarPreview text="« J’ai une intervention demain à 10 h chez Charles. »" />
               </div>
             </div>
           </div>

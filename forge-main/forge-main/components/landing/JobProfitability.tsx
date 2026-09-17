@@ -19,7 +19,7 @@ const pillars = [
   {
     icon: ReceiptText,
     title: "Dépenses",
-    description: "Enregistrez les matériaux, fournitures, déplacements et autres dépenses directement sur le chantier.",
+    description: "Rattachez achats fournisseur, matériaux utilisés, locations, déplacements et autres dépenses au chantier concerné.",
     content: (
       <div className="space-y-2 text-sm">
         <div className="flex justify-between"><span>Matériaux</span><strong>1 680 €</strong></div>
@@ -47,9 +47,10 @@ const pillars = [
     description: "Visualisez l’évolution de votre activité sans quitter Forge.",
     content: (
       <div className="space-y-2 text-sm">
+        <div className="flex justify-between"><span>Vendu</span><strong>14 200 €</strong></div>
         <div className="flex justify-between"><span>Facturé</span><strong>12 480 €</strong></div>
         <div className="flex justify-between"><span>Encaissé</span><strong>9 840 €</strong></div>
-        <div className="flex justify-between border-t border-slate-200 pt-2 dark:border-slate-700"><span>Devis acceptés</span><strong className="text-blue-700 dark:text-blue-300">68 %</strong></div>
+        <div className="flex justify-between border-t border-slate-200 pt-2 dark:border-slate-700"><span>Reste à encaisser</span><strong className="text-blue-700 dark:text-blue-300">2 640 €</strong></div>
       </div>
     ),
   },
@@ -86,7 +87,7 @@ export default function JobProfitability() {
         <div className={`landing-reveal-motion mx-auto max-w-4xl text-center duration-700 motion-reduce:transition-none ${reveal}`}>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Suivi du chantier</p>
           <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Sachez ce que vous rapporte vraiment chaque chantier.</h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">Suivez le temps passé et les dépenses de votre chantier. Forge vous aide à visualiser son coût réel et sa rentabilité.</p>
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">Suivez le temps, les achats, les matériaux utilisés et les dépenses. Lorsque les coûts sont renseignés, Forge vous montre ce que le chantier vous rapporte réellement.</p>
         </div>
 
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
@@ -103,7 +104,7 @@ export default function JobProfitability() {
 
               <div className="mt-6 grid grid-cols-2 gap-3">
                 {[
-                  ["Chiffre d’affaires", "8 000 €"],
+                  ["Vendu", "8 000 €"],
                   ["Dépenses", "2 100 €"],
                   ["Main-d’œuvre", "1 750 €"],
                   ["Temps passé", "70 h"],

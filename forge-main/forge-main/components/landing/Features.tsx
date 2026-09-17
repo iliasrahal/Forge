@@ -38,13 +38,13 @@ const features = [
   {
     title: "Devis",
     description:
-      "Recherchez le matériel utilisé au quotidien dans votre catalogue métier, choisissez la référence adaptée puis ajoutez-la directement à votre devis.",
+      "Construisez un devis avec vos prestations, matériaux, ouvrages, main-d’œuvre, déplacements ou locations, puis envoyez-le à signer en ligne.",
     eyebrow: "Une proposition claire",
   },
   {
     title: "Factures",
     description:
-      "Après chaque intervention, Forge prépare votre facture professionnelle. Depuis un devis, créez aussi vos acomptes et gardez le montant restant sous les yeux.",
+      "Facturez comme votre chantier l’exige : facture, acompte, situation, solde ou avoir, avec le reste à payer toujours visible.",
     eyebrow: "Jusqu’au règlement",
   },
   {
@@ -416,34 +416,34 @@ function MaterialToQuoteIllustration() {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Radiateur</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {['Radiateurs', 'Tuyauterie', 'Raccords'].map((label) => <span key={label} className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">{label}</span>)}
+              {['Matériaux', 'Prestations', 'Main-d’œuvre', 'Ouvrages'].map((label) => <span key={label} className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">{label}</span>)}
             </div>
             <div className="mt-3 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-xs font-bold text-white">Rechercher dans le catalogue</div>
           </div>
-          <p className="text-center text-[10px] font-semibold text-slate-500 dark:text-slate-400">Matériels courants et références enregistrées</p>
+          <p className="text-center text-[10px] font-semibold text-slate-500 dark:text-slate-400">Vos éléments métier réutilisables</p>
         </div>
 
         <div className="relative z-10 space-y-3 sm:-translate-x-2 sm:[transform:rotateY(-5deg)]">
           <div className="landing-material-proposals rounded-[1.5rem] border border-blue-200 bg-blue-50/90 p-3 shadow-xl backdrop-blur dark:border-blue-900 dark:bg-blue-950/70">
-            <div className="flex items-center justify-between gap-2"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Propositions de matériel</p><span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">Facultatif</span></div>
+            <div className="flex items-center justify-between gap-2"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Bibliothèque métier</p><span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">Réutilisable</span></div>
             <div className="mt-2 space-y-1.5">
-              <div className="rounded-xl border border-blue-300 bg-white/90 px-2 py-2 dark:border-blue-700 dark:bg-slate-900/90"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur vertical</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Atlantic · 1 500 W</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
-              <div className="rounded-xl bg-white/60 px-2 py-2 dark:bg-slate-900/55"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Radiateur panneau</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Référence du catalogue</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Choisir</span></div></div>
+              <div className="rounded-xl border border-blue-300 bg-white/90 px-2 py-2 dark:border-blue-700 dark:bg-slate-900/90"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Remplacement chauffe-eau</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Ouvrage avec éléments de chiffrage</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Ajouter</span></div></div>
+              <div className="rounded-xl bg-white/60 px-2 py-2 dark:bg-slate-900/55"><div className="flex items-center gap-2"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800"><Package size={17} /></span><div className="min-w-0 flex-1"><p className="text-xs font-bold">Main-d’œuvre</p><p className="text-[10px] text-slate-500 dark:text-slate-400">Prix et unité enregistrés</p></div><span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Ajouter</span></div></div>
             </div>
-            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">L’artisan vérifie toujours le matériel avant de le choisir.</p>
+            <p className="mt-2 text-[9px] leading-4 text-slate-500 dark:text-slate-400">L’artisan choisit et adapte toujours ce qui rejoint le devis.</p>
           </div>
 
           <div className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-4 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           <div className="flex items-center justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-white"><FileText size={18} /></span><span className="text-[10px] font-bold tracking-[0.16em] text-blue-600 dark:text-blue-400">DEVIS D2026-0142</span></div>
           <div className="mt-3 rounded-2xl border border-blue-200 bg-blue-50/75 p-3 dark:border-blue-900 dark:bg-blue-950/45">
-            <div className="flex items-start gap-3"><PackageSearch size={18} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" /><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Devis prérempli</p><p className="mt-1 text-sm font-bold">Radiateur Atlantic</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Référence et prix ajoutés seulement s’ils sont connus</p></div><Check size={17} className="ml-auto shrink-0 text-emerald-500" /></div>
+            <div className="flex items-start gap-3"><PackageSearch size={18} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" /><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-700 dark:text-blue-300">Devis construit</p><p className="mt-1 text-sm font-bold">Remplacement chauffe-eau</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Matériel, prestation et main-d’œuvre à vérifier</p></div><Check size={17} className="ml-auto shrink-0 text-emerald-500" /></div>
           </div>
-          <div className="landing-material-line mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/40"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">Informations transférées</p><p className="mt-1 font-semibold">Matériel · Marque · Caractéristiques</p></div>
+          <div className="landing-material-line mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/40"><p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">Éléments repris</p><p className="mt-1 font-semibold">Prix · Quantités · TVA · Remises</p></div>
           <div className="mt-3 border-t border-slate-200 pt-3 text-xs font-semibold text-slate-500 dark:border-slate-700 dark:text-slate-400">Vous vérifiez et complétez avant de créer</div>
           </div>
         </div>
       </div>
-      <p className="mt-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Recherche, sélection, puis ajout au devis : l’artisan garde toujours le choix.</p>
+      <p className="mt-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Bibliothèque, ouvrage puis devis : l’artisan garde toujours le choix.</p>
     </div>
   );
 }
@@ -618,11 +618,11 @@ export default function Features({
                 {index === 2 && (
                   <div className="mt-8 grid max-w-xl gap-3">
                     {[
-                      "Recherchez rapidement les matériels utilisés au quotidien dans votre métier",
-                      "Parcourez plusieurs propositions selon le type de matériel recherché",
-                      "Choisissez toujours le matériel avant son ajout au devis",
-                      "Les informations connues du matériel sont reprises dans la ligne du devis",
-                      "Votre client reçoit un lien sécurisé pour consulter, accepter et signer son devis en ligne",
+                      "Retrouvez vos matériaux, prestations, main-d’œuvre et ouvrages réutilisables",
+                      "Ajoutez matériel, prestation, déplacement, location ou toute autre ligne utile",
+                      "Réglez prix, quantités, TVA et remises selon le devis",
+                      "Réutilisez un ouvrage comme « Remplacement chauffe-eau » sans tout ressaisir",
+                      "Votre client consulte, accepte et signe son devis depuis un lien sécurisé, sans compte Forge",
                       "Le statut du devis est mis à jour dès son acceptation",
                       "Forge repère les devis sans réponse et propose une relance que vous vérifiez avant l’envoi",
                       "Depuis un devis accepté, créez automatiquement l’intervention associée",
@@ -646,10 +646,10 @@ export default function Features({
                     </p>
                     <div className="mt-8 grid max-w-xl gap-3">
                       {[
-                        "Facture générée automatiquement après l’intervention",
-                        "Création professionnelle à partir du compte rendu",
-                        "Factures d’acompte créées directement depuis le devis",
-                        "Montant déjà demandé et restant du devis toujours visibles",
+                        "Facture créée à partir de l’intervention ou du devis, sans double saisie",
+                        "Facture classique, acompte, situation, solde et avoir selon le besoin",
+                        "Montants déjà facturés et reste à facturer visibles",
+                        "Totaux, TVA, remises et paiements suivis dans Forge",
                         "Envoi rapide par mail au client",
                       ].map((benefit) => (
                         <div
@@ -666,14 +666,7 @@ export default function Features({
                   </>
                 )}
                 {index === 4 && (
-                  <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
-                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
-                      <Camera size={20} className="text-blue-600 dark:text-blue-400" />
-                      <p className="mt-3 font-semibold">Photo</p>
-                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                        Envoyez l’image d’une installation, d’une panne, d’une chaudière, d’un document ou d’un élément chez le client. Forge l’analyse pour aider à créer une intervention, un devis ou un suivi client.
-                      </p>
-                    </div>
+                  <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-slate-200 bg-white/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
                       <Mic size={20} className="text-blue-600 dark:text-blue-400" />
                       <p className="mt-3 font-semibold">Voix</p>

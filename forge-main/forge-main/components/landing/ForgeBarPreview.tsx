@@ -1,8 +1,4 @@
-import {
-  Camera,
-  Mic,
-  Send,
-} from "lucide-react";
+import { Mic, Send } from "lucide-react";
 
 type ForgeBarPreviewProps = {
   text: string;
@@ -17,12 +13,6 @@ export default function ForgeBarPreview({
         {text}
       </p>
 
-      <span
-        aria-label="Ajouter une photo"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-slate-800 dark:text-blue-400 sm:h-12 sm:w-12"
-      >
-        <Camera size={22} strokeWidth={2.2} />
-      </span>
       <span
         aria-label="Parler à Forge"
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-blue-600 bg-white text-blue-600 dark:bg-slate-900 dark:text-blue-400 sm:h-12 sm:w-12"

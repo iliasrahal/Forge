@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Camera, Check, FileText, Keyboard, Mail, Mic, Receipt, Wrench } from "lucide-react";
+import { ArrowRight, Check, CreditCard, FileText, Keyboard, Mic, Receipt, Wrench } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const reportSections = [
@@ -54,9 +54,9 @@ export default function Workflow() {
       <div className="mx-auto max-w-7xl">
         <div className={`landing-reveal-motion mx-auto max-w-3xl text-center duration-700 motion-reduce:transition-none ${revealClass}`}>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">Parcours Forge</p>
-          <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Du terrain au document envoyé, sans rupture.</h2>
+          <h2 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">Une information saisie, tout le parcours avance.</h2>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-7 text-slate-600 dark:text-slate-300">
-            Après votre intervention, Forge transforme simplement vos informations en documents professionnels : compte rendu, facture, devis et envoi au client.
+            De l’intervention planifiée au paiement, Forge relie chaque étape pour éviter les doubles saisies.
           </p>
         </div>
 
@@ -67,7 +67,7 @@ export default function Workflow() {
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Wrench size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">01 · Intervention</p>
             <h3 className="mt-2 text-xl font-bold">Intervention terminée</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">L’artisan indique simplement ce qui a été réalisé chez le client, à la voix, à l’écrit ou avec des photos.</p>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Créée rapidement, planifiée puis démarrée sur le terrain, sans formulaire interminable.</p>
             <div className="mt-5 space-y-2 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950">
               {interventionSteps.map((step, index) => (
                 <div
@@ -92,15 +92,14 @@ export default function Workflow() {
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Mic size={13} /> Voix</span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Keyboard size={13} /> Texte</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300"><Camera size={13} /> Photo</span>
             </div>
           </article>
 
           <article style={{ transitionDelay: "180ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-blue-200 bg-white/95 p-6 shadow-[0_28px_80px_-38px_rgba(37,99,235,0.4)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/95 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950 dark:text-blue-300 dark:ring-blue-900"><FileText size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">02 · Compte rendu</p>
-            <h3 className="mt-2 text-xl font-bold">Généré automatiquement</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Forge structure automatiquement l’intervention avec :</p>
+            <h3 className="mt-2 text-xl font-bold">Facultatif et structuré</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Ajoutez un compte rendu si nécessaire. Forge structure vos informations avec :</p>
             <div className="mt-5 space-y-2.5">
               {reportSections.map((label, index) => (
                 <div
@@ -124,25 +123,25 @@ export default function Workflow() {
           <article style={{ transitionDelay: "280ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
             <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/20"><Receipt size={24} /></span>
             <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">03 · Facture</p>
-            <h3 className="mt-2 text-xl font-bold">La suite administrative</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">À partir des informations de l’intervention, Forge prépare les documents nécessaires comme la facture ou le devis.</p>
+            <h3 className="mt-2 text-xl font-bold">Facturez selon le chantier</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Facture, acompte, situation, solde ou avoir : reprenez les informations déjà connues et complétez avant l’envoi.</p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-300">Facture</span>
-              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Devis</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">Acompte · Situation · Solde</span>
             </div>
           </article>
 
           <article style={{ transitionDelay: "380ms" }} className={`landing-reveal-motion relative rounded-[2rem] border border-slate-200 bg-white/90 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur duration-700 motion-reduce:transition-none dark:border-slate-800 dark:bg-slate-900/90 ${revealClass}`}>
-            <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><Mail size={24} /></span>
-            <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">04 · Envoi</p>
-            <h3 className="mt-2 text-xl font-bold">Envoyé au client</h3>
-            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Les documents professionnels sont prêts à être envoyés facilement au client.</p>
-            <div className="mt-6 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"><Check size={18} /> Document prêt à envoyer</div>
+            <span className="relative z-10 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"><CreditCard size={24} /></span>
+            <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-400">04 · Paiement</p>
+            <h3 className="mt-2 text-xl font-bold">Envoyé, payé, suivi</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Le client reçoit sa facture et peut payer en ligne. Le statut et l’encaissé sont ensuite visibles dans Forge.</p>
+            <div className="mt-6 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"><Check size={18} /> Paiement reconnu</div>
           </article>
         </div>
 
         <div style={{ transitionDelay: "500ms" }} className={`landing-reveal-motion mx-auto mt-10 flex w-fit flex-wrap items-center justify-center gap-3 rounded-full border border-blue-200 bg-blue-50/80 px-5 py-3 text-center text-sm font-semibold text-blue-700 duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-blue-950/60 dark:text-blue-300 ${revealClass}`}>
-          Intervention <ArrowRight size={15} /> Compte rendu <ArrowRight size={15} /> Facture <ArrowRight size={15} /> Email
+          Planning <ArrowRight size={15} /> Intervention <ArrowRight size={15} /> Facture <ArrowRight size={15} /> Paiement <ArrowRight size={15} /> Statistiques
         </div>
       </div>
     </section>
