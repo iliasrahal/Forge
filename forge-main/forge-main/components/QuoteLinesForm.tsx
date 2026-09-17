@@ -74,6 +74,19 @@ type DetailEditor = {
   error: string;
 };
 
+const GENERIC_LINE_CATEGORIES = new Set([
+  "materiel",
+  "materiel fourniture",
+  "main d oeuvre",
+  "deplacement",
+]);
+
+function isGenericLineCategory(category: string) {
+  return GENERIC_LINE_CATEGORIES.has(
+    category.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(),
+  );
+}
+
 
 function eurosToCents(value: string): number {
   return Math.round((Number(String(value).replace(",", ".")) || 0) * 100);
@@ -440,7 +453,11 @@ export default function QuoteLinesForm({
             <div className="flex flex-wrap items-start gap-3">
               <select
                 value={line.lineType ?? "OTHER"}
-                onChange={(event) => patchLine(index, { lineType: event.target.value })}
+                onChange={(event) => {
+                  const lineType = event.target.value;
+                  const label = DOCUMENT_LINE_TYPES.find((type) => type.value === lineType)?.label;
+                  patchLine(index, { lineType, ...(isGenericLineCategory(line.category) && label ? { category: label } : {}) });
+                }}
                 disabled={!canWrite}
                 aria-label="Type de ligne"
                 className="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 sm:w-auto sm:max-w-[11rem]"
@@ -450,16 +467,18 @@ export default function QuoteLinesForm({
                 ) : null}
                 {DOCUMENT_LINE_TYPES.map((type) => <option key={type.value} value={type.value}>{type.label}</option>)}
               </select>
-              <input
-                type="text"
-                value={line.category}
-                placeholder="Prestation / désignation"
-                onChange={(event) =>
-                  patchLine(index, { category: event.target.value })
-                }
-                disabled={!canWrite}
-                className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
-              />
+              {!isGenericLineCategory(line.category) ? (
+                <input
+                  type="text"
+                  value={line.category}
+                  placeholder="Prestation / désignation"
+                  onChange={(event) =>
+                    patchLine(index, { category: event.target.value })
+                  }
+                  disabled={!canWrite}
+                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-blue-700 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-blue-400 dark:placeholder:text-slate-500"
+                />
+              ) : <span className="min-w-0 flex-1" />}
               {canWrite ? (
                 <button
                   type="button"
