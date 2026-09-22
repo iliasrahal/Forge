@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { marketplacePublicPostingSelect, parseMarketplacePostingInput, toMarketplacePublicPosting } from "@/src/lib/marketplace";
+import { buildMarketplacePublicPostingWhere, marketplacePublicPostingSelect, parseMarketplacePostingInput, toMarketplacePublicPosting } from "@/src/lib/marketplace";
 import { prisma } from "@/src/lib/prisma";
 import { checkRateLimit } from "@/src/lib/rate-limit";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
@@ -9,27 +9,16 @@ export async function GET(request: Request) {
   try {
     await requireWorkspaceContext("read");
     const params = new URL(request.url).searchParams;
-    const search = params.get("q")?.trim().slice(0, 120) ?? "";
-    const trade = params.get("trade")?.trim().slice(0, 80) ?? "";
-    const location = params.get("location")?.trim().slice(0, 120) ?? "";
-    const from = params.get("from");
-    const to = params.get("to");
     const page = Math.max(1, Math.min(100, Number(params.get("page")) || 1));
     const take = 24;
     const postings = await prisma.marketplaceJobPosting.findMany({
-      where: {
-        status: "OPEN",
-        ...(search ? { OR: [
-          { title: { contains: search, mode: "insensitive" } },
-          { trade: { contains: search, mode: "insensitive" } },
-          { location: { contains: search, mode: "insensitive" } },
-          { publicDescription: { contains: search, mode: "insensitive" } },
-        ] } : {}),
-        ...(trade ? { trade: { contains: trade, mode: "insensitive" } } : {}),
-        ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
-        ...(from ? { endDate: { gte: new Date(`${from}T00:00:00.000Z`) } } : {}),
-        ...(to ? { startDate: { lte: new Date(`${to}T00:00:00.000Z`) } } : {}),
-      },
+      where: buildMarketplacePublicPostingWhere({
+        q: params.get("q"),
+        trade: params.get("trade"),
+        location: params.get("location"),
+        from: params.get("from"),
+        to: params.get("to"),
+      }),
       select: marketplacePublicPostingSelect,
       orderBy: [{ startDate: "asc" }, { publishedAt: "desc" }],
       skip: (page - 1) * take,

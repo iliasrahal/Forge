@@ -1,8 +1,6 @@
 import Link from "next/link";
-import type { Prisma } from "@/src/generated/prisma/client";
-
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
-import { marketplacePublicPostingSelect, toMarketplacePublicPosting } from "@/src/lib/marketplace";
+import { buildMarketplacePublicPostingWhere, marketplacePublicPostingSelect, toMarketplacePublicPosting } from "@/src/lib/marketplace";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -11,19 +9,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   const params = await searchParams;
   const page = Math.max(1, Math.min(100, Number(params.page) || 1));
   const take = 24;
-  const where: Prisma.MarketplaceJobPostingWhereInput = {
-    status: "OPEN",
-    ...(params.q ? { OR: [
-      { title: { contains: params.q, mode: "insensitive" } },
-      { trade: { contains: params.q, mode: "insensitive" } },
-      { location: { contains: params.q, mode: "insensitive" } },
-      { publicDescription: { contains: params.q, mode: "insensitive" } },
-    ] } : {}),
-    ...(params.trade ? { trade: { contains: params.trade, mode: "insensitive" } } : {}),
-    ...(params.location ? { location: { contains: params.location, mode: "insensitive" } } : {}),
-    ...(params.from ? { endDate: { gte: new Date(`${params.from}T00:00:00Z`) } } : {}),
-    ...(params.to ? { startDate: { lte: new Date(`${params.to}T00:00:00Z`) } } : {}),
-  };
+  const where = buildMarketplacePublicPostingWhere(params);
   const records = await prisma.marketplaceJobPosting.findMany({ where, select: marketplacePublicPostingSelect, orderBy: [{ startDate: "asc" }, { publishedAt: "desc" }], skip: (page - 1) * take, take: take + 1 });
   const postings = records.slice(0, take).map(toMarketplacePublicPosting);
   const query = new URLSearchParams(Object.entries(params).filter((entry): entry is [string, string] => typeof entry[1] === "string"));

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MarketplaceJobStatus, OrganizationType } from "@/src/generated/prisma/client";
-import { canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
+import { buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
 
 test("valide un formulaire minimal et convertit le budget en centimes", () => {
   const result = parseMarketplacePostingInput({
@@ -68,4 +68,31 @@ test("limite la gestion au workspace éditeur et à son auteur ou ses responsabl
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "team", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "author", role: "READ_ONLY" }), true);
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "team", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "admin", role: "ADMIN" }), true);
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "other", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "author", role: "OWNER" }), false);
+});
+
+test("le catalogue public est global et ne contient aucun filtre workspace", () => {
+  const where = buildMarketplacePublicPostingWhere(
+    { q: "plombier", location: "Paris" },
+    new Date("2026-09-21T22:30:00.000Z"),
+  );
+  const serialized = JSON.stringify(where);
+
+  assert.equal(where.status, "OPEN");
+  assert.equal(serialized.includes("organizationId"), false);
+  assert.equal(serialized.includes("activeOrganizationId"), false);
+  assert.equal(serialized.includes("workspace"), false);
+  assert.deepEqual(where.endDate, { gte: new Date("2026-09-22T00:00:00.000Z") });
+});
+
+test("les filtres du catalogue global couvrent texte, métier, zone et période", () => {
+  const where = buildMarketplacePublicPostingWhere(
+    { q: "chauffage", trade: "plombier", location: "Saint-Denis", from: "2026-10-12", to: "2026-10-15" },
+    new Date("2026-09-22T00:00:00.000Z"),
+  );
+
+  assert.equal(where.OR?.length, 4);
+  assert.deepEqual(where.trade, { contains: "plombier", mode: "insensitive" });
+  assert.deepEqual(where.location, { contains: "Saint-Denis", mode: "insensitive" });
+  assert.deepEqual(where.endDate, { gte: new Date("2026-10-12T00:00:00.000Z") });
+  assert.deepEqual(where.startDate, { lte: new Date("2026-10-15T00:00:00.000Z") });
 });

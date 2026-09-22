@@ -25,6 +25,52 @@ export type MarketplacePublicPostingRecord = Prisma.MarketplaceJobPostingGetPayl
 
 export type MarketplacePublicPosting = ReturnType<typeof toMarketplacePublicPosting>;
 
+export type MarketplacePublicPostingFilters = {
+  q?: string | null;
+  trade?: string | null;
+  location?: string | null;
+  from?: string | null;
+  to?: string | null;
+};
+
+/**
+ * Global Forge catalogue filter. Deliberately contains no organization/workspace
+ * predicate: ownership is only relevant to management views and mutations.
+ */
+export function buildMarketplacePublicPostingWhere(
+  filters: MarketplacePublicPostingFilters,
+  today = new Date(),
+): Prisma.MarketplaceJobPostingWhereInput {
+  const search = filters.q?.trim().slice(0, 120) ?? "";
+  const trade = filters.trade?.trim().slice(0, 80) ?? "";
+  const location = filters.location?.trim().slice(0, 120) ?? "";
+  const from = parseMarketplaceDate(filters.from);
+  const to = parseMarketplaceDate(filters.to);
+  const parisDateParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(today);
+  const parisDate = Object.fromEntries(parisDateParts.map(({ type, value }) => [type, value]));
+  const startOfTodayUtc = new Date(`${parisDate.year}-${parisDate.month}-${parisDate.day}T00:00:00.000Z`);
+
+  return {
+    status: "OPEN",
+    // An OPEN announcement whose period has ended is no longer available.
+    endDate: { gte: from && from > startOfTodayUtc ? from : startOfTodayUtc },
+    ...(search ? { OR: [
+      { title: { contains: search, mode: "insensitive" } },
+      { trade: { contains: search, mode: "insensitive" } },
+      { location: { contains: search, mode: "insensitive" } },
+      { publicDescription: { contains: search, mode: "insensitive" } },
+    ] } : {}),
+    ...(trade ? { trade: { contains: trade, mode: "insensitive" } } : {}),
+    ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
+    ...(to ? { startDate: { lte: to } } : {}),
+  };
+}
+
 export function toMarketplacePublicPosting(posting: MarketplacePublicPostingRecord) {
   const acceptedCount = posting.applications.length;
   return {
