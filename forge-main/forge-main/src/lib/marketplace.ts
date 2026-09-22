@@ -155,6 +155,10 @@ export function canManageMarketplacePosting(input: {
   );
 }
 
+export function canDeleteMarketplacePosting(input: Parameters<typeof canManageMarketplacePosting>[0] & { canWrite: boolean }) {
+  return input.canWrite && canManageMarketplacePosting(input);
+}
+
 export function shouldRecordMarketplaceView(input: { isPublisherMember: boolean }) {
   return !input.isPublisherMember;
 }

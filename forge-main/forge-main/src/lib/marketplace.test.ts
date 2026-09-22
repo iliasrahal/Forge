@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MarketplaceJobStatus, OrganizationType } from "@/src/generated/prisma/client";
-import { areMarketplaceRequirementsFilled, buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, shouldRecordMarketplaceView, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
+import { areMarketplaceRequirementsFilled, buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canDeleteMarketplacePosting, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, shouldRecordMarketplaceView, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
 
 test("valide un formulaire minimal et convertit le budget en centimes", () => {
   const result = parseMarketplacePostingInput({
@@ -85,6 +85,13 @@ test("limite la gestion au workspace éditeur et à son auteur ou ses responsabl
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "team", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "author", role: "READ_ONLY" }), true);
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "team", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "admin", role: "ADMIN" }), true);
   assert.equal(canManageMarketplacePosting({ postingOrganizationId: "other", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "author", role: "OWNER" }), false);
+});
+
+test("limite la suppression aux gestionnaires disposant réellement de l’écriture", () => {
+  const base = { postingOrganizationId: "team", postingCreatedByUserId: "author", activeOrganizationId: "team", userId: "author", role: "OWNER" as const };
+  assert.equal(canDeleteMarketplacePosting({ ...base, canWrite: true }), true);
+  assert.equal(canDeleteMarketplacePosting({ ...base, canWrite: false }), false);
+  assert.equal(canDeleteMarketplacePosting({ ...base, activeOrganizationId: "other", canWrite: true }), false);
 });
 
 test("le catalogue public est global et ne contient aucun filtre workspace", () => {

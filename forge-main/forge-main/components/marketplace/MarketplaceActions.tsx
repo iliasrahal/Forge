@@ -27,7 +27,7 @@ export function MarketplaceApply({ postingId, requirementId, canWrite, subscript
 }
 
 export function MarketplacePostingActions({ postingId, canWrite }: { postingId: string; canWrite: boolean }) {
-  const router = useRouter(); const [error, setError] = useState("");
+  const router = useRouter(); const [error, setError] = useState(""); const [deleteOpen, setDeleteOpen] = useState(false); const [deleting, setDeleting] = useState(false);
   if (!canWrite) return null;
   async function close() {
     if (!window.confirm("Fermer cette annonce ? Elle n’acceptera plus de demandes.")) return;
@@ -36,7 +36,14 @@ export function MarketplacePostingActions({ postingId, canWrite }: { postingId: 
     if (!response.ok) return setError(data.error ?? "Fermeture impossible.");
     router.refresh();
   }
-  return <div className="mt-5 flex flex-wrap gap-3"><Link href={`/marketplace/${postingId}/edit`} className="inline-flex min-h-11 items-center rounded-xl border px-4 font-semibold text-blue-600">Modifier</Link><button onClick={() => void close()} className="min-h-11 rounded-xl border border-red-300 px-4 font-semibold text-red-600">Fermer</button>{error ? <p className="w-full text-sm text-red-600">{error}</p> : null}</div>;
+  async function remove() {
+    setDeleting(true); setError("");
+    const response = await fetch(`/api/marketplace/${postingId}`, { method: "DELETE" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) { setDeleting(false); setDeleteOpen(false); return setError(data.error ?? "Suppression impossible."); }
+    router.replace("/marketplace/mine?deleted=1"); router.refresh();
+  }
+  return <><div className="mt-5 flex flex-wrap gap-3"><Link href={`/marketplace/${postingId}/edit`} className="inline-flex min-h-11 items-center rounded-xl border px-4 font-semibold text-blue-600">Modifier</Link><button onClick={() => void close()} className="min-h-11 rounded-xl border px-4 font-semibold text-[var(--forge-text-secondary)]">Fermer</button><button onClick={() => setDeleteOpen(true)} className="min-h-11 rounded-xl border border-red-300 px-4 font-semibold text-red-600 dark:border-red-900 dark:text-red-400">Supprimer l’annonce</button>{error ? <p className="w-full text-sm text-red-600">{error}</p> : null}</div>{deleteOpen ? <div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/20 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] backdrop-blur-[3px]"><section role="dialog" aria-modal="true" aria-labelledby="delete-posting-title" className="forge-surface max-h-[calc(100dvh-2rem-env(safe-area-inset-bottom))] w-full max-w-md overflow-y-auto rounded-3xl border p-5 shadow-2xl sm:p-6"><h2 id="delete-posting-title" className="text-xl font-bold">Supprimer cette annonce ?</h2><p className="mt-3 text-sm leading-6 text-[var(--forge-text-secondary)]">Cette annonce ne sera plus visible dans les Chantiers disponibles. Les demandes et informations associées à cette annonce seront également supprimées.</p><div className="mt-6 grid grid-cols-2 gap-3"><button disabled={deleting} onClick={() => setDeleteOpen(false)} className="min-h-12 rounded-xl border font-semibold">Annuler</button><button disabled={deleting} onClick={() => void remove()} className="min-h-12 rounded-xl bg-red-600 px-3 font-semibold text-white disabled:opacity-60">{deleting ? "Suppression…" : "Supprimer l’annonce"}</button></div></section></div> : null}</>;
 }
 
 export function MarketplaceApplicationAction({ applicationId, action }: { applicationId: string; action: "accept" | "reject" | "cancel" }) {
