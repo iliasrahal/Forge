@@ -33,7 +33,7 @@ export default function BottomNavigation() {
   const [pendingSection, setPendingSection] = useState<string | null>(null);
 
   return (
-    <nav className="grid grid-cols-7 gap-0">
+    <nav aria-label="Navigation principale" className="grid w-full min-w-0 grid-cols-[repeat(7,minmax(0,1fr))] gap-0 overflow-visible">
       {ITEMS.map(({ href, section, label, icon: Icon }) => {
         const active = activeSection === section || pendingSection === section;
 
@@ -46,18 +46,18 @@ export default function BottomNavigation() {
             onClick={() => {
               if (activeSection !== section) setPendingSection(section);
             }}
-            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 text-[0.53rem] font-semibold tracking-[-0.04em] transition-all duration-200 min-[390px]:text-[0.58rem] sm:min-h-16 sm:rounded-2xl sm:px-0.5 sm:text-[0.68rem]"
+            className="forge-navlink group relative flex min-h-14 w-full min-w-0 flex-col items-center justify-center gap-1 overflow-visible rounded-xl px-0 text-center text-[clamp(0.5rem,2.35vw,0.625rem)] font-semibold tracking-[-0.055em] transition-all duration-200 sm:min-h-16 sm:rounded-2xl sm:text-[0.68rem] sm:tracking-[-0.025em]"
           >
             <Icon
-              size={19}
+              size={20}
               strokeWidth={active ? 2.6 : 2}
               className={
                 active
                   ? ""
-                  : "transition-transform group-hover:-translate-y-0.5"
+                  : "h-[1.125rem] w-[1.125rem] shrink-0 transition-transform group-hover:-translate-y-0.5 min-[390px]:h-5 min-[390px]:w-5"
               }
             />
-            <span className="whitespace-nowrap leading-none">{label}</span>
+            <span className="block max-w-full whitespace-nowrap leading-none">{label}</span>
           </Link>
         );
       })}
