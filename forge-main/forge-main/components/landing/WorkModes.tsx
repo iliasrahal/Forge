@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  BriefcaseBusiness,
   Check,
+  MapPin,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -34,7 +36,6 @@ const workModes = [
       "Planning, interventions et chantiers partagés",
       "Affectez les membres et les responsables de tâches",
       "Suivez le temps passé par membre",
-      "Trouvez du renfort dans le réseau privé Forge",
       "Invitez aussi des collaborateurs en consultation seule",
       `Accès complet avec un abonnement Forge personnel à ${FORGE_PRICING.monthlyLabel} après le mois d’essai`,
     ],
@@ -154,10 +155,70 @@ export default function WorkModes() {
           )}
         </div>
 
+        <div
+          className={`landing-reveal-motion mt-10 grid gap-6 rounded-[2rem] border border-violet-200/80 bg-white/75 p-5 shadow-[0_28px_90px_-52px_rgba(76,110,245,0.55)] backdrop-blur-xl duration-700 motion-reduce:transition-none dark:border-violet-900/80 dark:bg-slate-900/70 sm:p-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-center ${
+            isVisible
+              ? "translate-y-0 opacity-100"
+              : "translate-y-8 opacity-0"
+          }`}
+        >
+          <div className="text-center lg:text-left">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300 lg:mx-0">
+              <BriefcaseBusiness size={22} />
+            </span>
+            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-300">
+              Réseau privé Forge
+            </p>
+            <h3 className="mt-3 text-balance text-3xl font-bold tracking-tight">
+              Trouvez du renfort. Trouvez des chantiers.
+            </h3>
+            <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">
+              Publiez un chantier lorsque vous avez besoin de renfort ou
+              découvrez les chantiers proposés par d’autres artisans Forge.
+              Recherchez simplement par métier, localisation et période.
+            </p>
+            <p className="mt-4 text-sm font-semibold text-blue-700 dark:text-blue-300">
+              Consultation, publication et demandes sont comprises pendant le mois d’essai.
+            </p>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-slate-200/90 bg-white/90 p-4 shadow-[0_22px_65px_-42px_rgba(15,23,42,0.5)] dark:border-slate-700 dark:bg-slate-950/80 sm:p-5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                Chantiers disponibles
+              </span>
+              <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 dark:border-slate-700 dark:text-slate-300">
+                Publier un chantier
+              </span>
+            </div>
+            <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/45 p-4 text-left dark:border-blue-900 dark:bg-blue-950/25">
+              <p className="font-bold text-slate-950 dark:text-white">
+                Besoin d’un plombier en renfort
+              </p>
+              <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
+                <MapPin size={15} /> Saint-Denis
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                12 → 15 octobre · 1 place
+              </p>
+              <span className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-blue-300 px-4 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300">
+                Voir le chantier
+              </span>
+            </div>
+            <div className="mt-4 flex flex-col items-stretch justify-center gap-2 text-center text-xs font-semibold sm:flex-row sm:items-center">
+              <span className="rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700">Demander à rejoindre</span>
+              <span className="rotate-90 text-blue-500 sm:rotate-0" aria-hidden="true">→</span>
+              <span className="rounded-xl bg-blue-50 px-3 py-2 text-blue-700 dark:bg-blue-950 dark:text-blue-300">Demande envoyée</span>
+              <span className="rotate-90 text-blue-500 sm:rotate-0" aria-hidden="true">→</span>
+              <span className="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Acceptée</span>
+            </div>
+          </div>
+        </div>
+
         <div className={`landing-reveal-motion mt-10 rounded-[2rem] border border-blue-200/80 bg-white/70 p-5 text-center shadow-[0_24px_80px_-48px_rgba(37,99,235,0.5)] backdrop-blur-xl duration-700 motion-reduce:transition-none dark:border-blue-900 dark:bg-slate-900/65 sm:p-7 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-400">Tout Forge, au même endroit</p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {ecosystemItems.map((item) => <span key={item} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${item === "Bibliothèque métier" || item === "Statistiques" ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300" : "border-slate-200 bg-white/70 text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-300"}`}>{item}</span>)}
+            {ecosystemItems.map((item) => <span key={item} className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${item === "Bibliothèque métier" || item === "Statistiques" || item === "Chantiers disponibles" ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300" : "border-slate-200 bg-white/70 text-slate-600 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-300"}`}>{item}</span>)}
           </div>
         </div>
       </div>
