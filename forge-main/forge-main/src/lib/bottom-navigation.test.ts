@@ -47,3 +47,9 @@ test("la page statistiques active son propre onglet", () => {
 test("la page stock active son propre onglet", () => {
   assert.equal(getBottomNavigationSection("/stock"), "stock");
 });
+
+test("toutes les pages Marketplace activent Chantiers", () => {
+  assert.equal(getBottomNavigationSection("/marketplace"), "marketplace");
+  assert.equal(getBottomNavigationSection("/marketplace/posting-1"), "marketplace");
+  assert.equal(getBottomNavigationSection("/marketplace/mine"), "marketplace");
+});

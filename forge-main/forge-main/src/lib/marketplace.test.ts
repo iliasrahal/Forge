@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MarketplaceJobStatus, OrganizationType } from "@/src/generated/prisma/client";
-import { buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
+import { buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, shouldRecordMarketplaceView, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
 
 test("valide un formulaire minimal et convertit le budget en centimes", () => {
   const result = parseMarketplacePostingInput({
     title: "Renfort plomberie",
     trade: "Plombier",
+    trades: ["Plombier", "Chauffagiste"],
     description: "Remplacement d’un réseau sanitaire.",
     location: "Saint-Denis",
     startDate: "2026-10-12",
@@ -17,6 +18,20 @@ test("valide un formulaire minimal et convertit le budget en centimes", () => {
   });
   assert.equal(result?.budgetCents, 45050);
   assert.equal(result?.positions, 2);
+});
+
+test("accepte plusieurs métiers et conserve le premier pour la compatibilité", () => {
+  const result = parseMarketplacePostingInput({
+    title: "Rénovation",
+    trades: ["Plombier", "Électricien", "Plombier"],
+    description: "Rénovation complète d’un appartement.",
+    location: "Paris",
+    startDate: "2026-10-12",
+    endDate: "2026-10-15",
+    positions: 3,
+  });
+  assert.deepEqual(result?.trades, ["Plombier", "Électricien"]);
+  assert.equal(result?.trade, "Plombier");
 });
 
 test("refuse une acceptation au-delà de la dernière place", () => {
@@ -38,6 +53,7 @@ test("le DTO public ne sérialise aucune donnée privée", () => {
     id: "posting",
     title: "Renfort",
     trade: "Plombier",
+    trades: ["Plombier"],
     publicDescription: "Description publique",
     location: "Paris 12e",
     startDate: new Date("2026-10-12T00:00:00Z"),
@@ -86,13 +102,18 @@ test("le catalogue public est global et ne contient aucun filtre workspace", () 
 
 test("les filtres du catalogue global couvrent texte, métier, zone et période", () => {
   const where = buildMarketplacePublicPostingWhere(
-    { q: "chauffage", trade: "plombier", location: "Saint-Denis", from: "2026-10-12", to: "2026-10-15" },
+    { q: "chauffage", trades: ["Plombier", "Chauffagiste"], location: "Saint-Denis", from: "2026-10-12", to: "2026-10-15" },
     new Date("2026-09-22T00:00:00.000Z"),
   );
 
   assert.equal(where.OR?.length, 4);
-  assert.deepEqual(where.trade, { contains: "plombier", mode: "insensitive" });
+  assert.deepEqual(where.trades, { hasSome: ["Plombier", "Chauffagiste"] });
   assert.deepEqual(where.location, { contains: "Saint-Denis", mode: "insensitive" });
   assert.deepEqual(where.endDate, { gte: new Date("2026-10-12T00:00:00.000Z") });
   assert.deepEqual(where.startDate, { lte: new Date("2026-10-15T00:00:00.000Z") });
+});
+
+test("ne comptabilise pas les membres du workspace éditeur parmi les visiteurs", () => {
+  assert.equal(shouldRecordMarketplaceView({ isPublisherMember: true }), false);
+  assert.equal(shouldRecordMarketplaceView({ isPublisherMember: false }), true);
 });

@@ -5,6 +5,7 @@ export type BottomNavigationSection =
   | "invoices"
   | "statistics"
   | "stock"
+  | "marketplace"
   | null;
 
 /**
@@ -35,6 +36,7 @@ export function getBottomNavigationSection(
 
   if (root === "statistics") return "statistics";
   if (root === "stock") return "stock";
+  if (root === "marketplace") return "marketplace";
 
   if (root === "app" || root === "interventions" || root === "history") {
     return "home";

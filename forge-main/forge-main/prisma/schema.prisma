@@ -233,6 +233,7 @@ model User {
   marketplacePostings        MarketplaceJobPosting[]     @relation("MarketplacePostingCreator")
   marketplaceApplications    MarketplaceJobApplication[] @relation("MarketplaceApplicant")
   marketplaceResponses       MarketplaceJobApplication[] @relation("MarketplaceResponder")
+  marketplaceViews           MarketplaceJobView[]        @relation("MarketplaceViewer")
 
   sentTeamInvitations TeamInvitation[] @relation("InvitationSender")
 
@@ -761,37 +762,55 @@ model OrganizationMember {
 }
 
 model MarketplaceJobPosting {
-  id                String               @id @default(cuid())
+  id                String                      @id @default(cuid())
   organizationId    String
-  organization      Organization         @relation("MarketplacePublisher", fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization                @relation("MarketplacePublisher", fields: [organizationId], references: [id], onDelete: Cascade)
   createdByUserId   String
-  createdByUser     User                 @relation("MarketplacePostingCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdByUser     User                        @relation("MarketplacePostingCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
   title             String
   trade             String
+  trades            String[]                    @default([])
   publicDescription String
   location          String
-  startDate         DateTime             @db.Date
-  endDate           DateTime             @db.Date
-  positions         Int                  @default(1)
+  startDate         DateTime                    @db.Date
+  endDate           DateTime                    @db.Date
+  positions         Int                         @default(1)
   budgetCents       Int?
-  status            MarketplaceJobStatus @default(OPEN)
-  publishedAt       DateTime             @default(now())
+  status            MarketplaceJobStatus        @default(OPEN)
+  publishedAt       DateTime                    @default(now())
   closedAt          DateTime?
   applications      MarketplaceJobApplication[]
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
+  views             MarketplaceJobView[]
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
 
   @@index([status, startDate])
   @@index([trade, status])
+  @@index([trades], type: Gin)
   @@index([location, status])
   @@index([organizationId, createdAt])
   @@index([createdByUserId, createdAt])
 }
 
+model MarketplaceJobView {
+  id            String                @id @default(cuid())
+  postingId     String
+  posting       MarketplaceJobPosting @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  viewerUserId  String
+  viewerUser    User                  @relation("MarketplaceViewer", fields: [viewerUserId], references: [id], onDelete: Cascade)
+  firstViewedAt DateTime              @default(now())
+  lastViewedAt  DateTime              @default(now())
+  viewCount     Int                   @default(1)
+
+  @@unique([postingId, viewerUserId])
+  @@index([postingId, lastViewedAt])
+  @@index([viewerUserId, lastViewedAt])
+}
+
 model MarketplaceJobApplication {
   id                        String                       @id @default(cuid())
   postingId                 String
-  posting                   MarketplaceJobPosting       @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  posting                   MarketplaceJobPosting        @relation(fields: [postingId], references: [id], onDelete: Cascade)
   applicantUserId           String
   applicantUser             User                         @relation("MarketplaceApplicant", fields: [applicantUserId], references: [id], onDelete: Cascade)
   representedOrganizationId String?

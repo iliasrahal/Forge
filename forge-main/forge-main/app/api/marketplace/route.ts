@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const postings = await prisma.marketplaceJobPosting.findMany({
       where: buildMarketplacePublicPostingWhere({
         q: params.get("q"),
-        trade: params.get("trade"),
+        trades: params.getAll("trade"),
         location: params.get("location"),
         from: params.get("from"),
         to: params.get("to"),

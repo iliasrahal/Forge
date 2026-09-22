@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   FileText,
   BarChart3,
+  BriefcaseBusiness,
   House,
   ReceiptText,
   PackageOpen,
@@ -27,6 +28,7 @@ const ITEMS = [
     icon: ReceiptText,
   },
   { href: "/stock", section: "stock", label: "Stock", icon: PackageOpen },
+  { href: "/marketplace", section: "marketplace", label: "Chantiers", icon: BriefcaseBusiness },
   { href: "/statistics", section: "statistics", label: "Statistiques", icon: BarChart3 },
 ] as const;
 

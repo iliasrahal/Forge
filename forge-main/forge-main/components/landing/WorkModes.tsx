@@ -175,7 +175,8 @@ export default function WorkModes() {
             <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">
               Publiez un chantier lorsque vous avez besoin de renfort ou
               découvrez les chantiers proposés par d’autres artisans Forge.
-              Recherchez simplement par métier, localisation et période.
+              Recherchez plusieurs métiers, suivez l’intérêt porté à vos
+              annonces et les demandes reçues, puis composez votre équipe.
             </p>
             <p className="mt-4 text-sm font-semibold text-blue-700 dark:text-blue-300">
               Consultation, publication et demandes sont comprises pendant le mois d’essai.
@@ -193,13 +194,16 @@ export default function WorkModes() {
             </div>
             <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/45 p-4 text-left dark:border-blue-900 dark:bg-blue-950/25">
               <p className="font-bold text-slate-950 dark:text-white">
-                Besoin d’un plombier en renfort
+                Rénovation d’un appartement
               </p>
               <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-300">
                 <MapPin size={15} /> Saint-Denis
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                12 → 15 octobre · 1 place
+                Plombier · Électricien · Chauffagiste
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                12 → 15 octobre · 3 places
               </p>
               <span className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-blue-300 px-4 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300">
                 Voir le chantier

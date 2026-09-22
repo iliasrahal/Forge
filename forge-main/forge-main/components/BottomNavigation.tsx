@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BarChart3,
+  BriefcaseBusiness,
   FileText,
   House,
   PackageOpen,
@@ -22,6 +23,7 @@ const ITEMS = [
   { href: "/quotes", section: "quotes", label: "Devis", icon: FileText },
   { href: "/invoices", section: "invoices", label: "Factures", icon: ReceiptText },
   { href: "/stock", section: "stock", label: "Stock", icon: PackageOpen },
+  { href: "/marketplace", section: "marketplace", label: "Chantiers", icon: BriefcaseBusiness },
   { href: "/statistics", section: "statistics", label: "Stats", icon: BarChart3 },
 ] as const;
 
@@ -31,7 +33,7 @@ export default function BottomNavigation() {
   const [pendingSection, setPendingSection] = useState<string | null>(null);
 
   return (
-    <nav className="grid grid-cols-6 gap-0">
+    <nav className="grid grid-cols-7 gap-0">
       {ITEMS.map(({ href, section, label, icon: Icon }) => {
         const active = activeSection === section || pendingSection === section;
 
@@ -44,10 +46,10 @@ export default function BottomNavigation() {
             onClick={() => {
               if (activeSection !== section) setPendingSection(section);
             }}
-            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 text-[0.625rem] font-semibold tracking-[-0.02em] transition-all duration-200 sm:min-h-16 sm:rounded-2xl sm:px-1 sm:text-[0.72rem]"
+            className="forge-navlink group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0 text-[0.53rem] font-semibold tracking-[-0.04em] transition-all duration-200 min-[390px]:text-[0.58rem] sm:min-h-16 sm:rounded-2xl sm:px-0.5 sm:text-[0.68rem]"
           >
             <Icon
-              size={20}
+              size={19}
               strokeWidth={active ? 2.6 : 2}
               className={
                 active

@@ -5,6 +5,7 @@ export const marketplacePublicPostingSelect = {
   id: true,
   title: true,
   trade: true,
+  trades: true,
   publicDescription: true,
   location: true,
   startDate: true,
@@ -28,10 +29,26 @@ export type MarketplacePublicPosting = ReturnType<typeof toMarketplacePublicPost
 export type MarketplacePublicPostingFilters = {
   q?: string | null;
   trade?: string | null;
+  trades?: string[] | string | null;
   location?: string | null;
   from?: string | null;
   to?: string | null;
 };
+
+export const MARKETPLACE_TRADES = [
+  "Plombier",
+  "Chauffagiste",
+  "Électricien",
+  "Peintre",
+  "Maçon",
+  "Menuisier",
+  "Carreleur",
+  "Couvreur",
+  "Plaquiste",
+  "Serrurier",
+  "Climaticien",
+  "Paysagiste",
+] as const;
 
 /**
  * Global Forge catalogue filter. Deliberately contains no organization/workspace
@@ -43,6 +60,9 @@ export function buildMarketplacePublicPostingWhere(
 ): Prisma.MarketplaceJobPostingWhereInput {
   const search = filters.q?.trim().slice(0, 120) ?? "";
   const trade = filters.trade?.trim().slice(0, 80) ?? "";
+  const selectedTrades = (Array.isArray(filters.trades) ? filters.trades : filters.trades ? [filters.trades] : [])
+    .map((value) => value.trim().slice(0, 80))
+    .filter(Boolean);
   const location = filters.location?.trim().slice(0, 120) ?? "";
   const from = parseMarketplaceDate(filters.from);
   const to = parseMarketplaceDate(filters.to);
@@ -66,6 +86,7 @@ export function buildMarketplacePublicPostingWhere(
       { publicDescription: { contains: search, mode: "insensitive" } },
     ] } : {}),
     ...(trade ? { trade: { contains: trade, mode: "insensitive" } } : {}),
+    ...(selectedTrades.length ? { trades: { hasSome: selectedTrades } } : {}),
     ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
     ...(to ? { startDate: { lte: to } } : {}),
   };
@@ -77,6 +98,7 @@ export function toMarketplacePublicPosting(posting: MarketplacePublicPostingReco
     id: posting.id,
     title: posting.title,
     trade: posting.trade,
+    trades: posting.trades.length ? posting.trades : [posting.trade],
     description: posting.publicDescription,
     location: posting.location,
     startDate: posting.startDate.toISOString().slice(0, 10),
@@ -105,6 +127,10 @@ export function canManageMarketplacePosting(input: {
   );
 }
 
+export function shouldRecordMarketplaceView(input: { isPublisherMember: boolean }) {
+  return !input.isPublisherMember;
+}
+
 export function parseMarketplaceDate(value: unknown) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const date = new Date(`${value}T00:00:00.000Z`);
@@ -114,6 +140,7 @@ export function parseMarketplaceDate(value: unknown) {
 export type MarketplacePostingInput = {
   title: string;
   trade: string;
+  trades: string[];
   publicDescription: string;
   location: string;
   startDate: Date;
@@ -124,7 +151,18 @@ export type MarketplacePostingInput = {
 
 export function parseMarketplacePostingInput(body: Record<string, unknown>): MarketplacePostingInput | null {
   const title = typeof body.title === "string" ? body.title.trim().slice(0, 140) : "";
-  const trade = typeof body.trade === "string" ? body.trade.trim().slice(0, 80) : "";
+  const submittedTrades = Array.isArray(body.trades)
+    ? body.trades
+    : typeof body.trades === "string"
+      ? [body.trades]
+      : typeof body.trade === "string"
+        ? [body.trade]
+        : [];
+  const trades = [...new Set(submittedTrades
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim().slice(0, 80))
+    .filter(Boolean))].slice(0, 8);
+  const trade = trades[0] ?? "";
   const publicDescription = typeof body.description === "string" ? body.description.trim().slice(0, 2000) : "";
   const location = typeof body.location === "string" ? body.location.trim().slice(0, 120) : "";
   const startDate = parseMarketplaceDate(body.startDate);
@@ -137,6 +175,7 @@ export function parseMarketplacePostingInput(body: Record<string, unknown>): Mar
   return {
     title,
     trade,
+    trades,
     publicDescription,
     location,
     startDate,

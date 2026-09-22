@@ -2,11 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import { MARKETPLACE_TRADES } from "@/src/lib/marketplace";
 
 type InitialPosting = {
   id: string;
   title: string;
   trade: string;
+  trades: string[];
   description: string;
   location: string;
   startDate: string;
@@ -24,7 +26,8 @@ export default function MarketplacePostingForm({ initialPosting }: { initialPost
     event.preventDefault();
     if (pending) return;
     setPending(true); setError("");
-    const body = Object.fromEntries(new FormData(event.currentTarget));
+    const formData = new FormData(event.currentTarget);
+    const body = { ...Object.fromEntries(formData), trades: formData.getAll("trades") };
     const response = await fetch(initialPosting ? `/api/marketplace/${initialPosting.id}` : "/api/marketplace", {
       method: initialPosting ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,7 +45,7 @@ export default function MarketplacePostingForm({ initialPosting }: { initialPost
 
   return <form onSubmit={submit} className="forge-surface mt-6 grid gap-4 rounded-3xl border p-5 sm:grid-cols-2 sm:p-7">
     <label className="sm:col-span-2 text-sm font-semibold">Titre<input required name="title" maxLength={140} defaultValue={initialPosting?.title ?? ""} placeholder="Besoin d’un plombier en renfort" className="mt-1.5 min-h-12 w-full rounded-xl border bg-transparent px-3 font-normal"/></label>
-    <label className="text-sm font-semibold">Métier recherché<input required name="trade" maxLength={80} defaultValue={initialPosting?.trade ?? ""} placeholder="Plombier" className="mt-1.5 min-h-12 w-full rounded-xl border bg-transparent px-3 font-normal"/></label>
+    <fieldset className="sm:col-span-2"><legend className="text-sm font-semibold">Métiers recherchés</legend><div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{MARKETPLACE_TRADES.map((trade) => <label key={trade} className="flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm"><input type="checkbox" name="trades" value={trade} defaultChecked={(initialPosting?.trades ?? [initialPosting?.trade].filter(Boolean)).includes(trade)}/><span>{trade}</span></label>)}</div></fieldset>
     <label className="text-sm font-semibold">Ville / zone<input required name="location" maxLength={120} defaultValue={initialPosting?.location ?? ""} placeholder="Saint-Denis" className="mt-1.5 min-h-12 w-full rounded-xl border bg-transparent px-3 font-normal"/></label>
     <label className="text-sm font-semibold">Début<input required name="startDate" type="date" defaultValue={initialPosting?.startDate ?? ""} className="mt-1.5 min-h-12 w-full rounded-xl border bg-transparent px-3 font-normal"/></label>
     <label className="text-sm font-semibold">Fin<input required name="endDate" type="date" defaultValue={initialPosting?.endDate ?? ""} className="mt-1.5 min-h-12 w-full rounded-xl border bg-transparent px-3 font-normal"/></label>
