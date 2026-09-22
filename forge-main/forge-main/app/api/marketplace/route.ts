@@ -44,11 +44,13 @@ export async function POST(request: Request) {
     const body = await request.json() as Record<string, unknown>;
     const input = parseMarketplacePostingInput(body);
     if (!input) return NextResponse.json({ error: "Vérifie les informations du chantier." }, { status: 400 });
+    const { requirements, ...postingData } = input;
     const posting = await prisma.marketplaceJobPosting.create({
       data: {
         organizationId: context.workspace.id,
         createdByUserId: context.user.id,
-        ...input,
+        ...postingData,
+        requirements: { create: requirements },
       },
       select: { id: true },
     });

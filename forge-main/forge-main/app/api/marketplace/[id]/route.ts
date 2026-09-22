@@ -25,17 +25,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (posting.status !== "OPEN") return NextResponse.json({ error: "Seule une annonce ouverte peut être modifiée." }, { status: 409 });
     const input = parseMarketplacePostingInput(body);
     if (!input) return NextResponse.json({ error: "Vérifie les informations du chantier." }, { status: 400 });
+    const { requirements, ...postingData } = input;
     await prisma.$transaction(async (tx) => {
       await tx.marketplaceJobPosting.update({ where: { id }, data: { updatedAt: new Date() } });
       const acceptedCount = await tx.marketplaceJobApplication.count({ where: { postingId: id, status: "ACCEPTED" } });
       if (input.positions < acceptedCount) throw new Error("MARKETPLACE_POSITIONS_TOO_LOW");
-      await tx.marketplaceJobPosting.update({ where: { id }, data: { ...input, status: input.positions === acceptedCount ? "FILLED" : "OPEN", closedAt: input.positions === acceptedCount ? new Date() : null } });
+      const existingRequirementApplications = await tx.marketplaceJobApplication.count({ where: { postingId: id } });
+      if (existingRequirementApplications > 0) throw new Error("MARKETPLACE_REQUIREMENTS_LOCKED");
+      await tx.marketplaceJobRequirement.deleteMany({ where: { postingId: id } });
+      await tx.marketplaceJobPosting.update({ where: { id }, data: { ...postingData, requirements: { create: requirements }, status: "OPEN", closedAt: null } });
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     return NextResponse.json({ ok: true });
   } catch (error) {
     const access = getWorkspaceErrorResponse(error);
     if (access) return NextResponse.json(access.body, { status: access.status });
     if (error instanceof Error && error.message === "MARKETPLACE_POSITIONS_TOO_LOW") return NextResponse.json({ error: "Le nombre de places ne peut pas être inférieur aux demandes déjà acceptées." }, { status: 409 });
+    if (error instanceof Error && error.message === "MARKETPLACE_REQUIREMENTS_LOCKED") return NextResponse.json({ error: "Les besoins ne peuvent plus être remplacés après réception d’une demande." }, { status: 409 });
     return NextResponse.json({ error: "Impossible de modifier cette annonce." }, { status: 500 });
   }
 }

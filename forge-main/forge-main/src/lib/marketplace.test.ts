@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { MarketplaceJobStatus, OrganizationType } from "@/src/generated/prisma/client";
-import { buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, shouldRecordMarketplaceView, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
+import { areMarketplaceRequirementsFilled, buildMarketplacePublicPostingWhere, canAcceptMarketplaceApplication, canManageMarketplacePosting, getMarketplaceApplicationBlockReason, parseMarketplacePostingInput, shouldRecordMarketplaceView, toMarketplacePublicPosting, type MarketplacePublicPostingRecord } from "./marketplace";
 
 test("valide un formulaire minimal et convertit le budget en centimes", () => {
   const result = parseMarketplacePostingInput({
@@ -66,6 +66,7 @@ test("le DTO public ne sérialise aucune donnée privée", () => {
     createdByUserId: "user",
     organization: { name: "Équipe Martin", legalName: "Martin SARL", type: OrganizationType.TEAM },
     applications: [{ id: "accepted" }],
+    requirements: [{ id: "requirement", tradeKey: "Plombier", customTradeName: null, requiredCount: 2, startDate: new Date("2026-10-12T00:00:00Z"), endDate: new Date("2026-10-15T00:00:00Z"), applications: [{ id: "accepted" }] }],
   };
   const result = toMarketplacePublicPosting(record);
   assert.equal(result.publisher, "Martin SARL");
@@ -106,8 +107,8 @@ test("les filtres du catalogue global couvrent texte, métier, zone et période"
     new Date("2026-09-22T00:00:00.000Z"),
   );
 
-  assert.equal(where.OR?.length, 4);
-  assert.deepEqual(where.trades, { hasSome: ["Plombier", "Chauffagiste"] });
+  assert.equal(where.OR?.length, 5);
+  assert.deepEqual(where.requirements, { some: { tradeKey: { in: ["Plombier", "Chauffagiste"] } } });
   assert.deepEqual(where.location, { contains: "Saint-Denis", mode: "insensitive" });
   assert.deepEqual(where.endDate, { gte: new Date("2026-10-12T00:00:00.000Z") });
   assert.deepEqual(where.startDate, { lte: new Date("2026-10-15T00:00:00.000Z") });
@@ -116,4 +117,25 @@ test("les filtres du catalogue global couvrent texte, métier, zone et période"
 test("ne comptabilise pas les membres du workspace éditeur parmi les visiteurs", () => {
   assert.equal(shouldRecordMarketplaceView({ isPublisherMember: true }), false);
   assert.equal(shouldRecordMarketplaceView({ isPublisherMember: false }), true);
+});
+
+test("valide les quantités et périodes indépendantes des besoins", () => {
+  const result = parseMarketplacePostingInput({ title: "Rénovation", description: "Renforts", location: "Paris", startDate: "2026-10-01", endDate: "2026-10-30", requirements: [
+    { tradeKey: "Plombier", requiredCount: 2, startDate: "2026-10-01", endDate: "2026-10-10" },
+    { tradeKey: "Électricien", requiredCount: 3, startDate: "2026-10-20", endDate: "2026-10-25" },
+  ] });
+  assert.equal(result?.positions, 5);
+  assert.equal(result?.requirements.length, 2);
+});
+
+test("refuse Autre vide et une période métier hors chantier", () => {
+  const base = { title: "Rénovation", description: "Renforts", location: "Paris", startDate: "2026-10-01", endDate: "2026-10-30" };
+  assert.equal(parseMarketplacePostingInput({ ...base, requirements: [{ tradeKey: "OTHER", requiredCount: 1, startDate: "2026-10-01", endDate: "2026-10-10" }] }), null);
+  assert.equal(parseMarketplacePostingInput({ ...base, requirements: [{ tradeKey: "Plombier", requiredCount: 1, startDate: "2026-09-30", endDate: "2026-10-10" }] }), null);
+  assert.equal(parseMarketplacePostingInput({ ...base, requirements: [{ tradeKey: "OTHER", customTradeName: "Étancheur", requiredCount: 1, startDate: "2026-10-01", endDate: "2026-10-10" }] })?.trade, "Étancheur");
+});
+
+test("ne remplit l’annonce que lorsque tous les besoins sont complets", () => {
+  assert.equal(areMarketplaceRequirementsFilled([{ requiredCount: 2, acceptedCount: 2 }, { requiredCount: 1, acceptedCount: 0 }]), false);
+  assert.equal(areMarketplaceRequirementsFilled([{ requiredCount: 2, acceptedCount: 2 }, { requiredCount: 1, acceptedCount: 1 }]), true);
 });

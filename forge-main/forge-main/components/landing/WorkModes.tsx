@@ -200,10 +200,16 @@ export default function WorkModes() {
                 <MapPin size={15} /> Saint-Denis
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                Plombier · Électricien · Chauffagiste
+                Plombier ×2 · 1 → 10 oct.
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                12 → 15 octobre · 3 places
+                Chauffagiste ×1 · 8 → 15 oct.
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Électricien ×1 · 20 → 25 oct.
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                Trouvez les bons artisans, au bon moment.
               </p>
               <span className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-blue-300 px-4 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300">
                 Voir le chantier

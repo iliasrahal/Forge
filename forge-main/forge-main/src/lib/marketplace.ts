@@ -18,6 +18,18 @@ export const marketplacePublicPostingSelect = {
   createdByUserId: true,
   organization: { select: { name: true, legalName: true, type: true } },
   applications: { where: { status: "ACCEPTED" }, select: { id: true } },
+  requirements: {
+    select: {
+      id: true,
+      tradeKey: true,
+      customTradeName: true,
+      requiredCount: true,
+      startDate: true,
+      endDate: true,
+      applications: { where: { status: "ACCEPTED" }, select: { id: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  },
 } satisfies Prisma.MarketplaceJobPostingSelect;
 
 export type MarketplacePublicPostingRecord = Prisma.MarketplaceJobPostingGetPayload<{
@@ -48,6 +60,7 @@ export const MARKETPLACE_TRADES = [
   "Serrurier",
   "Climaticien",
   "Paysagiste",
+  "Autre",
 ] as const;
 
 /**
@@ -84,9 +97,10 @@ export function buildMarketplacePublicPostingWhere(
       { trade: { contains: search, mode: "insensitive" } },
       { location: { contains: search, mode: "insensitive" } },
       { publicDescription: { contains: search, mode: "insensitive" } },
+      { requirements: { some: { customTradeName: { contains: search, mode: "insensitive" } } } },
     ] } : {}),
     ...(trade ? { trade: { contains: trade, mode: "insensitive" } } : {}),
-    ...(selectedTrades.length ? { trades: { hasSome: selectedTrades } } : {}),
+    ...(selectedTrades.length ? { requirements: { some: { tradeKey: { in: selectedTrades.map((value) => value === "Autre" ? "OTHER" : value) } } } } : {}),
     ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
     ...(to ? { startDate: { lte: to } } : {}),
   };
@@ -94,17 +108,31 @@ export function buildMarketplacePublicPostingWhere(
 
 export function toMarketplacePublicPosting(posting: MarketplacePublicPostingRecord) {
   const acceptedCount = posting.applications.length;
+  const requirements = posting.requirements.map((requirement) => {
+    const requirementAcceptedCount = requirement.applications.length;
+    return {
+      id: requirement.id,
+      tradeKey: requirement.tradeKey,
+      trade: requirement.tradeKey === "OTHER" ? requirement.customTradeName || "Autre" : requirement.tradeKey,
+      requiredCount: requirement.requiredCount,
+      startDate: requirement.startDate.toISOString().slice(0, 10),
+      endDate: requirement.endDate.toISOString().slice(0, 10),
+      acceptedCount: requirementAcceptedCount,
+      remainingPositions: Math.max(0, requirement.requiredCount - requirementAcceptedCount),
+    };
+  });
   return {
     id: posting.id,
     title: posting.title,
     trade: posting.trade,
-    trades: posting.trades.length ? posting.trades : [posting.trade],
+    trades: requirements.length ? requirements.map((requirement) => requirement.trade) : posting.trades.length ? posting.trades : [posting.trade],
+    requirements,
     description: posting.publicDescription,
     location: posting.location,
     startDate: posting.startDate.toISOString().slice(0, 10),
     endDate: posting.endDate.toISOString().slice(0, 10),
     positions: posting.positions,
-    remainingPositions: Math.max(0, posting.positions - acceptedCount),
+    remainingPositions: requirements.length ? requirements.reduce((total, requirement) => total + requirement.remainingPositions, 0) : Math.max(0, posting.positions - acceptedCount),
     budgetCents: posting.budgetCents,
     status: posting.status,
     publishedAt: posting.publishedAt.toISOString(),
@@ -147,6 +175,13 @@ export type MarketplacePostingInput = {
   endDate: Date;
   positions: number;
   budgetCents: number | null;
+  requirements: Array<{
+    tradeKey: string;
+    customTradeName: string | null;
+    requiredCount: number;
+    startDate: Date;
+    endDate: Date;
+  }>;
 };
 
 export function parseMarketplacePostingInput(body: Record<string, unknown>): MarketplacePostingInput | null {
@@ -158,19 +193,42 @@ export function parseMarketplacePostingInput(body: Record<string, unknown>): Mar
       : typeof body.trade === "string"
         ? [body.trade]
         : [];
-  const trades = [...new Set(submittedTrades
+  let trades = [...new Set(submittedTrades
     .filter((value): value is string => typeof value === "string")
     .map((value) => value.trim().slice(0, 80))
     .filter(Boolean))].slice(0, 8);
-  const trade = trades[0] ?? "";
+  let trade = trades[0] ?? "";
   const publicDescription = typeof body.description === "string" ? body.description.trim().slice(0, 2000) : "";
   const location = typeof body.location === "string" ? body.location.trim().slice(0, 120) : "";
   const startDate = parseMarketplaceDate(body.startDate);
   const endDate = parseMarketplaceDate(body.endDate);
-  const positions = Number(body.positions);
+  const rawRequirements = Array.isArray(body.requirements) ? body.requirements : [];
+  const requirements = rawRequirements.flatMap((raw) => {
+    if (!raw || typeof raw !== "object") return [];
+    const value = raw as Record<string, unknown>;
+    const rawTradeKey = typeof value.tradeKey === "string" ? value.tradeKey.trim().slice(0, 80) : "";
+    const tradeKey = rawTradeKey === "Autre" ? "OTHER" : rawTradeKey;
+    const customTradeName = typeof value.customTradeName === "string" ? value.customTradeName.trim().slice(0, 80) : "";
+    const requiredCount = Number(value.requiredCount);
+    const requirementStartDate = parseMarketplaceDate(value.startDate);
+    const requirementEndDate = parseMarketplaceDate(value.endDate);
+    if (!tradeKey || (tradeKey === "OTHER" && !customTradeName) || !Number.isInteger(requiredCount) || requiredCount < 1 || requiredCount > 20 || !requirementStartDate || !requirementEndDate) return [];
+    return [{ tradeKey, customTradeName: tradeKey === "OTHER" ? customTradeName : null, requiredCount, startDate: requirementStartDate, endDate: requirementEndDate }];
+  });
+  if (requirements.length) {
+    trades = requirements.map((requirement) => requirement.tradeKey === "OTHER" ? requirement.customTradeName || "Autre" : requirement.tradeKey);
+    trade = trades[0] ?? "";
+  }
+  const legacyPositions = Number(body.positions);
   const budget = body.budget === "" || body.budget == null ? null : Number(body.budget);
   if (!title || !trade || !publicDescription || !location || !startDate || !endDate) return null;
-  if (endDate < startDate || !Number.isInteger(positions) || positions < 1 || positions > 20) return null;
+  if (endDate < startDate) return null;
+  if (rawRequirements.length && requirements.length !== rawRequirements.length) return null;
+  if (new Set(requirements.map((requirement) => requirement.tradeKey)).size !== requirements.length) return null;
+  const normalizedRequirements = requirements.length ? requirements : [{ tradeKey: trade, customTradeName: null, requiredCount: legacyPositions, startDate, endDate }];
+  if (normalizedRequirements.some((requirement) => requirement.startDate < startDate || requirement.endDate > endDate || requirement.endDate < requirement.startDate)) return null;
+  const positions = normalizedRequirements.reduce((total, requirement) => total + requirement.requiredCount, 0);
+  if (!Number.isInteger(positions) || positions < 1 || positions > 100) return null;
   if (budget !== null && (!Number.isFinite(budget) || budget < 0 || budget > 10_000_000)) return null;
   return {
     title,
@@ -182,6 +240,7 @@ export function parseMarketplacePostingInput(body: Record<string, unknown>): Mar
     endDate,
     positions,
     budgetCents: budget === null ? null : Math.round(budget * 100),
+    requirements: normalizedRequirements,
   };
 }
 
@@ -204,6 +263,10 @@ export function canAcceptMarketplaceApplication(input: {
   positions: number;
 }) {
   return input.postingStatus === "OPEN" && input.acceptedCount < input.positions;
+}
+
+export function areMarketplaceRequirementsFilled(requirements: Array<{ requiredCount: number; acceptedCount: number }>) {
+  return requirements.length > 0 && requirements.every((requirement) => requirement.acceptedCount >= requirement.requiredCount);
 }
 
 export type MarketplaceApplicationBlockReason =

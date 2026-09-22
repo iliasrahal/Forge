@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@/src/generated/prisma/client";
 
-import { canAcceptMarketplaceApplication, canManageMarketplacePosting } from "@/src/lib/marketplace";
+import { areMarketplaceRequirementsFilled, canAcceptMarketplaceApplication, canManageMarketplacePosting } from "@/src/lib/marketplace";
 import { prisma } from "@/src/lib/prisma";
 import { getWorkspaceErrorResponse, requireWorkspaceContext } from "@/src/lib/workspace-access";
 
@@ -17,8 +17,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const application = await tx.marketplaceJobApplication.findUnique({
         where: { id },
         select: {
-          id: true, status: true, applicantUserId: true,
-          posting: { select: { id: true, organizationId: true, createdByUserId: true, status: true, positions: true } },
+          id: true, status: true, applicantUserId: true, requirementId: true,
+          requirement: { select: { requiredCount: true } },
+          posting: { select: { id: true, organizationId: true, createdByUserId: true, status: true } },
         },
       });
       if (!application) throw new Error("MARKETPLACE_APPLICATION_NOT_FOUND");
@@ -31,10 +32,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       if (action === "reject") return tx.marketplaceJobApplication.update({ where: { id }, data: { status: "REJECTED", respondedByUserId: context.user.id, respondedAt: new Date() } });
 
       await tx.marketplaceJobPosting.update({ where: { id: application.posting.id }, data: { updatedAt: new Date() } });
-      const acceptedCount = await tx.marketplaceJobApplication.count({ where: { postingId: application.posting.id, status: "ACCEPTED" } });
-      if (!canAcceptMarketplaceApplication({ postingStatus: application.posting.status, acceptedCount, positions: application.posting.positions })) throw new Error("MARKETPLACE_FILLED");
+      const acceptedCount = await tx.marketplaceJobApplication.count({ where: { requirementId: application.requirementId, status: "ACCEPTED" } });
+      if (!canAcceptMarketplaceApplication({ postingStatus: application.posting.status, acceptedCount, positions: application.requirement.requiredCount })) throw new Error("MARKETPLACE_FILLED");
       const accepted = await tx.marketplaceJobApplication.update({ where: { id }, data: { status: "ACCEPTED", respondedByUserId: context.user.id, respondedAt: new Date() } });
-      if (acceptedCount + 1 >= application.posting.positions) {
+      const requirements = await tx.marketplaceJobRequirement.findMany({ where: { postingId: application.posting.id }, select: { id: true, requiredCount: true, applications: { where: { status: "ACCEPTED" }, select: { id: true } } } });
+      const allFilled = areMarketplaceRequirementsFilled(requirements.map((requirement) => ({ requiredCount: requirement.requiredCount, acceptedCount: requirement.id === application.requirementId ? acceptedCount + 1 : requirement.applications.length })));
+      if (allFilled) {
         await tx.marketplaceJobPosting.update({ where: { id: application.posting.id }, data: { status: "FILLED", closedAt: new Date() } });
       }
       return accepted;

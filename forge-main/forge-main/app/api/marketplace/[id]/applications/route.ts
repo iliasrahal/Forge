@@ -14,25 +14,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!limit.allowed) return NextResponse.json({ error: "Trop de demandes. Réessaie plus tard." }, { status: 429 });
     const body = await request.json().catch(() => ({})) as Record<string, unknown>;
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 1000) : "";
+    const requirementId = typeof body.requirementId === "string" ? body.requirementId : "";
+    if (!requirementId) return NextResponse.json({ error: "Choisis le métier concerné." }, { status: 400 });
     const result = await prisma.$transaction(async (tx) => {
       const posting = await tx.marketplaceJobPosting.findUnique({
         where: { id },
         select: {
           id: true, status: true, positions: true, organizationId: true,
-          applications: { where: { status: "ACCEPTED" }, select: { id: true } },
+          requirements: { where: { id: requirementId }, select: { id: true, requiredCount: true, applications: { where: { status: "ACCEPTED" }, select: { id: true } } } },
         },
       });
       if (!posting) throw new Error("MARKETPLACE_NOT_FOUND");
       const [publisherMembership, existingApplication] = await Promise.all([
         tx.organizationMember.findUnique({ where: { userId_organizationId: { userId: context.user.id, organizationId: posting.organizationId } }, select: { id: true } }),
-        tx.marketplaceJobApplication.findUnique({ where: { postingId_applicantUserId: { postingId: id, applicantUserId: context.user.id } }, select: { id: true } }),
+        tx.marketplaceJobApplication.findUnique({ where: { requirementId_applicantUserId: { requirementId, applicantUserId: context.user.id } }, select: { id: true } }),
       ]);
-      const blocked = getMarketplaceApplicationBlockReason({ postingStatus: posting.status, acceptedCount: posting.applications.length, positions: posting.positions, isPublisherMember: Boolean(publisherMembership), hasExistingApplication: Boolean(existingApplication) });
+      const requirement = posting.requirements[0];
+      if (!requirement) throw new Error("MARKETPLACE_NOT_FOUND");
+      const blocked = getMarketplaceApplicationBlockReason({ postingStatus: posting.status, acceptedCount: requirement.applications.length, positions: requirement.requiredCount, isPublisherMember: Boolean(publisherMembership), hasExistingApplication: Boolean(existingApplication) });
       if (blocked === "OWN_POSTING") throw new Error("MARKETPLACE_OWN_POSTING");
       if (blocked === "DUPLICATE") throw new Error("MARKETPLACE_DUPLICATE");
       if (blocked === "UNAVAILABLE") throw new Error("MARKETPLACE_UNAVAILABLE");
       return tx.marketplaceJobApplication.create({
-        data: { postingId: id, applicantUserId: context.user.id, representedOrganizationId: context.workspace.id, message: message || null },
+        data: { postingId: id, requirementId, applicantUserId: context.user.id, representedOrganizationId: context.workspace.id, message: message || null },
         select: { id: true, status: true },
       });
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
@@ -41,6 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const access = getWorkspaceErrorResponse(error);
     if (access) return NextResponse.json(access.body, { status: access.status });
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return NextResponse.json({ error: "Tu as déjà envoyé une demande pour ce chantier." }, { status: 409 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return NextResponse.json({ error: "Une autre demande vient d’être enregistrée. Réessaie." }, { status: 409 });
     const message = error instanceof Error ? error.message : "";
     if (message === "MARKETPLACE_NOT_FOUND") return NextResponse.json({ error: "Annonce introuvable." }, { status: 404 });
     if (message === "MARKETPLACE_UNAVAILABLE") return NextResponse.json({ error: "Ce chantier n’accepte plus de demandes." }, { status: 409 });

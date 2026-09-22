@@ -8,7 +8,7 @@ function AccessError({ message, subscriptionRequired }: { message: string; subsc
   return <div className="mt-3 text-sm font-medium text-red-600 dark:text-red-400"><p>{message}</p>{subscriptionRequired ? <Link href="/subscription" className="mt-2 inline-flex rounded-full border border-blue-300 px-3 py-2 text-blue-700 dark:text-blue-300">Réactiver mon abonnement</Link> : null}</div>;
 }
 
-export function MarketplaceApply({ postingId, canWrite, subscriptionRequired, existingStatus }: { postingId: string; canWrite: boolean; subscriptionRequired: boolean; existingStatus?: string | null }) {
+export function MarketplaceApply({ postingId, requirementId, canWrite, subscriptionRequired, existingStatus }: { postingId: string; requirementId: string; canWrite: boolean; subscriptionRequired: boolean; existingStatus?: string | null }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -18,7 +18,7 @@ export function MarketplaceApply({ postingId, canWrite, subscriptionRequired, ex
   async function submit() {
     setPending(true); setError(null);
     const message = (document.getElementById("marketplace-message") as HTMLTextAreaElement | null)?.value ?? "";
-    const response = await fetch(`/api/marketplace/${postingId}/applications`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
+    const response = await fetch(`/api/marketplace/${postingId}/applications`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message, requirementId }) });
     const data = await response.json().catch(() => ({})); setPending(false);
     if (!response.ok) return setError({ message: data.error ?? "Demande impossible.", subscriptionRequired: data.subscriptionRequired === true });
     setOpen(false); router.refresh();

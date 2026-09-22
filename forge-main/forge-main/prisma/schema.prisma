@@ -781,6 +781,7 @@ model MarketplaceJobPosting {
   closedAt          DateTime?
   applications      MarketplaceJobApplication[]
   views             MarketplaceJobView[]
+  requirements      MarketplaceJobRequirement[]
   createdAt         DateTime                    @default(now())
   updatedAt         DateTime                    @updatedAt
 
@@ -790,6 +791,24 @@ model MarketplaceJobPosting {
   @@index([location, status])
   @@index([organizationId, createdAt])
   @@index([createdByUserId, createdAt])
+}
+
+model MarketplaceJobRequirement {
+  id              String                      @id @default(cuid())
+  postingId       String
+  posting         MarketplaceJobPosting       @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  tradeKey        String
+  customTradeName String?
+  requiredCount   Int                         @default(1)
+  startDate       DateTime                    @db.Date
+  endDate         DateTime                    @db.Date
+  applications    MarketplaceJobApplication[]
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  @@index([postingId])
+  @@index([tradeKey, startDate])
+  @@index([customTradeName])
 }
 
 model MarketplaceJobView {
@@ -811,6 +830,8 @@ model MarketplaceJobApplication {
   id                        String                       @id @default(cuid())
   postingId                 String
   posting                   MarketplaceJobPosting        @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  requirementId             String
+  requirement               MarketplaceJobRequirement    @relation(fields: [requirementId], references: [id], onDelete: Cascade)
   applicantUserId           String
   applicantUser             User                         @relation("MarketplaceApplicant", fields: [applicantUserId], references: [id], onDelete: Cascade)
   representedOrganizationId String?
@@ -823,8 +844,9 @@ model MarketplaceJobApplication {
   createdAt                 DateTime                     @default(now())
   updatedAt                 DateTime                     @updatedAt
 
-  @@unique([postingId, applicantUserId])
+  @@unique([requirementId, applicantUserId])
   @@index([postingId, status])
+  @@index([requirementId, status])
   @@index([applicantUserId, createdAt])
   @@index([representedOrganizationId])
 }
