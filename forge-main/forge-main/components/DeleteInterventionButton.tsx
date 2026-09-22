@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { InterventionTerminology } from "@/src/lib/intervention-terminology";
 
-export default function DeleteInterventionButton({ interventionId, hasHistory, hasFinancialDocuments }: { interventionId: string; hasHistory: boolean; hasFinancialDocuments: boolean }) {
+export default function DeleteInterventionButton({ interventionId, hasHistory, hasFinancialDocuments, terminology }: { interventionId: string; hasHistory: boolean; hasFinancialDocuments: boolean; terminology: InterventionTerminology }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -19,7 +20,7 @@ export default function DeleteInterventionButton({ interventionId, hasHistory, h
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setError(typeof data.error === "string" ? data.error : "Impossible de supprimer ce chantier.");
+      setError(typeof data.error === "string" ? data.error : `Impossible de supprimer ${terminology.definite}.`);
       setPending(false);
       return;
     }
@@ -29,15 +30,15 @@ export default function DeleteInterventionButton({ interventionId, hasHistory, h
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="text-sm font-semibold text-red-600 transition hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-        Supprimer le chantier
+        {terminology.deleteAction}
       </button>
       {open && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-intervention-title" className="forge-surface w-full max-w-sm rounded-[2rem] border p-6 text-center">
-            <h2 id="delete-intervention-title" className="text-xl font-bold text-[var(--forge-text-primary)]">Supprimer définitivement ce chantier ?</h2>
+            <h2 id="delete-intervention-title" className="text-xl font-bold text-[var(--forge-text-primary)]">{terminology.deleteQuestion}</h2>
             <div className="mt-3 space-y-2 text-sm leading-6 text-[var(--forge-text-secondary)]">
               <p>Cette action est définitive.</p>
-              <p>{hasHistory ? "Le planning, les tâches, les temps, les dépenses et les comptes rendus liés à ce chantier seront supprimés." : "Le chantier et son planning associé seront supprimés."}</p>
+              <p>{hasHistory ? terminology.deleteHistoryMessage : terminology.deletePlanningMessage}</p>
               {hasFinancialDocuments && <p className="font-semibold text-[var(--forge-text-primary)]">Les devis, factures et paiements existants seront conservés.</p>}
             </div>
             {error && <p className="mt-4 rounded-2xl bg-red-500/10 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">{error}</p>}

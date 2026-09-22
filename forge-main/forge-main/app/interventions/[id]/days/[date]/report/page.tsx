@@ -6,6 +6,7 @@ import { parseInterventionDayReport } from "@/src/lib/intervention-day-report";
 import { formatParisDateKey, parseParisDateTime } from "@/src/lib/paris-datetime";
 import { prisma } from "@/src/lib/prisma";
 import { requireWorkspaceContext } from "@/src/lib/workspace-access";
+import { getInterventionTerminology } from "@/src/lib/intervention-terminology";
 
 export default async function InterventionDayReportPage({ params }: { params: Promise<{ id: string; date: string }> }) {
   const { id, date } = await params;
@@ -30,6 +31,13 @@ export default async function InterventionDayReportPage({ params }: { params: Pr
   const clientName = intervention.client
     ? intervention.client.companyName || [intervention.client.firstName, intervention.client.lastName].filter(Boolean).join(" ") || "le client"
     : "le client";
+  const terminology = getInterventionTerminology({
+    startDateKey: formatParisDateKey(intervention.scheduledAt),
+    endDateKey: intervention.endDate
+      ? formatParisDateKey(intervention.endDate)
+      : null,
+    plannedDateKeys: days,
+  });
 
-  return <InterventionDayReportFlow interventionId={id} date={date} clientName={clientName} initialDraft={dayState?.reportDraft ?? ""} initialReport={dayState?.finalizationStep === "REPORT_REVIEW" ? parseInterventionDayReport(dayState.report) : null} />;
+  return <InterventionDayReportFlow interventionId={id} date={date} clientName={clientName} initialDraft={dayState?.reportDraft ?? ""} initialReport={dayState?.finalizationStep === "REPORT_REVIEW" ? parseInterventionDayReport(dayState.report) : null} terminology={terminology} />;
 }

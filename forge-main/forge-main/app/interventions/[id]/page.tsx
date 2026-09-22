@@ -20,6 +20,7 @@ import DeleteInterventionButton from "@/components/DeleteInterventionButton";
 import { getInterventionReturnHref } from "@/src/lib/intervention-navigation";
 import { computeInterventionProgress } from "@/src/lib/intervention-progress";
 import InterventionOperations from "@/components/InterventionOperations";
+import { getInterventionTerminology } from "@/src/lib/intervention-terminology";
 
 
 type InterventionPageProps = {
@@ -131,6 +132,16 @@ export default async function InterventionPage({
     notFound();
   }
 
+  const terminology = getInterventionTerminology({
+    startDateKey: formatParisDateKey(intervention.scheduledAt),
+    endDateKey: intervention.endDate
+      ? formatParisDateKey(intervention.endDate)
+      : null,
+    plannedDateKeys: intervention.dayTasks
+      .filter((task) => task.date)
+      .map((task) => formatParisDateKey(task.date!)),
+  });
+
   const returnHref = getInterventionReturnHref({
     context: from,
     requestedClientId,
@@ -235,7 +246,7 @@ export default async function InterventionPage({
         <div className="mx-auto mt-8 max-w-2xl text-center">
 
           <h1 className="text-balance text-3xl font-bold tracking-[-0.04em] text-slate-950 dark:text-white sm:text-4xl">
-            {intervention.title || "Intervention"}
+            {intervention.title || terminology.title}
           </h1>
 
 
@@ -256,6 +267,7 @@ export default async function InterventionPage({
           interventionId={intervention.id}
           status={intervention.status}
           canWrite={workspaceContext.permissions.canWrite}
+          terminology={terminology}
         />
 
         {teamMembers.length > 0 && (
@@ -279,7 +291,7 @@ export default async function InterventionPage({
           <div className="min-w-44 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-3.5 text-center shadow-[0_16px_40px_-32px_rgba(15,23,42,0.45)] dark:border-slate-700 dark:bg-slate-800/55 dark:shadow-black/30">
 
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {intervention.endDate ? "Période" : "Date"}
+              {terminology.isMultiDay ? "Période" : "Date"}
             </p>
 
 
@@ -361,6 +373,7 @@ export default async function InterventionPage({
             quantity: usage.quantityMilli / 1000, unit: usage.unit,
             actualUnitCostCents: usage.actualUnitCostCents, dayDate: usage.dayDate ? formatParisDateKey(usage.dayDate) : null,
           }))}
+          terminology={terminology}
         />
 
         {(intervention.endDate || intervention.dayTasks.some((task) => task.date)) && (
@@ -425,11 +438,12 @@ export default async function InterventionPage({
             note: entry.note,
           }))}
           members={teamMembers.map((member) => ({ id: member.userId, name: `${member.user.firstName} ${member.user.lastName ?? ""}`.trim() }))}
+          terminology={terminology}
         />
 
         <section className="mx-auto mt-8 max-w-2xl rounded-3xl border border-[var(--forge-border)] bg-[var(--forge-surface)] p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-bold">Achats liés</h2><p className="text-sm text-[var(--forge-text-muted)]">Achats affectés à ce chantier.</p></div>{workspaceContext.permissions.canWrite && <Link href={`/settings/purchases?interventionId=${intervention.id}`} className="rounded-full border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300">+ Ajouter un achat</Link>}</div>
-          <div className="mt-4 space-y-2">{intervention.purchases.map((purchase)=><div key={purchase.id} className="rounded-2xl bg-white/55 p-3 text-sm dark:bg-slate-800/55"><p className="font-semibold">{purchase.supplier?.companyName || purchase.supplier?.name || purchase.supplierName || "Sans fournisseur"} · {(purchase.totalAmountCents/100).toLocaleString("fr-FR",{style:"currency",currency:"EUR"})}</p><p className="text-[var(--forge-text-muted)]">{formatParisDateKey(purchase.purchasedAt)} · {purchase._count.lines} ligne{purchase._count.lines>1?"s":""}</p></div>)}{!intervention.purchases.length && <p className="text-sm text-[var(--forge-text-muted)]">Aucun achat lié.</p>}</div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">Achats</h2>{workspaceContext.permissions.canWrite && <Link href={`/settings/purchases?interventionId=${intervention.id}`} className="rounded-full border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300">+ Ajouter</Link>}</div>
+          <div className="mt-4 space-y-2">{intervention.purchases.map((purchase)=><div key={purchase.id} className="rounded-2xl bg-white/55 p-3 text-sm dark:bg-slate-800/55"><p className="font-semibold">{purchase.supplier?.companyName || purchase.supplier?.name || purchase.supplierName || "Sans fournisseur"} · {(purchase.totalAmountCents/100).toLocaleString("fr-FR",{style:"currency",currency:"EUR"})}</p><p className="text-[var(--forge-text-muted)]">{formatParisDateKey(purchase.purchasedAt)} · {purchase._count.lines} ligne{purchase._count.lines>1?"s":""}</p></div>)}{!intervention.purchases.length && <p className="text-sm text-[var(--forge-text-muted)]">Aucun pour le moment.</p>}</div>
         </section>
 
         {(intervention.quote || intervention.invoices.length > 0) && <section id="documents" className="mx-auto mt-8 max-w-2xl scroll-mt-6 rounded-3xl border border-blue-200/70 bg-white/45 p-5 dark:border-blue-800/60 dark:bg-slate-900/35">
@@ -455,6 +469,7 @@ export default async function InterventionPage({
                 Boolean(intervention.reportIntervention || intervention.reportDiagnostic || intervention.reportTravaux || intervention.reportRecommendation)
               }
               hasFinancialDocuments={Boolean(intervention.quoteId || intervention.invoices.length > 0)}
+              terminology={terminology}
             />
           </div>
         )}

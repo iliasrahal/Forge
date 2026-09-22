@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDuration } from "@/src/lib/intervention-profitability";
 import { INTERVENTION_EXPENSE_LABELS } from "@/src/lib/intervention-expenses";
+import type { InterventionTerminology } from "@/src/lib/intervention-terminology";
 
 type Metrics = {
   soldRevenueCents: number | null; plannedRevenueCents: number | null; plannedCostCents: number | null; plannedMarginCents: number | null; plannedMarginPercent: number | null;
@@ -33,7 +34,7 @@ function todayInParis() {
   return `${value.year}-${value.month}-${value.day}`;
 }
 
-export default function InterventionProfitability({ interventionId, canWrite, hourlyCostCents, metrics, expenses, workTimes, members = [] }: { interventionId: string; canWrite: boolean; hourlyCostCents: number | null; metrics: Metrics; expenses: Expense[]; workTimes: WorkTime[]; members?: Array<{ id: string; name: string }> }) {
+export default function InterventionProfitability({ interventionId, canWrite, hourlyCostCents, metrics, expenses, workTimes, members = [], terminology }: { interventionId: string; canWrite: boolean; hourlyCostCents: number | null; metrics: Metrics; expenses: Expense[]; workTimes: WorkTime[]; members?: Array<{ id: string; name: string }>; terminology: InterventionTerminology }) {
   const router = useRouter();
   const [form, setForm] = useState<"expense" | "time" | null>(null);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -71,7 +72,7 @@ export default function InterventionProfitability({ interventionId, canWrite, ho
   }
 
   return <section id="tracking" className="mx-auto mt-8 max-w-2xl scroll-mt-6 rounded-3xl border border-blue-200/70 bg-white/45 p-5 dark:border-blue-800/60 dark:bg-slate-900/35">
-    <div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">Rentabilité</p><h2 className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">Suivi du chantier</h2></div>
+    <div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">Rentabilité</p><h2 className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">{terminology.trackingTitle}</h2></div>
     <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <div className="rounded-2xl bg-white/60 p-4 dark:bg-slate-800/50"><p className="text-xs font-bold uppercase text-slate-400">Vendu</p><p className="mt-2 text-xl font-bold">{metrics.soldRevenueCents === null ? "Non renseigné" : euro(metrics.soldRevenueCents)}</p><p className="mt-1 text-xs text-slate-500">Devis accepté lié</p></div>
       <div className="rounded-2xl bg-white/60 p-4 dark:bg-slate-800/50"><p className="text-xs font-bold uppercase text-slate-400">Facturé</p><p className="mt-2 text-xl font-bold">{euro(metrics.billedRevenueCents)}</p>{metrics.creditedCents > 0 && <p className="mt-1 text-xs text-slate-500">Après {euro(metrics.creditedCents)} d’avoirs émis</p>}</div>

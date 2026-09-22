@@ -8,6 +8,7 @@ import ForgeListenCard from "@/components/ForgeListenCard";
 import ForgeProcessingCard from "@/components/ForgeProcessingCard";
 import ForgeReportCard from "@/components/ForgeReportCard";
 import type { InterventionDayReport } from "@/src/lib/intervention-day-report";
+import type { InterventionTerminology } from "@/src/lib/intervention-terminology";
 
 type FlowState = "input" | "processing" | "review";
 
@@ -17,12 +18,14 @@ export default function InterventionDayReportFlow({
   clientName,
   initialDraft,
   initialReport,
+  terminology,
 }: {
   interventionId: string;
   date: string;
   clientName: string;
   initialDraft: string;
   initialReport: InterventionDayReport | null;
+  terminology: InterventionTerminology;
 }) {
   const router = useRouter();
   const [state, setState] = useState<FlowState>(initialReport ? "review" : "input");
@@ -74,7 +77,7 @@ export default function InterventionDayReportFlow({
 
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-4xl flex-col px-4 py-5 sm:px-6 sm:py-8 lg:min-h-screen lg:justify-center lg:py-10">
-      <Link href={`/interventions/${interventionId}`} className="forge-back-link mb-4 self-start">← Retour au chantier</Link>
+      <Link href={`/interventions/${interventionId}`} className="forge-back-link mb-4 self-start">← Retour {terminology.returnDestination}</Link>
       {state === "input" && (
         <section className="flex flex-col items-center">
           <button type="button" disabled={pending} onClick={() => void skipReport()} className="mb-4 min-h-11 rounded-full border border-[var(--forge-border-strong)] bg-[var(--forge-surface-secondary)] px-6 py-2.5 text-sm font-semibold text-[var(--forge-text-secondary)] disabled:opacity-60 sm:mb-6">
