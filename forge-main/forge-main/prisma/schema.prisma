@@ -150,6 +150,19 @@ enum TeamInvitationStatus {
   REVOKED
 }
 
+enum MarketplaceJobStatus {
+  OPEN
+  FILLED
+  CLOSED
+}
+
+enum MarketplaceApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
 enum InterventionExpenseCategory {
   MATERIALS
   SUPPLIES
@@ -217,6 +230,9 @@ model User {
 
   interventionAssignments    InterventionAssignment[]
   interventionDayAssignments InterventionDayAssignment[]
+  marketplacePostings        MarketplaceJobPosting[]     @relation("MarketplacePostingCreator")
+  marketplaceApplications    MarketplaceJobApplication[] @relation("MarketplaceApplicant")
+  marketplaceResponses       MarketplaceJobApplication[] @relation("MarketplaceResponder")
 
   sentTeamInvitations TeamInvitation[] @relation("InvitationSender")
 
@@ -345,6 +361,8 @@ model Organization {
   purchaseAllocations        PurchaseAllocation[]
   stockItems                 StockItem[]
   stockMovements             StockMovement[]
+  marketplacePostings        MarketplaceJobPosting[]     @relation("MarketplacePublisher")
+  representedApplications    MarketplaceJobApplication[] @relation("MarketplaceRepresentedOrganization")
   members                    OrganizationMember[]
   invitations                TeamInvitation[]
   clients                    Client[]
@@ -740,6 +758,56 @@ model OrganizationMember {
 
   @@unique([userId, organizationId])
   @@index([organizationId])
+}
+
+model MarketplaceJobPosting {
+  id                String               @id @default(cuid())
+  organizationId    String
+  organization      Organization         @relation("MarketplacePublisher", fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUserId   String
+  createdByUser     User                 @relation("MarketplacePostingCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  title             String
+  trade             String
+  publicDescription String
+  location          String
+  startDate         DateTime             @db.Date
+  endDate           DateTime             @db.Date
+  positions         Int                  @default(1)
+  budgetCents       Int?
+  status            MarketplaceJobStatus @default(OPEN)
+  publishedAt       DateTime             @default(now())
+  closedAt          DateTime?
+  applications      MarketplaceJobApplication[]
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([status, startDate])
+  @@index([trade, status])
+  @@index([location, status])
+  @@index([organizationId, createdAt])
+  @@index([createdByUserId, createdAt])
+}
+
+model MarketplaceJobApplication {
+  id                        String                       @id @default(cuid())
+  postingId                 String
+  posting                   MarketplaceJobPosting       @relation(fields: [postingId], references: [id], onDelete: Cascade)
+  applicantUserId           String
+  applicantUser             User                         @relation("MarketplaceApplicant", fields: [applicantUserId], references: [id], onDelete: Cascade)
+  representedOrganizationId String?
+  representedOrganization   Organization?                @relation("MarketplaceRepresentedOrganization", fields: [representedOrganizationId], references: [id], onDelete: SetNull)
+  message                   String?
+  status                    MarketplaceApplicationStatus @default(PENDING)
+  respondedByUserId         String?
+  respondedByUser           User?                        @relation("MarketplaceResponder", fields: [respondedByUserId], references: [id], onDelete: SetNull)
+  respondedAt               DateTime?
+  createdAt                 DateTime                     @default(now())
+  updatedAt                 DateTime                     @updatedAt
+
+  @@unique([postingId, applicantUserId])
+  @@index([postingId, status])
+  @@index([applicantUserId, createdAt])
+  @@index([representedOrganizationId])
 }
 
 model TeamInvitation {

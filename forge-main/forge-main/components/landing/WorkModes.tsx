@@ -34,6 +34,7 @@ const workModes = [
       "Planning, interventions et chantiers partagés",
       "Affectez les membres et les responsables de tâches",
       "Suivez le temps passé par membre",
+      "Trouvez du renfort dans le réseau privé Forge",
       "Invitez aussi des collaborateurs en consultation seule",
       `Accès complet avec un abonnement Forge personnel à ${FORGE_PRICING.monthlyLabel} après le mois d’essai`,
     ],
@@ -44,6 +45,7 @@ const ecosystemItems = [
   "Planning", "Interventions", "Chantiers", "Clients", "Comptes rendus",
   "Devis", "Bibliothèque métier", "Stock", "Factures", "Paiements", "Temps",
   "Fournisseurs", "Achats", "Dépenses", "Rentabilité", "Statistiques", "Relances", "Réponses clients",
+  "Chantiers disponibles",
   "Personnel", "Équipe",
 ];
 
@@ -106,6 +108,8 @@ export default function WorkModes() {
             Retrouvez toujours votre espace Personnel, puis créez ou rejoignez
             des espaces Équipe pour partager clients, interventions, documents
             et planning avec vos collaborateurs.
+            Publiez aussi un chantier ou découvrez les missions proposées par
+            d’autres artisans du réseau Forge.
           </p>
         </div>
 

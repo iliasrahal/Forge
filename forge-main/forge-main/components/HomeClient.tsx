@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import WorkspaceSwitcher from "@/components/WorkspaceSwitcher";
@@ -1319,6 +1320,19 @@ const handleCreateInvoice = async () => {
       showLogout={homeState === "intervention"}
     />
   </div>
+
+  {homeState === "intervention" && !showUpcomingCalendar ? (
+    <section className="mb-3 flex flex-col gap-3 rounded-2xl border border-blue-200/70 bg-white/45 p-3 dark:border-blue-900/70 dark:bg-slate-900/35 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0">
+        <h2 className="font-bold text-[var(--forge-text-primary)]">Chantiers disponibles</h2>
+        <p className="mt-0.5 text-xs text-[var(--forge-text-secondary)] sm:text-sm">Trouvez un chantier ou du renfort parmi les artisans Forge.</p>
+      </div>
+      <div className={`grid shrink-0 gap-2 ${canWrite ? "grid-cols-2" : "grid-cols-1"}`}>
+        <Link href="/marketplace" className="inline-flex min-h-10 items-center justify-center rounded-xl border border-blue-300 px-3 text-xs font-semibold text-blue-700 dark:border-blue-800 dark:text-blue-300">Voir les chantiers</Link>
+        {canWrite ? <Link href="/marketplace/new" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-600 px-3 text-xs font-semibold text-white">Publier</Link> : null}
+      </div>
+    </section>
+  ) : null}
 
   {showDashboard ? (
     <div className={showDashboardAside ? "lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8" : ""}>
